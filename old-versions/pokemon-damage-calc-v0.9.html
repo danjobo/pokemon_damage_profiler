@@ -1,0 +1,2166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pokémon Damage Profiler</title>
+<style>
+  :root {
+    --bg: #0f0f14;
+    --bg2: #16161e;
+    --bg3: #1e1e2a;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #e8e6f0;
+    --text2: #8b89a0;
+    --text3: #5a5870;
+    --accent: #7c6af7;
+    --accent2: #a594ff;
+    --red: #e24b4a;
+    --orange: #f0997b;
+    --yellow: #FAC775;
+    --green: #5DCAA5;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container { max-width: 860px; margin: 0 auto; }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 2rem;
+  }
+
+  .logo {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), #a594ff);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+
+  h1 { font-size: 22px; font-weight: 600; }
+  .tagline { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+  }
+
+  .card-label {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text3); margin-bottom: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    padding: 10px 12px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+  textarea:focus { border-color: var(--accent); }
+  #defenderInput { height: 200px; }
+  #metaInput     { height: 340px; }
+
+  .btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+
+  button {
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    border: 0.5px solid var(--border2);
+    background: transparent; color: var(--text);
+    transition: background 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+  button:hover { background: var(--bg3); }
+  button:active { transform: scale(0.97); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); }
+  .btn-success { background: #1a3a2a; border-color: #2d6a4a; color: var(--green); }
+  .btn-success:hover { background: #1f4a34; }
+
+  .info-box {
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 12px; color: var(--text2);
+    margin-top: 10px; line-height: 1.8;
+    display: none;
+  }
+  .info-box.visible { display: block; }
+  .info-box b { color: var(--text); }
+
+  .error-msg { font-size: 12px; color: var(--red); margin-top: 6px; min-height: 16px; }
+
+  .status-row {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--text2);
+  }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent2);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+    display: none;
+  }
+  .spinner.active { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .meta-chips {
+    display: flex; flex-wrap: wrap; gap: 5px;
+    margin-top: 8px;
+  }
+  .chip {
+    font-size: 11px; padding: 2px 10px;
+    border-radius: 12px; border: 0.5px solid var(--border);
+    color: var(--text2); background: var(--bg3);
+  }
+  .chip.loaded  { border-color: #2d6a4a; color: var(--green); background: #1a3a2a; }
+  .chip.failed  { border-color: #5a2020; color: var(--red); background: #2a1414; }
+  .chip.loading { border-color: var(--accent); color: var(--accent2); background: #1e1a3a; }
+
+  .calc-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px;
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .results-header {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap; gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .defender-tag {
+    font-size: 12px; color: var(--text2);
+    background: var(--bg3); padding: 4px 10px;
+    border-radius: 20px; border: 0.5px solid var(--border);
+  }
+
+  .sort-row { display: flex; align-items: center; gap: 8px; }
+  .sort-row label { font-size: 12px; color: var(--text2); }
+
+  select {
+    font-size: 12px; padding: 5px 8px;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    background: var(--bg3); color: var(--text);
+    outline: none; cursor: pointer;
+  }
+
+
+  .results-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: end;
+    margin-bottom: 14px;
+    padding: 12px;
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .control-group label,
+  .checkbox-toggle {
+    font-size: 11px;
+    color: var(--text2);
+  }
+
+  .control-group select {
+    min-width: 90px;
+  }
+
+  .checkbox-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 6px;
+  }
+
+  .checkbox-toggle input {
+    accent-color: var(--accent);
+  }
+
+
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .leg-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
+  .leg-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  .result-item {
+    border-bottom: 0.5px solid var(--border);
+  }
+  .result-item:last-child {
+    border-bottom: none;
+  }
+
+  .result-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .result-row:hover { background: rgba(255,255,255,0.02); }
+  .result-row.expanded { background: rgba(124,106,247,0.08); }
+
+  .result-rank {
+    width: 28px;
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--text3);
+    text-align: center;
+  }
+
+  .result-expand {
+    width: 18px;
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--text3);
+    transition: transform 0.15s;
+  }
+
+  .result-row.expanded .result-expand {
+    transform: rotate(90deg);
+  }
+
+  .result-name { width: 150px; flex-shrink: 0; }
+  .result-name-text {
+    font-size: 13px; font-weight: 500; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .type-badges { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+  .type-badge {
+    font-size: 10px; font-weight: 600;
+    padding: 1px 7px; border-radius: 10px; text-transform: capitalize;
+  }
+  .t-fire    {background:#4a1e0c;color:#EF9F27}  .t-water   {background:#0c2a42;color:#85B7EB}
+  .t-grass   {background:#162a08;color:#97C459}  .t-electric{background:#3a2800;color:#FAC775}
+  .t-psychic {background:#3a0a1e;color:#ED93B1}  .t-ice     {background:#0c1e3a;color:#85B7EB}
+  .t-dragon  {background:#1a1040;color:#AFA9EC}  .t-dark    {background:#1a1a1a;color:#B4B2A9}
+  .t-fairy   {background:#3a0a24;color:#ED93B1}  .t-fighting{background:#3a1008;color:#F0997B}
+  .t-flying  {background:#0c1e3a;color:#85B7EB}  .t-poison  {background:#1e0a3a;color:#AFA9EC}
+  .t-ground  {background:#3a2000;color:#FAC775}  .t-rock    {background:#2a2a20;color:#D3D1C7}
+  .t-bug     {background:#182808;color:#C0DD97}  .t-ghost   {background:#1a0a2e;color:#CECBF6}
+  .t-steel   {background:#1e1e26;color:#D3D1C7}  .t-normal  {background:#2a2a2a;color:#B4B2A9}
+
+  .bar-wrap {
+    flex: 1; background: var(--bg3);
+    border-radius: 5px; height: 10px; overflow: hidden; min-width: 60px;
+  }
+  .bar { height: 10px; border-radius: 5px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+  .bar-low  { background: var(--green); }
+  .bar-mid  { background: var(--yellow); }
+  .bar-high { background: var(--orange); }
+  .bar-ohko { background: var(--red); }
+
+  .result-pct { width: 82px; text-align: right; flex-shrink: 0; font-size: 13px; font-weight: 500; color: var(--text2); }
+  .pct-ohko   { color: var(--red) !important; }
+  .result-move { width: 145px; flex-shrink: 0; font-size: 11px; color: var(--text2); text-align: right; }
+
+  .move-breakdown {
+    display: none;
+    padding: 0 0 12px 58px;
+  }
+
+  .move-breakdown.visible {
+    display: block;
+  }
+
+  .move-breakdown-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    font-size: 12px;
+    border-top: 0.5px solid rgba(255,255,255,0.04);
+  }
+
+  .move-breakdown-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .move-breakdown-name {
+    color: var(--text);
+  }
+
+  .move-breakdown-meta {
+    color: var(--text3);
+    font-size: 11px;
+  }
+
+  .move-breakdown-pct {
+    color: var(--text2);
+    font-weight: 500;
+  }
+
+  .eff-super  { color: var(--yellow); font-weight: 600; }
+  .eff-resist { color: var(--green); }
+
+  /* ── Pin button ──────────────────────────────────────────────────────── */
+  .pin-btn {
+    width: 22px; height: 22px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 5px;
+    border: none; background: transparent;
+    color: var(--text3);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.15s, background 0.15s, transform 0.15s;
+    line-height: 1;
+  }
+  .pin-btn:hover { color: var(--accent2); background: rgba(124,106,247,0.12); transform: none; }
+  .pin-btn:active { transform: scale(0.88); }
+  .pin-btn.pinned { color: var(--accent2); }
+
+  .pinned-divider {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 0 4px;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text3);
+  }
+  .pinned-divider::after {
+    content: '';
+    flex: 1; height: 0.5px;
+    background: var(--border);
+  }
+  .result-item.is-pinned {
+    background: rgba(124,106,247,0.04);
+  }
+
+  .hint {
+    font-size: 11px; color: var(--text3);
+    border: 0.5px dashed var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px; margin-top: 8px; line-height: 1.6;
+  }
+  .hint a { color: var(--accent2); text-decoration: none; }
+  .hint a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    .result-move { display: none; }
+    .result-name { width: 120px; }
+    .result-pct  { width: 65px; }
+  }
+
+  /* ── Defender Tabs ───────────────────────────────────────────────────── */
+  .defender-tabs-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .def-tab {
+    flex: 1;
+    min-width: 80px;
+    max-width: 140px;
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text2);
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+  }
+  .def-tab:hover { background: #252535; }
+  .def-tab.active {
+    border-color: var(--accent);
+    background: rgba(124,106,247,0.12);
+    color: var(--text);
+  }
+  .def-tab.filled {
+    border-color: var(--border2);
+    color: var(--text);
+  }
+  .def-tab.filled.active {
+    border-color: var(--accent);
+    background: rgba(124,106,247,0.12);
+  }
+  .def-tab-name {
+    font-weight: 500;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .def-tab-types {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+    margin-top: 3px;
+  }
+  .def-tab-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+  .def-tab-close {
+    position: absolute;
+    top: 3px; right: 4px;
+    font-size: 10px;
+    color: var(--text3);
+    cursor: pointer;
+    line-height: 1;
+  }
+  .def-tab-close:hover { color: var(--red); }
+  .def-tab-empty {
+    border-style: dashed;
+    color: var(--text3);
+    font-size: 20px;
+    line-height: 1;
+    padding: 9px 10px;
+  }
+  .def-tab-empty:hover { color: var(--text2); }
+
+  /* ── Speed comparison ────────────────────────────────────────────────── */
+  .speed-compare {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 0 5px;
+    border-top: 0.5px solid rgba(255,255,255,0.05);
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--text2);
+  }
+  .speed-compare .spd-val {
+    font-weight: 600;
+    font-size: 12px;
+  }
+  .spd-faster { color: var(--green); }
+  .spd-slower { color: var(--red); }
+  .spd-tied   { color: var(--yellow); }
+  .spd-icon { font-size: 13px; }
+
+  /* ── Type weakness overlay ───────────────────────────────────────────── */
+  #weaknessOverlay {
+    display: none;
+    margin-top: 1rem;
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+  }
+  #weaknessOverlay.visible { display: block; }
+
+  .overlay-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 14px;
+  }
+
+  .weakness-grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 5px;
+  }
+  @media (max-width: 600px) {
+    .weakness-grid { grid-template-columns: repeat(6, 1fr); }
+  }
+
+  .wk-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 4px;
+    border-radius: var(--radius-sm);
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    transition: background 0.15s;
+  }
+  .wk-cell-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: capitalize;
+    color: var(--text3);
+  }
+  .wk-pips {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: center;
+  }
+  .wk-pip-row {
+    display: flex;
+    gap: 2px;
+  }
+  .wk-pip {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    background: var(--border2);
+  }
+  .wk-pip.weak2x  { background: var(--orange); }
+  .wk-pip.weak4x  { background: var(--red); }
+  .wk-pip.immune  { background: var(--bg); border: 0.5px solid var(--border2); }
+  .wk-pip.resist  { background: var(--green); opacity: 0.6; }
+
+  .wk-count {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text2);
+  }
+  .wk-count.danger1 { color: var(--yellow); }
+  .wk-count.danger2 { color: var(--orange); }
+  .wk-count.danger3 { color: var(--red); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">⚡</div>
+    <div>
+      <h1>Pokémon Damage Calculator</h1>
+      <div class="tagline">Paste real PokéPaste sets — base stats &amp; types fetched live from PokéAPI</div>
+    </div>
+  </header>
+
+  <!-- <div class="two-col"> -->
+
+    <!-- META DATABASE -->
+    <div class="card">
+      <div class="card-label">Meta database — attackers</div>
+      <textarea id="metaInput" placeholder="Paste one or more PokéPaste sets here, separated by a blank line.
+
+Flutter Mane @ Choice Specs
+Ability: Protosynthesis
+Level: 50
+EVs: 252 SpA / 4 SpD / 252 Spe
+Timid Nature
+- Moonblast
+- Shadow Ball
+- Psyshock
+- Dazzling Gleam
+
+Iron Hands @ Assault Vest
+Ability: Quark Drive
+Level: 50
+EVs: 252 HP / 252 Atk / 4 SpD
+Adamant Nature
+- Close Combat
+- Wild Charge
+- Drain Punch
+- Fake Out"></textarea>
+
+      <div class="hint">
+        Copy sets from
+        <a href="https://pikalytics.com" target="_blank">Pikalytics</a>,
+        <a href="https://pokepast.es" target="_blank">pokepast.es</a>, or
+        <a href="https://play.pokemonshowdown.com" target="_blank">Showdown</a>.
+        Separate multiple Pokémon with a blank line.
+        Stats and types are fetched automatically from PokéAPI.
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-success" onclick="loadMeta()">Load meta</button>
+        <button onclick="loadMetaExample()">Load example</button>
+        <div class="spinner" id="metaSpinner"></div>
+        <span id="metaStatus" style="font-size:12px;color:var(--text2)"></span>
+      </div>
+      <div id="metaError" class="error-msg"></div>
+      <div id="metaChips" class="meta-chips"></div>
+    </div>
+
+    <!-- DEFENDER -->
+    <div class="card">
+      <div class="card-label">Your Pokémon — defender</div>
+      <textarea id="defenderInput" placeholder="Garchomp @ Rocky Helmet
+Ability: Rough Skin
+Level: 50
+EVs: 252 HP / 4 Atk / 252 Def
+Impish Nature
+- Earthquake
+- Dragon Tail
+- Stealth Rock
+- Fire Blast"></textarea>
+
+      <div id="defenderInfo" class="info-box"></div>
+      <div id="defenderError" class="error-msg"></div>
+
+      <div class="btn-row">
+        <button onclick="loadDefenderExample()">Load example</button>
+        <button onclick="clearAll()">Clear all</button>
+      </div>
+    </div>
+
+    <!-- Type weakness overlay (visible when all 6 tabs filled) -->
+    <div id="weaknessOverlay">
+      <div class="overlay-title">Team Type Weakness Overlap</div>
+      <div class="weakness-grid" id="weaknessGrid"></div>
+    </div>
+  <!-- </div> -->
+
+  <!-- CALCULATE BAR -->
+  <div class="calc-bar">
+    <div style="font-size:13px;color:var(--text2)" id="readyHint">Load a meta and paste a defender, then calculate.</div>
+    <button class="btn-primary" onclick="calculate()" id="calcBtn">Calculate damage</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="resultsSection" style="display:none">
+    <!-- Defender slot tabs (up to 6) -->
+    <div class="defender-tabs-row" id="defenderTabsRow">
+      <div class="def-tab def-tab-empty" title="Slot 1" onclick="selectDefenderTab(0)" id="defTab-0">＋</div>
+      <div class="def-tab def-tab-empty" title="Slot 2" onclick="selectDefenderTab(1)" id="defTab-1">＋</div>
+      <div class="def-tab def-tab-empty" title="Slot 3" onclick="selectDefenderTab(2)" id="defTab-2">＋</div>
+      <div class="def-tab def-tab-empty" title="Slot 4" onclick="selectDefenderTab(3)" id="defTab-3">＋</div>
+      <div class="def-tab def-tab-empty" title="Slot 5" onclick="selectDefenderTab(4)" id="defTab-4">＋</div>
+      <div class="def-tab def-tab-empty" title="Slot 6" onclick="selectDefenderTab(5)" id="defTab-5">＋</div>
+    </div>
+
+    <div class="results-header">
+      <div class="sort-row">
+        <label>Sort by:</label>
+        <select id="sortMode" onchange="renderResults()">
+          <option value="damage">Highest damage</option>
+          <option value="name">Name A–Z</option>
+          <option value="order">Paste order</option>
+        </select>
+      </div>
+      <div id="defenderTag" class="defender-tag"></div>
+    </div>
+
+    
+    <div class="results-controls">
+      <div class="control-group">
+        <label>Weather</label>
+        <select id="weatherMode" onchange="renderResults()">
+          <option value="none">None</option>
+          <option value="sun">Sun</option>
+          <option value="rain">Rain</option>
+          <option value="sand">Sand</option>
+          <option value="snow">Snow</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>Atk / SpA Stage</label>
+        <select id="offenseStage" onchange="renderResults()">
+          <option value="-6">-6</option><option value="-5">-5</option>
+          <option value="-4">-4</option><option value="-3">-3</option>
+          <option value="-2">-2</option><option value="-1">-1</option>
+          <option value="0" selected>0</option>
+          <option value="1">+1</option><option value="2">+2</option>
+          <option value="3">+3</option><option value="4">+4</option>
+          <option value="5">+5</option><option value="6">+6</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>Def / SpD Stage</label>
+        <select id="defenseStage" onchange="renderResults()">
+          <option value="-6">-6</option><option value="-5">-5</option>
+          <option value="-4">-4</option><option value="-3">-3</option>
+          <option value="-2">-2</option><option value="-1">-1</option>
+          <option value="0" selected>0</option>
+          <option value="1">+1</option><option value="2">+2</option>
+          <option value="3">+3</option><option value="4">+4</option>
+          <option value="5">+5</option><option value="6">+6</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>Terrain / Screen</label>
+        <select id="terrainMode" onchange="renderResults()">
+          <option value="none">None</option>
+          <option value="psychic">Psychic Terrain</option>
+          <option value="auroraveil">Aurora Veil (×0.5)</option>
+          <option value="reflect">Reflect (×0.5 phys)</option>
+          <option value="lightscreen">Light Screen (×0.5 spec)</option>
+        </select>
+      </div>
+
+      <label class="checkbox-toggle">
+        <input type="checkbox" id="maxRollMode" onchange="renderResults()">
+        <span>Show max rolls</span>
+      </label>
+
+      <label class="checkbox-toggle">
+        <input type="checkbox" id="attackingMode" onchange="renderResults()">
+        <span>Attacking mode</span>
+      </label>
+
+      <label class="checkbox-toggle">
+        <input type="checkbox" id="maxInvestMode" onchange="renderResults()">
+        <span>Max invest override</span>
+      </label>
+
+      <div class="control-group" style="flex:1;min-width:140px;">
+        <label>Filter results</label>
+        <input type="text" id="searchBar" placeholder="Search Pokémon…" oninput="renderResults()"
+          style="padding:5px 8px;font-size:12px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;width:100%;">
+      </div>
+    </div>
+
+
+    <div class="legend">
+      <div class="leg-item"><div class="leg-swatch" style="background:var(--green)"></div>&lt;30% HP</div>
+      <div class="leg-item"><div class="leg-swatch" style="background:var(--yellow)"></div>30–60%</div>
+      <div class="leg-item"><div class="leg-swatch" style="background:var(--orange)"></div>60–100%</div>
+      <div class="leg-item"><div class="leg-swatch" style="background:var(--red)"></div>OHKO+</div>
+    </div>
+
+    <div class="card" style="padding: 0.5rem 1.25rem;">
+      <div id="resultsList"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── Nature multipliers ───────────────────────────────────────────────────────
+const NATURES = {
+  adamant:{atk:1.1,spa:0.9}, modest:{spa:1.1,atk:0.9},
+  jolly:{spe:1.1,spa:0.9},   timid:{spe:1.1,atk:0.9},
+  bold:{def:1.1,atk:0.9},    calm:{spd:1.1,atk:0.9},
+  careful:{spd:1.1,spa:0.9}, impish:{def:1.1,spa:0.9},
+  naughty:{atk:1.1,spd:0.9}, mild:{spa:1.1,def:0.9},
+  rash:{spa:1.1,spd:0.9},    hasty:{spe:1.1,def:0.9},
+  naive:{spe:1.1,spd:0.9},   lonely:{atk:1.1,def:0.9},
+  lax:{def:1.1,spd:0.9},     gentle:{spd:1.1,def:0.9},
+  sassy:{spd:1.1,spe:0.9},   quiet:{spa:1.1,spe:0.9},
+  brave:{atk:1.1,spe:0.9},   relaxed:{def:1.1,spe:0.9},
+  hardy:{}, serious:{}, bashful:{}, quirky:{}, docile:{}
+};
+
+// ─── Type effectiveness ───────────────────────────────────────────────────────
+const TYPE_CHART = {
+  normal:   {rock:0.5,ghost:0,steel:0.5},
+  fire:     {fire:0.5,water:0.5,rock:0.5,dragon:0.5,grass:2,ice:2,bug:2,steel:2},
+  water:    {fire:2,water:0.5,grass:0.5,dragon:0.5,ground:2,rock:2},
+  grass:    {fire:0.5,water:2,grass:0.5,poison:0.5,flying:0.5,bug:0.5,dragon:0.5,steel:0.5,ground:2,rock:2},
+  electric: {electric:0.5,grass:0.5,dragon:0.5,ground:0,flying:2,water:2},
+  ice:      {fire:0.5,water:0.5,ice:0.5,steel:0.5,grass:2,ground:2,flying:2,dragon:2},
+  fighting: {normal:2,rock:2,steel:2,ice:2,dark:2,poison:0.5,flying:0.5,psychic:0.5,bug:0.5,fairy:0.5,ghost:0},
+  poison:   {grass:2,fairy:2,poison:0.5,ground:0.5,rock:0.5,ghost:0.5,steel:0},
+  ground:   {fire:2,electric:2,poison:2,rock:2,steel:2,grass:0.5,bug:0.5,flying:0,water:0.5},
+  flying:   {grass:2,fighting:2,bug:2,electric:0.5,rock:0.5,steel:0.5},
+  psychic:  {fighting:2,poison:2,psychic:0.5,steel:0.5,dark:0,ghost:0},
+  bug:      {grass:2,psychic:2,dark:2,fire:0.5,fighting:0.5,flying:0.5,ghost:0.5,steel:0.5,fairy:0.5,poison:0.5},
+  rock:     {fire:2,ice:2,flying:2,bug:2,fighting:0.5,ground:0.5,steel:0.5},
+  ghost:    {ghost:2,psychic:2,dark:0.5,normal:0,fairy:0.5},
+  dragon:   {dragon:2,steel:0.5,fairy:0},
+  dark:     {ghost:2,psychic:2,fighting:0.5,dark:0.5,fairy:0.5},
+  steel:    {ice:2,rock:2,fairy:2,fire:0.5,water:0.5,electric:0.5,steel:0.5},
+  fairy:    {fighting:2,dragon:2,dark:2,fire:0.5,poison:0.5,steel:0.5}
+};
+
+function typeEff(moveType, defTypes) {
+  let e = 1;
+  for (const t of defTypes) {
+    const r = TYPE_CHART[moveType] || {};
+    if (r[t] !== undefined) e *= r[t];
+  }
+  return e;
+}
+
+// ─── Stat formulae ────────────────────────────────────────────────────────────
+function calcStat(base, ev=0, iv=31, level=50, nature=1) {
+//   return Math.floor((Math.floor((2*base+iv+Math.floor(ev/4))*level/100)+5)*nature);
+  return Math.floor((base+20+ev)*nature)  
+}
+function calcHP(base, ev=0, iv=31, level=50) {
+//   return Math.floor((2*base+iv+Math.floor(ev/4))*level/100)+level+10;
+  return base+75+ev
+}
+
+function statKey(s) {
+  const m = {
+    'hp':'hp','atk':'atk','def':'def','spa':'spa','spd':'spd','spe':'spe',
+    'attack':'atk','defense':'def','specialattack':'spa','specialdefense':'spd','speed':'spe',
+    'spatk':'spa','spdef':'spd','sp.atk':'spa','sp.def':'spd'
+  };
+  return m[s.toLowerCase().replace(/[\s.]/g,'')] || null;
+}
+
+// ─── PokéAPI slug mapping for tricky names ────────────────────────────────────
+const SLUG_MAP = {
+  'flutter mane':'flutter-mane',   'iron hands':'iron-hands',
+  'iron bundle':'iron-bundle',     'iron valiant':'iron-valiant',
+  'iron jugulis':'iron-jugulis',   'iron moth':'iron-moth',
+  'iron thorns':'iron-thorns',     'iron leaves':'iron-leaves',
+  'iron boulder':'iron-boulder',   'iron crown':'iron-crown',
+  'chi-yu':'chi-yu',               'ting-lu':'ting-lu',
+  'chien-pao':'chien-pao',         'wo-chien':'wo-chien',
+  'calyrex-shadow':'calyrex-shadow-rider',
+  'calyrex shadow':'calyrex-shadow-rider',
+  'calyrex-ice':'calyrex-ice-rider',
+  'calyrex ice':'calyrex-ice-rider',
+  'urshifu':'urshifu-single-strike',
+  'urshifu (single strike)':'urshifu-single-strike',
+  'urshifu (rapid strike)':'urshifu-rapid-strike',
+  'urshifu-rapid':'urshifu-rapid-strike',
+  'landorus-t':'landorus-therian',
+  'landorus (therian)':'landorus-therian',
+  'tornadus-t':'tornadus-therian',
+  'tornadus (therian)':'tornadus-therian',
+  'thundurus-t':'thundurus-therian',
+  'thundurus (therian)':'thundurus-therian',
+  'rotom-wash':'rotom-wash',       'rotom-heat':'rotom-heat',
+  'rotom-fan':'rotom-fan',         'rotom-frost':'rotom-frost',
+  'rotom-mow':'rotom-mow',
+  'indeedee-f':'indeedee-female',  'indeedee-m':'indeedee-male',
+  'indeedee (f)':'indeedee-female','indeedee (m)':'indeedee-male',
+  'ogerpon':'ogerpon-teal-mask',
+  'ogerpon-hearthflame':'ogerpon-hearthflame-mask',
+  'ogerpon-wellspring':'ogerpon-wellspring-mask',
+  'ogerpon-cornerstone':'ogerpon-cornerstone-mask',
+  'terapagos':'terapagos-normal',
+  'palafin':'palafin-hero',
+  'annihilape':'annihilape',
+  'great tusk':'great-tusk',       'scream tail':'scream-tail',
+  'brute bonnet':'brute-bonnet',   'flutter mane':'flutter-mane',
+  'slither wing':'slither-wing',   'sandy shocks':'sandy-shocks',
+  'roaring moon':'roaring-moon',   'walking wake':'walking-wake',
+  'gouging fire':'gouging-fire',   'raging bolt':'raging-bolt',
+  'maushold':'maushold-family-of-four',   'aegislash':'aegislash-blade',
+  'basculegion':'basculegion-male', 'meowstic':'meowstic-male',
+  'tauros-paldea-aqua':'tauros-paldea-aqua-breed', 'mimikyu':'mimikyu-disguised'
+};
+
+function toSlug(name) {
+  const lower = name.toLowerCase().trim();
+  if (SLUG_MAP[lower]) return SLUG_MAP[lower];
+  return lower.replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+}
+
+// ─── PokéAPI cache + fetchers ─────────────────────────────────────────────────
+const pokemonCache = {};
+const moveCache    = {};
+
+async function fetchPokemonData(slug) {
+  if (pokemonCache[slug]) return pokemonCache[slug];
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${slug}`);
+  if (!res.ok) throw new Error(`PokéAPI returned ${res.status} for "${slug}". Try a different name.`);
+  const data = await res.json();
+
+  const statNames = {
+    'hp':'hp','attack':'atk','defense':'def',
+    'special-attack':'spa','special-defense':'spd','speed':'spe'
+  };
+  const baseStats = {};
+  for (const s of data.stats) {
+    const k = statNames[s.stat.name];
+    if (k) baseStats[k] = s.base_stat;
+  }
+  const types = data.types.map(t => t.type.name);
+  const result = { baseStats, types };
+  pokemonCache[slug] = result;
+  return result;
+}
+
+async function fetchMoveData(moveName) {
+  const slug = moveName.toLowerCase()
+    .replace(/\s+/g,'-')
+    .replace(/[^a-z0-9-]/g,'');
+  if (moveCache[slug]) return moveCache[slug];
+  try {
+    const res = await fetch(`https://pokeapi.co/api/v2/move/${slug}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    // Spread targets in doubles: all-opponents, all-other-pokemon, entire-field, all-pokemon
+    const spreadTargets = new Set(['all-opponents','all-other-pokemon','entire-field','all-pokemon']);
+    const result = {
+      name: moveName,
+      power: data.power || 0,
+      type: data.type.name,
+      cat: data.damage_class.name === 'physical' ? 'physical' : 'special',
+      isSpread: spreadTargets.has(data.target.name),
+    };
+    moveCache[slug] = result;
+    return result;
+  } catch { return null; }
+}
+
+// ─── PokéPaste parser (single block) ─────────────────────────────────────────
+function parseSinglePaste(text) {
+  const lines = text.trim().split('\n').map(l=>l.trim()).filter(Boolean);
+  if (!lines.length) throw new Error("Empty block.");
+
+  const m1 = lines[0].match(/^(.+?)(?:\s*@\s*(.+))?$/);
+  if (!m1) throw new Error("Cannot parse species name from: " + lines[0]);
+  let speciesRaw = m1[1].trim().replace(/\s*\([MF]\)\s*$/,'').trim();
+  const item = m1[2] || null;
+
+  let ability='', level=50, nature='hardy';
+  let evs = {hp:0,atk:0,def:0,spa:0,spd:0,spe:0};
+  let ivs = {hp:31,atk:31,def:31,spa:31,spd:31,spe:31};
+  const moves = [];
+
+  for (const line of lines.slice(1)) {
+    if (line.startsWith('-')) {
+      const mv = line.replace(/^-\s*/,'').trim();
+      if (mv) moves.push(mv);
+      continue;
+    }
+    if (line.startsWith('Ability:'))  { ability=line.replace('Ability:','').trim(); continue; }
+    if (line.startsWith('Level:'))    { level=parseInt(line.replace('Level:','').trim())||50; continue; }
+    if (line.match(/Nature$/))        { nature=line.replace(/\s*Nature$/,'').trim().toLowerCase(); continue; }
+    if (line.startsWith('EVs:')) {
+      for (const p of line.replace('EVs:','').split('/')) {
+        const em = p.trim().match(/(\d+)\s+(\w[\w\s]*)/);
+        if (em) { const k=statKey(em[2].trim()); if(k) evs[k]=parseInt(em[1]); }
+      }
+    }
+    if (line.startsWith('IVs:')) {
+      for (const p of line.replace('IVs:','').split('/')) {
+        const im = p.trim().match(/(\d+)\s+(\w[\w\s]*)/);
+        if (im) { const k=statKey(im[2].trim()); if(k) ivs[k]=parseInt(im[1]); }
+      }
+    }
+  }
+
+  return { speciesRaw, item, ability, level, nature, evs, ivs, moves };
+}
+
+function splitPaste(text) {
+  return text.split(/\n\s*\n/).map(b=>b.trim()).filter(Boolean);
+}
+
+// ─── Meta state ───────────────────────────────────────────────────────────────
+let META_DB = [];
+let lastResults = [];
+// Keys are speciesRaw strings — pins persist across tabs and search
+const pinnedKeys = new Set();
+
+// ─── Defender tab state ───────────────────────────────────────────────────────
+const DEFENDER_SLOTS = [null, null, null, null, null, null]; // up to 6 saved defenders
+let activeDefenderSlot = 0; // which tab is currently shown in results
+
+// Type colour map for tab dots
+const TYPE_COLORS = {
+  fire:'#EF9F27',water:'#85B7EB',grass:'#97C459',electric:'#FAC775',
+  psychic:'#ED93B1',ice:'#85B7EB',dragon:'#AFA9EC',dark:'#B4B2A9',
+  fairy:'#ED93B1',fighting:'#F0997B',flying:'#85B7EB',poison:'#AFA9EC',
+  ground:'#FAC775',rock:'#D3D1C7',bug:'#C0DD97',ghost:'#CECBF6',
+  steel:'#D3D1C7',normal:'#B4B2A9'
+};
+
+function effectiveSpe(pokemon) {
+  // Returns the effective speed stat, applying Choice Scarf x1.5
+  const spe = pokemon.stats ? pokemon.stats.spe : (pokemon.computedSpe || 0);
+  const item = (pokemon.item || '').toLowerCase().replace(/[\s-]/g,'');
+  return item === 'choicescarf' ? Math.floor(spe * 1.5) : spe;
+}
+
+function renderDefenderTabs() {
+  for (let i = 0; i < 6; i++) {
+    const tab = document.getElementById(`defTab-${i}`);
+    const slot = DEFENDER_SLOTS[i];
+    if (!slot) {
+      tab.className = 'def-tab def-tab-empty';
+      tab.innerHTML = '＋';
+      tab.onclick = () => selectDefenderTab(i);
+    } else {
+      const isActive = i === activeDefenderSlot;
+      tab.className = `def-tab filled${isActive ? ' active' : ''}`;
+      const dots = slot.types.map(t =>
+        `<div class="def-tab-dot" style="background:${TYPE_COLORS[t]||'#888'}"></div>`
+      ).join('');
+      tab.innerHTML = `
+        <span class="def-tab-close" onclick="clearDefenderSlot(event,${i})">✕</span>
+        <div class="def-tab-name">${slot.speciesRaw}</div>
+        <div class="def-tab-types">${dots}</div>`;
+      tab.onclick = (e) => { if (!e.target.classList.contains('def-tab-close')) selectDefenderTab(i); };
+    }
+  }
+  updateWeaknessOverlay();
+}
+
+function selectDefenderTab(i) {
+  activeDefenderSlot = i;
+  const slot = DEFENDER_SLOTS[i];
+  if (slot) {
+    // Load this slot's data into the textarea and show results
+    document.getElementById('defenderInput').value = slot._rawText || '';
+    lastResults = slot._lastResults || [];
+    if (lastResults.length) {
+      document.getElementById('defenderTag').textContent = 'Defending: ' + slot.speciesRaw;
+      document.getElementById('defenderInfo').innerHTML =
+        `<b>${slot.speciesRaw}</b> &nbsp;|&nbsp; ` +
+        `Types: ${slot.types.join('/')} &nbsp;|&nbsp; ` +
+        `Level ${slot.level} &nbsp;|&nbsp; ${slot.nature} nature<br>` +
+        `HP: <b>${slot.stats.hp}</b> &nbsp; ` +
+        `Def: <b>${slot.stats.def}</b> &nbsp; ` +
+        `SpD: <b>${slot.stats.spd}</b> &nbsp; ` +
+        `Spe: <b>${slot.stats.spe}</b>${slot.item && (slot.item.toLowerCase().replace(/[\s-]/g,'') === 'choicescarf') ? ` <span style="color:var(--accent2);font-size:10px">(Scarf → ${effectiveSpe(slot)})</span>` : ''}`;
+      document.getElementById('defenderInfo').classList.add('visible');
+      document.getElementById('resultsSection').style.display = 'block';
+      renderResults();
+    }
+  }
+  renderDefenderTabs();
+}
+
+function clearDefenderSlot(e, i) {
+  e.stopPropagation();
+  DEFENDER_SLOTS[i] = null;
+  if (activeDefenderSlot === i) {
+    // Find next filled slot or go to 0
+    const next = DEFENDER_SLOTS.findIndex((s, idx) => s && idx !== i);
+    activeDefenderSlot = next >= 0 ? next : 0;
+    lastResults = DEFENDER_SLOTS[activeDefenderSlot]?._lastResults || [];
+    if (!lastResults.length) {
+      document.getElementById('resultsSection').style.display = 'none';
+      document.getElementById('defenderInfo').classList.remove('visible');
+    } else {
+      renderResults();
+    }
+  }
+  renderDefenderTabs();
+}
+
+function saveCurrentDefenderToSlot(defender, rawText, results) {
+  // Find the first empty slot, or overwrite slot 0 if all full
+  let slot = DEFENDER_SLOTS.findIndex(s => !s);
+  if (slot === -1) slot = 0; // overwrite oldest
+  defender._rawText = rawText;
+  defender._lastResults = results;
+  DEFENDER_SLOTS[slot] = defender;
+  activeDefenderSlot = slot;
+  renderDefenderTabs();
+  return slot;
+}
+
+// ─── Type weakness overlay ────────────────────────────────────────────────────
+const ALL_TYPES = ['normal','fire','water','electric','grass','ice','fighting','poison',
+  'ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
+
+function updateWeaknessOverlay() {
+  const filled = DEFENDER_SLOTS.filter(Boolean);
+  const overlay = document.getElementById('weaknessOverlay');
+  if (filled.length < 6) { overlay.classList.remove('visible'); return; }
+
+  // For each attacking type, compute effectiveness vs each defender
+  const grid = document.getElementById('weaknessGrid');
+  let html = '';
+  for (const atkType of ALL_TYPES) {
+    const effs = filled.map(def => typeEff(atkType, def.types));
+    const weakCount   = effs.filter(e => e > 1).length;
+    const immuneCount = effs.filter(e => e === 0).length;
+    const resistCount = effs.filter(e => e > 0 && e < 1).length;
+
+    const countClass = weakCount >= 4 ? 'danger3' : weakCount >= 3 ? 'danger2' : weakCount >= 2 ? 'danger1' : '';
+
+    // Build pip grid (2×3)
+    const pipHtml = effs.map(e => {
+      const cls = e === 0 ? 'immune' : e >= 2 ? 'weak2x' : e > 1 ? 'weak2x' : e < 1 ? 'resist' : '';
+      return `<div class="wk-pip${cls ? ' '+cls : ''}"></div>`;
+    });
+    // Arrange as 2 rows of 3
+    const row1 = pipHtml.slice(0,3).join('');
+    const row2 = pipHtml.slice(3,6).join('');
+
+    html += `
+      <div class="wk-cell" title="${atkType}: ${weakCount} weak, ${resistCount} resist, ${immuneCount} immune">
+        <div class="wk-pips">
+          <div class="wk-pip-row">${row1}</div>
+          <div class="wk-pip-row">${row2}</div>
+        </div>
+        <div class="wk-cell-label" style="color:${TYPE_COLORS[atkType]||'var(--text3)'}">${atkType.slice(0,3)}</div>
+        <div class="wk-count ${countClass}">${weakCount > 0 ? weakCount+'×' : immuneCount ? '✦' : '—'}</div>
+      </div>`;
+  }
+  grid.innerHTML = html;
+  overlay.classList.add('visible');
+}
+
+function updateChips() {
+  document.getElementById('metaChips').innerHTML = META_DB.map(p => {
+    const cls  = p.loaded ? 'loaded' : p.failed ? 'failed' : 'loading';
+    const icon = p.loaded ? '✓' : p.failed ? '✗' : '…';
+    return `<span class="chip ${cls}">${icon} ${p.speciesRaw}</span>`;
+  }).join('');
+}
+
+async function loadMeta() {
+  const text = document.getElementById('metaInput').value.trim();
+  document.getElementById('metaError').textContent = '';
+  document.getElementById('metaChips').innerHTML = '';
+  META_DB = [];
+
+  if (!text) {
+    document.getElementById('metaError').textContent = 'Paste at least one PokéPaste set.';
+    return;
+  }
+
+  const blocks = splitPaste(text);
+  if (!blocks.length) {
+    document.getElementById('metaError').textContent = 'No valid blocks found.';
+    return;
+  }
+
+  const spinner = document.getElementById('metaSpinner');
+  const status  = document.getElementById('metaStatus');
+  spinner.classList.add('active');
+  status.textContent = `Fetching ${blocks.length} Pokémon…`;
+
+  // Parse all blocks immediately so chips appear
+  for (const block of blocks) {
+    try {
+      const p = parseSinglePaste(block);
+      META_DB.push({ ...p, loaded:false, failed:false, types:[], baseStats:{}, resolvedMoves:[] });
+    } catch(e) {
+      META_DB.push({
+        speciesRaw: block.split('\n')[0].substring(0,24),
+        loaded:false, failed:true, error:e.message,
+        types:[], baseStats:{}, resolvedMoves:[], moves:[], evs:{}, ivs:{}, nature:'hardy'
+      });
+    }
+  }
+  updateChips();
+
+  // Fetch PokéAPI data concurrently
+  await Promise.all(META_DB.map(async (pokemon) => {
+    if (pokemon.failed) return;
+    try {
+      const slug = toSlug(pokemon.speciesRaw);
+      const { baseStats, types } = await fetchPokemonData(slug);
+      pokemon.baseStats = baseStats;
+      pokemon.types = types;
+
+      // Fetch all moves concurrently, keep only damaging ones
+      const moveResults = await Promise.all(pokemon.moves.map(m => fetchMoveData(m)));
+      pokemon.resolvedMoves = moveResults.filter(m => m && m.power > 0);
+      pokemon.loaded = true;
+    } catch(e) {
+      pokemon.failed = true;
+      pokemon.error = e.message;
+    }
+    updateChips();
+  }));
+
+  spinner.classList.remove('active');
+  const ok   = META_DB.filter(p => p.loaded).length;
+  const fail = META_DB.filter(p => p.failed).length;
+  status.textContent = `${ok} loaded${fail ? `, ${fail} failed` : ''}.`;
+
+  if (fail) {
+    const failNames = META_DB.filter(p=>p.failed).map(p=>`${p.speciesRaw}: ${p.error}`).join(' | ');
+    document.getElementById('metaError').textContent = 'Failed: ' + failNames;
+  }
+
+  updateReadyHint();
+}
+
+// ─── Defender parse + API fetch ───────────────────────────────────────────────
+async function parseDefender(text) {
+  const p = parseSinglePaste(text);
+  const slug = toSlug(p.speciesRaw);
+  const { baseStats, types } = await fetchPokemonData(slug);
+  p.baseStats = baseStats;
+  p.types = types;
+
+  const nat = NATURES[p.nature] || {};
+  const nm = s => nat[s] || 1;
+
+  p.stats = {
+    hp:  calcHP(baseStats.hp,  p.evs.hp,  p.ivs.hp,  p.level),
+    atk: calcStat(baseStats.atk, p.evs.atk, p.ivs.atk, p.level, nm('atk')),
+    def: calcStat(baseStats.def, p.evs.def, p.ivs.def, p.level, nm('def')),
+    spa: calcStat(baseStats.spa, p.evs.spa, p.ivs.spa, p.level, nm('spa')),
+    spd: calcStat(baseStats.spd, p.evs.spd, p.ivs.spd, p.level, nm('spd')),
+    spe: calcStat(baseStats.spe, p.evs.spe, p.ivs.spe, p.level, nm('spe'))
+  };
+  return p;
+}
+
+// ─── Damage formula (Gen 8/9 — minimum roll ×0.85) ───────────────────────────
+function damageFormula(level, power, atk, def, eff=1, stab=1) {
+  const base = Math.floor(Math.floor(Math.floor(2*level/5+2)*power*atk/def)/50)+2;
+  return Math.floor(base * eff * stab * 0.85);
+}
+
+// ─── Ability modifiers ────────────────────────────────────────────────────────
+// Returns { stabBonus, atkMul, powerMul, typeOverride }
+// typeOverride: if set, replace move type with this value (and treat as STAB)
+function getAbilityMods(ability, moveType, atkTypes, moveName) {
+  const ab = (ability || '').toLowerCase().replace(/[\s-]/g,'');
+  const mn = (moveName || '').toLowerCase();
+  let stabBonus = atkTypes.includes(moveType) ? 1.5 : 1;
+  let atkMul = 1;
+  let powerMul = 1;
+  let typeOverride = null; // for type-changing abilities
+
+  // STAB overrides
+  if (ab === 'adaptability' && atkTypes.includes(moveType)) stabBonus = 2;
+
+  // Protean / Libero: always STAB on every move
+  if (ab === 'protean' || ab === 'libero') stabBonus = 1.5;
+
+  // Offense boosts (flat atk/spa multiplier on the stat)
+  if (ab === 'hugepower' || ab === 'purepower') atkMul = 2;
+  if (ab === 'gorillactactics') atkMul = 1.5;
+  if (ab === 'transistor' && moveType === 'electric') atkMul = 1.5;
+  if (ab === 'dragonsmaw' && moveType === 'dragon') atkMul = 1.5;
+  if (ab === 'hadronengine' && moveType === 'electric') atkMul = 1.3333;
+  if (ab === 'orichalcumpulse' && moveType === 'fire') atkMul = 1.3333;
+  if (ab === 'swordofruin') atkMul = 1; // def drop on target, handled separately
+  if (ab === 'tabletsofruin') atkMul = 1;
+
+  // Aura abilities (applied as power multiplier)
+  if (ab === 'fairyaura' && moveType === 'fairy') powerMul = 4/3;
+  if (ab === 'darkaura' && moveType === 'dark') powerMul = 4/3;
+
+  // Type-changing abilities (normal moves become another type + 1.2× power boost)
+  if (moveType === 'normal') {
+    if (ab === 'pixilate')   { typeOverride = 'fairy';    powerMul = 1.2; }
+    if (ab === 'refrigerate'){ typeOverride = 'ice';      powerMul = 1.2; }
+    if (ab === 'aerilate')   { typeOverride = 'flying';   powerMul = 1.2; }
+    if (ab === 'galvanize')  { typeOverride = 'electric'; powerMul = 1.2; }
+    if (ab === 'normalize')  { typeOverride = 'normal'; }
+    // Liquid Voice: sound-based moves become water
+    const soundMoves = ['hyper voice','boomburst','disarming voice','echoed voice',
+      'round','snore','sparkling aria','overdrive','noble roar','relic song',
+      'bug buzz','chatter','clanging scales','clangorous soul','torch song',
+      'alluring voice','psychic noise'];
+    if (ab === 'liquidvoice' && soundMoves.some(s => mn.includes(s.split(' ')[0]))) {
+      typeOverride = 'water'; powerMul = 1;
+    }
+    // Dragonize (fan-made/regional): normal → dragon + 1.2×
+    if (ab === 'dragonize') { typeOverride = 'dragon'; powerMul = 1.2; }
+  }
+
+  // Move-type-specific boosts from non-changing abilities
+  if (ab === 'toughclaws') powerMul = Math.max(powerMul, 1.3); // contact moves — refined per-move
+  if (ab === 'neuroforce') powerMul = Math.max(powerMul, 1.25); // super effective — refined per-move
+  // Note: Mega Launcher handled entirely in getAbilityMovePowerMul (pulse-move list check)
+
+  return { stabBonus, atkMul, powerMul, typeOverride };
+}
+
+// Per-move power adjustments for specific abilities (refinements over the broad getAbilityMods values)
+function getAbilityMovePowerMul(ability, move, eff) {
+  const ab = (ability || '').toLowerCase().replace(/[\s-]/g,'');
+  const mn = move.name.toLowerCase();
+
+  if (ab === 'ironfist') {
+    const punchMoves = ['comet punch','dizzy punch','drain punch','dynamic punch','fire punch',
+      'focus punch','hammer arm','ice punch','mach punch','mega punch','meteor mash',
+      'plasma fists','power-up punch','shadow punch','sky uppercut','surging strikes',
+      'thunder punch','wicked blow','ice spinner','bullet punch'];
+    if (punchMoves.some(p => mn.includes(p.split(' ')[0]))) return 1.2;
+  }
+  if (ab === 'technician' && move.power > 0 && move.power <= 60) return 1.5;
+  if (ab === 'neuroforce' && eff > 1) return 1.25;
+  if (ab === 'toughclaws') {
+    const nonContact = ['earthquake','magnitude','rock slide','rock blast','icicle spear',
+      'pin missile','bone rush','bullet seed','heat wave','discharge','lava plume',
+      'sludge wave','surf','blizzard','icy wind'];
+    if (move.cat === 'physical' && !nonContact.some(n => mn.includes(n.split(' ')[0]))) return 1.3;
+    return 1; // override the broad 1.3 for non-contact
+  }
+  if (ab === 'reckless') {
+    const recoilMoves = ['brave bird','double-edge','flare blitz','head smash',
+      'high jump kick','jump kick','light of ruin','head charge','take down',
+      'volt tackle','wild charge','wood hammer','submission','chloroblast'];
+    if (recoilMoves.some(n => mn.includes(n.split(' ')[0]))) return 1.2;
+  }
+  if (ab === 'sheerforce') {
+    const sfMoves = ['air slash','blaze kick','body slam','bounce','bulldoze','charge beam',
+      'crunch','dark pulse','discharge','dragon rush','earth power','energy ball',
+      'extrasensory','fire blast','flash cannon','flamethrower','focus blast',
+      'force palm','gunk shot','heat wave','hurricane','hyper voice','ice beam',
+      'iron head','lava plume','moonblast','muddy water','needle arm','poison jab',
+      'power gem','psychic','rock slide','shadow ball','sludge bomb','sludge wave',
+      'spark','steel wing','thunder','thunderbolt','tri attack','twister',
+      'water pulse','zen headbutt','dazzling gleam','dragon darts'];
+    if (sfMoves.some(n => mn.includes(n.split(' ')[0]))) return 1.3;
+  }
+  if (ab === 'strongjaw') {
+    const biteMoves = ['bite','crunch','fire fang','ice fang','thunder fang','poison fang',
+      'psychic fangs','hyper fang','fishious rend','jaw lock'];
+    if (biteMoves.some(b => mn.includes(b.split(' ')[0]))) return 1.5;
+  }
+  if (ab === 'megalauncher') {
+    // Exact pulse move names only — Water Spout is NOT a pulse move
+    const pulseMoves = new Set(['aura sphere','dark pulse','dragon pulse','heal pulse',
+      'origin pulse','oblivion wing','water pulse','terrain pulse','octazooka',
+      'bubble beam','bone rush']); // bubble beam is boosted in some games
+    if (pulseMoves.has(mn)) return 1.5;
+  }
+  return 1;
+}
+
+// ─── Item modifiers ───────────────────────────────────────────────────────────
+function getItemMods(item, moveType, moveCat) {
+  if (!item) return { atkMul: 1, powerMul: 1, defMul: 1 };
+  const it = item.toLowerCase().replace(/[\s-]/g,'');
+  let atkMul = 1, powerMul = 1, defMul = 1;
+
+  // Type-boosting items (power ×1.2)
+  const typePlates = {
+    'flameplate':'fire','splashplate':'water','meadowplate':'grass',
+    'zapplate':'electric','icicleplate':'ice','fistplate':'fighting',
+    'toxicplate':'poison','earthplate':'ground','skyplate':'flying',
+    'mindplate':'psychic','insectplate':'bug','stoneplate':'rock',
+    'spookyplate':'ghost','dracoplate':'dragon','dreadplate':'dark',
+    'ironplate':'steel','pixieplate':'fairy',
+    // Gems: same types, ×1.3 one-time (approximate as 1.3)
+    // Incenses / type-boosting items ×1.2
+    'charcoal':'fire','mysticwater':'water','miracleseed':'grass',
+    'magnet':'electric','nevermeltice':'ice','blackbelt':'fighting',
+    'poisonbarb':'poison','softsand':'ground','sharpbeak':'flying',
+    'twistedspoon':'psychic','silverpowder':'bug','hardstone':'rock',
+    'spelltag':'ghost','dragonfang':'dragon','blackglasses':'dark',
+    'metalcoat':'steel','fairyfeather':'fairy',
+    'seaincense':'water','laxincense':'normal','roseincense':'grass',
+    'pureincense':'normal','rockincense':'rock','oddincense':'psychic',
+    'waveincense':'water','fullincense':'normal',
+  };
+  for (const [k, t] of Object.entries(typePlates)) {
+    if (it.includes(k) && moveType === t) { powerMul = 1.2; break; }
+  }
+
+  // Choice items
+  if (it === 'choiceband' && moveCat === 'physical') atkMul = 1.5;
+  if (it === 'choicespecs' && moveCat === 'special')  atkMul = 1.5;
+  // Choice Scarf — speed only (handled separately in speed compare)
+
+  // Life Orb
+  if (it === 'lifeorb') powerMul = Math.max(powerMul, 1.3);
+
+  // Assault Vest — special defense boost on defender (not attacker)
+  // handled separately when computing defender stats
+
+  // Expert Belt — super effective only (handled per-move)
+  // Light Ball (Pikachu)
+  if (it === 'lightball') atkMul = 2;
+  // Thick Club (Cubone/Marowak)
+  if (it === 'thickclub') atkMul = 2;
+  // Deep Sea Tooth (Clamperl)
+  if (it === 'deepseaooth') atkMul = 2;
+
+  // Silk Scarf
+  if (it === 'silkscarf' && moveType === 'normal') powerMul = Math.max(powerMul, 1.2);
+
+  return { atkMul, powerMul, defMul };
+}
+
+function getItemPerMoveMul(item, moveType, eff) {
+  if (!item) return 1;
+  const it = item.toLowerCase().replace(/[\s-]/g,'');
+  if (it === 'expertbelt' && eff > 1) return 1.2;
+  // Gems: ×1.5 for matching type (one-use but we approximate as always active)
+  const gemMap = {
+    'firegem':'fire','watergem':'water','grassgem':'grass','electricgem':'electric',
+    'icegem':'ice','fightinggem':'fighting','poisongem':'poison','groundgem':'ground',
+    'flyinggem':'flying','psychicgem':'psychic','buggem':'bug','rockgem':'rock',
+    'ghostgem':'ghost','dragongem':'dragon','darkgem':'dark','steelgem':'steel',
+    'fairygem':'fairy','normalgem':'normal',
+  };
+  for (const [k, t] of Object.entries(gemMap)) {
+    if (it === k && moveType === t) return 1.5;
+  }
+  return 1;
+}
+
+// Ruin abilities: reduce the corresponding defensive stat of ALL Pokémon on the field
+// We apply them as a 0.75 multiplier on the defender's stat when the attacker has the ability
+function getDefenderRuinDebuff(attackerAbility, moveCat) {
+  const ab = (attackerAbility || '').toLowerCase().replace(/[\s-]/g,'');
+  if (ab === 'swordofruin' && moveCat === 'physical') return 0.75;   // lowers Def
+  if (ab === 'tabletsofruin' && moveCat === 'special') return 0.75;  // lowers SpD
+  return 1;
+}
+
+
+
+function stageMultiplier(stage) {
+  stage = Number(stage);
+  return stage >= 0 ? (2 + stage) / 2 : 2 / (2 + Math.abs(stage));
+}
+
+function applyWeatherModifier(moveType, weather) {
+  if (weather === 'sun') {
+    if (moveType === 'fire') return 1.5;
+    if (moveType === 'water') return 0.5;
+  }
+  if (weather === 'rain') {
+    if (moveType === 'water') return 1.5;
+    if (moveType === 'fire') return 0.5;
+  }
+  return 1;
+}
+
+// Weather Ball doubles power in weather and changes type
+function weatherBallType(weather) {
+  if (weather === 'sun')  return 'fire';
+  if (weather === 'rain') return 'water';
+  if (weather === 'sand') return 'rock';
+  if (weather === 'snow') return 'ice';
+  return 'normal';
+}
+
+// Terrain / screen defense multiplier for a given move category
+function applyTerrainScreenMul(moveCat, terrain) {
+  if (!terrain || terrain === 'none') return 1;
+  if (terrain === 'auroraveil') return 2732/4096;   // ≈ 0.6665 (exact game fraction)
+  if (terrain === 'reflect'     && moveCat === 'physical') return 0.5;
+  if (terrain === 'lightscreen' && moveCat === 'special')  return 0.5;
+  return 1;
+}
+
+// Psychic Terrain: Expanding Force becomes spread + 1.5×; grounded targets are protected from priority
+function applyPsychicTerrainPower(moveName, terrain) {
+  if (terrain !== 'psychic') return { powerMul: 1, spreadOverride: false };
+  const mn = (moveName||'').toLowerCase();
+  if (mn.includes('expanding') || mn.includes('force')) {
+    return { powerMul: 1.5, spreadOverride: true };
+  }
+  return { powerMul: 1, spreadOverride: false };
+}
+
+async function calculate() {
+  document.getElementById('defenderError').textContent = '';
+  document.getElementById('defenderInfo').classList.remove('visible');
+
+  const defText = document.getElementById('defenderInput').value.trim();
+  if (!defText) {
+    document.getElementById('defenderError').textContent = 'Paste a defender set first.';
+    return;
+  }
+
+  const loadedMeta = META_DB.filter(p => p.loaded);
+  if (!loadedMeta.length) {
+    document.getElementById('defenderError').textContent = 'Load the meta first (click "Load meta").';
+    return;
+  }
+
+  // Support up to 6 defenders pasted at once
+  const defBlocks = splitPaste(defText);
+  const multiMode = defBlocks.length > 1;
+
+  const btn = document.getElementById('calcBtn');
+  btn.disabled = true;
+  btn.textContent = multiMode ? `Fetching ${defBlocks.length} defenders…` : 'Fetching defender…';
+
+  if (multiMode) {
+    // Import multiple defenders into consecutive tabs
+    const blocksToLoad = defBlocks.slice(0, 6);
+    let anyOk = false;
+    for (let bi = 0; bi < blocksToLoad.length; bi++) {
+      // Find next empty slot
+      let slotIdx = DEFENDER_SLOTS.findIndex(s => !s);
+      if (slotIdx === -1) slotIdx = bi % 6; // wrap if full
+      try {
+        btn.textContent = `Fetching defender ${bi+1}/${blocksToLoad.length}…`;
+        const defender = await parseDefender(blocksToLoad[bi]);
+        const defMoveResults = await Promise.all((defender.moves||[]).map(m => fetchMoveData(m)));
+        defender.resolvedMoves = defMoveResults.filter(m => m && m.power > 0);
+        const results = computeResults(loadedMeta, defender);
+        defender._rawText = blocksToLoad[bi];
+        defender._lastResults = results;
+        DEFENDER_SLOTS[slotIdx] = defender;
+        anyOk = true;
+        if (bi === 0) activeDefenderSlot = slotIdx;
+      } catch(e) {
+        console.warn('Failed to load defender block', bi, e);
+      }
+    }
+    renderDefenderTabs();
+    if (anyOk) {
+      const cur = DEFENDER_SLOTS[activeDefenderSlot];
+      lastResults = cur._lastResults;
+      showDefenderInfo(cur);
+      document.getElementById('resultsSection').style.display = 'block';
+      renderResults();
+    }
+    btn.disabled = false;
+    btn.textContent = 'Calculate damage';
+    return;
+  }
+
+  // Single defender
+  let defender;
+  try {
+    defender = await parseDefender(defText);
+  } catch(e) {
+    document.getElementById('defenderError').textContent = 'Error: ' + e.message;
+    btn.disabled = false; btn.textContent = 'Calculate damage';
+    return;
+  }
+
+  const defMoveResults = await Promise.all((defender.moves||[]).map(m => fetchMoveData(m)));
+  defender.resolvedMoves = defMoveResults.filter(m => m && m.power > 0);
+
+  lastResults = computeResults(loadedMeta, defender);
+  defender._rawText = defText;
+  defender._lastResults = lastResults;
+
+  // Save to tab
+  let slotIdx = DEFENDER_SLOTS.findIndex(s => !s);
+  if (slotIdx === -1) slotIdx = activeDefenderSlot; // overwrite current
+  DEFENDER_SLOTS[slotIdx] = defender;
+  activeDefenderSlot = slotIdx;
+  renderDefenderTabs();
+
+  showDefenderInfo(defender);
+  document.getElementById('resultsSection').style.display = 'block';
+  btn.disabled = false;
+  btn.textContent = 'Calculate damage';
+}
+
+function showDefenderInfo(defender) {
+  const scarfNote = (defender.item||'').toLowerCase().replace(/[\s-]/g,'') === 'choicescarf'
+    ? ` <span style="color:var(--accent2);font-size:10px">(Scarf → ${effectiveSpe(defender)})</span>` : '';
+  document.getElementById('defenderInfo').innerHTML =
+    `<b>${defender.speciesRaw}</b> &nbsp;|&nbsp; ` +
+    `Types: ${defender.types.join('/')} &nbsp;|&nbsp; ` +
+    `Level ${defender.level} &nbsp;|&nbsp; ${defender.nature} nature<br>` +
+    `HP: <b>${defender.stats.hp}</b> &nbsp; ` +
+    `Def: <b>${defender.stats.def}</b> &nbsp; ` +
+    `SpD: <b>${defender.stats.spd}</b> &nbsp; ` +
+    `Spe: <b>${defender.stats.spe}</b>${scarfNote}`;
+  document.getElementById('defenderInfo').classList.add('visible');
+  document.getElementById('defenderTag').textContent = 'Defending: ' + defender.speciesRaw;
+}
+
+function computeResults(loadedMeta, defender) {
+  const results = [];
+  for (const attacker of loadedMeta) {
+    const nat = NATURES[attacker.nature] || {};
+    let best = { dmg: 0, move: null, eff: 1 };
+    const moveBreakdown = [];
+
+    // Pre-compute attacker stats
+    attacker.computedAtk  = calcStat(attacker.baseStats.atk, attacker.evs.atk||0, attacker.ivs.atk||31, 50, nat.atk||1);
+    attacker.computedSpa  = calcStat(attacker.baseStats.spa, attacker.evs.spa||0, attacker.ivs.spa||31, 50, nat.spa||1);
+    attacker.computedDef  = calcStat(attacker.baseStats.def, attacker.evs.def||0, attacker.ivs.def||31, 50, nat.def||1);
+    attacker.computedSpd  = calcStat(attacker.baseStats.spd, attacker.evs.spd||0, attacker.ivs.spd||31, 50, nat.spd||1);
+    attacker.computedHp   = calcHP(attacker.baseStats.hp,   attacker.evs.hp||0,  attacker.ivs.hp||31,  50);
+    attacker.computedSpe  = calcStat(attacker.baseStats.spe, attacker.evs.spe||0, attacker.ivs.spe||31, 50, nat.spe||1);
+
+    for (const move of attacker.resolvedMoves) {
+      const mn = move.name.toLowerCase();
+
+      // ── Resolve effective move type (weather ball, type-changing abilities) ──
+      let effectiveMoveType = move.type;
+      let typeChangedBy = null;
+
+      // Weather Ball: changes type based on weather (handled in renderResults for weather context,
+      // but we store base type here; weather ball power doubling also done in renderResults)
+      // For now mark it for renderResults
+      const isWeatherBall = mn === 'weather ball';
+
+      // Type-changing abilities on normal moves
+      // We call getAbilityMods with the ORIGINAL move type to get the typeOverride + powerMul
+      const abMOrig = getAbilityMods(attacker.ability, move.type, attacker.types, move.name);
+      if (abMOrig.typeOverride && abMOrig.typeOverride !== effectiveMoveType) {
+        effectiveMoveType = abMOrig.typeOverride;
+        typeChangedBy = attacker.ability;
+      }
+
+      // ── Special moves: Freeze-Dry is ice but super-effective vs water ──
+      // ── handled in typeEff override below ──
+      const isFreezeDry = mn === 'freeze-dry' || mn.replace(/-/g,' ') === 'freeze dry';
+      let eff;
+      if (isFreezeDry) {
+        // Freeze-Dry is super effective against water regardless of other typing.
+        // Treat the water type as if it were ×2 vs ice (ignoring the normal ×0.5 resist).
+        // For dual-type defenders: replace the water part with ×2, keep the other type's modifier.
+        const nonWaterTypes = defender.types.filter(t => t !== 'water');
+        const nonWaterEff = nonWaterTypes.length > 0 ? typeEff('ice', nonWaterTypes) : 1;
+        const waterFactor = defender.types.includes('water') ? 2 : 1;
+        eff = nonWaterEff * waterFactor;
+      } else {
+        eff = typeEff(effectiveMoveType, defender.types);
+      }
+      if (eff === 0) continue;
+
+      // Recalculate STAB and atk boosts using effective type
+      const abMeff = getAbilityMods(attacker.ability, effectiveMoveType, attacker.types, move.name);
+      const isStab = abMeff.stabBonus;
+
+      // Item mods (use effective type for type-boosting items)
+      const itemModsForMove = getItemMods(attacker.item, effectiveMoveType, move.cat);
+
+      // ── Special move: Body Press uses Def as attack stat ──
+      const isBodyPress = mn === 'body press';
+      // ── Special move: Foul Play uses target's (defender's) Atk stat ──
+      const isFoulPlay = mn === 'foul play';
+      // ── Psyshock / Psystrike / Secret Sword: special move, uses target's Def ──
+      const isPsyshockLike = mn === 'psyshock' || mn === 'psystrike' || mn === 'secret sword';
+
+      let rawAtk, rawDef;
+      if (isBodyPress) {
+        rawAtk = attacker.computedDef; // uses user's Defense
+        rawDef = defender.stats.def;
+      } else if (isFoulPlay) {
+        rawAtk = defender.stats.atk;  // uses target's Attack
+        rawDef = defender.stats.def;
+      } else if (isPsyshockLike) {
+        rawAtk = attacker.computedSpa;
+        rawDef = defender.stats.def;  // uses target's Defense (not SpD)
+      } else {
+        rawAtk = move.cat === 'physical' ? attacker.computedAtk : attacker.computedSpa;
+        rawDef = move.cat === 'physical' ? defender.stats.def : defender.stats.spd;
+      }
+
+      const abilityAtkMul = abMeff.atkMul * itemModsForMove.atkMul;
+      const atkStat = rawAtk * abilityAtkMul;
+
+      // Defender stat with Ruin ability debuff
+      const ruinMul = getDefenderRuinDebuff(attacker.ability, move.cat);
+      const defStat = rawDef * ruinMul;
+
+      // Power modifiers:
+      // - abMOrig.powerMul carries the type-change boost (e.g. Pixilate ×1.2)
+      // - abMeff.powerMul carries aura/other ability boosts computed on effective type
+      // - We take the max of both to avoid double-counting when they're the same source,
+      //   but for Pixilate + Fairy Aura they stack, so we multiply them.
+      //   In practice: for type-changing abilities abMOrig has the 1.2 and abMeff has 1 (normal->fairy hit the guard);
+      //   for aura abilities abMOrig == abMeff so we just use abMeff directly.
+      const origPowerMul = typeChangedBy ? abMOrig.powerMul : 1; // only bring in orig if type was changed
+      const abilityPowerMul = (typeChangedBy ? origPowerMul : abMeff.powerMul) * getAbilityMovePowerMul(attacker.ability, move, eff);
+      const itemPowerMul    = itemModsForMove.powerMul * getItemPerMoveMul(attacker.item, effectiveMoveType, eff);
+      const effectivePower  = move.power * abilityPowerMul * itemPowerMul;
+
+      const dmg = damageFormula(50, effectivePower, atkStat, defStat, eff, isStab);
+      const pct = dmg / defender.stats.hp * 100;
+
+      // ── Build activeMods list for display ──
+      const activeMods = [];
+      const ab = (attacker.ability||'').toLowerCase().replace(/[\s-]/g,'');
+
+      // STAB source
+      if (isStab > 1.5) activeMods.push(ab === 'adaptability' ? 'Adaptability' : 'STAB×2');
+      else if (isStab > 1)  activeMods.push(ab === 'protean' || ab === 'libero' ? `Protean STAB` : 'STAB');
+
+      // Type change
+      if (typeChangedBy) activeMods.push(`${attacker.ability} (${move.type}→${effectiveMoveType})`);
+
+      // Ability power/atk boosts
+      if (abMeff.atkMul > 1)   activeMods.push(attacker.ability);
+      if (abMeff.powerMul > 1 && !typeChangedBy) activeMods.push(attacker.ability);
+      const perMoveMul = getAbilityMovePowerMul(attacker.ability, move, eff);
+      if (perMoveMul > 1) activeMods.push(attacker.ability);
+
+      // Item boosts
+      if (itemModsForMove.atkMul > 1)   activeMods.push(attacker.item);
+      if (itemModsForMove.powerMul > 1) activeMods.push(attacker.item);
+      const perMoveItemMul = getItemPerMoveMul(attacker.item, effectiveMoveType, eff);
+      if (perMoveItemMul > 1) activeMods.push(attacker.item);
+
+      // Special mechanics
+      if (isBodyPress)    activeMods.push('Body Press (Def)');
+      if (isFoulPlay)     activeMods.push("Foul Play (foe's Atk)");
+      if (isPsyshockLike) activeMods.push('Psyshock (Def)');
+      if (isFreezeDry && defender.types.includes('water')) activeMods.push('Freeze-Dry vs Water');
+      if (isWeatherBall)  activeMods.push('Weather Ball');
+
+      // Dedup
+      const uniqueMods = [...new Set(activeMods)].filter(Boolean);
+
+      moveBreakdown.push({
+        move,
+        effectiveMoveType,
+        isSpread: move.isSpread,
+        isWeatherBall,
+        dmg, pct, eff,
+        stab: isStab > 1,
+        activeMods: uniqueMods
+      });
+
+      if (dmg > best.dmg) best = { dmg, move, eff };
+    }
+
+    // ── Defender attacking back at this meta Pokémon ──────────────────────────
+    const defNat = NATURES[defender.nature] || {};
+    let defBest = { dmg: 0, move: null, eff: 1 };
+    const defMoveBreakdown = [];
+
+    for (const move of defender.resolvedMoves) {
+      const mn = move.name.toLowerCase();
+      const abM = getAbilityMods(defender.ability, move.type, defender.types, move.name);
+      let effectiveMoveType = move.type;
+      if (abM.typeOverride) effectiveMoveType = abM.typeOverride;
+
+      const isFreezeDryDef = mn === 'freeze-dry' || mn.replace(/-/g,' ') === 'freeze dry';
+      let eff;
+      if (isFreezeDryDef) {
+        const nonWaterTypes = attacker.types.filter(t => t !== 'water');
+        const nonWaterEff = nonWaterTypes.length > 0 ? typeEff('ice', nonWaterTypes) : 1;
+        const waterFactor = attacker.types.includes('water') ? 2 : 1;
+        eff = nonWaterEff * waterFactor;
+      } else {
+        eff = typeEff(effectiveMoveType, attacker.types);
+      }
+      if (eff === 0) continue;
+
+      const abMeff       = getAbilityMods(defender.ability, effectiveMoveType, defender.types, move.name);
+      const isStab       = abMeff.stabBonus;
+      const defItForMove = getItemMods(defender.item, effectiveMoveType, move.cat);
+
+      const isPsyshockLike = mn === 'psyshock' || mn === 'psystrike' || mn === 'secret sword';
+      const isBodyPress    = mn === 'body press';
+      const isFoulPlay     = mn === 'foul play';
+
+      let rawAtk, rawDef;
+      const defAtk = calcStat(defender.baseStats.atk, defender.evs.atk||0, defender.ivs.atk||31, defender.level, defNat.atk||1);
+      const defSpa = calcStat(defender.baseStats.spa, defender.evs.spa||0, defender.ivs.spa||31, defender.level, defNat.spa||1);
+      const defDef = calcStat(defender.baseStats.def, defender.evs.def||0, defender.ivs.def||31, defender.level, defNat.def||1);
+
+      if (isBodyPress)    { rawAtk = defDef;  rawDef = attacker.computedDef; }
+      else if (isFoulPlay){ rawAtk = attacker.computedAtk; rawDef = attacker.computedDef; }
+      else if (isPsyshockLike){ rawAtk = defSpa; rawDef = attacker.computedDef; }
+      else {
+        rawAtk = move.cat === 'physical' ? defAtk : defSpa;
+        rawDef = move.cat === 'physical' ? attacker.computedDef : attacker.computedSpd;
+      }
+
+      const atkStat  = rawAtk * abMeff.atkMul * defItForMove.atkMul;
+      const ruinMul  = getDefenderRuinDebuff(defender.ability, move.cat);
+      const defStat  = rawDef * ruinMul;
+      const pwrMul   = abMeff.powerMul * getAbilityMovePowerMul(defender.ability, move, eff) * defItForMove.powerMul * getItemPerMoveMul(defender.item, effectiveMoveType, eff);
+      const dmg      = damageFormula(defender.level, move.power * pwrMul, atkStat, defStat, eff, isStab);
+      const pct      = dmg / attacker.computedHp * 100;
+
+      defMoveBreakdown.push({ move, effectiveMoveType, isSpread: move.isSpread, isWeatherBall: mn === 'weather ball', dmg, pct, eff, stab: isStab > 1, activeMods: [] });
+      if (dmg > defBest.dmg) defBest = { dmg, move, eff };
+    }
+
+    const pct    = best.move ? best.dmg / defender.stats.hp * 100 : 0;
+    const defPct = defBest.move ? defBest.dmg / attacker.computedHp * 100 : 0;
+
+    results.push({
+      attacker, defender,
+      dmg: best.dmg, move: best.move, pct, eff: best.eff,
+      originalOrder: results.length + 1,
+      defenderHp: defender.stats.hp,
+      moveBreakdown, defMoveBreakdown,
+      defBestMove: defBest.move, defBestPct: defPct, defBestEff: defBest.eff,
+    });
+  }
+  return results;
+}
+
+function renderResults() {
+  const weather       = document.getElementById('weatherMode')?.value || 'none';
+  const terrainMode   = document.getElementById('terrainMode')?.value || 'none';
+  const offenseStage  = Number(document.getElementById('offenseStage')?.value || 0);
+  const defenseStage  = Number(document.getElementById('defenseStage')?.value || 0);
+  const maxRollMode   = document.getElementById('maxRollMode')?.checked || false;
+  const attackingMode = document.getElementById('attackingMode')?.checked || false;
+  const maxInvest     = document.getElementById('maxInvestMode')?.checked || false;
+  const searchQuery   = (document.getElementById('searchBar')?.value || '').toLowerCase().trim();
+
+  lastResults.forEach(r => {
+    // ── Defending mode: attackers hit the defender ──
+    let best = { dmg: 0, pct: 0, move: null, eff: 1 };
+    r.moveBreakdown.forEach(m => {
+      let adjustedDmg = m.dmg;
+
+      // Max invest override: scale damage proportionally
+      // We compare 32ev+nature-boosted stat vs the actual stat used
+      if (maxInvest) {
+        const nat = NATURES[r.attacker.nature] || {};
+        const isPhys = m.move.cat === 'physical';
+        const base = isPhys ? r.attacker.baseStats.atk : r.attacker.baseStats.spa;
+        const natMul = isPhys ? (nat.atk||1) : (nat.spa||1);
+        const maxStat = calcStat(base, 252, 31, 50, natMul > 1 ? 1.1 : natMul);
+        const curStat = isPhys ? r.attacker.computedAtk : r.attacker.computedSpa;
+        if (curStat > 0) adjustedDmg *= maxStat / curStat;
+      }
+
+      // Weather Ball: update type and double power in weather
+      let moveType = m.effectiveMoveType || m.move.type;
+      let extraPowerMul = 1;
+      let weatherBallEffCorr = 1;
+      if (m.isWeatherBall && weather !== 'none') {
+        const newType = weatherBallType(weather);
+        // The damage was computed with the original type's effectiveness (normal = 1 vs most).
+        // We need to correct for the new type's effectiveness against the defender.
+        const origEff = m.eff > 0 ? m.eff : 1;
+        const newEff  = typeEff(newType, r.defender ? r.defender.types : []);
+        if (newEff === 0) { m.adjustedPct = 0; m.adjustedDmg = 0; return; }
+        weatherBallEffCorr = newEff / origEff;
+        moveType = newType;
+        extraPowerMul = 2; // Weather Ball doubles in weather
+      }
+
+      // Weather modifier on the (possibly updated) type
+      adjustedDmg *= applyWeatherModifier(moveType, weather);
+      adjustedDmg *= extraPowerMul;
+      adjustedDmg *= weatherBallEffCorr;
+
+      // Sand SpD boost (rock types)
+      if (weather === 'sand' && m.move.cat === 'special') {
+        if (r.defender && r.defender.types.includes('rock')) adjustedDmg /= 1.5;
+      }
+      if (weather === 'snow' && m.move.cat === 'physical') {
+        if (r.defender && r.defender.types.includes('ice')) adjustedDmg /= 1.5;
+      }
+
+      // Stat stage modifiers
+      adjustedDmg *= stageMultiplier(offenseStage);
+      adjustedDmg /= stageMultiplier(defenseStage);
+
+      // Terrain/screen defense
+      adjustedDmg *= applyTerrainScreenMul(m.move.cat, terrainMode);
+
+      // Psychic Terrain: Expanding Force ×1.5 and spread
+      const terrainBoost = applyPsychicTerrainPower(m.move.name, terrainMode);
+      adjustedDmg *= terrainBoost.powerMul;
+      const isEffectivelySpread = m.isSpread || terrainBoost.spreadOverride;
+
+      // Spread penalty: ×0.75 in doubles
+      if (isEffectivelySpread) adjustedDmg *= 0.75;
+
+      if (maxRollMode) adjustedDmg /= 0.85;
+
+      m.adjustedPct  = adjustedDmg / r.defenderHp * 100;
+      m.adjustedDmg  = adjustedDmg;
+      m.resolvedType = moveType; // for display
+      m.isEffectivelySpread = isEffectivelySpread;
+
+      if (adjustedDmg > best.dmg) best = { dmg: adjustedDmg, pct: m.adjustedPct, move: m.move, eff: m.eff };
+    });
+
+    // ── Attacking mode: defender hits each meta Pokémon ──
+    let defBest = { dmg: 0, pct: 0, move: null, eff: 1 };
+    (r.defMoveBreakdown || []).forEach(m => {
+      let adjustedDmg = m.dmg;
+      let moveType2 = m.effectiveMoveType || m.move.type;
+      let extraPowerMul2 = 1;
+      let wbEffCorr2 = 1;
+      if (m.isWeatherBall && weather !== 'none') {
+        const newType = weatherBallType(weather);
+        const origEff = m.eff > 0 ? m.eff : 1;
+        const newEff  = typeEff(newType, r.attacker.types || []);
+        if (newEff === 0) { m.adjustedPct = 0; m.adjustedDmg = 0; return; }
+        wbEffCorr2 = newEff / origEff;
+        moveType2 = newType;
+        extraPowerMul2 = 2;
+      }
+      adjustedDmg *= applyWeatherModifier(moveType2, weather);
+      adjustedDmg *= extraPowerMul2;
+      adjustedDmg *= wbEffCorr2;
+      adjustedDmg *= stageMultiplier(offenseStage);
+      adjustedDmg /= stageMultiplier(defenseStage);
+      adjustedDmg *= applyTerrainScreenMul(m.move.cat, terrainMode);
+      const terrainBoost = applyPsychicTerrainPower(m.move.name, terrainMode);
+      adjustedDmg *= terrainBoost.powerMul;
+      const isEffSpread = m.isSpread || terrainBoost.spreadOverride;
+      if (isEffSpread) adjustedDmg *= 0.75;
+      if (maxRollMode) adjustedDmg /= 0.85;
+      m.adjustedPct = adjustedDmg / r.attacker.computedHp * 100;
+      m.adjustedDmg = adjustedDmg;
+      m.resolvedType = moveType2;
+      m.isEffectivelySpread = isEffSpread;
+      if (adjustedDmg > defBest.dmg) defBest = { dmg: adjustedDmg, pct: m.adjustedPct, move: m.move, eff: m.eff };
+    });
+
+    r.displayPct  = attackingMode ? defBest.pct  : best.pct;
+    r.displayMove = attackingMode ? defBest.move  : best.move;
+    r.displayEff  = attackingMode ? defBest.eff   : best.eff;
+  });
+
+  const mode = document.getElementById('sortMode').value;
+  let sorted = [...lastResults];
+  if (mode === 'damage') sorted.sort((a,b) => b.displayPct - a.displayPct);
+  else if (mode === 'name') sorted.sort((a,b) => a.attacker.speciesRaw.localeCompare(b.attacker.speciesRaw));
+  else sorted.sort((a,b) => a.originalOrder - b.originalOrder);
+
+  // Apply search filter — pinned items always survive
+  if (searchQuery) {
+    sorted = sorted.filter(r =>
+      r.attacker.speciesRaw.toLowerCase().includes(searchQuery) ||
+      pinnedKeys.has(r.attacker.speciesRaw)
+    );
+  }
+
+  // Float pinned items to the top
+  const pinned   = sorted.filter(r => pinnedKeys.has(r.attacker.speciesRaw));
+  const unpinned = sorted.filter(r => !pinnedKeys.has(r.attacker.speciesRaw));
+  sorted = [...pinned, ...unpinned];
+
+  const maxPct = Math.min(Math.max(...sorted.map(r => r.displayPct || 0), 1), 150);
+  let html = '';
+  const hasPinned = pinned.length > 0;
+
+  sorted.forEach((r, index) => {
+    const isPinned = pinnedKeys.has(r.attacker.speciesRaw);
+
+    if (hasPinned && index === pinned.length) {
+      html += `<div class="pinned-divider">others</div>`;
+    }
+
+    const pct    = r.displayPct || 0;
+    const barW   = Math.min(pct / maxPct * 100, 100).toFixed(1);
+    const barCls = pct >= 100 ? 'bar-ohko' : pct >= 60 ? 'bar-high' : pct >= 30 ? 'bar-mid' : 'bar-low';
+    const pctLabel = pct >= 100
+      ? `<span class="pct-ohko">${pct.toFixed(0)}% OHKO</span>`
+      : `${pct.toFixed(1)}%`;
+    const effLabel = r.displayEff > 1
+      ? `<span class="eff-super">×${r.displayEff}</span>`
+      : r.displayEff < 1 && r.displayEff > 0
+      ? `<span class="eff-resist">×${r.displayEff}</span>` : '';
+
+    const typeBadges = r.attacker.types.map(t =>
+      `<span class="type-badge t-${t}">${t}</span>`).join('');
+    const moveName    = r.displayMove ? r.displayMove.name : '— (no damaging moves)';
+    const pasteOrderLabel = `#${r.originalOrder}`;
+    const pinTitle = isPinned ? 'Unpin' : 'Pin to top';
+
+    const breakdownSource = attackingMode ? (r.defMoveBreakdown || []) : r.moveBreakdown;
+    const breakdownHtml = breakdownSource.map(m => {
+      const displayPct = m.adjustedPct ?? m.pct;
+      const mEff = m.eff > 1
+        ? `<span class="eff-super">×${m.eff}</span>`
+        : m.eff < 1 && m.eff > 0
+        ? `<span class="eff-resist">×${m.eff}</span>` : '';
+
+      // Build clean mod tags
+      const modList = (m.activeMods||[]).filter(Boolean);
+      const modTags = modList.map(mod =>
+        `<span style="color:var(--accent2);font-size:10px;background:rgba(124,106,247,0.12);padding:1px 5px;border-radius:4px">${mod}</span>`
+      ).join(' ');
+
+      const spreadTag = m.isEffectivelySpread
+        ? `<span style="color:var(--text3);font-size:10px">spread ×0.75</span>` : '';
+      const typeDisplay = m.resolvedType && m.resolvedType !== m.move.type
+        ? `<span style="color:var(--yellow);font-size:10px">${m.resolvedType}</span>` : m.resolvedType || m.move.type;
+
+      return `
+        <div class="move-breakdown-row">
+          <div class="move-breakdown-left">
+            <div class="move-breakdown-name">${m.move.name}</div>
+            <div class="move-breakdown-meta">${typeDisplay} · ${m.move.power} BP${m.stab ? ' · STAB' : ''}</div>
+            ${mEff} ${spreadTag} ${modTags}
+          </div>
+          <div class="move-breakdown-pct" style="${displayPct >= 100 ? 'color:var(--red)' : ''}">
+            ${displayPct >= 100 ? `${displayPct.toFixed(0)}% OHKO` : `${displayPct.toFixed(1)}%`}
+          </div>
+        </div>`;
+    }).join('');
+
+    // Speed comparison
+    let speedHtml = '';
+    if (r.defender) {
+      const atkSpeRaw = r.attacker.computedSpe || calcStat(r.attacker.baseStats.spe||0, r.attacker.evs.spe||0, 31, 50, 1);
+      const atkSpeEff = (r.attacker.item||'').toLowerCase().replace(/[\s-]/g,'') === 'choicescarf' ? Math.floor(atkSpeRaw * 1.5) : atkSpeRaw;
+      const defSpeEff = effectiveSpe(r.defender);
+      const atkScarf = (r.attacker.item||'').toLowerCase().replace(/[\s-]/g,'') === 'choicescarf';
+      const defScarf = (r.defender.item||'').toLowerCase().replace(/[\s-]/g,'') === 'choicescarf';
+      const atkLabel = `${r.attacker.speciesRaw}${atkScarf ? ' <span style="color:var(--accent2);font-size:10px">(Scarf)</span>' : ''}`;
+      const defLabel = `${r.defender.speciesRaw}${defScarf ? ' <span style="color:var(--accent2);font-size:10px">(Scarf)</span>' : ''}`;
+      let verdict, icon;
+      if (atkSpeEff > defSpeEff)      { verdict = `<span class="spd-faster">Faster</span>`; icon = '⚡'; }
+      else if (atkSpeEff < defSpeEff) { verdict = `<span class="spd-slower">Slower</span>`; icon = '🐢'; }
+      else                            { verdict = `<span class="spd-tied">Speed tie</span>`; icon = '⚖️'; }
+      speedHtml = `
+        <div class="speed-compare">
+          <span class="spd-icon">${icon}</span>
+          <span>${verdict}</span>
+          <span style="color:var(--text3)">·</span>
+          <span>${atkLabel} <span class="spd-val">${atkSpeEff}</span></span>
+          <span style="color:var(--text3)">vs</span>
+          <span>${defLabel} <span class="spd-val">${defSpeEff}</span></span>
+        </div>`;
+    }
+
+    const modeLabel = attackingMode ? `<span style="font-size:10px;color:var(--accent2);margin-left:6px;">→ attacking</span>` : '';
+    const maxInvestLabel = maxInvest ? `<span style="font-size:10px;color:var(--yellow);margin-left:4px;">max</span>` : '';
+
+    html += `
+      <div class="result-item${isPinned ? ' is-pinned' : ''}">
+        <div class="result-row" onclick="toggleBreakdown(${index})" id="resultRow-${index}">
+          <button class="pin-btn${isPinned ? ' pinned' : ''}" title="${pinTitle}" data-pinkey="${r.attacker.speciesRaw.replace(/"/g,'&quot;')}" onclick="handlePinClick(event)">${isPinned ? '📌' : '📍'}</button>
+          <div class="result-expand">▶</div>
+          <div class="result-rank">${mode === 'damage' ? index + 1 : pasteOrderLabel}</div>
+          <div class="result-name">
+            <div class="result-name-text">
+              ${r.attacker.speciesRaw}
+              ${mode === 'damage' ? `<span style="color:var(--text3);font-size:11px;margin-left:6px;">${pasteOrderLabel}</span>` : ''}
+              ${modeLabel}${maxInvestLabel}
+            </div>
+            <div class="type-badges">${typeBadges}</div>
+          </div>
+          <div class="bar-wrap"><div class="bar ${barCls}" style="width:${barW}%"></div></div>
+          <div class="result-pct">${pctLabel}</div>
+          <div class="result-move">${moveName} ${effLabel}</div>
+        </div>
+        <div class="move-breakdown" id="breakdown-${index}">
+          ${speedHtml}
+          ${breakdownHtml || '<div class="move-breakdown-row">No damaging moves found.</div>'}
+        </div>
+      </div>`;
+  });
+
+  document.getElementById('resultsList').innerHTML = html ||
+    '<div class="error-msg" style="padding:10px 0">No results match your search.</div>';
+}
+
+function toggleBreakdown(index) {
+  const row = document.getElementById(`resultRow-${index}`);
+  const breakdown = document.getElementById(`breakdown-${index}`);
+
+  row.classList.toggle('expanded');
+  breakdown.classList.toggle('visible');
+}
+
+function handlePinClick(e) {
+  e.stopPropagation();
+  const key = e.currentTarget.dataset.pinkey;
+  if (!key) return;
+  if (pinnedKeys.has(key)) {
+    pinnedKeys.delete(key);
+  } else {
+    pinnedKeys.add(key);
+  }
+  renderResults();
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function updateReadyHint() {
+  const ok = META_DB.filter(p=>p.loaded).length;
+  document.getElementById('readyHint').textContent = ok
+    ? `${ok} attacker${ok>1?'s':''} ready. Paste a defender and calculate.`
+    : 'Load a meta and paste a defender, then calculate.';
+}
+
+function loadMetaExample() {
+  document.getElementById('metaInput').value =
+`Flutter Mane @ Choice Specs
+Ability: Protosynthesis
+Level: 50
+EVs: 252 SpA / 4 SpD / 252 Spe
+Timid Nature
+- Moonblast
+- Shadow Ball
+- Psyshock
+- Dazzling Gleam
+
+Iron Hands @ Assault Vest
+Ability: Quark Drive
+Level: 50
+EVs: 252 HP / 252 Atk / 4 SpD
+Adamant Nature
+- Close Combat
+- Wild Charge
+- Drain Punch
+- Fake Out
+
+Rillaboom @ Choice Band
+Ability: Grassy Surge
+Level: 50
+EVs: 252 Atk / 4 HP / 252 Spe
+Adamant Nature
+- Grassy Glide
+- Wood Hammer
+- U-turn
+- Knock Off
+
+Incineroar @ Sitrus Berry
+Ability: Intimidate
+Level: 50
+EVs: 252 HP / 4 Atk / 252 SpD
+Careful Nature
+- Flare Blitz
+- Darkest Lariat
+- Parting Shot
+- Knock Off`;
+}
+
+function loadDefenderExample() {
+  document.getElementById('defenderInput').value =
+`Garchomp @ Rocky Helmet
+Ability: Rough Skin
+Level: 50
+EVs: 252 HP / 4 Atk / 252 Def
+Impish Nature
+- Earthquake
+- Dragon Tail
+- Stealth Rock
+- Fire Blast`;
+}
+
+function clearAll() {
+  document.getElementById('metaInput').value = '';
+  document.getElementById('defenderInput').value = '';
+  document.getElementById('metaChips').innerHTML = '';
+  document.getElementById('metaError').textContent = '';
+  document.getElementById('defenderError').textContent = '';
+  document.getElementById('metaStatus').textContent = '';
+  document.getElementById('defenderInfo').classList.remove('visible');
+  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('weaknessOverlay').classList.remove('visible');
+  META_DB = [];
+  lastResults = [];
+  for (let i = 0; i < 6; i++) DEFENDER_SLOTS[i] = null;
+  activeDefenderSlot = 0;
+  renderDefenderTabs();
+  updateReadyHint();
+}
+</script>
+</body>
+</html>

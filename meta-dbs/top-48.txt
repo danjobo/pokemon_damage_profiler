@@ -4,19 +4,29 @@ Level: 50
 EVs: 2 HP / 32 Atk / 32 Spe  
 Jolly Nature  
 - Close Combat  
-- Dire Claw  
-- Rock Slide  
-- Throat Chop  
+- Dire Claw
+- Fake Out
+- Protect
+_
+- Coaching
+- Rock Slide 
 
 Incineroar  
 Ability: Blaze  
 Level: 50  
 EVs: 32 HP / 14 Def / 20 SpD  
 Careful Nature  
+- Fake Out
+- Parting Shot
 - Flare Blitz  
 - Darkest Lariat  
 - Throat Chop  
-- Close Combat  
+_
+- Protect
+- Will-O-Wisp
+- Snarl
+- Close Combat
+- Helping Hand  
 
 Garchomp @ Choice Scarf  
 Ability: Sand Veil  
@@ -25,8 +35,14 @@ EVs: 2 HP / 32 Atk / 32 Spe
 Jolly Nature  
 - Earthquake  
 - Rock Slide  
-- Dragon Claw  
+- Dragon Claw
+- Protect
+_  
 - Stomping Tantrum  
+- Iron Head
+- Poison Jab
+- Stone Edge
+- Swords Dance
 
 Kingambit @ Black Glasses  
 Ability: Defiant  
@@ -35,8 +51,11 @@ EVs: 32 HP / 32 Atk / 2 SpD
 Adamant Nature  
 - Sucker Punch  
 - Kowtow Cleave  
-- Iron Head  
-- Low Kick  
+- Protect
+- Iron Head 
+_ 
+- Low Kick
+- Swords Dance
 
 Sinistcha  
 Ability: Hospitality  
@@ -44,9 +63,13 @@ Level: 50
 EVs: 32 HP / 14 Def / 20 SpD  
 Bold Nature  
 - Matcha Gotcha  
-- Shadow Ball  
-- Scald  
+- Rage Powder
+- Trick Room
+- Life Dew
+_
 - Protect  
+- Strenth Sap
+- Shadow Ball
 
 Basculegion (M) @ Choice Scarf  
 Ability: Adaptability  
@@ -54,9 +77,13 @@ Level: 50
 EVs: 2 HP / 32 Atk / 32 Spe  
 Adamant Nature  
 - Last Respects  
-- Wave Crash  
-- Psychic Fangs  
-- Ice Fang  
+- Wave Crash
+- Aqua Jet
+- Flip Turn
+_
+- Protect
+- Liquidation  
+- Psychic Fangs   
 
 Aerodactyl  
 Ability: Rock Head  
@@ -64,19 +91,28 @@ Level: 50
 EVs: 2 HP / 32 Atk / 32 Spe  
 Jolly Nature  
 - Rock Slide  
-- Dual Wingbeat  
-- Ice Fang  
-- Iron Head  
+- Tailwind
+- Dual Wingbeat
+- Protect
+_
+- Wide Guard  
 
 Charizard-Mega-Y @ Charizardite Y  
 Ability: Drought  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
-Modest Nature  
+Modest Nature
+- Protect  
 - Heat Wave  
 - Solar Beam  
-- Air Slash  
-- Overheat  
+- Weather Ball
+_  
+- Air Slash
+- Overheat
+- Flare Blitz
+- Dragon Claw
+- Dragon Dance
+- Dragon Pulse  
 
 Rotom-Wash  
 Ability: Levitate  
@@ -86,17 +122,30 @@ Modest Nature
 - Hydro Pump  
 - Thunderbolt  
 - Volt Switch  
-- Shadow Ball  
+- Will-O-Wisp
+- Protect
+_
+- Electroweb
+- Trick
+- Discharge
+- Helping Hand
 
 Whimsicott  
 Ability: Prankster  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
-Timid Nature  
-- Moonblast  
-- Dazzling Gleam  
+Timid Nature
 - Tailwind  
-- Protect  
+- Moonblast
+- Encore
+- Protect
+_
+- Sunny Day
+- Taunt
+- Helping Hand
+- Fake Tears
+- Endeavor  
+- Dazzling Gleam   
 
 Pelipper  
 Ability: Drizzle  
@@ -104,39 +153,64 @@ Level: 50
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
 - Hurricane  
+- Tailwind
+- Weather Ball
+- Protect
+- Wide Guard
+_  
 - Muddy Water  
 - U-turn  
-- Icy Wind  
+- Icy Wind
+- Ice Beam
+- Hydro Pump
 
 Floette-Mega (F) @ Floettite  
 Ability: Fairy Aura  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
+- Protect
 - Dazzling Gleam  
-- Moonblast  
+- Moonblast
+- Calm Mind
+_
+- Light of Ruin
+- Draining Kiss  
 - Psychic  
-- Giga Drain  
 
 Tyranitar-Mega @ Tyranitarite  
 Ability: Sand Stream  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
 Adamant Nature  
-- Rock Slide  
+- Rock Slide 
+- Protect 
 - Knock Off  
-- Low Kick  
+- Low Kick
+_  
 - Ice Punch  
+- Crunch
+- Dragon Dance
+- Earthquake
+- Stone Edge
+- High Horsepower
 
 Farigiraf  
 Ability: Cud Chew  
 Level: 50  
 EVs: 32 HP / 2 Def / 32 SpA  
 Quiet Nature  
-- Psychic  
-- Hyper Voice  
-- Dazzling Gleam  
 - Trick Room  
+- Psychic  
+- Hyper Voice
+- Helping Hand
+- Protect
+_
+- Twin Beam
+- Imprison  
+- Dazzling Gleam  
+- Rain Dance
+- Ally Switch
 
 Archaludon  
 Ability: Stamina  
@@ -144,9 +218,15 @@ Level: 50
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
 - Flash Cannon  
-- Electro Shot  
-- Draco Meteor  
-- Aura Sphere  
+- Electro Shot 
+- Protect 
+- Draco Meteor
+_
+- Dragon Pulse  
+- Aura Sphere 
+- Thunderbolt
+- Snarl
+- Steel Beam
 
 Milotic  
 Ability: Marvel Scale  
@@ -154,19 +234,33 @@ Level: 50
 EVs: 32 HP / 21 Def / 10 SpA / 1 SpD / 2 Spe  
 Modest Nature  
 - Scald  
+- Protect
 - Icy Wind  
-- Ice Beam  
+- Ice Beam
+- Recover
+_
+- Life Dew  
 - Muddy Water  
+- Hypnosis
+- Coil
+- Helping Hand
 
 Dragonite-Mega @ Dragoninite  
 Ability: Multiscale  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
+- Protect
 - Hurricane  
 - Draco Meteor  
+- Extreme Speed
+_
+- Tailwind
+- Dragon Pulse
 - Thunder  
 - Ice Beam  
+- Scale Shot
+- Thunderbolt
 
 Froslass-Mega (F) @ Froslassite  
 Ability: Snow Warning  
@@ -174,9 +268,13 @@ Level: 50
 EVs: 2 HP / 32 SpA / 32 Spe  
 Timid Nature  
 - Blizzard  
-- Shadow Ball  
-- Thunderbolt  
-- Icy Wind  
+- Shadow Ball 
+- Protect
+- Aurora Veil
+_
+- Substitute
+- Nasty Plot 
+- Thunderbolt   
 
 Venusaur  
 Ability: Overgrow  
@@ -184,19 +282,33 @@ Level: 50
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
 - Sludge Bomb  
-- Earth Power  
-- Energy Ball  
-- Giga Drain  
+- Protect
+- Sleep Powder
+- Earth Power 
+- Energy Ball 
+_ 
+- Giga Drain
+- Leaf Storm
+- Solar Beam
+- Leech Seed
+- Weather Ball  
 
 Talonflame @ Sharp Beak  
 Ability: Flame Body  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
 Jolly Nature  
+- Tailwind
+- Protect
 - Flare Blitz  
 - Brave Bird  
-- Acrobatics  
-- Upper Hand  
+- Acrobatics
+- Dual Wingbeat
+_
+- Will-O-Wisp
+- Quick Guard  
+- Upper Hand 
+- Rain Dance 
 
 Meganium-Mega @ Meganiumite  
 Ability: Mega Sol  
@@ -205,7 +317,10 @@ EVs: 32 HP / 32 SpA / 2 Spe
 Modest Nature  
 - Solar Beam  
 - Dazzling Gleam  
-- Inferno  
+- Weather Ball  
+- Protect
+_
+- Synthesis
 - Earth Power  
 
 Corviknight  
@@ -214,9 +329,14 @@ Level: 50
 EVs: 32 HP / 32 Def / 2 SpD  
 Impish Nature  
 - Brave Bird  
-- Body Press  
-- Iron Head  
-- U-turn  
+- Body Press 
+- Tailwind
+- Roost
+- Iron Head
+_
+- Iron Defense
+- Bulk Up
+- Protect  
 
 Delphox-Mega @ Delphoxite  
 Ability: Levitate  
@@ -224,9 +344,12 @@ Level: 50
 EVs: 2 HP / 32 SpA / 32 Spe  
 Timid Nature  
 - Heat Wave  
-- Psychic  
-- Dazzling Gleam  
-- Flamethrower  
+- Protect
+- Psychic
+- Encore
+- Substitute
+_  
+
 
 Gengar-Mega @ Gengarite  
 Ability: Shadow Tag  
@@ -234,37 +357,58 @@ Level: 50
 EVs: 2 HP / 32 SpA / 32 Spe  
 Timid Nature  
 - Shadow Ball  
-- Sludge Bomb  
-- Icy Wind  
-- Psychic  
+- Protect
+- Sludge Bomb
+- Perish Song
+_  
+- Icy Wind
+- Substitute
+- Disable
+- Sludge Wave  
 
 Gardevoir-Mega @ Gardevoirite  
 Ability: Pixilate  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
-- Dazzling Gleam  
+- Protect
+- Hyper Voice  
 - Psychic  
+- Trick Room
 - Psyshock  
+_
 - Moonblast  
+- Calm Mind
+- Dazzling Gleam
 
 Maushold  
 Ability: Friend Guard  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
 Adamant Nature  
-- Population Bomb  
-- U-turn  
+- Follow Me
+- Protect
+- Super Fang
+- Taunt
+_
+- Encore
+- Helping Hand
+- Feint
+- Population Bomb    
 
 Aegislash-Blade @ Spell Tag  
 Ability: Stance Change  
 Level: 50  
 EVs: 32 Atk / 29 Def / 5 Spe  
 Adamant Nature  
+- King's Shield
 - Shadow Sneak  
 - Poltergeist  
 - Iron Head  
+_
 - Sacred Sword  
+- Wide Guard
+- Shadow Ball
 
 Excadrill  
 Ability: Sand Rush  
@@ -272,19 +416,24 @@ Level: 50
 EVs: 2 HP / 32 Atk / 32 Spe  
 Adamant Nature  
 - Iron Head  
+- Protect
 - Rock Slide  
 - Earthquake  
-- High Horsepower  
+- High Horsepower
+_  
 
 Torkoal @ Charcoal  
 Ability: White Smoke  
 Level: 50  
 EVs: 32 HP / 32 SpA / 2 SpD  
 Quiet Nature  
-- Eruption  
+- Eruption 
+- Protect 
 - Heat Wave  
 - Earth Power  
-- Inferno  
+- Weather Ball
+_
+- Solar Beam  
 
 Primarina @ Mystic Water  
 Ability: Liquid Voice  
@@ -292,9 +441,11 @@ Level: 50
 EVs: 32 HP / 2 Def / 32 SpA  
 Modest Nature  
 - Hyper Voice  
-- Moonblast  
+- Protect
+- Moonblast
+- Calm Mind
+_  
 - Dazzling Gleam  
-- Ice Beam  
 
 Sylveon @ Fairy Feather  
 Ability: Pixilate  
@@ -302,19 +453,30 @@ Level: 50
 EVs: 32 HP / 32 SpA / 2 Spe  
 Modest Nature  
 - Hyper Voice  
-- Quick Attack  
-- Hyper Beam  
-- Shadow Ball  
+- Protect
+- Quick Attack
+- Detect
+- Calm Mind  
+- Hyper Beam
+_  
+- Shadow Ball
+- Helping Hand
+- Mystical Fire  
 
 Blastoise-Mega @ Blastoisinite  
 Ability: Mega Launcher  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
-- Water Spout  
+- Water Spout 
+- Protect 
 - Dark Pulse  
-- Aura Sphere  
+- Aura Sphere
+- Fake Out
+_
+- Shell Smash  
 - Ice Beam  
+- Water Pulse
 
 Scizor-Mega @ Scizorite  
 Ability: Technician  
@@ -322,29 +484,37 @@ Level: 50
 EVs: 32 HP / 32 Atk / 2 SpD  
 Adamant Nature  
 - Bullet Punch  
+- Protect
+- Swords Dance
 - Bug Bite  
+_
 - Close Combat  
 - Dual Wingbeat  
+- U-Turn
 
 Kangaskhan-Mega (F) @ Kangaskhanite  
 Ability: Parental Bond  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
-Adamant Nature  
+Adamant Nature 
+- Fake Out 
 - Double-Edge  
 - Sucker Punch  
-- Drain Punch  
-- Low Kick  
+- Drain Punch
+_  
+- Low Kick
+- Protect  
 
 Kommo-o  
 Ability: Bulletproof  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
+- Protect
 - Clanging Scales  
-- Aura Sphere  
-- Body Press  
-- Flash Cannon  
+- Aura Sphere
+- Clangorous Soul
+_  
 
 Glimmora-Mega @ Glimmoranite  
 Ability: Adaptability  
@@ -355,6 +525,8 @@ Timid Nature
 - Spiky Shield  
 - Earth Power  
 - Sludge Bomb  
+_
+- Sludge Wave
 
 Dragapult  
 Ability: Clear Body  
@@ -362,26 +534,45 @@ Level: 50
 EVs: 2 HP / 32 Atk / 32 Spe  
 Jolly Nature  
 - Dragon Darts  
-- Phantom Force  
-- Psychic Fangs  
+- Phantom Force 
+- Protect
+- Will-O-Wisp 
+- Psychic Fangs
+- Shadow Ball
+- Draco Meteor
+_  
 - U-turn  
+- Sucker Punch
 
 Politoed  
 Ability: Water Absorb  
 Level: 50  
 EVs: 32 HP / 32 Def / 2 SpD  
 Calm Nature  
+- Protect
 - Weather Ball  
-- Icy Wind  
-- Muddy Water  
+- Icy Wind
+- Perish Song  
+- Muddy Water
+_
+- Helping Hand  
 - Ice Beam  
+- Encore
 
 Sableye  
 Ability: Keen Eye  
 Level: 50  
 EVs: 32 HP / 2 Def / 32 SpD  
 Careful Nature  
-- Foul Play  
+- Encore
+- Fake Out
+- Foul Play
+- Will-O-Wisp
+- Disable
+- Rain Dance
+_
+- Quash
+- Light Screen  
 
 Typhlosion-Hisui @ Choice Scarf  
 Ability: Blaze  
@@ -392,6 +583,9 @@ Modest Nature
 - Shadow Ball  
 - Heat Wave  
 - Overheat  
+_
+- Infernal Parade
+- Protect
 
 Ninetales-Alola  
 Ability: Snow Warning  
@@ -399,9 +593,14 @@ Level: 50
 EVs: 2 HP / 32 SpA / 32 Spe  
 Timid Nature  
 - Blizzard  
-- Freeze-Dry  
+- Aurora Veil
+- Protect
+- Freeze-Dry
 - Moonblast  
+_
+- Encore
 - Icy Wind  
+- Dazzling Gleam
 
 Gyarados-Mega @ Gyaradosite  
 Ability: Mold Breaker  
@@ -409,8 +608,13 @@ Level: 50
 EVs: 2 HP / 32 Atk / 32 Spe  
 Adamant Nature  
 - Waterfall  
-- Crunch  
+- Protect
+- Dragon Dance
+- Crunch 
+- Thunder Wave
+_ 
 - Ice Fang  
+- Taunt
 - Earthquake  
 
 Golurk-Mega @ Golurkite  
@@ -418,9 +622,11 @@ Ability: Unseen Fist
 Level: 50  
 EVs: 32 HP / 32 Atk / 2 SpD  
 Brave Nature  
+- Protect
 - Poltergeist  
 - Headlong Rush  
-- Ice Punch  
+- Ice Punch
+_  
 - Drain Punch  
 
 Clefable  
@@ -428,10 +634,12 @@ Ability: Cute Charm
 Level: 50  
 EVs: 32 HP / 32 Def / 2 SpD  
 Bold Nature  
-- Moonblast  
-- Dazzling Gleam  
-- Icy Wind  
-- Thunderbolt  
+- Follow Me
+- Moonblast
+- Protect
+- Helping Hand
+_
+- Life Dew  
 
 Hydreigon @ Choice Scarf  
 Ability: Levitate  
@@ -439,9 +647,14 @@ Level: 50
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
 - Dark Pulse  
-- Draco Meteor  
-- Earth Power  
+- Draco Meteor 
+- Protect 
+- Earth Power
+_  
 - Snarl  
+- Tailwind
+- Heat Wave
+- Flamethrower
 
 Rotom-Heat @ Choice Scarf  
 Ability: Levitate  
@@ -451,7 +664,11 @@ Modest Nature
 - Overheat  
 - Thunderbolt  
 - Volt Switch  
-- Discharge  
+- Protect
+- Electroweb
+- Will-O-Wisp
+_
+- Trick
 
 Starmie-Mega @ Starminite  
 Ability: Huge Power  
@@ -459,9 +676,13 @@ Level: 50
 EVs: 2 HP / 32 Atk / 32 Spe  
 Jolly Nature  
 - Liquidation  
+- Protect
 - Aqua Jet  
 - Zen Headbutt  
 - Ice Spinner  
+_
+- Psycho Cut
+- Flip Turn
 
 Arcanine-Hisui @ Choice Scarf  
 Ability: Intimidate  
@@ -470,6 +691,10 @@ EVs: 2 HP / 32 Atk / 32 Spe
 Adamant Nature  
 - Flare Blitz  
 - Rock Slide  
-- Extreme Speed  
-- Head Smash  
+- Extreme Speed
+- Protect
+_  
+- Head Smash
+- Close Combat
+- Wild Charge  
 

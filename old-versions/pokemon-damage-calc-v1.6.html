@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pokémon Damage Calculator</title>
+<title>Pokémon Damage Profiler</title>
 <style>
   :root {
     --bg: #0f0f14;
@@ -727,6 +727,17 @@ Impish Nature
         </select>
       </div>
 
+      <div class="control-group">
+        <label>Terrain / Screen</label>
+        <select id="terrainMode" onchange="renderResults()">
+          <option value="none">None</option>
+          <option value="psychic">Psychic Terrain</option>
+          <option value="auroraveil">Aurora Veil (×0.5)</option>
+          <option value="reflect">Reflect (×0.5 phys)</option>
+          <option value="lightscreen">Light Screen (×0.5 spec)</option>
+        </select>
+      </div>
+
       <label class="checkbox-toggle">
         <input type="checkbox" id="maxRollMode" onchange="renderResults()">
         <span>Show max rolls</span>
@@ -735,6 +746,11 @@ Impish Nature
       <label class="checkbox-toggle">
         <input type="checkbox" id="attackingMode" onchange="renderResults()">
         <span>Attacking mode</span>
+      </label>
+
+      <label class="checkbox-toggle">
+        <input type="checkbox" id="maxInvestMode" onchange="renderResults()">
+        <span>Max invest override</span>
       </label>
 
       <div class="control-group" style="flex:1;min-width:140px;">
@@ -866,7 +882,9 @@ const SLUG_MAP = {
   'roaring moon':'roaring-moon',   'walking wake':'walking-wake',
   'gouging fire':'gouging-fire',   'raging bolt':'raging-bolt',
   'maushold':'maushold-family-of-four',   'aegislash':'aegislash-blade',
-  'basculegion':'basculegion-male', 'meowstic':'meowstic-male',
+  'basculegion':'basculegion-male', 'basculegion-f':'basculegion-female',
+  'basculegion (f)':'basculegion-female', 'basculegion (female)':'basculegion-female',
+  'meowstic':'meowstic-male',
   'tauros-paldea-aqua':'tauros-paldea-aqua-breed', 'mimikyu':'mimikyu-disguised'
 };
 
@@ -910,11 +928,14 @@ async function fetchMoveData(moveName) {
     const res = await fetch(`https://pokeapi.co/api/v2/move/${slug}`);
     if (!res.ok) return null;
     const data = await res.json();
+    // Spread targets in doubles: all-opponents, all-other-pokemon, entire-field, all-pokemon
+    const spreadTargets = new Set(['all-opponents','all-other-pokemon','entire-field','all-pokemon']);
     const result = {
       name: moveName,
       power: data.power || 0,
       type: data.type.name,
       cat: data.damage_class.name === 'physical' ? 'physical' : 'special',
+      isSpread: spreadTargets.has(data.target.name),
     };
     moveCache[slug] = result;
     return result;
@@ -934,32 +955,51 @@ function parseSinglePaste(text) {
   let ability='', level=50, nature='hardy';
   let evs = {hp:0,atk:0,def:0,spa:0,spd:0,spe:0};
   let ivs = {hp:31,atk:31,def:31,spa:31,spd:31,spe:31};
-  const moves = [];
+  const moves = [];      // all move names including status (no divider sentinel)
+  let dividerIndex = null; // paste index where _ divider was found
 
   for (const line of lines.slice(1)) {
     if (line.startsWith('-')) {
       const mv = line.replace(/^-\s*/,'').trim();
-      if (mv) moves.push(mv);
+      // "_" line = user-defined divider between primary and extra moves
+      if (mv === '_') {
+        if (dividerIndex === null) dividerIndex = moves.length;
+        continue;
+      }
+      // Filter out Hidden Power power annotations like "(60)"
+      const mvName = mv.replace(/\s*\(\d+\)\s*$/, '').trim();
+      if (mvName) moves.push(mvName);
       continue;
     }
-    if (line.startsWith('Ability:'))  { ability=line.replace('Ability:','').trim(); continue; }
-    if (line.startsWith('Level:'))    { level=parseInt(line.replace('Level:','').trim())||50; continue; }
-    if (line.match(/Nature$/))        { nature=line.replace(/\s*Nature$/,'').trim().toLowerCase(); continue; }
+    if (line.startsWith('Ability:'))    { ability=line.replace('Ability:','').trim(); continue; }
+    if (line.startsWith('Level:'))      { level=parseInt(line.replace('Level:','').trim())||50; continue; }
+    if (line.match(/Nature$/))          { nature=line.replace(/\s*Nature$/,'').trim().toLowerCase(); continue; }
+    if (line.startsWith('Tera Type:'))  { continue; }
+    if (line.startsWith('Happiness:'))  { continue; }
+    if (line.startsWith('Shiny:'))      { continue; }
+    if (line.startsWith('Dynamax Level:')) { continue; }
+    if (line.startsWith('Gigantamax:')) { continue; }
     if (line.startsWith('EVs:')) {
       for (const p of line.replace('EVs:','').split('/')) {
         const em = p.trim().match(/(\d+)\s+(\w[\w\s]*)/);
         if (em) { const k=statKey(em[2].trim()); if(k) evs[k]=parseInt(em[1]); }
       }
+      continue;
     }
     if (line.startsWith('IVs:')) {
       for (const p of line.replace('IVs:','').split('/')) {
         const im = p.trim().match(/(\d+)\s+(\w[\w\s]*)/);
         if (im) { const k=statKey(im[2].trim()); if(k) ivs[k]=parseInt(im[1]); }
       }
+      continue;
     }
+    // Unknown lines silently ignored
   }
 
-  return { speciesRaw, item, ability, level, nature, evs, ivs, moves };
+  // If no _ divider found, threshold defaults to 4
+  if (dividerIndex === null) dividerIndex = 4;
+
+  return { speciesRaw, item, ability, level, nature, evs, ivs, moves, dividerIndex };
 }
 
 function splitPaste(text) {
@@ -971,6 +1011,10 @@ let META_DB = [];
 let lastResults = [];
 // Keys are speciesRaw strings — pins persist across tabs and search
 const pinnedKeys = new Set();
+// scarf overrides: key = speciesRaw → 'on'|'off' (overrides item-based detection)
+const scarfOverrides = new Map();
+// collapsed extra moves: key absent = collapsed (default), key present = expanded
+const expandedExtras = new Set();
 
 // ─── Defender tab state ───────────────────────────────────────────────────────
 const DEFENDER_SLOTS = [null, null, null, null, null, null]; // up to 6 saved defenders
@@ -1148,7 +1192,7 @@ async function loadMeta() {
   for (const block of blocks) {
     try {
       const p = parseSinglePaste(block);
-      META_DB.push({ ...p, loaded:false, failed:false, types:[], baseStats:{}, resolvedMoves:[] });
+      META_DB.push({ ...p, loaded:false, failed:false, types:[], baseStats:{}, resolvedMoves:[], allMoves:[] });
     } catch(e) {
       META_DB.push({
         speciesRaw: block.split('\n')[0].substring(0,24),
@@ -1168,9 +1212,10 @@ async function loadMeta() {
       pokemon.baseStats = baseStats;
       pokemon.types = types;
 
-      // Fetch all moves concurrently, keep only damaging ones
-      const moveResults = await Promise.all(pokemon.moves.map(m => fetchMoveData(m)));
-      pokemon.resolvedMoves = moveResults.filter(m => m && m.power > 0);
+      // Fetch all moves concurrently; keep all for display, filter to damaging for calc
+      const moveResults = await Promise.all(pokemon.moves.map((m, i) => fetchMoveData(m).then(r => r ? { ...r, pasteIndex: i } : { name: m, power: 0, type: 'normal', cat: 'status', isSpread: false, pasteIndex: i })));
+      pokemon.allMoves      = moveResults;                              // includes status
+      pokemon.resolvedMoves = moveResults.filter(m => m && m.power > 0); // damaging only
       pokemon.loaded = true;
     } catch(e) {
       pokemon.failed = true;
@@ -1221,15 +1266,21 @@ function damageFormula(level, power, atk, def, eff=1, stab=1) {
 }
 
 // ─── Ability modifiers ────────────────────────────────────────────────────────
-// Returns { stabOverride, atkMul, movePowerMul, typeOverride }
-function getAbilityMods(ability, moveType, atkTypes) {
+// Returns { stabBonus, atkMul, powerMul, typeOverride }
+// typeOverride: if set, replace move type with this value (and treat as STAB)
+function getAbilityMods(ability, moveType, atkTypes, moveName) {
   const ab = (ability || '').toLowerCase().replace(/[\s-]/g,'');
+  const mn = (moveName || '').toLowerCase();
   let stabBonus = atkTypes.includes(moveType) ? 1.5 : 1;
   let atkMul = 1;
   let powerMul = 1;
+  let typeOverride = null; // for type-changing abilities
 
   // STAB overrides
   if (ab === 'adaptability' && atkTypes.includes(moveType)) stabBonus = 2;
+
+  // Protean / Libero: always STAB on every move
+  if (ab === 'protean' || ab === 'libero') stabBonus = 1.5;
 
   // Offense boosts (flat atk/spa multiplier on the stat)
   if (ab === 'hugepower' || ab === 'purepower') atkMul = 2;
@@ -1238,6 +1289,7 @@ function getAbilityMods(ability, moveType, atkTypes) {
   if (ab === 'dragonsmaw' && moveType === 'dragon') atkMul = 1.5;
   if (ab === 'hadronengine' && moveType === 'electric') atkMul = 1.3333;
   if (ab === 'orichalcumpulse' && moveType === 'fire') atkMul = 1.3333;
+  if (ab === 'waterbubble' && moveType === 'water') powerMul = 2;   // doubles water move power
   if (ab === 'swordofruin') atkMul = 1; // def drop on target, handled separately
   if (ab === 'tabletsofruin') atkMul = 1;
 
@@ -1245,45 +1297,82 @@ function getAbilityMods(ability, moveType, atkTypes) {
   if (ab === 'fairyaura' && moveType === 'fairy') powerMul = 4/3;
   if (ab === 'darkaura' && moveType === 'dark') powerMul = 4/3;
 
-  // Type-boosting abilities (power)
-  if (ab === 'ironfist' && ['punch','mach','bullet','comet','drain','dynamic','fire','focus','hammer','ice','mach','meteor','plasma','power','shadow','sky','thunder','vacuum','vital','wake-up'].some(w => moveType === 'fighting' || moveType === 'normal')) {
-    // Iron Fist: only punching moves — handled by move name heuristic below
+  // Type-changing abilities (normal moves become another type + 1.2× power boost)
+  if (moveType === 'normal') {
+    if (ab === 'pixilate')   { typeOverride = 'fairy';    powerMul = 1.2; }
+    if (ab === 'refrigerate'){ typeOverride = 'ice';      powerMul = 1.2; }
+    if (ab === 'aerilate')   { typeOverride = 'flying';   powerMul = 1.2; }
+    if (ab === 'galvanize')  { typeOverride = 'electric'; powerMul = 1.2; }
+    if (ab === 'normalize')  { typeOverride = 'normal'; }
+    // Liquid Voice: sound-based moves become water
+    const soundMoves = ['hyper voice','boomburst','disarming voice','echoed voice',
+      'round','snore','sparkling aria','overdrive','noble roar','relic song',
+      'bug buzz','chatter','clanging scales','clangorous soul','torch song',
+      'alluring voice','psychic noise'];
+    if (ab === 'liquidvoice' && soundMoves.some(s => mn.includes(s.split(' ')[0]))) {
+      typeOverride = 'water'; powerMul = 1;
+    }
+    // Dragonize (fan-made/regional): normal → dragon + 1.2×
+    if (ab === 'dragonize') { typeOverride = 'dragon'; powerMul = 1.2; }
   }
-  if (ab === 'strongjaw') powerMul = 1.5; // biting moves only; approximate
-//   if (ab === 'megalauncher') powerMul = 1.5; // pulse moves only; approximate
-  if (ab === 'technician') { /* handled per move in calculation */ }
-//   if (ab === 'reckless') powerMul = 1.2; // recoil moves only; approximate
-//   if (ab === 'sheerforce') powerMul = 1.3; // moves with secondary effects; approximate
-  if (ab === 'toughclaws') powerMul = 1.3; // contact moves; approximate
-  if (ab === 'neuroforce') powerMul = 1.25; // super effective only; handled below
 
-  return { stabBonus, atkMul, powerMul };
+  // Move-type-specific boosts from non-changing abilities
+  if (ab === 'toughclaws') powerMul = Math.max(powerMul, 1.3); // contact moves — refined per-move
+  if (ab === 'neuroforce') powerMul = Math.max(powerMul, 1.25); // super effective — refined per-move
+  // Note: Mega Launcher handled entirely in getAbilityMovePowerMul (pulse-move list check)
+
+  return { stabBonus, atkMul, powerMul, typeOverride };
 }
 
-// Per-move power adjustments for specific abilities
+// Per-move power adjustments for specific abilities (refinements over the broad getAbilityMods values)
 function getAbilityMovePowerMul(ability, move, eff) {
   const ab = (ability || '').toLowerCase().replace(/[\s-]/g,'');
   const mn = move.name.toLowerCase();
 
   if (ab === 'ironfist') {
-    const punchMoves = ['comet punch','dizzy punch','drain punch','dynamic punch','fire punch','focus punch','hammer arm','ice punch','mach punch','mega punch','meteor mash','plasma fists','power-up punch','shadow punch','sky uppercut','surging strikes','thunder punch','wicked blow','ice spinner'];
+    const punchMoves = ['comet punch','dizzy punch','drain punch','dynamic punch','fire punch',
+      'focus punch','hammer arm','ice punch','mach punch','mega punch','meteor mash',
+      'plasma fists','power-up punch','shadow punch','sky uppercut','surging strikes',
+      'thunder punch','wicked blow','ice spinner','bullet punch'];
     if (punchMoves.some(p => mn.includes(p.split(' ')[0]))) return 1.2;
   }
-  if (ab === 'technician' && move.power <= 60) return 1.5;
+  if (ab === 'technician' && move.power > 0 && move.power <= 60) return 1.5;
   if (ab === 'neuroforce' && eff > 1) return 1.25;
   if (ab === 'toughclaws') {
-    // contact moves heuristic: physical moves that aren't projectile
-    const nonContact = ['earthquake','magnitude','rock slide','rock blast','icicle spear','pin missile','bone rush','bullet seed'];
+    const nonContact = ['earthquake','magnitude','rock slide','rock blast','icicle spear',
+      'pin missile','bone rush','bullet seed','heat wave','discharge','lava plume',
+      'sludge wave','surf','blizzard','icy wind'];
     if (move.cat === 'physical' && !nonContact.some(n => mn.includes(n.split(' ')[0]))) return 1.3;
+    return 1; // override the broad 1.3 for non-contact
   }
   if (ab === 'reckless') {
-    const recoilMoves = ['brave bird','double-edge','flare blitz','head smash','high jump kick','jump kick','light of ruin','head charge','take down','volt tackle','wild charge','wood hammer','submission'];
+    const recoilMoves = ['brave bird','double-edge','flare blitz','head smash',
+      'high jump kick','jump kick','light of ruin','head charge','take down',
+      'volt tackle','wild charge','wood hammer','submission','chloroblast'];
     if (recoilMoves.some(n => mn.includes(n.split(' ')[0]))) return 1.2;
   }
   if (ab === 'sheerforce') {
-    // moves with secondary effects; approximate list
-    const sfMoves = ['air slash','blaze kick','body slam','bounce','bulldoze','charge beam','crunch','dark pulse','discharge','dragon rush','earth power','energy ball','extrasensory','fire blast','flash cannon','flamethrower','focus blast','force palm','gunk shot','heat wave','hurricane','hyper voice','ice beam','iron head','lava plume','moonblast','muddy water','needle arm','poison jab','power gem','psychic','rock slide','shadow ball','sludge bomb','sludge wave','spark','steel wing','thunder','thunderbolt','tri attack','twister','water pulse','zen headbutt'];
+    const sfMoves = ['air slash','blaze kick','body slam','bounce','bulldoze','charge beam',
+      'crunch','dark pulse','discharge','dragon rush','earth power','energy ball',
+      'extrasensory','fire blast','flash cannon','flamethrower','focus blast',
+      'force palm','gunk shot','heat wave','hurricane','hyper voice','ice beam',
+      'iron head','lava plume','moonblast','muddy water','needle arm','poison jab',
+      'power gem','psychic','rock slide','shadow ball','sludge bomb','sludge wave',
+      'spark','steel wing','thunder','thunderbolt','tri attack','twister',
+      'water pulse','zen headbutt','dazzling gleam','dragon darts'];
     if (sfMoves.some(n => mn.includes(n.split(' ')[0]))) return 1.3;
+  }
+  if (ab === 'strongjaw') {
+    const biteMoves = ['bite','crunch','fire fang','ice fang','thunder fang','poison fang',
+      'psychic fangs','hyper fang','fishious rend','jaw lock'];
+    if (biteMoves.some(b => mn.includes(b.split(' ')[0]))) return 1.5;
+  }
+  if (ab === 'megalauncher') {
+    // Exact pulse move names only — Water Spout is NOT a pulse move
+    const pulseMoves = new Set(['aura sphere','dark pulse','dragon pulse','heal pulse',
+      'origin pulse','oblivion wing','water pulse','terrain pulse','octazooka',
+      'bubble beam','bone rush']); // bubble beam is boosted in some games
+    if (pulseMoves.has(mn)) return 1.5;
   }
   return 1;
 }
@@ -1370,6 +1459,17 @@ function getDefenderRuinDebuff(attackerAbility, moveCat) {
   return 1;
 }
 
+// Defender ability damage reduction multiplier (applied to incoming damage)
+// Returns a multiplier < 1 when the defender's ability reduces damage from this move type
+function getDefenderAbilityDmgMul(defenderAbility, moveType) {
+  const ab = (defenderAbility || '').toLowerCase().replace(/[\s-]/g,'');
+  if (ab === 'waterbubble' && moveType === 'fire') return 0.5;  // Water Bubble halves fire damage taken
+  if (ab === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) return 0.5;
+  if (ab === 'fluffy' && moveType === 'fire') return 2;   // Fluffy doubles fire damage
+  if (ab === 'dryskin' && moveType === 'fire') return 1.25; // Dry Skin 25% more fire damage
+  return 1;
+}
+
 
 
 function stageMultiplier(stage) {
@@ -1387,6 +1487,34 @@ function applyWeatherModifier(moveType, weather) {
     if (moveType === 'fire') return 0.5;
   }
   return 1;
+}
+
+// Weather Ball doubles power in weather and changes type
+function weatherBallType(weather) {
+  if (weather === 'sun')  return 'fire';
+  if (weather === 'rain') return 'water';
+  if (weather === 'sand') return 'rock';
+  if (weather === 'snow') return 'ice';
+  return 'normal';
+}
+
+// Terrain / screen defense multiplier for a given move category
+function applyTerrainScreenMul(moveCat, terrain) {
+  if (!terrain || terrain === 'none') return 1;
+  if (terrain === 'auroraveil') return 2732/4096;   // ≈ 0.6665 (exact game fraction)
+  if (terrain === 'reflect'     && moveCat === 'physical') return 0.5;
+  if (terrain === 'lightscreen' && moveCat === 'special')  return 0.5;
+  return 1;
+}
+
+// Psychic Terrain: Expanding Force becomes spread + 1.5×; grounded targets are protected from priority
+function applyPsychicTerrainPower(moveName, terrain) {
+  if (terrain !== 'psychic') return { powerMul: 1, spreadOverride: false };
+  const mn = (moveName||'').toLowerCase();
+  if (mn.includes('expanding') || mn.includes('force')) {
+    return { powerMul: 1.5, spreadOverride: true };
+  }
+  return { powerMul: 1, spreadOverride: false };
 }
 
 async function calculate() {
@@ -1424,7 +1552,8 @@ async function calculate() {
       try {
         btn.textContent = `Fetching defender ${bi+1}/${blocksToLoad.length}…`;
         const defender = await parseDefender(blocksToLoad[bi]);
-        const defMoveResults = await Promise.all((defender.moves||[]).map(m => fetchMoveData(m)));
+        const defMoveResults = await Promise.all((defender.moves||[]).map((m, i) => fetchMoveData(m).then(r => r ? { ...r, pasteIndex: i } : { name: m, power: 0, type: 'normal', cat: 'status', isSpread: false, pasteIndex: i })));
+        defender.allMoves      = defMoveResults;
         defender.resolvedMoves = defMoveResults.filter(m => m && m.power > 0);
         const results = computeResults(loadedMeta, defender);
         defender._rawText = blocksToLoad[bi];
@@ -1459,7 +1588,8 @@ async function calculate() {
     return;
   }
 
-  const defMoveResults = await Promise.all((defender.moves||[]).map(m => fetchMoveData(m)));
+  const defMoveResults = await Promise.all((defender.moves||[]).map((m, i) => fetchMoveData(m).then(r => r ? { ...r, pasteIndex: i } : { name: m, power: 0, type: 'normal', cat: 'status', isSpread: false, pasteIndex: i })));
+  defender.allMoves      = defMoveResults;
   defender.resolvedMoves = defMoveResults.filter(m => m && m.power > 0);
 
   lastResults = computeResults(loadedMeta, defender);
@@ -1501,154 +1631,408 @@ function computeResults(loadedMeta, defender) {
     let best = { dmg: 0, move: null, eff: 1 };
     const moveBreakdown = [];
 
-    // Ability + item mods for this attacker
-    const abMods = getAbilityMods(attacker.ability, '', attacker.types); // called per-move below
-    const itemMods = getItemMods(attacker.item, '', '');                 // called per-move below
+    // Pre-compute attacker stats
+    attacker.computedAtk  = calcStat(attacker.baseStats.atk, attacker.evs.atk||0, attacker.ivs.atk||31, 50, nat.atk||1);
+    attacker.computedSpa  = calcStat(attacker.baseStats.spa, attacker.evs.spa||0, attacker.ivs.spa||31, 50, nat.spa||1);
+    attacker.computedDef  = calcStat(attacker.baseStats.def, attacker.evs.def||0, attacker.ivs.def||31, 50, nat.def||1);
+    attacker.computedSpd  = calcStat(attacker.baseStats.spd, attacker.evs.spd||0, attacker.ivs.spd||31, 50, nat.spd||1);
+    attacker.computedHp   = calcHP(attacker.baseStats.hp,   attacker.evs.hp||0,  attacker.ivs.hp||31,  50);
+    attacker.computedSpe  = calcStat(attacker.baseStats.spe, attacker.evs.spe||0, attacker.ivs.spe||31, 50, nat.spe||1);
 
     for (const move of attacker.resolvedMoves) {
-      const eff = typeEff(move.type, defender.types);
+      const mn = move.name.toLowerCase();
+
+      // ── Resolve effective move type (weather ball, type-changing abilities) ──
+      let effectiveMoveType = move.type;
+      let typeChangedBy = null;
+
+      // Weather Ball: changes type based on weather (handled in renderResults for weather context,
+      // but we store base type here; weather ball power doubling also done in renderResults)
+      // For now mark it for renderResults
+      const isWeatherBall = mn === 'weather ball';
+
+      // Type-changing abilities on normal moves
+      // We call getAbilityMods with the ORIGINAL move type to get the typeOverride + powerMul
+      const abMOrig = getAbilityMods(attacker.ability, move.type, attacker.types, move.name);
+      if (abMOrig.typeOverride && abMOrig.typeOverride !== effectiveMoveType) {
+        effectiveMoveType = abMOrig.typeOverride;
+        typeChangedBy = attacker.ability;
+      }
+
+      // ── Special moves: Freeze-Dry is ice but super-effective vs water ──
+      // ── handled in typeEff override below ──
+      const isFreezeDry = mn === 'freeze-dry' || mn.replace(/-/g,' ') === 'freeze dry';
+      let eff;
+      if (isFreezeDry) {
+        // Freeze-Dry is super effective against water regardless of other typing.
+        // Treat the water type as if it were ×2 vs ice (ignoring the normal ×0.5 resist).
+        // For dual-type defenders: replace the water part with ×2, keep the other type's modifier.
+        const nonWaterTypes = defender.types.filter(t => t !== 'water');
+        const nonWaterEff = nonWaterTypes.length > 0 ? typeEff('ice', nonWaterTypes) : 1;
+        const waterFactor = defender.types.includes('water') ? 2 : 1;
+        eff = nonWaterEff * waterFactor;
+      } else {
+        eff = typeEff(effectiveMoveType, defender.types);
+      }
       if (eff === 0) continue;
 
-      // STAB (Adaptability = ×2)
-      const abModsForMove = getAbilityMods(attacker.ability, move.type, attacker.types);
-      const isStab = abModsForMove.stabBonus;
+      // Recalculate STAB and atk boosts using effective type
+      const abMeff = getAbilityMods(attacker.ability, effectiveMoveType, attacker.types, move.name);
+      const isStab = abMeff.stabBonus;
 
-      // Attacker stat with ability multiplier
-      const itemModsForMove = getItemMods(attacker.item, move.type, move.cat);
-      const abilityAtkMul = abModsForMove.atkMul * itemModsForMove.atkMul;
+      // Item mods (use effective type for type-boosting items)
+      const itemModsForMove = getItemMods(attacker.item, effectiveMoveType, move.cat);
 
-      const rawAtk = move.cat === 'physical'
-        ? calcStat(attacker.baseStats.atk, attacker.evs.atk, attacker.ivs.atk, 50, nat.atk||1)
-        : calcStat(attacker.baseStats.spa, attacker.evs.spa, attacker.ivs.spa, 50, nat.spa||1);
+      // ── Special move: Body Press uses Def as attack stat ──
+      const isBodyPress = mn === 'body press';
+      // ── Special move: Foul Play uses target's (defender's) Atk stat ──
+      const isFoulPlay = mn === 'foul play';
+      // ── Psyshock / Psystrike / Secret Sword: special move, uses target's Def ──
+      const isPsyshockLike = mn === 'psyshock' || mn === 'psystrike' || mn === 'secret sword';
+
+      let rawAtk, rawDef;
+      if (isBodyPress) {
+        rawAtk = attacker.computedDef; // uses user's Defense
+        rawDef = defender.stats.def;
+      } else if (isFoulPlay) {
+        rawAtk = defender.stats.atk;  // uses target's Attack
+        rawDef = defender.stats.def;
+      } else if (isPsyshockLike) {
+        rawAtk = attacker.computedSpa;
+        rawDef = defender.stats.def;  // uses target's Defense (not SpD)
+      } else {
+        rawAtk = move.cat === 'physical' ? attacker.computedAtk : attacker.computedSpa;
+        rawDef = move.cat === 'physical' ? defender.stats.def : defender.stats.spd;
+      }
+
+      const abilityAtkMul = abMeff.atkMul * itemModsForMove.atkMul;
       const atkStat = rawAtk * abilityAtkMul;
 
-      // Defender stat (Ruin ability debuff)
+      // Defender stat with Ruin ability debuff
       const ruinMul = getDefenderRuinDebuff(attacker.ability, move.cat);
-      const rawDef = move.cat === 'physical' ? defender.stats.def : defender.stats.spd;
       const defStat = rawDef * ruinMul;
 
-      // Power modifiers (ability + item)
-      const abilityPowerMul = abModsForMove.powerMul * getAbilityMovePowerMul(attacker.ability, move, eff);
-      const itemPowerMul    = itemModsForMove.powerMul * getItemPerMoveMul(attacker.item, move.type, eff);
+      // Power modifiers:
+      // - abMOrig.powerMul carries the type-change boost (e.g. Pixilate ×1.2)
+      // - abMeff.powerMul carries aura/other ability boosts computed on effective type
+      // - We take the max of both to avoid double-counting when they're the same source,
+      //   but for Pixilate + Fairy Aura they stack, so we multiply them.
+      //   In practice: for type-changing abilities abMOrig has the 1.2 and abMeff has 1 (normal->fairy hit the guard);
+      //   for aura abilities abMOrig == abMeff so we just use abMeff directly.
+      const origPowerMul = typeChangedBy ? abMOrig.powerMul : 1; // only bring in orig if type was changed
+      const abilityPowerMul = (typeChangedBy ? origPowerMul : abMeff.powerMul) * getAbilityMovePowerMul(attacker.ability, move, eff);
+      const itemPowerMul    = itemModsForMove.powerMul * getItemPerMoveMul(attacker.item, effectiveMoveType, eff);
       const effectivePower  = move.power * abilityPowerMul * itemPowerMul;
 
-      const dmg = damageFormula(50, effectivePower, atkStat, defStat, eff, isStab);
+      const dmg = damageFormula(50, effectivePower, atkStat, defStat, eff, isStab)
+                  * getDefenderAbilityDmgMul(defender.ability, effectiveMoveType);
       const pct = dmg / defender.stats.hp * 100;
 
-      // Note which mods were active for display
+      // ── Build activeMods list for display ──
       const activeMods = [];
-      if (isStab > 1.5) activeMods.push('Adaptability');
-      else if (isStab === 1.5) activeMods.push('STAB');
-      if (abilityAtkMul > 1) activeMods.push(attacker.ability);
-      if (itemModsForMove.powerMul > 1 || itemModsForMove.atkMul > 1) activeMods.push(attacker.item);
-      if (abModsForMove.powerMul > 1) activeMods.push(attacker.ability);
-      if (eff > 1) activeMods.push(`×${eff}`);
+      const ab = (attacker.ability||'').toLowerCase().replace(/[\s-]/g,'');
 
-      moveBreakdown.push({ move, dmg, pct, eff, stab: isStab > 1, activeMods });
+      // STAB source
+      if (isStab > 1.5) activeMods.push(ab === 'adaptability' ? 'Adaptability' : 'STAB×2');
+      else if (isStab > 1)  activeMods.push(ab === 'protean' || ab === 'libero' ? `Protean STAB` : 'STAB');
 
-      if (dmg > best.dmg) best = { dmg, move, eff };
+      // Type change
+      if (typeChangedBy) activeMods.push(`${attacker.ability} (${move.type}→${effectiveMoveType})`);
+
+      // Ability power/atk boosts
+      if (abMeff.atkMul > 1)   activeMods.push(attacker.ability);
+      if (abMeff.powerMul > 1 && !typeChangedBy) activeMods.push(attacker.ability);
+      const perMoveMul = getAbilityMovePowerMul(attacker.ability, move, eff);
+      if (perMoveMul > 1) activeMods.push(attacker.ability);
+
+      // Item boosts
+      if (itemModsForMove.atkMul > 1)   activeMods.push(attacker.item);
+      if (itemModsForMove.powerMul > 1) activeMods.push(attacker.item);
+      const perMoveItemMul = getItemPerMoveMul(attacker.item, effectiveMoveType, eff);
+      if (perMoveItemMul > 1) activeMods.push(attacker.item);
+
+      // Special mechanics
+      if (isBodyPress)    activeMods.push('Body Press (Def)');
+      if (isFoulPlay)     activeMods.push("Foul Play (foe's Atk)");
+      if (isPsyshockLike) activeMods.push('Psyshock (Def)');
+      if (isFreezeDry && defender.types.includes('water')) activeMods.push('Freeze-Dry vs Water');
+      if (isWeatherBall)  activeMods.push('Weather Ball');
+
+      // Dedup
+      const uniqueMods = [...new Set(activeMods)].filter(Boolean);
+
+      moveBreakdown.push({
+        move,
+        effectiveMoveType,
+        isSpread: move.isSpread,
+        isWeatherBall,
+        dmg, pct, eff,
+        stab: isStab > 1,
+        activeMods: uniqueMods,
+        atkStat, defStat,
+        isStab,
+        itemModsForMove,
+        pasteIndex: move.pasteIndex ?? 99,  // original slot in paste (0-based)
+      });
+
+      // Only count moves below the divider threshold as candidates for best-move summary
+      if (dmg > best.dmg && (move.pasteIndex ?? 99) < (attacker.dividerIndex ?? 4)) best = { dmg, move, eff };
     }
+
+    // ── Add status (non-damaging) moves to breakdown for display ──────────────
+    for (const move of (attacker.allMoves || [])) {
+      if (move.power > 0) continue; // already in breakdown from resolvedMoves loop
+      moveBreakdown.push({
+        move,
+        effectiveMoveType: move.type,
+        isSpread: move.isSpread,
+        isWeatherBall: false,
+        dmg: 0, pct: 0, eff: 0,
+        stab: false,
+        activeMods: [],
+        atkStat: 0, defStat: 0, isStab: 1,
+        itemModsForMove: {},
+        pasteIndex: move.pasteIndex ?? 99,
+        isStatus: true,
+      });
+    }
+    // Re-sort breakdown by pasteIndex to restore paste order (damaging + status interleaved)
+    moveBreakdown.sort((a, b) => (a.pasteIndex ?? 99) - (b.pasteIndex ?? 99));
 
     // ── Defender attacking back at this meta Pokémon ──────────────────────────
     const defNat = NATURES[defender.nature] || {};
-    const defAbMods = getAbilityMods(defender.ability, '', defender.types);
-    const defItemMods = getItemMods(defender.item, '', '');
     let defBest = { dmg: 0, move: null, eff: 1 };
     const defMoveBreakdown = [];
 
     for (const move of defender.resolvedMoves) {
-      const eff = typeEff(move.type, attacker.types);
+      const mn = move.name.toLowerCase();
+      const abM = getAbilityMods(defender.ability, move.type, defender.types, move.name);
+      let effectiveMoveType = move.type;
+      if (abM.typeOverride) effectiveMoveType = abM.typeOverride;
+
+      const isFreezeDryDef = mn === 'freeze-dry' || mn.replace(/-/g,' ') === 'freeze dry';
+      let eff;
+      if (isFreezeDryDef) {
+        const nonWaterTypes = attacker.types.filter(t => t !== 'water');
+        const nonWaterEff = nonWaterTypes.length > 0 ? typeEff('ice', nonWaterTypes) : 1;
+        const waterFactor = attacker.types.includes('water') ? 2 : 1;
+        eff = nonWaterEff * waterFactor;
+      } else {
+        eff = typeEff(effectiveMoveType, attacker.types);
+      }
       if (eff === 0) continue;
-      const defAbForMove  = getAbilityMods(defender.ability, move.type, defender.types);
-      const defItForMove  = getItemMods(defender.item, move.type, move.cat);
-      const stabBonus     = defAbForMove.stabBonus;
-      const atkStatMul    = defAbForMove.atkMul * defItForMove.atkMul;
-      const rawAtk        = move.cat === 'physical'
-        ? calcStat(defender.baseStats.atk, defender.evs.atk, defender.ivs.atk, defender.level, defNat.atk||1)
-        : calcStat(defender.baseStats.spa, defender.evs.spa, defender.ivs.spa, defender.level, defNat.spa||1);
-      const atkStat       = rawAtk * atkStatMul;
-      const ruinMul       = getDefenderRuinDebuff(defender.ability, move.cat);
-      // compute attacker defensive stats now
-      attacker.computedDef  = calcStat(attacker.baseStats.def, attacker.evs.def, attacker.ivs.def, 50, nat.def||1);
-      attacker.computedSpd  = calcStat(attacker.baseStats.spd, attacker.evs.spd, attacker.ivs.spd, 50, nat.spd||1);
-      attacker.computedHp   = calcHP(attacker.baseStats.hp, attacker.evs.hp, attacker.ivs.hp, 50);
-      attacker.computedSpe  = calcStat(attacker.baseStats.spe, attacker.evs.spe, attacker.ivs.spe, 50, nat.spe||1);
-      const rawDef        = move.cat === 'physical' ? attacker.computedDef : attacker.computedSpd;
-      const defStat       = (rawDef || calcStat(attacker.baseStats[move.cat==='physical'?'def':'spd'],0,31,50,1)) * ruinMul;
-      const powerMul      = defAbForMove.powerMul * getAbilityMovePowerMul(defender.ability, move, eff) * defItForMove.powerMul * getItemPerMoveMul(defender.item, move.type, eff);
-      const effPower      = move.power * powerMul;
-      const dmg           = damageFormula(defender.level, effPower, atkStat, defStat, eff, stabBonus);
-      const pct           = dmg / (calcHP(attacker.baseStats.hp,0,31,50)) * 100;
 
-      defMoveBreakdown.push({ move, dmg, pct, eff, stab: stabBonus > 1, activeMods: [] });
-      if (dmg > defBest.dmg) defBest = { dmg, move, eff };
+      const abMeff       = getAbilityMods(defender.ability, effectiveMoveType, defender.types, move.name);
+      const isStab       = abMeff.stabBonus;
+      const defItForMove = getItemMods(defender.item, effectiveMoveType, move.cat);
+
+      const isPsyshockLike = mn === 'psyshock' || mn === 'psystrike' || mn === 'secret sword';
+      const isBodyPress    = mn === 'body press';
+      const isFoulPlay     = mn === 'foul play';
+
+      let rawAtk, rawDef;
+      const defAtk = calcStat(defender.baseStats.atk, defender.evs.atk||0, defender.ivs.atk||31, defender.level, defNat.atk||1);
+      const defSpa = calcStat(defender.baseStats.spa, defender.evs.spa||0, defender.ivs.spa||31, defender.level, defNat.spa||1);
+      const defDef = calcStat(defender.baseStats.def, defender.evs.def||0, defender.ivs.def||31, defender.level, defNat.def||1);
+
+      if (isBodyPress)    { rawAtk = defDef;  rawDef = attacker.computedDef; }
+      else if (isFoulPlay){ rawAtk = attacker.computedAtk; rawDef = attacker.computedDef; }
+      else if (isPsyshockLike){ rawAtk = defSpa; rawDef = attacker.computedDef; }
+      else {
+        rawAtk = move.cat === 'physical' ? defAtk : defSpa;
+        rawDef = move.cat === 'physical' ? attacker.computedDef : attacker.computedSpd;
+      }
+
+      const atkStat  = rawAtk * abMeff.atkMul * defItForMove.atkMul;
+      const ruinMul  = getDefenderRuinDebuff(defender.ability, move.cat);
+      const defStat  = rawDef * ruinMul;
+      const pwrMul   = abMeff.powerMul * getAbilityMovePowerMul(defender.ability, move, eff) * defItForMove.powerMul * getItemPerMoveMul(defender.item, effectiveMoveType, eff);
+      const dmg      = damageFormula(defender.level, move.power * pwrMul, atkStat, defStat, eff, isStab)
+                       * getDefenderAbilityDmgMul(attacker.ability, effectiveMoveType);
+      const pct      = dmg / attacker.computedHp * 100;
+
+      defMoveBreakdown.push({ move, effectiveMoveType, isSpread: move.isSpread, isWeatherBall: mn === 'weather ball', dmg, pct, eff, stab: isStab > 1, activeMods: [], atkStat, defStat, isStab, pasteIndex: move.pasteIndex ?? 99 });
+      const defDivIdx = defender.dividerIndex ?? 4;
+      if (dmg > defBest.dmg && (move.pasteIndex ?? 99) < defDivIdx) defBest = { dmg, move, eff };
     }
 
-    // Make sure computed stats exist even if defender has no moves
-    if (!attacker.computedDef) {
-      attacker.computedDef  = calcStat(attacker.baseStats.def, attacker.evs.def, attacker.ivs.def, 50, nat.def||1);
-      attacker.computedSpd  = calcStat(attacker.baseStats.spd, attacker.evs.spd, attacker.ivs.spd, 50, nat.spd||1);
-      attacker.computedHp   = calcHP(attacker.baseStats.hp, attacker.evs.hp, attacker.ivs.hp, 50);
-      attacker.computedSpe  = calcStat(attacker.baseStats.spe, attacker.evs.spe, attacker.ivs.spe, 50, nat.spe||1);
+    // ── Add status moves to defMoveBreakdown for display ─────────────────────
+    for (const move of (defender.allMoves || [])) {
+      if (move.power > 0) continue;
+      defMoveBreakdown.push({
+        move,
+        effectiveMoveType: move.type,
+        isSpread: false, isWeatherBall: false,
+        dmg: 0, pct: 0, eff: 0,
+        stab: false, activeMods: [],
+        atkStat: 0, defStat: 0, isStab: 1,
+        pasteIndex: move.pasteIndex ?? 99,
+        isStatus: true,
+      });
     }
+    defMoveBreakdown.sort((a, b) => (a.pasteIndex ?? 99) - (b.pasteIndex ?? 99));
 
-    const pct = best.move ? best.dmg / defender.stats.hp * 100 : 0;
+    const pct    = best.move ? best.dmg / defender.stats.hp * 100 : 0;
     const defPct = defBest.move ? defBest.dmg / attacker.computedHp * 100 : 0;
 
     results.push({
-      attacker,
-      defender,
-      dmg: best.dmg,
-      move: best.move,
-      pct,
-      eff: best.eff,
+      attacker, defender,
+      dmg: best.dmg, move: best.move, pct, eff: best.eff,
       originalOrder: results.length + 1,
       defenderHp: defender.stats.hp,
-      moveBreakdown,          // attacker → defender
-      defMoveBreakdown,       // defender → attacker
-      defBestMove: defBest.move,
-      defBestPct: defPct,
-      defBestEff: defBest.eff,
+      moveBreakdown, defMoveBreakdown,
+      defBestMove: defBest.move, defBestPct: defPct, defBestEff: defBest.eff,
+      dividerIndex: attacker.dividerIndex ?? 4,   // store on result for renderResults access
     });
   }
   return results;
 }
 
 function renderResults() {
-  const weather      = document.getElementById('weatherMode')?.value || 'none';
-  const offenseStage = Number(document.getElementById('offenseStage')?.value || 0);
-  const defenseStage = Number(document.getElementById('defenseStage')?.value || 0);
-  const maxRollMode  = document.getElementById('maxRollMode')?.checked || false;
+  const weather       = document.getElementById('weatherMode')?.value || 'none';
+  const terrainMode   = document.getElementById('terrainMode')?.value || 'none';
+  const offenseStage  = Number(document.getElementById('offenseStage')?.value || 0);
+  const defenseStage  = Number(document.getElementById('defenseStage')?.value || 0);
+  const maxRollMode   = document.getElementById('maxRollMode')?.checked || false;
   const attackingMode = document.getElementById('attackingMode')?.checked || false;
-  const searchQuery  = (document.getElementById('searchBar')?.value || '').toLowerCase().trim();
+  const maxInvest     = document.getElementById('maxInvestMode')?.checked || false;
+  const searchQuery   = (document.getElementById('searchBar')?.value || '').toLowerCase().trim();
 
   lastResults.forEach(r => {
     // ── Defending mode: attackers hit the defender ──
     let best = { dmg: 0, pct: 0, move: null, eff: 1 };
     r.moveBreakdown.forEach(m => {
+      // Status moves: skip damage calculations entirely
+      if (m.isStatus) {
+        m.adjustedPct = 0; m.adjustedDmg = 0;
+        m.resolvedType = m.move.type; m.isEffectivelySpread = false;
+        return;
+      }
       let adjustedDmg = m.dmg;
-      adjustedDmg *= applyWeatherModifier(m.move.type, weather);
+
+      // Max invest override: rescale damage to 32 EVs + boosting nature (Pokemon Champions max)
+      if (maxInvest) {
+        const nat = NATURES[r.attacker.nature] || {};
+        const mn2 = m.move.name.toLowerCase();
+        const isBodyPress2 = mn2 === 'body press';
+        const isFoulPlay2  = mn2 === 'foul play';
+        if (!isBodyPress2 && !isFoulPlay2) {
+          const isPhys = m.move.cat === 'physical';
+          const base   = isPhys ? r.attacker.baseStats.atk : r.attacker.baseStats.spa;
+          const curStat = isPhys ? r.attacker.computedAtk : r.attacker.computedSpa;
+          // Max in Pokemon Champions: 32 EVs + 1.1 nature
+          const maxStat = calcStat(base, 32, 31, 50, 1.1);
+          if (curStat > 0 && maxStat > curStat) adjustedDmg *= maxStat / curStat;
+        }
+      }
+
+      // Weather Ball: recompute damage completely from scratch with correct type/power/weather
+      let moveType = m.effectiveMoveType || m.move.type;
+      const isWB = m.isWeatherBall || (m.move && m.move.name.toLowerCase() === 'weather ball');
+      if (isWB && weather !== 'none') {
+        const newType = weatherBallType(weather);
+        const newEff  = typeEff(newType, r.defender ? r.defender.types : []);
+        if (newEff === 0) { m.adjustedPct = 0; m.adjustedDmg = 0; return; }
+        const wbPower       = 100;  // doubles in weather
+        const weatherBoost  = applyWeatherModifier(newType, weather); // e.g. 1.5 for water in rain
+        // Use stored atkStat/defStat/isStab if available, otherwise fall back to ratio method
+        let wbDmg;
+        if (m.atkStat && m.defStat) {
+          // STAB: if attacker is water-type and newType is water, apply stab
+          const atkTypes = r.attacker.types || [];
+          const wbStab = atkTypes.includes(newType) ? (m.isStab > 1.5 ? 2 : 1.5) : (m.isStab||1);
+          wbDmg = damageFormula(50, wbPower, m.atkStat, m.defStat, newEff, wbStab);
+          wbDmg *= weatherBoost;
+          wbDmg *= getDefenderAbilityDmgMul(r.defender ? r.defender.ability : '', newType);
+        } else {
+          // Fallback ratio: m.dmg was 50BP normal-type, correct for 100BP + newType eff + weather
+          const origEff = m.eff > 0 ? m.eff : 1;
+          wbDmg = m.dmg * (wbPower / 50) * (newEff / origEff) * weatherBoost;
+        }
+        adjustedDmg = wbDmg;
+        moveType = newType;
+      } else {
+        // Non-weather-ball: apply standard weather modifier
+        adjustedDmg *= applyWeatherModifier(moveType, weather);
+      }
+
+      // Sand SpD boost (rock types)
+      if (weather === 'sand' && m.move.cat === 'special') {
+        if (r.defender && r.defender.types.includes('rock')) adjustedDmg /= 1.5;
+      }
+      if (weather === 'snow' && m.move.cat === 'physical') {
+        if (r.defender && r.defender.types.includes('ice')) adjustedDmg /= 1.5;
+      }
+
+      // Stat stage modifiers
       adjustedDmg *= stageMultiplier(offenseStage);
       adjustedDmg /= stageMultiplier(defenseStage);
-      if (weather === 'sand' && m.move.cat === 'special') adjustedDmg /= 1.5;
-      if (weather === 'snow' && m.move.cat === 'physical') adjustedDmg /= 1.5;
+
+      // Terrain/screen defense
+      adjustedDmg *= applyTerrainScreenMul(m.move.cat, terrainMode);
+
+      // Psychic Terrain: Expanding Force ×1.5 and spread
+      const terrainBoost = applyPsychicTerrainPower(m.move.name, terrainMode);
+      adjustedDmg *= terrainBoost.powerMul;
+      const isEffectivelySpread = m.isSpread || terrainBoost.spreadOverride;
+
+      // Spread penalty: ×0.75 in doubles
+      if (isEffectivelySpread) adjustedDmg *= 0.75;
+
       if (maxRollMode) adjustedDmg /= 0.85;
-      m.adjustedPct = adjustedDmg / r.defenderHp * 100;
-      m.adjustedDmg = adjustedDmg;
-      if (adjustedDmg > best.dmg) best = { dmg: adjustedDmg, pct: m.adjustedPct, move: m.move, eff: m.eff };
+
+      m.adjustedPct  = adjustedDmg / r.defenderHp * 100;
+      m.adjustedDmg  = adjustedDmg;
+      m.resolvedType = moveType; // for display
+      m.isEffectivelySpread = isEffectivelySpread;
+
+      if (adjustedDmg > best.dmg && (m.pasteIndex ?? 99) < (r.attacker.dividerIndex ?? 4)) best = { dmg: adjustedDmg, pct: m.adjustedPct, move: m.move, eff: m.eff };
     });
 
     // ── Attacking mode: defender hits each meta Pokémon ──
     let defBest = { dmg: 0, pct: 0, move: null, eff: 1 };
     (r.defMoveBreakdown || []).forEach(m => {
+      if (m.isStatus) {
+        m.adjustedPct = 0; m.adjustedDmg = 0;
+        m.resolvedType = m.move.type; m.isEffectivelySpread = false;
+        return;
+      }
       let adjustedDmg = m.dmg;
-      adjustedDmg *= applyWeatherModifier(m.move.type, weather);
+      let moveType2 = m.effectiveMoveType || m.move.type;
+      const isWB2 = m.isWeatherBall || (m.move && m.move.name.toLowerCase() === 'weather ball');
+      if (isWB2 && weather !== 'none') {
+        const newType = weatherBallType(weather);
+        const newEff  = typeEff(newType, r.attacker.types || []);
+        if (newEff === 0) { m.adjustedPct = 0; m.adjustedDmg = 0; return; }
+        const weatherBoost2 = applyWeatherModifier(newType, weather);
+        let wbDmg2;
+        if (m.atkStat && m.defStat) {
+          const defTypes = r.defender ? r.defender.types : [];
+          const wbStab2 = defTypes.includes(newType) ? 1.5 : (m.isStab||1);
+          wbDmg2 = damageFormula(50, 100, m.atkStat, m.defStat, newEff, wbStab2);
+          wbDmg2 *= weatherBoost2;
+        } else {
+          const origEff = m.eff > 0 ? m.eff : 1;
+          wbDmg2 = m.dmg * (100 / 50) * (newEff / origEff) * weatherBoost2;
+        }
+        adjustedDmg = wbDmg2;
+        moveType2 = newType;
+      } else {
+        adjustedDmg *= applyWeatherModifier(moveType2, weather);
+      }
       adjustedDmg *= stageMultiplier(offenseStage);
       adjustedDmg /= stageMultiplier(defenseStage);
+      adjustedDmg *= applyTerrainScreenMul(m.move.cat, terrainMode);
+      const terrainBoost = applyPsychicTerrainPower(m.move.name, terrainMode);
+      adjustedDmg *= terrainBoost.powerMul;
+      const isEffSpread = m.isSpread || terrainBoost.spreadOverride;
+      if (isEffSpread) adjustedDmg *= 0.75;
       if (maxRollMode) adjustedDmg /= 0.85;
       m.adjustedPct = adjustedDmg / r.attacker.computedHp * 100;
       m.adjustedDmg = adjustedDmg;
-      if (adjustedDmg > defBest.dmg) defBest = { dmg: adjustedDmg, pct: m.adjustedPct, move: m.move, eff: m.eff };
+      m.resolvedType = moveType2;
+      m.isEffectivelySpread = isEffSpread;
+      if (adjustedDmg > defBest.dmg && (m.pasteIndex ?? 99) < (r.defender ? (r.defender.dividerIndex ?? 4) : 4)) defBest = { dmg: adjustedDmg, pct: m.adjustedPct, move: m.move, eff: m.eff };
     });
 
     r.displayPct  = attackingMode ? defBest.pct  : best.pct;
@@ -1662,7 +2046,7 @@ function renderResults() {
   else if (mode === 'name') sorted.sort((a,b) => a.attacker.speciesRaw.localeCompare(b.attacker.speciesRaw));
   else sorted.sort((a,b) => a.originalOrder - b.originalOrder);
 
-  // Apply search filter — pinned items always survive the filter
+  // Apply search filter — pinned items always survive
   if (searchQuery) {
     sorted = sorted.filter(r =>
       r.attacker.speciesRaw.toLowerCase().includes(searchQuery) ||
@@ -1670,7 +2054,7 @@ function renderResults() {
     );
   }
 
-  // Float pinned items to the top, keeping their relative order
+  // Float pinned items to the top
   const pinned   = sorted.filter(r => pinnedKeys.has(r.attacker.speciesRaw));
   const unpinned = sorted.filter(r => !pinnedKeys.has(r.attacker.speciesRaw));
   sorted = [...pinned, ...unpinned];
@@ -1682,7 +2066,6 @@ function renderResults() {
   sorted.forEach((r, index) => {
     const isPinned = pinnedKeys.has(r.attacker.speciesRaw);
 
-    // Insert divider between pinned and unpinned sections
     if (hasPinned && index === pinned.length) {
       html += `<div class="pinned-divider">others</div>`;
     }
@@ -1703,57 +2086,89 @@ function renderResults() {
     const moveName    = r.displayMove ? r.displayMove.name : '— (no damaging moves)';
     const pasteOrderLabel = `#${r.originalOrder}`;
     const pinTitle = isPinned ? 'Unpin' : 'Pin to top';
-    const pinIcon  = isPinned ? '📌' : '📍';
 
-    // Move breakdown — paste order, no sort
     const breakdownSource = attackingMode ? (r.defMoveBreakdown || []) : r.moveBreakdown;
-    const breakdownHtml = breakdownSource.map(m => {
+    const dividerThreshold = r.dividerIndex ?? (attackingMode
+      ? (r.defender ? (r.defender.dividerIndex ?? 4) : 4)
+      : (r.attacker.dividerIndex ?? 4));
+
+    // Scarf override logic: 'on' forces scarf, 'off' removes it, absent = use item
+    const atkKey = r.attacker.speciesRaw;
+    const atkScarfOverride = scarfOverrides.get(atkKey);
+    const atkHasScarf = (r.attacker.item||'').toLowerCase().replace(/[\s-]/g,'') === 'choicescarf';
+    const atkScarfActive = atkScarfOverride === 'on' ? true : atkScarfOverride === 'off' ? false : atkHasScarf;
+    const atkScarfBtnLabel = atkScarfActive
+      ? `<span style="color:var(--accent2)">Scarf ✓</span>`
+      : `<span style="color:var(--text3)">+Scarf</span>`;
+
+    // Check if there are any moves at or beyond the divider threshold
+    const hasExtraMoves = breakdownSource.some(m => (m.pasteIndex ?? 99) >= dividerThreshold);
+    const extrasCollapsed = !expandedExtras.has(atkKey); // default = collapsed
+    const safeKey = atkKey.replace(/'/g, "\\'");
+    const renderMoveRow = (m) => {
+      const isPastDivider = (m.pasteIndex ?? 99) >= dividerThreshold;
+      const isStatusMove  = m.isStatus === true;
       const mEff = m.eff > 1
         ? `<span class="eff-super">×${m.eff}</span>`
-        : m.eff < 1 && m.eff > 0
-        ? `<span class="eff-resist">×${m.eff}</span>` : '';
-      const mods = (m.activeMods||[]).filter((v,i,a)=>a.indexOf(v)===i&&v&&v!=='STAB'&&v!=='Adaptability');
-      const modTag = mods.length ? `<span style="color:var(--accent2);font-size:10px">${mods.join(', ')}</span>` : '';
-      return `
-        <div class="move-breakdown-row">
+        : m.eff < 1 && m.eff > 0 ? `<span class="eff-resist">×${m.eff}</span>` : '';
+      const modList = (m.activeMods||[]).filter(Boolean);
+      const modTags = modList.map(mod =>
+        `<span style="color:var(--accent2);font-size:10px;background:rgba(124,106,247,0.12);padding:1px 5px;border-radius:4px">${mod}</span>`
+      ).join(' ');
+      const spreadTag = m.isEffectivelySpread ? `<span style="color:var(--text3);font-size:10px">spread ×0.75</span>` : '';
+      const typeDisplay = m.resolvedType && m.resolvedType !== m.move.type
+        ? `<span style="color:var(--yellow);font-size:10px">${m.resolvedType}</span>` : m.resolvedType || m.move.type;
+      const rowOpacity = isPastDivider ? 'opacity:0.45;' : '';
+      const rowFontSize = isPastDivider ? 'font-size:11px;' : '';
+      let pctDisplay;
+      if (isStatusMove) {
+        pctDisplay = `<span style="color:var(--text3);font-size:11px">status</span>`;
+      } else if ((m.adjustedPct ?? m.pct) >= 100) {
+        pctDisplay = `<span style="color:var(--red)">${(m.adjustedPct ?? m.pct).toFixed(0)}% OHKO</span>`;
+      } else {
+        pctDisplay = `${(m.adjustedPct ?? m.pct).toFixed(1)}%`;
+      }
+      return `<div class="move-breakdown-row" style="${rowOpacity}${rowFontSize}">
           <div class="move-breakdown-left">
-            <div class="move-breakdown-name">${m.move.name}</div>
-            <div class="move-breakdown-meta">${m.move.type} · ${m.move.power} BP${m.stab ? ' · STAB' : ''}</div>
-            ${mEff} ${modTag}
+            <div class="move-breakdown-name"${isPastDivider ? ' style="color:var(--text2)"' : ''}>${m.move.name}</div>
+            <div class="move-breakdown-meta">${isStatusMove ? `${m.move.type} · status` : `${typeDisplay} · ${m.move.power} BP${m.stab ? ' · STAB' : ''}`}</div>
+            ${isStatusMove ? '' : mEff} ${spreadTag} ${isStatusMove ? '' : modTags}
           </div>
-          <div class="move-breakdown-pct">
-            ${(m.adjustedPct ?? m.pct) >= 100
-              ? `${(m.adjustedPct ?? m.pct).toFixed(0)}% OHKO`
-              : `${(m.adjustedPct ?? m.pct).toFixed(1)}%`}
-          </div>
+          <div class="move-breakdown-pct">${pctDisplay}</div>
         </div>`;
-    }).join('');
+    };
 
-    // Speed comparison between attacker and current defender
+    const primaryMoves = breakdownSource.filter(m => (m.pasteIndex ?? 99) < dividerThreshold);
+    const extraMoves   = breakdownSource.filter(m => (m.pasteIndex ?? 99) >= dividerThreshold);
+    const primaryHtml  = primaryMoves.map(renderMoveRow).join('');
+    const extraHtml    = extraMoves.map(renderMoveRow).join('');
+    const extraSection = hasExtraMoves ? `
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 0;margin:2px 0;cursor:pointer;" onclick="toggleExtraMoves(event,'${safeKey}')" id="extra-toggle-${index}">
+        <div style="flex:1;height:0.5px;background:var(--border2)"></div>
+        <span style="font-size:10px;color:var(--text3);white-space:nowrap;user-select:none">${extrasCollapsed ? '▶' : '▼'} extra moves</span>
+        <div style="flex:1;height:0.5px;background:var(--border2)"></div>
+      </div>
+      <div id="extra-moves-${index}" style="display:${extrasCollapsed ? 'none' : 'block'}">${extraHtml}</div>` : '';
+    const breakdownHtml = primaryHtml + extraSection;
+
+    // Speed comparison — uses scarf override
     let speedHtml = '';
     if (r.defender) {
       const atkSpeRaw = r.attacker.computedSpe || calcStat(r.attacker.baseStats.spe||0, r.attacker.evs.spe||0, 31, 50, 1);
-      const atkSpeEff = (r.attacker.item||'').toLowerCase().replace(/[\s-]/g,'') === 'choicescarf'
-        ? Math.floor(atkSpeRaw * 1.5) : atkSpeRaw;
+      const atkSpeEff = atkScarfActive ? Math.floor(atkSpeRaw * 1.5) : atkSpeRaw;
       const defSpeEff = effectiveSpe(r.defender);
-      const atkItem = r.attacker.item || '';
-      const defItem = r.defender.item || '';
-      const atkScarf = atkItem.toLowerCase().replace(/[\s-]/g,'') === 'choicescarf';
-      const defScarf = defItem.toLowerCase().replace(/[\s-]/g,'') === 'choicescarf';
-      const atkLabel = `${r.attacker.speciesRaw} ${atkScarf ? `<span style="color:var(--accent2);font-size:10px">(Scarf)</span>` : ''}`;
-      const defLabel = `${r.defender.speciesRaw} ${defScarf ? `<span style="color:var(--accent2);font-size:10px">(Scarf)</span>` : ''}`;
-
+      const defScarf  = (r.defender.item||'').toLowerCase().replace(/[\s-]/g,'') === 'choicescarf';
+      const atkLabel  = `${r.attacker.speciesRaw}${atkScarfActive ? ' <span style="color:var(--accent2);font-size:10px">(Scarf)</span>' : ''}`;
+      const defLabel  = `${r.defender.speciesRaw}${defScarf ? ' <span style="color:var(--accent2);font-size:10px">(Scarf)</span>' : ''}`;
       let verdict, icon;
-      if (atkSpeEff > defSpeEff) {
-        verdict = `<span class="spd-faster">Faster</span>`;
-        icon = '⚡';
-      } else if (atkSpeEff < defSpeEff) {
-        verdict = `<span class="spd-slower">Slower</span>`;
-        icon = '🐢';
-      } else {
-        verdict = `<span class="spd-tied">Speed tie</span>`;
-        icon = '⚖️';
-      }
+      if (atkSpeEff > defSpeEff)      { verdict = `<span class="spd-slower">Outsped by ${r.attacker.speciesRaw.split(' ')[0]}</span>`; icon = '🐢'; }
+      else if (atkSpeEff < defSpeEff) { verdict = `<span class="spd-faster">Outruns ${r.attacker.speciesRaw.split(' ')[0]}</span>`; icon = '⚡'; }
+      else                            { verdict = `<span class="spd-tied">Speed tie</span>`; icon = '⚖️'; }
+      // Scarf toggle button
+      const scarfBtnStyle = atkScarfActive
+        ? 'color:var(--accent2);border-color:var(--accent);background:rgba(124,106,247,0.12)'
+        : 'color:var(--text3);border-color:var(--border2)';
+      const scarfBtnText = atkScarfActive ? 'Scarf ✓' : '+Scarf';
       speedHtml = `
         <div class="speed-compare">
           <span class="spd-icon">${icon}</span>
@@ -1762,12 +2177,12 @@ function renderResults() {
           <span>${atkLabel} <span class="spd-val">${atkSpeEff}</span></span>
           <span style="color:var(--text3)">vs</span>
           <span>${defLabel} <span class="spd-val">${defSpeEff}</span></span>
+          <button onclick="toggleScarf(event,'${safeKey}')" style="margin-left:auto;padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;background:transparent;${scarfBtnStyle}">${scarfBtnText}</button>
         </div>`;
     }
 
-    const modeLabel = attackingMode
-      ? `<span style="font-size:10px;color:var(--accent2);margin-left:6px;">→ attacking</span>`
-      : '';
+    const modeLabel = attackingMode ? `<span style="font-size:10px;color:var(--accent2);margin-left:6px;">→ attacking</span>` : '';
+    const maxInvestLabel = maxInvest ? `<span style="font-size:10px;color:var(--yellow);margin-left:4px;">max</span>` : '';
 
     html += `
       <div class="result-item${isPinned ? ' is-pinned' : ''}">
@@ -1778,10 +2193,8 @@ function renderResults() {
           <div class="result-name">
             <div class="result-name-text">
               ${r.attacker.speciesRaw}
-              ${mode === 'damage'
-                ? `<span style="color:var(--text3);font-size:11px;margin-left:6px;">${pasteOrderLabel}</span>`
-                : ''}
-              ${modeLabel}
+              ${mode === 'damage' ? `<span style="color:var(--text3);font-size:11px;margin-left:6px;">${pasteOrderLabel}</span>` : ''}
+              ${modeLabel}${maxInvestLabel}
             </div>
             <div class="type-badges">${typeBadges}</div>
           </div>
@@ -1812,11 +2225,23 @@ function handlePinClick(e) {
   e.stopPropagation();
   const key = e.currentTarget.dataset.pinkey;
   if (!key) return;
-  if (pinnedKeys.has(key)) {
-    pinnedKeys.delete(key);
-  } else {
-    pinnedKeys.add(key);
-  }
+  if (pinnedKeys.has(key)) { pinnedKeys.delete(key); } else { pinnedKeys.add(key); }
+  renderResults();
+}
+
+function toggleScarf(e, key) {
+  e.stopPropagation();
+  const current = scarfOverrides.get(key);
+  if (current === 'on')       scarfOverrides.set(key, 'off');
+  else if (current === 'off') scarfOverrides.delete(key);  // back to item-based
+  else                        scarfOverrides.set(key, 'on');
+  renderResults();
+}
+
+function toggleExtraMoves(e, key) {
+  e.stopPropagation();
+  if (expandedExtras.has(key)) { expandedExtras.delete(key); }
+  else                         { expandedExtras.add(key); }
   renderResults();
 }
 
