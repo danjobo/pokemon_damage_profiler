@@ -1,0 +1,28 @@
+does pokeapi use damage calcing??
+
+item boosts
+body press (use def)
+weather (change stab)
+stat boost ticker
+dual wingbeat/dragon darts (hit twice)
+hyper voice/hyper beam/quick attack (change type? pixilate, liquid voice, dragonize  + type bonus [go back and remove ones without it])
+weather ball changes with weather (go back and change ones with replacements)
+adaptability stab
+psyshock (uses enemy defense not spdef)
+foul play (uses enemy attack)
+freeze dry (2x against water)
+huge power (2x attack)
+levitate immunity
+spread moves (damage reduction)
+protean stab change?
+iron fist (1.2x punches)
+sharpness (1.5x slicing moves)
+aurora veil setup
+
+heavy slam weights??
+max damage roll?
+max stat investment calc
+expanding force (1.5x on psy terrain)
+
+multi-hit move ranges (water shuriken)
+raging bull (water/fire/fighting change)
