@@ -18,7 +18,7 @@ Careful Nature
 - Throat Chop  
 - Close Combat  
 
-Garchomp  
+Garchomp @ Choice Scarf  
 Ability: Sand Veil  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
@@ -48,7 +48,7 @@ Bold Nature
 - Scald  
 - Protect  
 
-Basculegion-Male (M)  
+Basculegion (M) @ Choice Scarf  
 Ability: Adaptability  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
@@ -248,7 +248,7 @@ Modest Nature
 - Psyshock  
 - Moonblast  
 
-Maushold-Family-of-Four  
+Maushold  
 Ability: Friend Guard  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
@@ -286,22 +286,22 @@ Quiet Nature
 - Earth Power  
 - Inferno  
 
-Primarina  
-Ability: Torrent  
+Primarina @ Mystic Water  
+Ability: Liquid Voice  
 Level: 50  
 EVs: 32 HP / 2 Def / 32 SpA  
 Modest Nature  
-- Surf  
+- Hyper Voice  
 - Moonblast  
 - Dazzling Gleam  
 - Ice Beam  
 
 Sylveon @ Fairy Feather  
-Ability: Cute Charm  
+Ability: Pixilate  
 Level: 50  
 EVs: 32 HP / 32 SpA / 2 Spe  
 Modest Nature  
-- Dazzling Gleam  
+- Hyper Voice  
 - Quick Attack  
 - Hyper Beam  
 - Shadow Ball  
@@ -383,7 +383,7 @@ EVs: 32 HP / 2 Def / 32 SpD
 Careful Nature  
 - Foul Play  
 
-Typhlosion-Hisui  
+Typhlosion-Hisui @ Choice Scarf  
 Ability: Blaze  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
@@ -433,7 +433,7 @@ Bold Nature
 - Icy Wind  
 - Thunderbolt  
 
-Hydreigon  
+Hydreigon @ Choice Scarf  
 Ability: Levitate  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
@@ -443,7 +443,7 @@ Modest Nature
 - Earth Power  
 - Snarl  
 
-Rotom-Heat  
+Rotom-Heat @ Choice Scarf  
 Ability: Levitate  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
@@ -463,7 +463,7 @@ Jolly Nature
 - Zen Headbutt  
 - Ice Spinner  
 
-Arcanine-Hisui  
+Arcanine-Hisui @ Choice Scarf  
 Ability: Intimidate  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  

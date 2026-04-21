@@ -366,6 +366,176 @@
     .result-name { width: 120px; }
     .result-pct  { width: 65px; }
   }
+
+  /* ── Defender Tabs ───────────────────────────────────────────────────── */
+  .defender-tabs-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .def-tab {
+    flex: 1;
+    min-width: 80px;
+    max-width: 140px;
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text2);
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+  }
+  .def-tab:hover { background: #252535; }
+  .def-tab.active {
+    border-color: var(--accent);
+    background: rgba(124,106,247,0.12);
+    color: var(--text);
+  }
+  .def-tab.filled {
+    border-color: var(--border2);
+    color: var(--text);
+  }
+  .def-tab.filled.active {
+    border-color: var(--accent);
+    background: rgba(124,106,247,0.12);
+  }
+  .def-tab-name {
+    font-weight: 500;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .def-tab-types {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+    margin-top: 3px;
+  }
+  .def-tab-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+  .def-tab-close {
+    position: absolute;
+    top: 3px; right: 4px;
+    font-size: 10px;
+    color: var(--text3);
+    cursor: pointer;
+    line-height: 1;
+  }
+  .def-tab-close:hover { color: var(--red); }
+  .def-tab-empty {
+    border-style: dashed;
+    color: var(--text3);
+    font-size: 20px;
+    line-height: 1;
+    padding: 9px 10px;
+  }
+  .def-tab-empty:hover { color: var(--text2); }
+
+  /* ── Speed comparison ────────────────────────────────────────────────── */
+  .speed-compare {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 0 5px;
+    border-top: 0.5px solid rgba(255,255,255,0.05);
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--text2);
+  }
+  .speed-compare .spd-val {
+    font-weight: 600;
+    font-size: 12px;
+  }
+  .spd-faster { color: var(--green); }
+  .spd-slower { color: var(--red); }
+  .spd-tied   { color: var(--yellow); }
+  .spd-icon { font-size: 13px; }
+
+  /* ── Type weakness overlay ───────────────────────────────────────────── */
+  #weaknessOverlay {
+    display: none;
+    margin-top: 1rem;
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+  }
+  #weaknessOverlay.visible { display: block; }
+
+  .overlay-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 14px;
+  }
+
+  .weakness-grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 5px;
+  }
+  @media (max-width: 600px) {
+    .weakness-grid { grid-template-columns: repeat(6, 1fr); }
+  }
+
+  .wk-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 4px;
+    border-radius: var(--radius-sm);
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    transition: background 0.15s;
+  }
+  .wk-cell-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: capitalize;
+    color: var(--text3);
+  }
+  .wk-pips {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: center;
+  }
+  .wk-pip-row {
+    display: flex;
+    gap: 2px;
+  }
+  .wk-pip {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    background: var(--border2);
+  }
+  .wk-pip.weak2x  { background: var(--orange); }
+  .wk-pip.weak4x  { background: var(--red); }
+  .wk-pip.immune  { background: var(--bg); border: 0.5px solid var(--border2); }
+  .wk-pip.resist  { background: var(--green); opacity: 0.6; }
+
+  .wk-count {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text2);
+  }
+  .wk-count.danger1 { color: var(--yellow); }
+  .wk-count.danger2 { color: var(--orange); }
+  .wk-count.danger3 { color: var(--red); }
 </style>
 </head>
 <body>
@@ -379,7 +549,7 @@
     </div>
   </header>
 
-  <div class="two-col">
+  <!-- <div class="two-col"> -->
 
     <!-- META DATABASE -->
     <div class="card">
@@ -445,8 +615,24 @@ Impish Nature
         <button onclick="loadDefenderExample()">Load example</button>
         <button onclick="clearAll()">Clear all</button>
       </div>
+
+      <!-- Defender slot tabs (up to 6) -->
+      <div class="defender-tabs-row" id="defenderTabsRow">
+        <div class="def-tab def-tab-empty" title="Slot 1" onclick="selectDefenderTab(0)" id="defTab-0">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 2" onclick="selectDefenderTab(1)" id="defTab-1">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 3" onclick="selectDefenderTab(2)" id="defTab-2">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 4" onclick="selectDefenderTab(3)" id="defTab-3">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 5" onclick="selectDefenderTab(4)" id="defTab-4">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 6" onclick="selectDefenderTab(5)" id="defTab-5">＋</div>
+      </div>
     </div>
-  </div>
+
+    <!-- Type weakness overlay (visible when all 6 tabs filled) -->
+    <div id="weaknessOverlay">
+      <div class="overlay-title">Team Type Weakness Overlap</div>
+      <div class="weakness-grid" id="weaknessGrid"></div>
+    </div>
+  <!-- </div> -->
 
   <!-- CALCULATE BAR -->
   <div class="calc-bar">
@@ -511,6 +697,17 @@ Impish Nature
         <input type="checkbox" id="maxRollMode" onchange="renderResults()">
         <span>Show max rolls</span>
       </label>
+
+      <label class="checkbox-toggle">
+        <input type="checkbox" id="attackingMode" onchange="renderResults()">
+        <span>Attacking mode</span>
+      </label>
+
+      <div class="control-group" style="flex:1;min-width:140px;">
+        <label>Filter results</label>
+        <input type="text" id="searchBar" placeholder="Search Pokémon…" oninput="renderResults()"
+          style="padding:5px 8px;font-size:12px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;width:100%;">
+      </div>
     </div>
 
 
@@ -577,11 +774,11 @@ function typeEff(moveType, defTypes) {
 
 // ─── Stat formulae ────────────────────────────────────────────────────────────
 function calcStat(base, ev=0, iv=31, level=50, nature=1) {
-  // return Math.floor((Math.floor((2*base+iv+Math.floor(ev/4))*level/100)+5)*nature);
-  return Math.floor((base+20+ev)*nature)
+//   return Math.floor((Math.floor((2*base+iv+Math.floor(ev/4))*level/100)+5)*nature);
+  return Math.floor((base+20+ev)*nature)  
 }
 function calcHP(base, ev=0, iv=31, level=50) {
-  // return Math.floor((2*base+iv+Math.floor(ev/4))*level/100)+level+10;
+//   return Math.floor((2*base+iv+Math.floor(ev/4))*level/100)+level+10;
   return base+75+ev
 }
 
@@ -634,6 +831,9 @@ const SLUG_MAP = {
   'slither wing':'slither-wing',   'sandy shocks':'sandy-shocks',
   'roaring moon':'roaring-moon',   'walking wake':'walking-wake',
   'gouging fire':'gouging-fire',   'raging bolt':'raging-bolt',
+  'maushold':'maushold-family-of-four',   'aegislash':'aegislash-blade',
+  'basculegion':'basculegion-male', 'meowstic':'meowstic-male',
+  'tauros-paldea-aqua':'tauros-paldea-aqua-breed', 'mimikyu':'mimikyu-disguised'
 };
 
 function toSlug(name) {
@@ -734,6 +934,149 @@ function splitPaste(text) {
 
 // ─── Meta state ───────────────────────────────────────────────────────────────
 let META_DB = [];
+let lastResults = [];
+
+// ─── Defender tab state ───────────────────────────────────────────────────────
+const DEFENDER_SLOTS = [null, null, null, null, null, null]; // up to 6 saved defenders
+let activeDefenderSlot = 0; // which tab is currently shown in results
+
+// Type colour map for tab dots
+const TYPE_COLORS = {
+  fire:'#EF9F27',water:'#85B7EB',grass:'#97C459',electric:'#FAC775',
+  psychic:'#ED93B1',ice:'#85B7EB',dragon:'#AFA9EC',dark:'#B4B2A9',
+  fairy:'#ED93B1',fighting:'#F0997B',flying:'#85B7EB',poison:'#AFA9EC',
+  ground:'#FAC775',rock:'#D3D1C7',bug:'#C0DD97',ghost:'#CECBF6',
+  steel:'#D3D1C7',normal:'#B4B2A9'
+};
+
+function effectiveSpe(pokemon) {
+  // Returns the effective speed stat, applying Choice Scarf x1.5
+  const spe = pokemon.stats ? pokemon.stats.spe : (pokemon.computedSpe || 0);
+  const item = (pokemon.item || '').toLowerCase().replace(/[\s-]/g,'');
+  return item === 'choicescarf' ? Math.floor(spe * 1.5) : spe;
+}
+
+function renderDefenderTabs() {
+  for (let i = 0; i < 6; i++) {
+    const tab = document.getElementById(`defTab-${i}`);
+    const slot = DEFENDER_SLOTS[i];
+    if (!slot) {
+      tab.className = 'def-tab def-tab-empty';
+      tab.innerHTML = '＋';
+      tab.onclick = () => selectDefenderTab(i);
+    } else {
+      const isActive = i === activeDefenderSlot;
+      tab.className = `def-tab filled${isActive ? ' active' : ''}`;
+      const dots = slot.types.map(t =>
+        `<div class="def-tab-dot" style="background:${TYPE_COLORS[t]||'#888'}"></div>`
+      ).join('');
+      tab.innerHTML = `
+        <span class="def-tab-close" onclick="clearDefenderSlot(event,${i})">✕</span>
+        <div class="def-tab-name">${slot.speciesRaw}</div>
+        <div class="def-tab-types">${dots}</div>`;
+      tab.onclick = (e) => { if (!e.target.classList.contains('def-tab-close')) selectDefenderTab(i); };
+    }
+  }
+  updateWeaknessOverlay();
+}
+
+function selectDefenderTab(i) {
+  activeDefenderSlot = i;
+  const slot = DEFENDER_SLOTS[i];
+  if (slot) {
+    // Load this slot's data into the textarea and show results
+    document.getElementById('defenderInput').value = slot._rawText || '';
+    lastResults = slot._lastResults || [];
+    if (lastResults.length) {
+      document.getElementById('defenderTag').textContent = 'Defending: ' + slot.speciesRaw;
+      document.getElementById('defenderInfo').innerHTML =
+        `<b>${slot.speciesRaw}</b> &nbsp;|&nbsp; ` +
+        `Types: ${slot.types.join('/')} &nbsp;|&nbsp; ` +
+        `Level ${slot.level} &nbsp;|&nbsp; ${slot.nature} nature<br>` +
+        `HP: <b>${slot.stats.hp}</b> &nbsp; ` +
+        `Def: <b>${slot.stats.def}</b> &nbsp; ` +
+        `SpD: <b>${slot.stats.spd}</b> &nbsp; ` +
+        `Spe: <b>${slot.stats.spe}</b>${slot.item && (slot.item.toLowerCase().replace(/[\s-]/g,'') === 'choicescarf') ? ` <span style="color:var(--accent2);font-size:10px">(Scarf → ${effectiveSpe(slot)})</span>` : ''}`;
+      document.getElementById('defenderInfo').classList.add('visible');
+      document.getElementById('resultsSection').style.display = 'block';
+      renderResults();
+    }
+  }
+  renderDefenderTabs();
+}
+
+function clearDefenderSlot(e, i) {
+  e.stopPropagation();
+  DEFENDER_SLOTS[i] = null;
+  if (activeDefenderSlot === i) {
+    // Find next filled slot or go to 0
+    const next = DEFENDER_SLOTS.findIndex((s, idx) => s && idx !== i);
+    activeDefenderSlot = next >= 0 ? next : 0;
+    lastResults = DEFENDER_SLOTS[activeDefenderSlot]?._lastResults || [];
+    if (!lastResults.length) {
+      document.getElementById('resultsSection').style.display = 'none';
+      document.getElementById('defenderInfo').classList.remove('visible');
+    } else {
+      renderResults();
+    }
+  }
+  renderDefenderTabs();
+}
+
+function saveCurrentDefenderToSlot(defender, rawText, results) {
+  // Find the first empty slot, or overwrite slot 0 if all full
+  let slot = DEFENDER_SLOTS.findIndex(s => !s);
+  if (slot === -1) slot = 0; // overwrite oldest
+  defender._rawText = rawText;
+  defender._lastResults = results;
+  DEFENDER_SLOTS[slot] = defender;
+  activeDefenderSlot = slot;
+  renderDefenderTabs();
+  return slot;
+}
+
+// ─── Type weakness overlay ────────────────────────────────────────────────────
+const ALL_TYPES = ['normal','fire','water','electric','grass','ice','fighting','poison',
+  'ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
+
+function updateWeaknessOverlay() {
+  const filled = DEFENDER_SLOTS.filter(Boolean);
+  const overlay = document.getElementById('weaknessOverlay');
+  if (filled.length < 6) { overlay.classList.remove('visible'); return; }
+
+  // For each attacking type, compute effectiveness vs each defender
+  const grid = document.getElementById('weaknessGrid');
+  let html = '';
+  for (const atkType of ALL_TYPES) {
+    const effs = filled.map(def => typeEff(atkType, def.types));
+    const weakCount   = effs.filter(e => e > 1).length;
+    const immuneCount = effs.filter(e => e === 0).length;
+    const resistCount = effs.filter(e => e > 0 && e < 1).length;
+
+    const countClass = weakCount >= 4 ? 'danger3' : weakCount >= 3 ? 'danger2' : weakCount >= 2 ? 'danger1' : '';
+
+    // Build pip grid (2×3)
+    const pipHtml = effs.map(e => {
+      const cls = e === 0 ? 'immune' : e >= 2 ? 'weak2x' : e > 1 ? 'weak2x' : e < 1 ? 'resist' : '';
+      return `<div class="wk-pip${cls ? ' '+cls : ''}"></div>`;
+    });
+    // Arrange as 2 rows of 3
+    const row1 = pipHtml.slice(0,3).join('');
+    const row2 = pipHtml.slice(3,6).join('');
+
+    html += `
+      <div class="wk-cell" title="${atkType}: ${weakCount} weak, ${resistCount} resist, ${immuneCount} immune">
+        <div class="wk-pips">
+          <div class="wk-pip-row">${row1}</div>
+          <div class="wk-pip-row">${row2}</div>
+        </div>
+        <div class="wk-cell-label" style="color:${TYPE_COLORS[atkType]||'var(--text3)'}">${atkType.slice(0,3)}</div>
+        <div class="wk-count ${countClass}">${weakCount > 0 ? weakCount+'×' : immuneCount ? '✦' : '—'}</div>
+      </div>`;
+  }
+  grid.innerHTML = html;
+  overlay.classList.add('visible');
+}
 
 function updateChips() {
   document.getElementById('metaChips').innerHTML = META_DB.map(p => {
@@ -841,8 +1184,157 @@ function damageFormula(level, power, atk, def, eff=1, stab=1) {
   return Math.floor(base * eff * stab * 0.85);
 }
 
-// ─── Main calculation ─────────────────────────────────────────────────────────
-let lastResults = [];
+// ─── Ability modifiers ────────────────────────────────────────────────────────
+// Returns { stabOverride, atkMul, movePowerMul, typeOverride }
+function getAbilityMods(ability, moveType, atkTypes) {
+  const ab = (ability || '').toLowerCase().replace(/[\s-]/g,'');
+  let stabBonus = atkTypes.includes(moveType) ? 1.5 : 1;
+  let atkMul = 1;
+  let powerMul = 1;
+
+  // STAB overrides
+  if (ab === 'adaptability' && atkTypes.includes(moveType)) stabBonus = 2;
+
+  // Offense boosts (flat atk/spa multiplier on the stat)
+  if (ab === 'hugepower' || ab === 'purepower') atkMul = 2;
+  if (ab === 'gorillactactics') atkMul = 1.5;
+  if (ab === 'transistor' && moveType === 'electric') atkMul = 1.5;
+  if (ab === 'dragonsmaw' && moveType === 'dragon') atkMul = 1.5;
+  if (ab === 'hadronengine' && moveType === 'electric') atkMul = 1.3333;
+  if (ab === 'orichalcumpulse' && moveType === 'fire') atkMul = 1.3333;
+  if (ab === 'swordofruin') atkMul = 1; // def drop on target, handled separately
+  if (ab === 'tabletsofruin') atkMul = 1;
+
+  // Aura abilities (applied as power multiplier)
+  if (ab === 'fairyaura' && moveType === 'fairy') powerMul = 4/3;
+  if (ab === 'darkaura' && moveType === 'dark') powerMul = 4/3;
+
+  // Type-boosting abilities (power)
+  if (ab === 'ironfist' && ['punch','mach','bullet','comet','drain','dynamic','fire','focus','hammer','ice','mach','meteor','plasma','power','shadow','sky','thunder','vacuum','vital','wake-up'].some(w => moveType === 'fighting' || moveType === 'normal')) {
+    // Iron Fist: only punching moves — handled by move name heuristic below
+  }
+  if (ab === 'strongjaw') powerMul = 1.5; // biting moves only; approximate
+//   if (ab === 'megalauncher') powerMul = 1.5; // pulse moves only; approximate
+  if (ab === 'technician') { /* handled per move in calculation */ }
+//   if (ab === 'reckless') powerMul = 1.2; // recoil moves only; approximate
+//   if (ab === 'sheerforce') powerMul = 1.3; // moves with secondary effects; approximate
+  if (ab === 'toughclaws') powerMul = 1.3; // contact moves; approximate
+  if (ab === 'neuroforce') powerMul = 1.25; // super effective only; handled below
+
+  return { stabBonus, atkMul, powerMul };
+}
+
+// Per-move power adjustments for specific abilities
+function getAbilityMovePowerMul(ability, move, eff) {
+  const ab = (ability || '').toLowerCase().replace(/[\s-]/g,'');
+  const mn = move.name.toLowerCase();
+
+  if (ab === 'ironfist') {
+    const punchMoves = ['comet punch','dizzy punch','drain punch','dynamic punch','fire punch','focus punch','hammer arm','ice punch','mach punch','mega punch','meteor mash','plasma fists','power-up punch','shadow punch','sky uppercut','surging strikes','thunder punch','wicked blow','ice spinner'];
+    if (punchMoves.some(p => mn.includes(p.split(' ')[0]))) return 1.2;
+  }
+  if (ab === 'technician' && move.power <= 60) return 1.5;
+  if (ab === 'neuroforce' && eff > 1) return 1.25;
+  if (ab === 'toughclaws') {
+    // contact moves heuristic: physical moves that aren't projectile
+    const nonContact = ['earthquake','magnitude','rock slide','rock blast','icicle spear','pin missile','bone rush','bullet seed'];
+    if (move.cat === 'physical' && !nonContact.some(n => mn.includes(n.split(' ')[0]))) return 1.3;
+  }
+  if (ab === 'reckless') {
+    const recoilMoves = ['brave bird','double-edge','flare blitz','head smash','high jump kick','jump kick','light of ruin','head charge','take down','volt tackle','wild charge','wood hammer','submission'];
+    if (recoilMoves.some(n => mn.includes(n.split(' ')[0]))) return 1.2;
+  }
+  if (ab === 'sheerforce') {
+    // moves with secondary effects; approximate list
+    const sfMoves = ['air slash','blaze kick','body slam','bounce','bulldoze','charge beam','crunch','dark pulse','discharge','dragon rush','earth power','energy ball','extrasensory','fire blast','flash cannon','flamethrower','focus blast','force palm','gunk shot','heat wave','hurricane','hyper voice','ice beam','iron head','lava plume','moonblast','muddy water','needle arm','poison jab','power gem','psychic','rock slide','shadow ball','sludge bomb','sludge wave','spark','steel wing','thunder','thunderbolt','tri attack','twister','water pulse','zen headbutt'];
+    if (sfMoves.some(n => mn.includes(n.split(' ')[0]))) return 1.3;
+  }
+  return 1;
+}
+
+// ─── Item modifiers ───────────────────────────────────────────────────────────
+function getItemMods(item, moveType, moveCat) {
+  if (!item) return { atkMul: 1, powerMul: 1, defMul: 1 };
+  const it = item.toLowerCase().replace(/[\s-]/g,'');
+  let atkMul = 1, powerMul = 1, defMul = 1;
+
+  // Type-boosting items (power ×1.2)
+  const typePlates = {
+    'flameplate':'fire','splashplate':'water','meadowplate':'grass',
+    'zapplate':'electric','icicleplate':'ice','fistplate':'fighting',
+    'toxicplate':'poison','earthplate':'ground','skyplate':'flying',
+    'mindplate':'psychic','insectplate':'bug','stoneplate':'rock',
+    'spookyplate':'ghost','dracoplate':'dragon','dreadplate':'dark',
+    'ironplate':'steel','pixieplate':'fairy',
+    // Gems: same types, ×1.3 one-time (approximate as 1.3)
+    // Incenses / type-boosting items ×1.2
+    'charcoal':'fire','mysticwater':'water','miracleseed':'grass',
+    'magnet':'electric','nevermeltice':'ice','blackbelt':'fighting',
+    'poisonbarb':'poison','softsand':'ground','sharpbeak':'flying',
+    'twistedspoon':'psychic','silverpowder':'bug','hardstone':'rock',
+    'spelltag':'ghost','dragonfang':'dragon','blackglasses':'dark',
+    'metalcoat':'steel','fairyfeather':'fairy',
+    'seaincense':'water','laxincense':'normal','roseincense':'grass',
+    'pureincense':'normal','rockincense':'rock','oddincense':'psychic',
+    'waveincense':'water','fullincense':'normal',
+  };
+  for (const [k, t] of Object.entries(typePlates)) {
+    if (it.includes(k) && moveType === t) { powerMul = 1.2; break; }
+  }
+
+  // Choice items
+  if (it === 'choiceband' && moveCat === 'physical') atkMul = 1.5;
+  if (it === 'choicespecs' && moveCat === 'special')  atkMul = 1.5;
+  // Choice Scarf — speed only (handled separately in speed compare)
+
+  // Life Orb
+  if (it === 'lifeorb') powerMul = Math.max(powerMul, 1.3);
+
+  // Assault Vest — special defense boost on defender (not attacker)
+  // handled separately when computing defender stats
+
+  // Expert Belt — super effective only (handled per-move)
+  // Light Ball (Pikachu)
+  if (it === 'lightball') atkMul = 2;
+  // Thick Club (Cubone/Marowak)
+  if (it === 'thickclub') atkMul = 2;
+  // Deep Sea Tooth (Clamperl)
+  if (it === 'deepseaooth') atkMul = 2;
+
+  // Silk Scarf
+  if (it === 'silkscarf' && moveType === 'normal') powerMul = Math.max(powerMul, 1.2);
+
+  return { atkMul, powerMul, defMul };
+}
+
+function getItemPerMoveMul(item, moveType, eff) {
+  if (!item) return 1;
+  const it = item.toLowerCase().replace(/[\s-]/g,'');
+  if (it === 'expertbelt' && eff > 1) return 1.2;
+  // Gems: ×1.5 for matching type (one-use but we approximate as always active)
+  const gemMap = {
+    'firegem':'fire','watergem':'water','grassgem':'grass','electricgem':'electric',
+    'icegem':'ice','fightinggem':'fighting','poisongem':'poison','groundgem':'ground',
+    'flyinggem':'flying','psychicgem':'psychic','buggem':'bug','rockgem':'rock',
+    'ghostgem':'ghost','dragongem':'dragon','darkgem':'dark','steelgem':'steel',
+    'fairygem':'fairy','normalgem':'normal',
+  };
+  for (const [k, t] of Object.entries(gemMap)) {
+    if (it === k && moveType === t) return 1.5;
+  }
+  return 1;
+}
+
+// Ruin abilities: reduce the corresponding defensive stat of ALL Pokémon on the field
+// We apply them as a 0.75 multiplier on the defender's stat when the attacker has the ability
+function getDefenderRuinDebuff(attackerAbility, moveCat) {
+  const ab = (attackerAbility || '').toLowerCase().replace(/[\s-]/g,'');
+  if (ab === 'swordofruin' && moveCat === 'physical') return 0.75;   // lowers Def
+  if (ab === 'tabletsofruin' && moveCat === 'special') return 0.75;  // lowers SpD
+  return 1;
+}
+
+
 
 function stageMultiplier(stage) {
   stage = Number(stage);
@@ -877,10 +1369,51 @@ async function calculate() {
     return;
   }
 
+  // Support up to 6 defenders pasted at once
+  const defBlocks = splitPaste(defText);
+  const multiMode = defBlocks.length > 1;
+
   const btn = document.getElementById('calcBtn');
   btn.disabled = true;
-  btn.textContent = 'Fetching defender…';
+  btn.textContent = multiMode ? `Fetching ${defBlocks.length} defenders…` : 'Fetching defender…';
 
+  if (multiMode) {
+    // Import multiple defenders into consecutive tabs
+    const blocksToLoad = defBlocks.slice(0, 6);
+    let anyOk = false;
+    for (let bi = 0; bi < blocksToLoad.length; bi++) {
+      // Find next empty slot
+      let slotIdx = DEFENDER_SLOTS.findIndex(s => !s);
+      if (slotIdx === -1) slotIdx = bi % 6; // wrap if full
+      try {
+        btn.textContent = `Fetching defender ${bi+1}/${blocksToLoad.length}…`;
+        const defender = await parseDefender(blocksToLoad[bi]);
+        const defMoveResults = await Promise.all((defender.moves||[]).map(m => fetchMoveData(m)));
+        defender.resolvedMoves = defMoveResults.filter(m => m && m.power > 0);
+        const results = computeResults(loadedMeta, defender);
+        defender._rawText = blocksToLoad[bi];
+        defender._lastResults = results;
+        DEFENDER_SLOTS[slotIdx] = defender;
+        anyOk = true;
+        if (bi === 0) activeDefenderSlot = slotIdx;
+      } catch(e) {
+        console.warn('Failed to load defender block', bi, e);
+      }
+    }
+    renderDefenderTabs();
+    if (anyOk) {
+      const cur = DEFENDER_SLOTS[activeDefenderSlot];
+      lastResults = cur._lastResults;
+      showDefenderInfo(cur);
+      document.getElementById('resultsSection').style.display = 'block';
+      renderResults();
+    }
+    btn.disabled = false;
+    btn.textContent = 'Calculate damage';
+    return;
+  }
+
+  // Single defender
   let defender;
   try {
     defender = await parseDefender(defText);
@@ -890,201 +1423,326 @@ async function calculate() {
     return;
   }
 
+  const defMoveResults = await Promise.all((defender.moves||[]).map(m => fetchMoveData(m)));
+  defender.resolvedMoves = defMoveResults.filter(m => m && m.power > 0);
+
+  lastResults = computeResults(loadedMeta, defender);
+  defender._rawText = defText;
+  defender._lastResults = lastResults;
+
+  // Save to tab
+  let slotIdx = DEFENDER_SLOTS.findIndex(s => !s);
+  if (slotIdx === -1) slotIdx = activeDefenderSlot; // overwrite current
+  DEFENDER_SLOTS[slotIdx] = defender;
+  activeDefenderSlot = slotIdx;
+  renderDefenderTabs();
+
+  showDefenderInfo(defender);
+  document.getElementById('resultsSection').style.display = 'block';
+  btn.disabled = false;
+  btn.textContent = 'Calculate damage';
+}
+
+function showDefenderInfo(defender) {
+  const scarfNote = (defender.item||'').toLowerCase().replace(/[\s-]/g,'') === 'choicescarf'
+    ? ` <span style="color:var(--accent2);font-size:10px">(Scarf → ${effectiveSpe(defender)})</span>` : '';
   document.getElementById('defenderInfo').innerHTML =
     `<b>${defender.speciesRaw}</b> &nbsp;|&nbsp; ` +
     `Types: ${defender.types.join('/')} &nbsp;|&nbsp; ` +
     `Level ${defender.level} &nbsp;|&nbsp; ${defender.nature} nature<br>` +
     `HP: <b>${defender.stats.hp}</b> &nbsp; ` +
     `Def: <b>${defender.stats.def}</b> &nbsp; ` +
-    `SpD: <b>${defender.stats.spd}</b>`;
+    `SpD: <b>${defender.stats.spd}</b> &nbsp; ` +
+    `Spe: <b>${defender.stats.spe}</b>${scarfNote}`;
   document.getElementById('defenderInfo').classList.add('visible');
   document.getElementById('defenderTag').textContent = 'Defending: ' + defender.speciesRaw;
+}
 
-  lastResults = [];
+function computeResults(loadedMeta, defender) {
+  const results = [];
   for (const attacker of loadedMeta) {
     const nat = NATURES[attacker.nature] || {};
     let best = { dmg: 0, move: null, eff: 1 };
     const moveBreakdown = [];
 
+    // Ability + item mods for this attacker
+    const abMods = getAbilityMods(attacker.ability, '', attacker.types); // called per-move below
+    const itemMods = getItemMods(attacker.item, '', '');                 // called per-move below
+
     for (const move of attacker.resolvedMoves) {
       const eff = typeEff(move.type, defender.types);
       if (eff === 0) continue;
-      const isStab = attacker.types.includes(move.type) ? 1.5 : 1;
-      const atkStat = move.cat === 'physical'
+
+      // STAB (Adaptability = ×2)
+      const abModsForMove = getAbilityMods(attacker.ability, move.type, attacker.types);
+      const isStab = abModsForMove.stabBonus;
+
+      // Attacker stat with ability multiplier
+      const itemModsForMove = getItemMods(attacker.item, move.type, move.cat);
+      const abilityAtkMul = abModsForMove.atkMul * itemModsForMove.atkMul;
+
+      const rawAtk = move.cat === 'physical'
         ? calcStat(attacker.baseStats.atk, attacker.evs.atk, attacker.ivs.atk, 50, nat.atk||1)
         : calcStat(attacker.baseStats.spa, attacker.evs.spa, attacker.ivs.spa, 50, nat.spa||1);
-      const defStat = move.cat === 'physical' ? defender.stats.def : defender.stats.spd;
-      const dmg = damageFormula(50, move.power, atkStat, defStat, eff, isStab);
+      const atkStat = rawAtk * abilityAtkMul;
+
+      // Defender stat (Ruin ability debuff)
+      const ruinMul = getDefenderRuinDebuff(attacker.ability, move.cat);
+      const rawDef = move.cat === 'physical' ? defender.stats.def : defender.stats.spd;
+      const defStat = rawDef * ruinMul;
+
+      // Power modifiers (ability + item)
+      const abilityPowerMul = abModsForMove.powerMul * getAbilityMovePowerMul(attacker.ability, move, eff);
+      const itemPowerMul    = itemModsForMove.powerMul * getItemPerMoveMul(attacker.item, move.type, eff);
+      const effectivePower  = move.power * abilityPowerMul * itemPowerMul;
+
+      const dmg = damageFormula(50, effectivePower, atkStat, defStat, eff, isStab);
       const pct = dmg / defender.stats.hp * 100;
 
-      moveBreakdown.push({
-        move,
-        dmg,
-        pct,
-        eff,
-        stab: isStab > 1
-      });
+      // Note which mods were active for display
+      const activeMods = [];
+      if (isStab > 1.5) activeMods.push('Adaptability');
+      else if (isStab === 1.5) activeMods.push('STAB');
+      if (abilityAtkMul > 1) activeMods.push(attacker.ability);
+      if (itemModsForMove.powerMul > 1 || itemModsForMove.atkMul > 1) activeMods.push(attacker.item);
+      if (abModsForMove.powerMul > 1) activeMods.push(attacker.ability);
+      if (eff > 1) activeMods.push(`×${eff}`);
+
+      moveBreakdown.push({ move, dmg, pct, eff, stab: isStab > 1, activeMods });
 
       if (dmg > best.dmg) best = { dmg, move, eff };
     }
 
+    // ── Defender attacking back at this meta Pokémon ──────────────────────────
+    const defNat = NATURES[defender.nature] || {};
+    const defAbMods = getAbilityMods(defender.ability, '', defender.types);
+    const defItemMods = getItemMods(defender.item, '', '');
+    let defBest = { dmg: 0, move: null, eff: 1 };
+    const defMoveBreakdown = [];
+
+    for (const move of defender.resolvedMoves) {
+      const eff = typeEff(move.type, attacker.types);
+      if (eff === 0) continue;
+      const defAbForMove  = getAbilityMods(defender.ability, move.type, defender.types);
+      const defItForMove  = getItemMods(defender.item, move.type, move.cat);
+      const stabBonus     = defAbForMove.stabBonus;
+      const atkStatMul    = defAbForMove.atkMul * defItForMove.atkMul;
+      const rawAtk        = move.cat === 'physical'
+        ? calcStat(defender.baseStats.atk, defender.evs.atk, defender.ivs.atk, defender.level, defNat.atk||1)
+        : calcStat(defender.baseStats.spa, defender.evs.spa, defender.ivs.spa, defender.level, defNat.spa||1);
+      const atkStat       = rawAtk * atkStatMul;
+      const ruinMul       = getDefenderRuinDebuff(defender.ability, move.cat);
+      // compute attacker defensive stats now
+      attacker.computedDef  = calcStat(attacker.baseStats.def, attacker.evs.def, attacker.ivs.def, 50, nat.def||1);
+      attacker.computedSpd  = calcStat(attacker.baseStats.spd, attacker.evs.spd, attacker.ivs.spd, 50, nat.spd||1);
+      attacker.computedHp   = calcHP(attacker.baseStats.hp, attacker.evs.hp, attacker.ivs.hp, 50);
+      attacker.computedSpe  = calcStat(attacker.baseStats.spe, attacker.evs.spe, attacker.ivs.spe, 50, nat.spe||1);
+      const rawDef        = move.cat === 'physical' ? attacker.computedDef : attacker.computedSpd;
+      const defStat       = (rawDef || calcStat(attacker.baseStats[move.cat==='physical'?'def':'spd'],0,31,50,1)) * ruinMul;
+      const powerMul      = defAbForMove.powerMul * getAbilityMovePowerMul(defender.ability, move, eff) * defItForMove.powerMul * getItemPerMoveMul(defender.item, move.type, eff);
+      const effPower      = move.power * powerMul;
+      const dmg           = damageFormula(defender.level, effPower, atkStat, defStat, eff, stabBonus);
+      const pct           = dmg / (calcHP(attacker.baseStats.hp,0,31,50)) * 100;
+
+      defMoveBreakdown.push({ move, dmg, pct, eff, stab: stabBonus > 1, activeMods: [] });
+      if (dmg > defBest.dmg) defBest = { dmg, move, eff };
+    }
+
+    // Make sure computed stats exist even if defender has no moves
+    if (!attacker.computedDef) {
+      attacker.computedDef  = calcStat(attacker.baseStats.def, attacker.evs.def, attacker.ivs.def, 50, nat.def||1);
+      attacker.computedSpd  = calcStat(attacker.baseStats.spd, attacker.evs.spd, attacker.ivs.spd, 50, nat.spd||1);
+      attacker.computedHp   = calcHP(attacker.baseStats.hp, attacker.evs.hp, attacker.ivs.hp, 50);
+      attacker.computedSpe  = calcStat(attacker.baseStats.spe, attacker.evs.spe, attacker.ivs.spe, 50, nat.spe||1);
+    }
+
     const pct = best.move ? best.dmg / defender.stats.hp * 100 : 0;
-    lastResults.push({
+    const defPct = defBest.move ? defBest.dmg / attacker.computedHp * 100 : 0;
+
+    results.push({
       attacker,
+      defender,
       dmg: best.dmg,
       move: best.move,
       pct,
       eff: best.eff,
-      originalOrder: lastResults.length + 1,
+      originalOrder: results.length + 1,
       defenderHp: defender.stats.hp,
-      moveBreakdown: moveBreakdown.sort((a, b) => b.pct - a.pct)
+      moveBreakdown,          // attacker → defender
+      defMoveBreakdown,       // defender → attacker
+      defBestMove: defBest.move,
+      defBestPct: defPct,
+      defBestEff: defBest.eff,
     });
   }
-
-  renderResults();
-  document.getElementById('resultsSection').style.display = 'block';
-  btn.disabled = false;
-  btn.textContent = 'Calculate damage';
+  return results;
 }
 
 function renderResults() {
-  const weather = document.getElementById('weatherMode')?.value || 'none';
+  const weather      = document.getElementById('weatherMode')?.value || 'none';
   const offenseStage = Number(document.getElementById('offenseStage')?.value || 0);
   const defenseStage = Number(document.getElementById('defenseStage')?.value || 0);
-  const maxRollMode = document.getElementById('maxRollMode')?.checked || false;
+  const maxRollMode  = document.getElementById('maxRollMode')?.checked || false;
+  const attackingMode = document.getElementById('attackingMode')?.checked || false;
+  const searchQuery  = (document.getElementById('searchBar')?.value || '').toLowerCase().trim();
 
   lastResults.forEach(r => {
+    // ── Defending mode: attackers hit the defender ──
     let best = { dmg: 0, pct: 0, move: null, eff: 1 };
-
     r.moveBreakdown.forEach(m => {
       let adjustedDmg = m.dmg;
-
-      const weatherMod = applyWeatherModifier(m.move.type, weather);
-      adjustedDmg *= weatherMod;
-
-      if (m.move.cat === 'physical' || m.move.cat === 'special') {
-        adjustedDmg *= stageMultiplier(offenseStage);
-        adjustedDmg /= stageMultiplier(defenseStage);
-      }
-
-      if (weather === 'sand' && m.move.cat === 'special') {
-        adjustedDmg /= 1.5;
-      }
-
-      if (weather === 'snow' && m.move.cat === 'physical') {
-        adjustedDmg /= 1.5;
-      }
-
-      if (maxRollMode) {
-        adjustedDmg /= 0.85;
-      }
-
+      adjustedDmg *= applyWeatherModifier(m.move.type, weather);
+      adjustedDmg *= stageMultiplier(offenseStage);
+      adjustedDmg /= stageMultiplier(defenseStage);
+      if (weather === 'sand' && m.move.cat === 'special') adjustedDmg /= 1.5;
+      if (weather === 'snow' && m.move.cat === 'physical') adjustedDmg /= 1.5;
+      if (maxRollMode) adjustedDmg /= 0.85;
       m.adjustedPct = adjustedDmg / r.defenderHp * 100;
       m.adjustedDmg = adjustedDmg;
-
-      if (adjustedDmg > best.dmg) {
-        best = {
-          dmg: adjustedDmg,
-          pct: m.adjustedPct,
-          move: m.move,
-          eff: m.eff
-        };
-      }
+      if (adjustedDmg > best.dmg) best = { dmg: adjustedDmg, pct: m.adjustedPct, move: m.move, eff: m.eff };
     });
 
-    r.displayPct = best.pct;
-    r.displayMove = best.move;
-    r.displayEff = best.eff;
+    // ── Attacking mode: defender hits each meta Pokémon ──
+    let defBest = { dmg: 0, pct: 0, move: null, eff: 1 };
+    (r.defMoveBreakdown || []).forEach(m => {
+      let adjustedDmg = m.dmg;
+      adjustedDmg *= applyWeatherModifier(m.move.type, weather);
+      adjustedDmg *= stageMultiplier(offenseStage);
+      adjustedDmg /= stageMultiplier(defenseStage);
+      if (maxRollMode) adjustedDmg /= 0.85;
+      m.adjustedPct = adjustedDmg / r.attacker.computedHp * 100;
+      m.adjustedDmg = adjustedDmg;
+      if (adjustedDmg > defBest.dmg) defBest = { dmg: adjustedDmg, pct: m.adjustedPct, move: m.move, eff: m.eff };
+    });
+
+    r.displayPct  = attackingMode ? defBest.pct  : best.pct;
+    r.displayMove = attackingMode ? defBest.move  : best.move;
+    r.displayEff  = attackingMode ? defBest.eff   : best.eff;
   });
 
   const mode = document.getElementById('sortMode').value;
-  const sorted = [...lastResults];
-
+  let sorted = [...lastResults];
   if (mode === 'damage') sorted.sort((a,b) => b.displayPct - a.displayPct);
   else if (mode === 'name') sorted.sort((a,b) => a.attacker.speciesRaw.localeCompare(b.attacker.speciesRaw));
-  else if (mode === 'order') sorted.sort((a,b) => a.originalOrder - b.originalOrder);
+  else sorted.sort((a,b) => a.originalOrder - b.originalOrder);
+
+  // Apply search filter
+  if (searchQuery) {
+    sorted = sorted.filter(r => r.attacker.speciesRaw.toLowerCase().includes(searchQuery));
+  }
 
   const maxPct = Math.min(Math.max(...sorted.map(r => r.displayPct || 0), 1), 150);
   let html = '';
 
   sorted.forEach((r, index) => {
-    const pct = r.displayPct || r.pct;
-    const barW = Math.min(pct / maxPct * 100, 100).toFixed(1);
+    const pct    = r.displayPct || 0;
+    const barW   = Math.min(pct / maxPct * 100, 100).toFixed(1);
     const barCls = pct >= 100 ? 'bar-ohko' : pct >= 60 ? 'bar-high' : pct >= 30 ? 'bar-mid' : 'bar-low';
-
     const pctLabel = pct >= 100
       ? `<span class="pct-ohko">${pct.toFixed(0)}% OHKO</span>`
       : `${pct.toFixed(1)}%`;
-
     const effLabel = r.displayEff > 1
       ? `<span class="eff-super">×${r.displayEff}</span>`
       : r.displayEff < 1 && r.displayEff > 0
-      ? `<span class="eff-resist">×${r.displayEff}</span>`
-      : '';
+      ? `<span class="eff-resist">×${r.displayEff}</span>` : '';
 
     const typeBadges = r.attacker.types.map(t =>
-      `<span class="type-badge t-${t}">${t}</span>`
-    ).join('');
-
-    const moveName = r.displayMove ? r.displayMove.name : '— (no damaging moves)';
+      `<span class="type-badge t-${t}">${t}</span>`).join('');
+    const moveName    = r.displayMove ? r.displayMove.name : '— (no damaging moves)';
     const pasteOrderLabel = `#${r.originalOrder}`;
 
-    const breakdownHtml = r.moveBreakdown.map(m => {
-      const moveEff = m.eff > 1
+    // Move breakdown — paste order, no sort
+    const breakdownSource = attackingMode ? (r.defMoveBreakdown || []) : r.moveBreakdown;
+    const breakdownHtml = breakdownSource.map(m => {
+      const mEff = m.eff > 1
         ? `<span class="eff-super">×${m.eff}</span>`
         : m.eff < 1 && m.eff > 0
-        ? `<span class="eff-resist">×${m.eff}</span>`
-        : '';
-
+        ? `<span class="eff-resist">×${m.eff}</span>` : '';
+      const mods = (m.activeMods||[]).filter((v,i,a)=>a.indexOf(v)===i&&v&&v!=='STAB'&&v!=='Adaptability');
+      const modTag = mods.length ? `<span style="color:var(--accent2);font-size:10px">${mods.join(', ')}</span>` : '';
       return `
         <div class="move-breakdown-row">
           <div class="move-breakdown-left">
             <div class="move-breakdown-name">${m.move.name}</div>
-            <div class="move-breakdown-meta">
-              ${m.move.type} · ${m.move.power} BP ${m.stab ? '· STAB' : ''}
-            </div>
-            ${moveEff}
+            <div class="move-breakdown-meta">${m.move.type} · ${m.move.power} BP${m.stab ? ' · STAB' : ''}</div>
+            ${mEff} ${modTag}
           </div>
           <div class="move-breakdown-pct">
-            ${m.adjustedPct >= 100 ? `${m.adjustedPct.toFixed(0)}% OHKO` : `${m.adjustedPct.toFixed(1)}%`}
+            ${(m.adjustedPct ?? m.pct) >= 100
+              ? `${(m.adjustedPct ?? m.pct).toFixed(0)}% OHKO`
+              : `${(m.adjustedPct ?? m.pct).toFixed(1)}%`}
           </div>
-        </div>
-      `;
+        </div>`;
     }).join('');
+
+    // Speed comparison between attacker and current defender
+    let speedHtml = '';
+    if (r.defender) {
+      const atkSpeRaw = r.attacker.computedSpe || calcStat(r.attacker.baseStats.spe||0, r.attacker.evs.spe||0, 31, 50, 1);
+      const atkSpeEff = (r.attacker.item||'').toLowerCase().replace(/[\s-]/g,'') === 'choicescarf'
+        ? Math.floor(atkSpeRaw * 1.5) : atkSpeRaw;
+      const defSpeEff = effectiveSpe(r.defender);
+      const atkItem = r.attacker.item || '';
+      const defItem = r.defender.item || '';
+      const atkScarf = atkItem.toLowerCase().replace(/[\s-]/g,'') === 'choicescarf';
+      const defScarf = defItem.toLowerCase().replace(/[\s-]/g,'') === 'choicescarf';
+      const atkLabel = `${r.attacker.speciesRaw} ${atkScarf ? `<span style="color:var(--accent2);font-size:10px">(Scarf)</span>` : ''}`;
+      const defLabel = `${r.defender.speciesRaw} ${defScarf ? `<span style="color:var(--accent2);font-size:10px">(Scarf)</span>` : ''}`;
+
+      let verdict, icon;
+      if (atkSpeEff > defSpeEff) {
+        verdict = `<span class="spd-faster">Faster</span>`;
+        icon = '⚡';
+      } else if (atkSpeEff < defSpeEff) {
+        verdict = `<span class="spd-slower">Slower</span>`;
+        icon = '🐢';
+      } else {
+        verdict = `<span class="spd-tied">Speed tie</span>`;
+        icon = '⚖️';
+      }
+      speedHtml = `
+        <div class="speed-compare">
+          <span class="spd-icon">${icon}</span>
+          <span>${verdict}</span>
+          <span style="color:var(--text3)">·</span>
+          <span>${atkLabel} <span class="spd-val">${atkSpeEff}</span></span>
+          <span style="color:var(--text3)">vs</span>
+          <span>${defLabel} <span class="spd-val">${defSpeEff}</span></span>
+        </div>`;
+    }
+
+    const modeLabel = attackingMode
+      ? `<span style="font-size:10px;color:var(--accent2);margin-left:6px;">→ attacking</span>`
+      : '';
 
     html += `
       <div class="result-item">
         <div class="result-row" onclick="toggleBreakdown(${index})" id="resultRow-${index}">
           <div class="result-expand">▶</div>
           <div class="result-rank">${mode === 'damage' ? index + 1 : pasteOrderLabel}</div>
-
           <div class="result-name">
             <div class="result-name-text">
               ${r.attacker.speciesRaw}
               ${mode === 'damage'
                 ? `<span style="color:var(--text3);font-size:11px;margin-left:6px;">${pasteOrderLabel}</span>`
                 : ''}
+              ${modeLabel}
             </div>
             <div class="type-badges">${typeBadges}</div>
           </div>
-
-          <div class="bar-wrap">
-            <div class="bar ${barCls}" style="width:${barW}%"></div>
-          </div>
-
+          <div class="bar-wrap"><div class="bar ${barCls}" style="width:${barW}%"></div></div>
           <div class="result-pct">${pctLabel}</div>
           <div class="result-move">${moveName} ${effLabel}</div>
         </div>
-
         <div class="move-breakdown" id="breakdown-${index}">
+          ${speedHtml}
           ${breakdownHtml || '<div class="move-breakdown-row">No damaging moves found.</div>'}
         </div>
-      </div>
-    `;
+      </div>`;
   });
 
   document.getElementById('resultsList').innerHTML = html ||
-    '<div class="error-msg" style="padding:10px 0">No results to display.</div>';
+    '<div class="error-msg" style="padding:10px 0">No results match your search.</div>';
 }
 
 function toggleBreakdown(index) {
@@ -1168,7 +1826,12 @@ function clearAll() {
   document.getElementById('metaStatus').textContent = '';
   document.getElementById('defenderInfo').classList.remove('visible');
   document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('weaknessOverlay').classList.remove('visible');
   META_DB = [];
+  lastResults = [];
+  for (let i = 0; i < 6; i++) DEFENDER_SLOTS[i] = null;
+  activeDefenderSlot = 0;
+  renderDefenderTabs();
   updateReadyHint();
 }
 </script>
