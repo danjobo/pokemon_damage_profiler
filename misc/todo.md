@@ -1,5 +1,6 @@
 ## Feature Request
 
+- [__] save pins as team matchup in match history with w/l
 
 ## To-Do Stack
 

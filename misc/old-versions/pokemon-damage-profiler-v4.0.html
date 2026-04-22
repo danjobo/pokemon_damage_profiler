@@ -221,93 +221,6 @@
     user-select: none;
   }
   .winrate-widget.visible { display: flex; }
-
-  /* Match history control bar */
-  .match-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    padding: 8px 0 10px;
-  }
-
-  /* Match history listing */
-  .match-entry {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 0 8px 12px;
-    border-radius: var(--radius-sm);
-    border: 0.5px solid transparent;
-    margin-bottom: 6px;
-    box-sizing: border-box;
-    width: 100%;
-    overflow: hidden;
-    position: relative;
-  }
-  .match-entry.match-win-row  { background: rgba(93,202,165,0.07);  border-color: rgba(93,202,165,0.2); }
-  .match-entry.match-loss-row { background: rgba(226,75,74,0.07); border-color: rgba(226,75,74,0.2); }
-  .match-sprites {
-    display: flex;
-    gap: 1px;
-    align-items: center;
-    flex-wrap: nowrap;
-  }
-  .match-sprite {
-    width: 38px;
-    height: 38px;
-    image-rendering: pixelated;
-    object-fit: contain;
-    flex-shrink: 0;
-  }
-  .match-sprite-fallback {
-    width: 38px; height: 38px;
-    border-radius: 4px;
-    background: var(--bg3);
-    border: 0.5px solid var(--border2);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 8px;
-    color: var(--text3);
-    text-align: center;
-    overflow: hidden;
-    padding: 1px;
-    line-height: 1.1;
-  }
-  .match-result-badge {
-    font-size: 11px; font-weight: 800;
-    flex-shrink: 0;
-    letter-spacing: 0.06em;
-    padding: 0 2px;
-  }
-  .match-result-win  { color: var(--green); }
-  .match-result-loss { color: var(--red); }
-  .match-date {
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    min-width: 40px;
-  }
-  .match-date-day  { font-size: 9px; color: var(--text2); white-space: nowrap; }
-  .match-date-time { font-size: 9px; color: var(--text3); white-space: nowrap; }
-  .match-delete-btn {
-    background: var(--bg2); border: none;
-    color: var(--text3); cursor: pointer;
-    font-size: 12px; padding: 2px 6px;
-    border-radius: 4px; flex-shrink: 0;
-    opacity: 0.5;
-    transition: opacity 0.12s;
-    position: sticky;
-    right: 0;
-    align-self: stretch;
-    display: flex;
-    align-items: center;
-  }
-  .match-delete-btn:hover { opacity: 1; color: var(--red); }
   .wr-score {
     display: flex; align-items: baseline; gap: 5px;
     font-size: 16px; font-weight: 700;
@@ -920,6 +833,18 @@ Impish Nature
         <button id="sortDirBtn" onclick="toggleSortDir()" title="Reverse sort order" style="padding:4px 8px;font-size:12px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;line-height:1;">↓</button>
       </div>
 
+      <div class="winrate-widget" id="winrateWidget">
+        <button class="wr-btn wr-minus" onclick="adjustScore('wins',-1)" title="Remove win">−</button>
+        <button class="wr-btn wr-plus wr-win" onclick="adjustScore('wins',1)" title="Add win">+</button>
+        <div class="wr-score">
+          <span class="wr-wins" id="wrWins">0</span>
+          <span class="wr-sep">–</span>
+          <span class="wr-losses" id="wrLosses">0</span>
+        </div>
+        <button class="wr-btn wr-plus wr-loss" onclick="adjustScore('losses',1)" title="Add loss">+</button>
+        <button class="wr-btn wr-minus" onclick="adjustScore('losses',-1)" title="Remove loss">−</button>
+      </div>
+
       <div id="defenderTag" class="defender-tag"></div>
     </div>
 
@@ -1046,39 +971,11 @@ Impish Nature
     </div>
 
 
-    <!-- Match history control bar -->
-    <div class="match-bar" id="matchBar">
-      <!-- Left: W/L record + Win/Loss buttons -->
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <div class="winrate-widget visible" id="winrateWidget" style="display:flex!important;">
-          <button class="wr-btn wr-minus" onclick="adjustScore('wins',-1)" title="Remove win">−</button>
-          <button class="wr-btn wr-plus wr-win" onclick="adjustScore('wins',1)" title="Add win">+</button>
-          <div class="wr-score">
-            <span class="wr-wins" id="wrWins">0</span>
-            <span class="wr-sep">–</span>
-            <span class="wr-losses" id="wrLosses">0</span>
-          </div>
-          <button class="wr-btn wr-plus wr-loss" onclick="adjustScore('losses',1)" title="Add loss">+</button>
-          <button class="wr-btn wr-minus" onclick="adjustScore('losses',-1)" title="Remove loss">−</button>
-        </div>
-        <div style="width:0.5px;height:28px;background:var(--border2);flex-shrink:0;"></div>
-        <button onclick="recordMatch('win')" style="padding:5px 14px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid #2d6a4a;background:#1a3a2a;color:var(--green);cursor:pointer;font-weight:600;white-space:nowrap;" title="Record win and add to match history">Win</button>
-        <button onclick="recordMatch('loss')" style="padding:5px 14px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid #5a2020;background:#2a1414;color:var(--red);cursor:pointer;font-weight:600;white-space:nowrap;" title="Record loss and add to match history">Loss</button>
-      </div>
-
-      <!-- Center: legend -->
-      <div class="legend" style="margin:0;flex:1;justify-content:center;">
-        <div class="leg-item"><div class="leg-swatch" style="background:var(--green)"></div>&lt;30%</div>
-        <div class="leg-item"><div class="leg-swatch" style="background:var(--yellow)"></div>30–60%</div>
-        <div class="leg-item"><div class="leg-swatch" style="background:var(--orange)"></div>60–100%</div>
-        <div class="leg-item"><div class="leg-swatch" style="background:var(--red)"></div>OHKO+</div>
-      </div>
-
-      <!-- Right: clear pins + view toggle -->
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-        <button onclick="clearPins()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Clear all pinned Pokémon and collapse expanded rows">Clear pins</button>
-        <button id="historyToggleBtn" onclick="toggleHistoryView()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Toggle between damage results and match history">📋 History</button>
-      </div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-swatch" style="background:var(--green)"></div>&lt;30% HP</div>
+      <div class="leg-item"><div class="leg-swatch" style="background:var(--yellow)"></div>30–60%</div>
+      <div class="leg-item"><div class="leg-swatch" style="background:var(--orange)"></div>60–100%</div>
+      <div class="leg-item"><div class="leg-swatch" style="background:var(--red)"></div>OHKO+</div>
     </div>
 
     <div class="card" style="padding: 0.5rem 1.25rem;">
@@ -1228,8 +1125,7 @@ async function fetchPokemonData(slug) {
     if (k) baseStats[k] = s.base_stat;
   }
   const types = data.types.map(t => t.type.name);
-  const spriteUrl = data.sprites?.front_default || null;
-  const result = { baseStats, types, spriteUrl };
+  const result = { baseStats, types };
   pokemonCache[slug] = result;
   return result;
 }
@@ -1593,10 +1489,9 @@ async function loadMeta() {
     if (pokemon.failed) return;
     try {
       const slug = toSlug(pokemon.speciesRaw);
-      const { baseStats, types, spriteUrl } = await fetchPokemonData(slug);
+      const { baseStats, types } = await fetchPokemonData(slug);
       pokemon.baseStats = baseStats;
       pokemon.types = types;
-      pokemon.spriteUrl = spriteUrl || null;
 
       // Fetch all moves concurrently; keep all for display, filter to damaging for calc
       const moveResults = await Promise.all(pokemon.moves.map((m, i) => fetchMoveData(m).then(r => r ? { ...r, pasteIndex: i } : { name: m, power: 0, type: 'normal', cat: 'status', isSpread: false, pasteIndex: i })));
@@ -2295,7 +2190,6 @@ function computeResults(loadedMeta, defender) {
 }
 
 function renderResults() {
-  if (_historyViewActive) { renderMatchHistory(); return; }
   const weather       = document.getElementById('weatherMode')?.value || 'none';
   const terrainMode   = document.getElementById('terrainMode')?.value || 'none';
   const atkStage    = Number(document.getElementById('atkStage')?.value || 0);
@@ -3295,20 +3189,13 @@ function refreshSavedTeamDropdown(selectValue) {
   const sel = document.getElementById('savedTeamSelect');
   if (!sel) return;
   const teams = getSavedTeams();
-  const wr    = getWinrates();
   const names = Object.keys(teams).sort((a, b) => {
     const ta = teams[a]?.savedAt || 0;
     const tb = teams[b]?.savedAt || 0;
     return tb - ta; // most recent first
   });
   sel.innerHTML = '<option value="">— saved teams —</option>' +
-    names.map(n => {
-      const score = wr[n] || { wins: 0, losses: 0 };
-      const label = (score.wins || score.losses)
-        ? `${n} (${score.wins}W-${score.losses}L)`
-        : n;
-      return `<option value="${n.replace(/"/g,'&quot;')}">${label}</option>`;
-    }).join('');
+    names.map(n => `<option value="${n.replace(/"/g,'&quot;')}">${n}</option>`).join('');
   if (selectValue) sel.value = selectValue;
 }
 
@@ -3426,186 +3313,6 @@ function deleteSavedTeam() {
 
 refreshSavedTeamDropdown('');
 
-function clearPins() {
-  pinnedKeys.clear();
-  expandedBreakdowns.clear();
-  renderResults();
-}
-
-// ── Match History ─────────────────────────────────────────────────────────────
-const MATCH_HISTORY_KEY = 'pokemonDamageProfiler_matchHistory';
-let _historyViewActive = false;
-
-function getMatchHistory() {
-  try { return JSON.parse(localStorage.getItem(MATCH_HISTORY_KEY) || '{}'); } catch { return {}; }
-}
-function putMatchHistory(h) {
-  try { localStorage.setItem(MATCH_HISTORY_KEY, JSON.stringify(h)); } catch {}
-}
-
-// Sprite img using PokeAPI front_default URL (from API fetch), with slug-based fallbacks
-function spriteImgHtml(speciesRaw, size = 38, savedUrl = null) {
-  const slug = toSlug(speciesRaw);
-  const shortName = speciesRaw.split(/[\s-]/)[0].slice(0, 8);
-  // Priority: saved front_default URL > pokemondb home > pokeapi raw slug > text fallback
-  const src1 = savedUrl || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${slug}.png`;
-  const src2 = `https://img.pokemondb.net/sprites/home/normal/${slug}.png`;
-  return `<img class="match-sprite" src="${src1}"
-    style="width:${size}px;height:${size}px;image-rendering:pixelated;"
-    alt="${speciesRaw}" title="${speciesRaw}"
-    onerror="if(this.src!=='${src2}'){this.src='${src2}';}else{this.outerHTML='<div class=\\'match-sprite-fallback\\' style=\\'width:${size}px;height:${size}px;\\' title=\\'${speciesRaw}\\'>${shortName}</div>';}"
-  >`;
-}
-
-function recordMatch(result) {
-  if (!_currentTeamName) {
-    alert('Load a saved team first to record match history.');
-    return;
-  }
-
-  // My team: the 6 defender slots — include sprite URLs from defender data
-  const myTeam = DEFENDER_SLOTS
-    .filter(Boolean)
-    .map(s => ({
-      name: s.speciesRaw,
-      sprite: (pokemonCache[toSlug(s.speciesRaw)] || {}).spriteUrl || null,
-    }));
-
-  // Opponent: currently pinned Pokémon — look up sprite from META_DB
-  const opponent = [...pinnedKeys].slice(0, 6).map(name => ({
-    name,
-    sprite: (pokemonCache[toSlug(name)] || {}).spriteUrl || null,
-  }));
-
-  if (!myTeam.length) {
-    alert('Load defender tabs with your team first.');
-    return;
-  }
-  if (!opponent.length) {
-    alert('Pin the opponent\'s Pokémon in the results list first (up to 6).');
-    return;
-  }
-
-  const entry = {
-    id: Date.now(),
-    result,
-    myTeam,    // [{name, sprite}]
-    opponent,  // [{name, sprite}]
-    date: new Date().toLocaleString(),
-  };
-
-  const history = getMatchHistory();
-  if (!history[_currentTeamName]) history[_currentTeamName] = [];
-  history[_currentTeamName].unshift(entry);
-  putMatchHistory(history);
-
-  adjustScore(result === 'win' ? 'wins' : 'losses', 1);
-
-  if (!_historyViewActive) toggleHistoryView();
-  else renderMatchHistory();
-}
-
-function toggleHistoryView() {
-  _historyViewActive = !_historyViewActive;
-  const btn = document.getElementById('historyToggleBtn');
-  if (btn) {
-    btn.textContent = _historyViewActive ? '⚔️ Results' : '📋 History';
-    btn.style.background    = _historyViewActive ? 'rgba(124,106,247,0.15)' : 'transparent';
-    btn.style.borderColor   = _historyViewActive ? 'var(--accent)' : 'var(--border2)';
-    btn.style.color         = _historyViewActive ? 'var(--accent2)' : 'var(--text2)';
-  }
-  if (_historyViewActive) renderMatchHistory();
-  else renderResults();
-}
-
-function renderMatchHistory() {
-  const container = document.getElementById('resultsList');
-  if (!container) return;
-
-  if (!_currentTeamName) {
-    container.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:20px 0;">Load a saved team to view its match history.</div>';
-    return;
-  }
-
-  const history = getMatchHistory();
-  let matches = history[_currentTeamName] || [];
-
-  // Filter by search bar — comma-separated Pokémon names matched against opponent team
-  const searchRaw = (document.getElementById('searchBar')?.value || '').trim();
-  if (searchRaw) {
-    const terms = searchRaw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
-    matches = matches.filter(m => {
-      // Collect all Pokémon names in this match (both sides)
-      const allNames = [
-        ...m.myTeam.map(p  => (typeof p === 'string' ? p : p.name).toLowerCase()),
-        ...m.opponent.map(p => (typeof p === 'string' ? p : p.name).toLowerCase()),
-      ];
-      // Every term must match at least one name
-      return terms.every(term => allNames.some(n => n.includes(term)));
-    });
-  }
-
-  if (!matches.length) {
-    const emptyMsg = searchRaw
-      ? `<div style="color:var(--text3);font-size:13px;padding:20px 0;">No matches found containing <b style="color:var(--text2)">${searchRaw}</b>.</div>`
-      : `<div style="color:var(--text3);font-size:13px;padding:20px 0;">No matches recorded yet for <b style="color:var(--text2)">${_currentTeamName}</b>.<br><span style="font-size:11px;">Pin the opponent's Pokémon in the results list, then press Win or Loss to record a match.</span></div>`;
-    container.innerHTML = emptyMsg;
-    return;
-  }
-
-  const wins   = matches.filter(m => m.result === 'win').length;
-  const losses = matches.filter(m => m.result === 'loss').length;
-  let html = `<div style="font-size:12px;color:var(--text2);margin-bottom:10px;font-weight:600;">${_currentTeamName} — <span style="color:var(--green)">${wins}W</span> <span style="color:var(--text3)">·</span> <span style="color:var(--red)">${losses}L</span> <span style="color:var(--text3);font-weight:400;">(${matches.length} match${matches.length!==1?'es':''})</span></div>`;
-
-  for (const m of matches) {
-    const isWin = m.result === 'win';
-    const rowCls = isWin ? 'match-win-row' : 'match-loss-row';
-    const badge  = isWin
-      ? '<span class="match-result-badge match-result-win">WIN</span>'
-      : '<span class="match-result-badge match-result-loss">LOSS</span>';
-
-    // Split date string into date part and time part
-    const dateParts = m.date.split(', ');
-    const datePart = dateParts[0] || m.date;
-    const timePart = dateParts.slice(1).join(', ') || '';
-
-    const mySprites  = m.myTeam.map(p => {
-      const name   = typeof p === 'string' ? p : p.name;
-      const sprite = typeof p === 'string' ? null : p.sprite;
-      return spriteImgHtml(name, 38, sprite);
-    }).join('');
-    const oppSprites = m.opponent.map(p => {
-      const name   = typeof p === 'string' ? p : p.name;
-      const sprite = typeof p === 'string' ? null : p.sprite;
-      return spriteImgHtml(name, 38, sprite);
-    }).join('');
-
-    // Layout: [date stacked] [my sprites] [WIN/LOSS badge] [opp sprites] [✕]
-    html += `<div class="match-entry ${rowCls}">
-      <div class="match-date">
-        <span class="match-date-day">${datePart}</span>
-        <span class="match-date-time">${timePart}</span>
-      </div>
-      <div class="match-sprites">${mySprites}</div>
-      ${badge}
-      <div class="match-sprites">${oppSprites}</div>
-      <button class="match-delete-btn" onclick="deleteMatch('${_currentTeamName.replace(/'/g,"\\'")}',${m.id})" title="Delete this match">✕</button>
-    </div>`;
-  }
-
-  container.innerHTML = html;
-}
-
-function deleteMatch(teamName, id) {
-  if (!confirm('Delete this match entry?')) return;
-  const history = getMatchHistory();
-  if (history[teamName]) {
-    history[teamName] = history[teamName].filter(m => m.id !== id);
-    putMatchHistory(history);
-  }
-  renderMatchHistory();
-}
-
 // ── Winrate tracking ──────────────────────────────────────────────────────────
 const WINRATE_KEY = 'pokemonDamageProfiler_winrates';
 let _currentTeamName = null;
@@ -3623,8 +3330,7 @@ function loadWinrateForTeam(name) {
   const score = wr[name] || { wins: 0, losses: 0 };
   document.getElementById('wrWins').textContent   = score.wins;
   document.getElementById('wrLosses').textContent = score.losses;
-  // If history view is active, refresh it for the new team
-  if (_historyViewActive) renderMatchHistory();
+  document.getElementById('winrateWidget').classList.add('visible');
 }
 
 function adjustScore(side, delta) {
@@ -3635,7 +3341,6 @@ function adjustScore(side, delta) {
   putWinrates(wr);
   document.getElementById('wrWins').textContent   = wr[_currentTeamName].wins;
   document.getElementById('wrLosses').textContent = wr[_currentTeamName].losses;
-  refreshSavedTeamDropdown(_currentTeamName); // keep dropdown label in sync
 }
 
 // ── Sticky controls "stuck" shadow via IntersectionObserver ───────────────────
