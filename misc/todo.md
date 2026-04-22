@@ -1,11 +1,9 @@
 ## Feature Request
 
-- [__] have the plus button on the left side, then the collapsable arrow icon, then the pin button so the pin and plus are separated more
-- [__] give the plus button some kind of hover glow or brightening
-- [__] make the pin button a little bit bigger
 
 ## To-Do Stack
 
+- [__] make the control bar text not selectable either (outside of the search bar of course)
 
 ### Bug Stack
 
@@ -14,6 +12,9 @@
 ---
 #### Completed
 
+- [XX] have the plus button on the left side, then the collapsable arrow icon, then the pin button so the pin and plus are separated more
+- [XX] give the plus button some kind of hover glow or brightening
+- [XX] make the pin button a little bit bigger
 - [XX] the search term help window is showing up just on click, i want it only when you click the "?", and it's also seeming kind of sticky. i want it to go away when another area in the window is clicked 
 - [XX] show the weakness chart with only one pokemon
 - [XX] show the stat value next to the name in parentheses for each sort type and maybe grayed out and a bit smaller (sort by attack shows attack, speed shows speed, etc...)

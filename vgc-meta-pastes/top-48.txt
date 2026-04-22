@@ -1,5 +1,5 @@
-Sneasler  
-Ability: Pressure  
+Sneasler @ Mental Herb
+Ability: Unburden  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
 Jolly Nature  
@@ -11,8 +11,8 @@ _
 - Coaching
 - Rock Slide 
 
-Incineroar  
-Ability: Blaze  
+Incineroar @ Sitrus Berry  
+Ability: Intimidate  
 Level: 50  
 EVs: 32 HP / 14 Def / 20 SpD  
 Careful Nature  
@@ -29,7 +29,7 @@ _
 - Helping Hand  
 
 Garchomp @ Choice Scarf  
-Ability: Sand Veil  
+Ability: Rough Skin  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
 Jolly Nature  
@@ -57,7 +57,7 @@ _
 - Low Kick
 - Swords Dance
 
-Sinistcha  
+Sinistcha @ Sitrus Berry   
 Ability: Hospitality  
 Level: 50  
 EVs: 32 HP / 14 Def / 20 SpD  
@@ -85,8 +85,8 @@ _
 - Liquidation  
 - Psychic Fangs   
 
-Aerodactyl  
-Ability: Rock Head  
+Aerodactyl @ Focus Sash  
+Ability: Unnerve  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
 Jolly Nature  
@@ -114,7 +114,7 @@ _
 - Dragon Dance
 - Dragon Pulse  
 
-Rotom-Wash  
+Rotom-Wash @ Sitrus Berry
 Ability: Levitate  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
@@ -130,7 +130,7 @@ _
 - Discharge
 - Helping Hand
 
-Whimsicott  
+Whimsicott @ Focus Sash
 Ability: Prankster  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
@@ -147,7 +147,7 @@ _
 - Endeavor  
 - Dazzling Gleam   
 
-Pelipper  
+Pelipper @ Focus Sash
 Ability: Drizzle  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
@@ -195,8 +195,8 @@ _
 - Stone Edge
 - High Horsepower
 
-Farigiraf  
-Ability: Cud Chew  
+Farigiraf @ Sitrus Berry  
+Ability: Armor Tail   
 Level: 50  
 EVs: 32 HP / 2 Def / 32 SpA  
 Quiet Nature  
@@ -212,7 +212,7 @@ _
 - Rain Dance
 - Ally Switch
 
-Archaludon  
+Archaludon @ Leftovers
 Ability: Stamina  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
@@ -228,8 +228,8 @@ _
 - Snarl
 - Steel Beam
 
-Milotic  
-Ability: Marvel Scale  
+Milotic @ Leftovers  
+Ability: Competitive  
 Level: 50  
 EVs: 32 HP / 21 Def / 10 SpA / 1 SpD / 2 Spe  
 Modest Nature  
@@ -276,8 +276,8 @@ _
 - Nasty Plot 
 - Thunderbolt   
 
-Venusaur  
-Ability: Overgrow  
+Venusaur @ Focus Sash  
+Ability: Chlorophyll  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
@@ -294,7 +294,7 @@ _
 - Weather Ball  
 
 Talonflame @ Sharp Beak  
-Ability: Flame Body  
+Ability: Gale Wings  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
 Jolly Nature  
@@ -323,8 +323,8 @@ _
 - Synthesis
 - Earth Power  
 
-Corviknight  
-Ability: Pressure  
+Corviknight @ Leftovers  
+Ability: Mirror Armor  
 Level: 50  
 EVs: 32 HP / 32 Def / 2 SpD  
 Impish Nature  
@@ -381,7 +381,7 @@ _
 - Calm Mind
 - Dazzling Gleam
 
-Maushold  
+Maushold @ Chople Berry  
 Ability: Friend Guard  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
@@ -410,7 +410,7 @@ _
 - Wide Guard
 - Shadow Ball
 
-Excadrill  
+Excadrill @ Focus Sash  
 Ability: Sand Rush  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
@@ -505,8 +505,8 @@ _
 - Low Kick
 - Protect  
 
-Kommo-o  
-Ability: Bulletproof  
+Kommo-o @ Leftovers  
+Ability: Soundproof  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
@@ -528,8 +528,8 @@ Timid Nature
 _
 - Sludge Wave
 
-Dragapult  
-Ability: Clear Body  
+Dragapult @ Focus Sash  
+Ability: Clear Body   
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
 Jolly Nature  
@@ -544,8 +544,8 @@ _
 - U-turn  
 - Sucker Punch
 
-Politoed  
-Ability: Water Absorb  
+Politoed @ Sitrus Berry  
+Ability: Drizzle  
 Level: 50  
 EVs: 32 HP / 32 Def / 2 SpD  
 Calm Nature  
@@ -559,8 +559,8 @@ _
 - Ice Beam  
 - Encore
 
-Sableye  
-Ability: Keen Eye  
+Sableye @ Roseli Berry  
+Ability: Prankster  
 Level: 50  
 EVs: 32 HP / 2 Def / 32 SpD  
 Careful Nature  
@@ -587,7 +587,7 @@ _
 - Infernal Parade
 - Protect
 
-Ninetales-Alola  
+Ninetales-Alola @ Focus Sash 
 Ability: Snow Warning  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
@@ -629,8 +629,8 @@ Brave Nature
 _  
 - Drain Punch  
 
-Clefable  
-Ability: Cute Charm  
+Clefable @ Sitrus Berry  
+Ability: Unaware  
 Level: 50  
 EVs: 32 HP / 32 Def / 2 SpD  
 Bold Nature  

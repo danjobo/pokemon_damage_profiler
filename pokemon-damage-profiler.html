@@ -201,6 +201,7 @@
     margin-right: -1.25rem;
     padding-left: 1.25rem;
     padding-right: 1.25rem;
+    user-select: none;
   }
 
   .defender-tag {
@@ -234,6 +235,12 @@
     position: sticky;
     top: 48px;
     z-index: 19;
+    user-select: none;
+    transition: box-shadow 0.2s;
+  }
+  .results-controls.is-stuck {
+    box-shadow: 0 6px 24px rgba(0,0,0,0.45), 0 2px 0 rgba(124,106,247,0.18);
+    border-color: var(--border2);
   }
 
   .control-group {
@@ -518,11 +525,12 @@
   }
   .def-tab-close {
     position: absolute;
-    top: 3px; right: 4px;
-    font-size: 10px;
-    color: var(--text3);
+    top: 3px; right: 5px;
+    font-size: 13px;
+    color: var(--text2);
     cursor: pointer;
     line-height: 1;
+    font-weight: 600;
   }
   .def-tab-close:hover { color: var(--red); }
   .def-tab-empty {
@@ -614,12 +622,14 @@
   .wk-pip {
     width: 8px; height: 8px;
     border-radius: 2px;
-    background: var(--border2);
+    background: transparent;
+    border: 0.5px solid var(--border2);
   }
   .wk-pip.weak2x  { background: var(--orange); }
-  .wk-pip.weak4x  { background: var(--red); }
-  .wk-pip.immune  { background: var(--bg); border: 0.5px solid var(--border2); }
+  .wk-pip.weak4x  { background: var(--red); box-shadow: 0 0 4px rgba(226,75,74,0.7); }
+  .wk-pip.immune  { background: #000; border-color: var(--border2); }
   .wk-pip.resist  { background: var(--green); opacity: 0.6; }
+  .wk-pip.resist4x { background: #4a9eff; opacity: 0.85; }
 
   .wk-count {
     font-size: 10px;
@@ -648,6 +658,17 @@
     <!-- META DATABASE -->
     <div class="card">
       <div class="card-label">Meta database — attackers</div>
+
+      <!-- Saved metas row -->
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+        <select id="savedMetaSelect" style="font-size:12px;padding:4px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;flex:1;min-width:0;" onchange="onSavedMetaSelect()">
+          <option value="">— saved metas —</option>
+        </select>
+        <button onclick="saveCurrentMeta()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Save current meta paste">Save</button>
+        <button onclick="renameSavedMeta()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Rename selected meta">Rename</button>
+        <button onclick="deleteSavedMeta()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--red);cursor:pointer;white-space:nowrap;" title="Delete selected meta">Delete</button>
+      </div>
+
       <textarea id="metaInput" placeholder="Paste one or more PokéPaste sets here, separated by a blank line.
 
 Flutter Mane @ Choice Specs
@@ -687,15 +708,6 @@ Adamant Nature
         <span id="metaStatus" style="font-size:12px;color:var(--text2)"></span>
       </div>
 
-      <!-- Saved metas row -->
-      <div style="display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap;">
-        <select id="savedMetaSelect" style="font-size:12px;padding:4px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;flex:1;min-width:0;" onchange="onSavedMetaSelect()">
-          <option value="">— saved metas —</option>
-        </select>
-        <button onclick="saveCurrentMeta()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Save current meta paste">Save</button>
-        <button onclick="renameSavedMeta()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Rename selected meta">Rename</button>
-        <button onclick="deleteSavedMeta()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--red);cursor:pointer;white-space:nowrap;" title="Delete selected meta">Delete</button>
-      </div>
       <div id="metaError" class="error-msg"></div>
       <div id="metaChips" class="meta-chips"></div>
     </div>
@@ -703,6 +715,17 @@ Adamant Nature
     <!-- DEFENDER -->
     <div class="card">
       <div class="card-label">Your Pokémon — defender</div>
+
+      <!-- Saved teams row -->
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+        <select id="savedTeamSelect" style="font-size:12px;padding:4px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;flex:1;min-width:0;">
+          <option value="">— saved teams —</option>
+        </select>
+        <button onclick="saveCurrentTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Save current defender tabs as a team">Save</button>
+        <button onclick="renameSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Rename selected team">Rename</button>
+        <button onclick="deleteSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--red);cursor:pointer;white-space:nowrap;" title="Delete selected team">Delete</button>
+      </div>
+
       <textarea id="defenderInput" placeholder="Garchomp @ Rocky Helmet
 Ability: Rough Skin
 Level: 50
@@ -717,19 +740,13 @@ Impish Nature
       <div id="defenderError" class="error-msg"></div>
 
       <div class="btn-row">
+        <button class="btn-success" onclick="onSavedTeamSelect()">Load team</button>
+        <div class="spinner" id="teamSpinner"></div>
+      </div>
+      <div class="btn-row">
         <button onclick="loadDefenderExample()">Load example</button>
         <button onclick="clearDefenders()" style="color:var(--text3)">Clear defenders</button>
         <button onclick="clearAll()" style="color:var(--text3)">Clear all</button>
-      </div>
-
-      <!-- Saved teams row -->
-      <div style="display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap;">
-        <select id="savedTeamSelect" style="font-size:12px;padding:4px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;flex:1;min-width:0;" onchange="onSavedTeamSelect()">
-          <option value="">— saved teams —</option>
-        </select>
-        <button onclick="saveCurrentTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Save current defender tabs as a team">Save</button>
-        <button onclick="renameSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Rename selected team">Rename</button>
-        <button onclick="deleteSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--red);cursor:pointer;white-space:nowrap;" title="Delete selected team">Delete</button>
       </div>
     </div>
 
@@ -741,7 +758,7 @@ Impish Nature
   <!-- </div> -->
 
   <!-- Return to top button -->
-  <button id="returnToTopBtn" onclick="scrollToResults()" style="display:none;position:fixed;bottom:64px;left:50%;transform:translateX(-50%);z-index:200;padding:8px 16px;font-size:12px;border-radius:20px;border:0.5px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.3);transition:opacity 0.2s;opacity:0;">
+  <button id="returnToTopBtn" onclick="scrollToResults()" style="display:none;position:fixed;bottom:140px;left:50%;transform:translateX(-50%);z-index:200;padding:10px 24px;font-size:13px;font-weight:600;border-radius:20px;border:0.5px solid var(--accent);background:var(--bg2);color:var(--accent2);cursor:pointer;box-shadow:0 2px 16px rgba(124,106,247,0.25);transition:opacity 0.2s;opacity:0;">
     ↑ top
   </button>
 
@@ -754,13 +771,16 @@ Impish Nature
   <!-- RESULTS -->
   <div id="resultsSection" style="display:none">
     <!-- Defender slot tabs (up to 6) -->
-    <div class="defender-tabs-row" id="defenderTabsRow">
-      <div class="def-tab def-tab-empty" title="Slot 1" onclick="selectDefenderTab(0)" id="defTab-0">＋</div>
-      <div class="def-tab def-tab-empty" title="Slot 2" onclick="selectDefenderTab(1)" id="defTab-1">＋</div>
-      <div class="def-tab def-tab-empty" title="Slot 3" onclick="selectDefenderTab(2)" id="defTab-2">＋</div>
-      <div class="def-tab def-tab-empty" title="Slot 4" onclick="selectDefenderTab(3)" id="defTab-3">＋</div>
-      <div class="def-tab def-tab-empty" title="Slot 5" onclick="selectDefenderTab(4)" id="defTab-4">＋</div>
-      <div class="def-tab def-tab-empty" title="Slot 6" onclick="selectDefenderTab(5)" id="defTab-5">＋</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <div class="defender-tabs-row" id="defenderTabsRow" style="flex:1;margin-bottom:0;">
+        <div class="def-tab def-tab-empty" title="Slot 1" onclick="selectDefenderTab(0)" id="defTab-0">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 2" onclick="selectDefenderTab(1)" id="defTab-1">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 3" onclick="selectDefenderTab(2)" id="defTab-2">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 4" onclick="selectDefenderTab(3)" id="defTab-3">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 5" onclick="selectDefenderTab(4)" id="defTab-4">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 6" onclick="selectDefenderTab(5)" id="defTab-5">＋</div>
+      </div>
+      <button id="copyTeamBtn" onclick="copyTeamPaste()" title="Copy all tabs as a team paste" style="flex-shrink:0;padding:6px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;transition:background 0.15s,color 0.15s;">📋 Copy to Clipboard</button>
     </div>
 
     <div class="results-header">
@@ -893,7 +913,7 @@ Impish Nature
           <input type="text" id="searchBar" placeholder="Search or filter…"
             oninput="renderResults();updateSearchClear();updateSearchGhost()"
             onkeydown="handleSearchKey(event)"
-            style="padding:5px 8px;font-size:12px;border:none;background:transparent;color:var(--text);outline:none;flex:1;min-width:0;position:relative;z-index:2;">
+            style="padding:5px 8px;font-size:12px;border:none;background:transparent;color:var(--text);outline:none;flex:1;min-width:0;position:relative;z-index:2;user-select:text;">
         </div>
       </div>
     </div>
@@ -908,7 +928,7 @@ Impish Nature
 
     <div class="card" style="padding: 0.5rem 1.25rem;">
       <div id="resultsList"></div>
-      <div style="height:80px"></div>
+      <div style="height:140px"></div>
     </div>
   </div>
 
@@ -1096,6 +1116,10 @@ function parseSinglePaste(text) {
   let speciesRaw = m1[1].trim().replace(/\s*\([MF]\)\s*$/,'').trim();
   const item = m1[2] || null;
 
+  // Handle "Nickname (Species)" format — species is inside the last parens
+  const nicknameMatch = speciesRaw.match(/^.+\(([^)]+)\)\s*$/);
+  if (nicknameMatch) speciesRaw = nicknameMatch[1].trim();
+
   let ability='', level=50, nature='hardy';
   let evs = {hp:0,atk:0,def:0,spa:0,spd:0,spe:0};
   let ivs = {hp:31,atk:31,def:31,spa:31,spd:31,spe:31};
@@ -1255,6 +1279,40 @@ function clearDefenderSlot(e, i) {
   renderDefenderTabs();
 }
 
+function copyTeamPaste() {
+  const filled = DEFENDER_SLOTS.filter(Boolean);
+  if (!filled.length) return;
+
+  const blocks = filled.map(slot => {
+    let block = slot.speciesRaw;
+    if (slot.item) block += ` @ ${slot.item}`;
+    if (slot.ability) block += `\nAbility: ${slot.ability}`;
+    block += `\nLevel: ${slot.level || 50}`;
+    const evParts = Object.entries(slot.evs || {}).filter(([,v]) => v > 0)
+      .map(([k,v]) => `${v} ${k.toUpperCase().replace('SPA','SpA').replace('SPD','SpD').replace('SPE','Spe').replace('ATK','Atk').replace('DEF','Def')}`);
+    if (evParts.length) block += `\nEVs: ${evParts.join(' / ')}`;
+    const natureName = (slot.nature || 'Hardy');
+    block += `\n${natureName.charAt(0).toUpperCase() + natureName.slice(1)} Nature`;
+    (slot.moves || []).slice(0, 4).forEach(mv => { block += `\n- ${mv}`; });
+    return block;
+  });
+
+  const paste = blocks.join('\n\n');
+  navigator.clipboard.writeText(paste).then(() => {
+    const btn = document.getElementById('copyTeamBtn');
+    if (!btn) return;
+    const prev = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = 'var(--green)';
+    setTimeout(() => {
+      btn.textContent = prev;
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 1800);
+  });
+}
+
 function saveCurrentDefenderToSlot(defender, rawText, results) {
   // Find the first empty slot, or overwrite slot 0 if all full
   let slot = DEFENDER_SLOTS.findIndex(s => !s);
@@ -1274,13 +1332,13 @@ const ALL_TYPES = ['normal','fire','water','electric','grass','ice','fighting','
 function updateWeaknessOverlay() {
   const filled = DEFENDER_SLOTS.filter(Boolean);
   const overlay = document.getElementById('weaknessOverlay');
-  if (filled.length < 1) { overlay.classList.remove('visible'); return; }
+  const grid = document.getElementById('weaknessGrid');
+
+  if (filled.length < 1) { overlay.classList.remove('visible'); grid.innerHTML = ''; return; }
 
   const n = filled.length;
   const titleEl = document.getElementById('weaknessTitle');
   if (titleEl) titleEl.textContent = `Type Weakness Overlap (${n} defender${n!==1?'s':''}) — sorted by threat`;
-
-  const grid = document.getElementById('weaknessGrid');
 
   // For each attacking type, tally effectiveness across all filled defenders
   const typeData = ALL_TYPES.map(atkType => {
@@ -1293,8 +1351,13 @@ function updateWeaknessOverlay() {
     return { atkType, effs, weakCount, immuneCount, resistCount, score };
   });
 
-  // Sort descending by threat score
-  typeData.sort((a, b) => b.score - a.score);
+  // Sort: most weaknesses first → among ties, highest weighted score (penalises resists/immunities)
+  // → among ties, most immunities last.
+  typeData.sort((a, b) =>
+    b.weakCount - a.weakCount ||
+    b.score - a.score ||
+    a.immuneCount - b.immuneCount
+  );
 
   let html = '';
   for (const { atkType, effs, weakCount, resistCount, immuneCount, score } of typeData) {
@@ -1304,7 +1367,7 @@ function updateWeaknessOverlay() {
 
     // Build pips — lay out in rows of 3 (up to 2 rows of 3 = 6)
     const pipHtml = effs.map(e => {
-      const cls = e === 0 ? 'immune' : e >= 2 ? 'weak2x' : e > 1 ? 'weak2x' : e < 1 ? 'resist' : '';
+      const cls = e === 0 ? 'immune' : e >= 4 ? 'weak4x' : e >= 2 ? 'weak2x' : e > 1 ? 'weak2x' : e <= 0.25 ? 'resist4x' : e < 1 ? 'resist' : '';
       return `<div class="wk-pip${cls ? ' '+cls : ''}"></div>`;
     });
     const rows = [];
@@ -1319,6 +1382,8 @@ function updateWeaknessOverlay() {
       </div>`;
   }
   grid.innerHTML = html;
+  overlay.classList.remove('visible');
+  void overlay.offsetHeight;
   overlay.classList.add('visible');
 }
 
@@ -1399,6 +1464,25 @@ async function loadMeta() {
   }
 
   updateReadyHint();
+
+  // Recompute results for any already-loaded defender slots using the new meta
+  const loadedMeta = META_DB.filter(p => p.loaded);
+  if (loadedMeta.length) {
+    let anySlot = false;
+    for (let i = 0; i < 6; i++) {
+      const slot = DEFENDER_SLOTS[i];
+      if (!slot) continue;
+      slot._lastResults = computeResults(loadedMeta, slot);
+      anySlot = true;
+    }
+    if (anySlot) {
+      const cur = DEFENDER_SLOTS[activeDefenderSlot];
+      if (cur) lastResults = cur._lastResults;
+      const savedScroll = window.scrollY;
+      renderResults();
+      window.scrollTo({ top: savedScroll, behavior: 'instant' });
+    }
+  }
 }
 
 // ─── Defender parse + API fetch ───────────────────────────────────────────────
@@ -2250,7 +2334,7 @@ function renderResults() {
   //   weak:<type> → weak to this type
   //   resist:<type> → resists this type
   //   immune:<type> → immune to this type
-  //   hits:<type> → hits this type super effectively (×2+)
+  //   hits:<type|name> → has a move super effective vs that type OR that Pokémon (by name)
   if (searchQuery) {
     const terms = searchQuery.split(',').map(t => t.trim()).filter(Boolean);
     sorted = sorted.filter(r => {
@@ -2287,9 +2371,23 @@ function renderResults() {
           return typeEff(t2, r.attacker.types) === 0;
         }
         if (ht) {
-          const t2 = ht[1].toLowerCase();
-          // Check if any of the attacker's move types hit this type super effectively
-          return r.attacker.types.some(atkType => typeEff(atkType, [t2]) > 1);
+          const q = ht[1].toLowerCase();
+          // First try to resolve q as an exact Pokémon name from the meta or loaded defender slots
+          const allKnown = [
+            ...META_DB.filter(p => p.loaded),
+            ...DEFENDER_SLOTS.filter(Boolean),
+          ];
+          const matchedPokemon = allKnown.find(p =>
+            p.speciesRaw.toLowerCase() === q
+          );
+          const targetTypes = matchedPokemon
+            ? matchedPokemon.types
+            : [q]; // fall back to treating q as a type name
+          // Check if any of the attacker's move types hit the target super effectively
+          return r.attacker.resolvedMoves.some(m => {
+            const mType = m.type;
+            return typeEff(mType, targetTypes) > 1;
+          });
         }
         // Default: name match
         return r.attacker.speciesRaw.toLowerCase().includes(term);
@@ -2571,8 +2669,15 @@ function getAutocompleteSuggestion(val) {
     const kwLow   = kw.toLowerCase();
 
     let candidates = [];
-    if (['weak:','resist:','immune:','hits:','type:'].includes(kwLow)) {
+    if (['weak:','resist:','immune:','type:'].includes(kwLow)) {
       candidates = ALL_TYPE_NAMES;
+    } else if (kwLow === 'hits:') {
+      // Both type names and Pokémon names from loaded meta + defender slots
+      const pokemonNames = [
+        ...META_DB.filter(p => p.loaded).map(p => p.speciesRaw),
+        ...DEFENDER_SLOTS.filter(Boolean).map(p => p.speciesRaw),
+      ];
+      candidates = [...ALL_TYPE_NAMES, ...new Set(pokemonNames)];
     } else if (kwLow === 'move:') {
       candidates = [...new Set(META_DB.flatMap(p => p.moves || []))];
     } else if (kwLow === 'ability:') {
@@ -2731,10 +2836,12 @@ async function addAttackerAsDefender(e, speciesRaw, resultIndex) {
   activeDefenderSlot = slotIdx;
 
   lastResults = results;
+  const savedScroll = window.scrollY;
   renderDefenderTabs();
   showDefenderInfo(defender);
   document.getElementById('resultsSection').style.display = 'block';
   renderResults();
+  window.scrollTo({ top: savedScroll, behavior: 'instant' });
 }
 
 function toggleScarf(e, key) {
@@ -2942,7 +3049,11 @@ function refreshSavedMetaDropdown(selectValue) {
   const sel = document.getElementById('savedMetaSelect');
   if (!sel) return;
   const metas = getSavedMetas();
-  const names = Object.keys(metas).sort();
+  const names = Object.keys(metas).sort((a, b) => {
+    const ta = metas[a]?.savedAt || 0;
+    const tb = metas[b]?.savedAt || 0;
+    return tb - ta; // most recent first
+  });
   sel.innerHTML = '<option value="">— saved metas —</option>' +
     names.map(n => `<option value="${n.replace(/"/g,'&quot;')}">${n}</option>`).join('');
   if (selectValue) sel.value = selectValue;
@@ -2956,7 +3067,7 @@ function saveCurrentMeta() {
   const name = prompt('Name this meta:', existing || '');
   if (!name || !name.trim()) return;
   const metas = getSavedMetas();
-  metas[name.trim()] = text;
+  metas[name.trim()] = { data: text, savedAt: Date.now() };
   putSavedMetas(metas);
   refreshSavedMetaDropdown(name.trim());
 }
@@ -2966,8 +3077,10 @@ function onSavedMetaSelect() {
   const name = sel.value;
   if (!name) return;
   const metas = getSavedMetas();
-  if (metas[name]) {
-    document.getElementById('metaInput').value = metas[name];
+  const entry = metas[name];
+  if (entry) {
+    // Support both new {data, savedAt} format and legacy plain string
+    document.getElementById('metaInput').value = typeof entry === 'string' ? entry : (entry.data || '');
   }
 }
 
@@ -3012,7 +3125,11 @@ function refreshSavedTeamDropdown(selectValue) {
   const sel = document.getElementById('savedTeamSelect');
   if (!sel) return;
   const teams = getSavedTeams();
-  const names = Object.keys(teams).sort();
+  const names = Object.keys(teams).sort((a, b) => {
+    const ta = teams[a]?.savedAt || 0;
+    const tb = teams[b]?.savedAt || 0;
+    return tb - ta; // most recent first
+  });
   sel.innerHTML = '<option value="">— saved teams —</option>' +
     names.map(n => `<option value="${n.replace(/"/g,'&quot;')}">${n}</option>`).join('');
   if (selectValue) sel.value = selectValue;
@@ -3028,18 +3145,22 @@ function saveCurrentTeam() {
   const name = prompt('Name this team:', existing || '');
   if (!name || !name.trim()) return;
   const teams = getSavedTeams();
-  teams[name.trim()] = slots; // array of 6 (nulls for empty slots)
+  teams[name.trim()] = { slots, savedAt: Date.now() };
   putSavedTeams(teams);
   refreshSavedTeamDropdown(name.trim());
 }
+
+let _teamLoadGen = 0;
 
 async function onSavedTeamSelect() {
   const sel  = document.getElementById('savedTeamSelect');
   const name = sel.value;
   if (!name) return;
   const teams = getSavedTeams();
-  const slots = teams[name];
-  if (!slots) return;
+  const entry = teams[name];
+  if (!entry) return;
+  // Support both new {slots, savedAt} format and legacy plain array
+  const slots = Array.isArray(entry) ? entry : (entry.slots || []);
 
   const loadedMeta = META_DB.filter(p => p.loaded);
   if (!loadedMeta.length) {
@@ -3047,22 +3168,32 @@ async function onSavedTeamSelect() {
     return;
   }
 
+  // Bump generation — any in-flight load from a previous selection will see a stale gen and bail
+  const myGen = ++_teamLoadGen;
+
   // Clear existing defenders then load saved slots
   for (let i = 0; i < 6; i++) DEFENDER_SLOTS[i] = null;
   lastResults = [];
+  updateWeaknessOverlay(); // clear chart immediately while new team loads
 
   const btn = document.getElementById('calcBtn');
   const prevText = btn.textContent;
   btn.disabled = true; btn.textContent = 'Loading team…';
+  const teamSpinner = document.getElementById('teamSpinner');
+  if (teamSpinner) teamSpinner.classList.add('active');
 
   for (let i = 0; i < 6; i++) {
     const rawText = slots[i];
     if (!rawText) continue;
+    // If a newer team load has started, abort this one
+    if (_teamLoadGen !== myGen) { if (teamSpinner) teamSpinner.classList.remove('active'); return; }
     try {
       const defender = await parseDefender(rawText);
+      if (_teamLoadGen !== myGen) { if (teamSpinner) teamSpinner.classList.remove('active'); return; }
       const defMoveResults = await Promise.all((defender.moves||[]).map((m, mi) =>
         fetchMoveData(m).then(r => r ? {...r, pasteIndex:mi} : {name:m, power:0, type:'normal', cat:'status', isSpread:false, pasteIndex:mi})
       ));
+      if (_teamLoadGen !== myGen) { if (teamSpinner) teamSpinner.classList.remove('active'); return; }
       defender.allMoves      = defMoveResults;
       defender.resolvedMoves = defMoveResults.filter(m => m && m.power > 0);
       const results = computeResults(loadedMeta, defender);
@@ -3071,6 +3202,8 @@ async function onSavedTeamSelect() {
       DEFENDER_SLOTS[i] = defender;
     } catch(e) { console.warn('Failed to load saved team slot', i, e); }
   }
+
+  if (_teamLoadGen !== myGen) { if (teamSpinner) teamSpinner.classList.remove('active'); return; }
 
   // Activate first filled slot
   const firstFilled = DEFENDER_SLOTS.findIndex(s => s);
@@ -3085,6 +3218,7 @@ async function onSavedTeamSelect() {
   renderDefenderTabs();
   renderResults();
   updateWeaknessOverlay();
+  if (teamSpinner) teamSpinner.classList.remove('active');
   btn.disabled = false; btn.textContent = prevText;
 }
 
@@ -3113,6 +3247,22 @@ function deleteSavedTeam() {
 }
 
 refreshSavedTeamDropdown('');
+
+// ── Sticky controls "stuck" shadow via IntersectionObserver ───────────────────
+// A zero-height sentinel sits just above the controls bar; when it scrolls out
+// of view the bar is stuck, and we add a bottom shadow to act as a visual anchor.
+(function() {
+  const controls = document.querySelector('.results-controls');
+  if (!controls) return;
+  const sentinel = document.createElement('div');
+  sentinel.style.cssText = 'position:relative;height:1px;margin-bottom:-1px;pointer-events:none;';
+  controls.parentElement.insertBefore(sentinel, controls);
+  new IntersectionObserver(([entry]) => {
+    controls.classList.toggle('is-stuck', !entry.isIntersecting);
+  }, { threshold: 0 }).observe(sentinel);
+})();
+
+
 </script>
 <!-- Filter hint popup — lives at body level to escape all stacking contexts -->
 <div id="filterHint" style="display:none;position:fixed;background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:10px 12px;z-index:9998;font-size:11px;color:var(--text2);line-height:1.9;min-width:260px;max-width:320px;box-shadow:0 4px 16px rgba(0,0,0,0.4);">
@@ -3124,7 +3274,8 @@ refreshSavedTeamDropdown('');
   <div><span style="color:var(--accent2)">weak:fire</span> — weak to this type</div>
   <div><span style="color:var(--accent2)">resist:water</span> — resists this type</div>
   <div><span style="color:var(--accent2)">immune:ground</span> — immune to this type</div>
-  <div><span style="color:var(--accent2)">hits:water</span> — hits this type super effectively</div>
+  <div><span style="color:var(--accent2)">hits:fire</span> — has a move super effective vs fire</div>
+  <div><span style="color:var(--accent2)">hits:garchomp</span> — has a move super effective vs that Pokémon</div>
   <div style="margin-top:6px;color:var(--text3);font-size:10px;">e.g. <em>weak:fire, type:dragon</em></div>
 </div>
 
