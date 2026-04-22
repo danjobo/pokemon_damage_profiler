@@ -285,7 +285,6 @@
     padding: 10px 0;
     cursor: pointer;
     transition: background 0.15s;
-    user-select: none;
   }
   .result-row:hover { background: rgba(255,255,255,0.02); }
   .result-row.expanded { background: rgba(124,106,247,0.08); }
@@ -347,7 +346,6 @@
   .move-breakdown {
     display: none;
     padding: 0 0 12px 58px;
-    user-select: none;
   }
 
   .move-breakdown.visible {
@@ -390,13 +388,13 @@
 
   /* ── Pin button ──────────────────────────────────────────────────────── */
   .pin-btn {
-    width: 26px; height: 26px;
+    width: 22px; height: 22px;
     flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     border-radius: 5px;
     border: none; background: transparent;
     color: var(--text3);
-    font-size: 15px;
+    font-size: 13px;
     cursor: pointer;
     padding: 0;
     transition: color 0.15s, background 0.15s, transform 0.15s;
@@ -405,29 +403,6 @@
   .pin-btn:hover { color: var(--accent2); background: rgba(124,106,247,0.12); transform: none; }
   .pin-btn:active { transform: scale(0.88); }
   .pin-btn.pinned { color: var(--accent2); }
-
-  /* ── Add-as-defender (plus) button ───────────────────────────────────── */
-  .add-defender-btn {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    border: 0.5px solid var(--border2);
-    background: transparent;
-    color: var(--text2);
-    font-size: 13px;
-    line-height: 1;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    padding: 0;
-    transition: color 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.1s;
-  }
-  .add-defender-btn:hover {
-    color: #fff;
-    background: rgba(124,106,247,0.25);
-    border-color: var(--accent2);
-    box-shadow: 0 0 8px rgba(165,148,255,0.45), 0 0 2px rgba(165,148,255,0.6);
-  }
-  .add-defender-btn:active { transform: scale(0.9); }
 
   .pinned-divider {
     display: flex; align-items: center; gap: 10px;
@@ -1231,7 +1206,6 @@ function selectDefenderTab(i) {
       document.getElementById('defenderInfo').classList.add('visible');
       document.getElementById('resultsSection').style.display = 'block';
       renderResults();
-      updateWeaknessOverlay();
     }
   }
   renderDefenderTabs();
@@ -2458,9 +2432,9 @@ function renderResults() {
     html += `
       <div class="result-item${isPinned ? ' is-pinned' : ''}">
         <div class="result-row" onclick="toggleBreakdown(${index})" id="resultRow-${index}" data-specieskey="${r.attacker.speciesRaw.replace(/"/g,'&quot;')}">
-          <button class="add-defender-btn" title="Add ${r.attacker.speciesRaw} as defender tab" onclick="addAttackerAsDefender(event,'${r.attacker.speciesRaw.replace(/'/g,"\\'")}','${index}')">+</button>
-          <div class="result-expand">▶</div>
           <button class="pin-btn${isPinned ? ' pinned' : ''}" title="${pinTitle}" data-pinkey="${r.attacker.speciesRaw.replace(/"/g,'&quot;')}" onclick="handlePinClick(event)">${isPinned ? '📌' : '📍'}</button>
+          <button title="Add ${r.attacker.speciesRaw} as defender tab" onclick="addAttackerAsDefender(event,'${r.attacker.speciesRaw.replace(/'/g,"\\'")}','${index}')" style="width:22px;height:22px;border-radius:50%;border:0.5px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;" title="Use as defender">+</button>
+          <div class="result-expand">▶</div>
           <div class="result-rank">${mode === 'damage' ? index + 1 : pasteOrderLabel}</div>
           <div class="result-name">
             <div class="result-name-text">
@@ -3084,7 +3058,6 @@ async function onSavedTeamSelect() {
   }
   renderDefenderTabs();
   renderResults();
-  updateWeaknessOverlay();
   btn.disabled = false; btn.textContent = prevText;
 }
 

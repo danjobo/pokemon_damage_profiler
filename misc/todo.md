@@ -1,17 +1,24 @@
 ## Feature Request
 
-- [__] Hovering a move will give you it's effect description
-- [__] button in move breakdown to toggle a 1.2x item boost like for black glasses, but for the respective type
+- [__] have the plus button on the left side, then the collapsable arrow icon, then the pin button so the pin and plus are separated more
+- [__] give the plus button some kind of hover glow or brightening
+- [__] make the pin button a little bit bigger
 
 ## To-Do Stack
 
 
 ### Bug Stack
 
+- [__] when switching between loaded teams, the weakness chart doesn't get reordered accordingly
 
 ---
 #### Completed
 
+- [XX] the search term help window is showing up just on click, i want it only when you click the "?", and it's also seeming kind of sticky. i want it to go away when another area in the window is clicked 
+- [XX] show the weakness chart with only one pokemon
+- [XX] show the stat value next to the name in parentheses for each sort type and maybe grayed out and a bit smaller (sort by attack shows attack, speed shows speed, etc...)
+- [XX] Hovering a move will give you it's effect description
+- [XX] button in move breakdown to toggle a 1.2x item boost like for black glasses, but for the respective type
 - [XX] make the extra move sections more compact or smaller font or something
 - [XX] have moves below the line in the breakdown be automatically collapsed but expandable if you click on the line
 - [XX] in the move breakdown, add a button to toggle scarf boost if it didn't already have one, or toggle it off if it did have one

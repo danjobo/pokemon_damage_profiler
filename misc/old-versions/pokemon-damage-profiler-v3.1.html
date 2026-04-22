@@ -248,11 +248,8 @@
     color: var(--text2);
   }
 
-  .stage-select {
-    min-width: 0 !important;
-    width: 52px;
-    padding-left: 4px;
-    padding-right: 2px;
+  .control-group select {
+    min-width: 90px;
   }
 
   .checkbox-toggle {
@@ -285,7 +282,6 @@
     padding: 10px 0;
     cursor: pointer;
     transition: background 0.15s;
-    user-select: none;
   }
   .result-row:hover { background: rgba(255,255,255,0.02); }
   .result-row.expanded { background: rgba(124,106,247,0.08); }
@@ -347,7 +343,6 @@
   .move-breakdown {
     display: none;
     padding: 0 0 12px 58px;
-    user-select: none;
   }
 
   .move-breakdown.visible {
@@ -390,13 +385,13 @@
 
   /* ── Pin button ──────────────────────────────────────────────────────── */
   .pin-btn {
-    width: 26px; height: 26px;
+    width: 22px; height: 22px;
     flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     border-radius: 5px;
     border: none; background: transparent;
     color: var(--text3);
-    font-size: 15px;
+    font-size: 13px;
     cursor: pointer;
     padding: 0;
     transition: color 0.15s, background 0.15s, transform 0.15s;
@@ -405,29 +400,6 @@
   .pin-btn:hover { color: var(--accent2); background: rgba(124,106,247,0.12); transform: none; }
   .pin-btn:active { transform: scale(0.88); }
   .pin-btn.pinned { color: var(--accent2); }
-
-  /* ── Add-as-defender (plus) button ───────────────────────────────────── */
-  .add-defender-btn {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    border: 0.5px solid var(--border2);
-    background: transparent;
-    color: var(--text2);
-    font-size: 13px;
-    line-height: 1;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    padding: 0;
-    transition: color 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.1s;
-  }
-  .add-defender-btn:hover {
-    color: #fff;
-    background: rgba(124,106,247,0.25);
-    border-color: var(--accent2);
-    box-shadow: 0 0 8px rgba(165,148,255,0.45), 0 0 2px rgba(165,148,255,0.6);
-  }
-  .add-defender-btn:active { transform: scale(0.9); }
 
   .pinned-divider {
     display: flex; align-items: center; gap: 10px;
@@ -682,19 +654,8 @@ Adamant Nature
       <div class="btn-row">
         <button class="btn-success" onclick="loadMeta()">Load meta</button>
         <button onclick="loadMetaExample()">Load example</button>
-        <button onclick="clearMeta()" style="color:var(--text3)">Clear meta</button>
         <div class="spinner" id="metaSpinner"></div>
         <span id="metaStatus" style="font-size:12px;color:var(--text2)"></span>
-      </div>
-
-      <!-- Saved metas row -->
-      <div style="display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap;">
-        <select id="savedMetaSelect" style="font-size:12px;padding:4px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;flex:1;min-width:0;" onchange="onSavedMetaSelect()">
-          <option value="">— saved metas —</option>
-        </select>
-        <button onclick="saveCurrentMeta()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Save current meta paste">Save</button>
-        <button onclick="renameSavedMeta()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Rename selected meta">Rename</button>
-        <button onclick="deleteSavedMeta()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--red);cursor:pointer;white-space:nowrap;" title="Delete selected meta">Delete</button>
       </div>
       <div id="metaError" class="error-msg"></div>
       <div id="metaChips" class="meta-chips"></div>
@@ -718,18 +679,7 @@ Impish Nature
 
       <div class="btn-row">
         <button onclick="loadDefenderExample()">Load example</button>
-        <button onclick="clearDefenders()" style="color:var(--text3)">Clear defenders</button>
-        <button onclick="clearAll()" style="color:var(--text3)">Clear all</button>
-      </div>
-
-      <!-- Saved teams row -->
-      <div style="display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap;">
-        <select id="savedTeamSelect" style="font-size:12px;padding:4px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;flex:1;min-width:0;" onchange="onSavedTeamSelect()">
-          <option value="">— saved teams —</option>
-        </select>
-        <button onclick="saveCurrentTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Save current defender tabs as a team">Save</button>
-        <button onclick="renameSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Rename selected team">Rename</button>
-        <button onclick="deleteSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--red);cursor:pointer;white-space:nowrap;" title="Delete selected team">Delete</button>
+        <button onclick="clearAll()">Clear all</button>
       </div>
     </div>
 
@@ -795,8 +745,8 @@ Impish Nature
       </div>
 
       <div class="control-group">
-        <label>Atk Stage</label>
-        <select id="atkStage" class="stage-select" onchange="renderResults()">
+        <label>Atk / SpA Stage</label>
+        <select id="offenseStage" onchange="renderResults()">
           <option value="-6">-6</option><option value="-5">-5</option>
           <option value="-4">-4</option><option value="-3">-3</option>
           <option value="-2">-2</option><option value="-1">-1</option>
@@ -808,34 +758,8 @@ Impish Nature
       </div>
 
       <div class="control-group">
-        <label>SpA Stage</label>
-        <select id="spaStage" class="stage-select" onchange="renderResults()">
-          <option value="-6">-6</option><option value="-5">-5</option>
-          <option value="-4">-4</option><option value="-3">-3</option>
-          <option value="-2">-2</option><option value="-1">-1</option>
-          <option value="0" selected>0</option>
-          <option value="1">+1</option><option value="2">+2</option>
-          <option value="3">+3</option><option value="4">+4</option>
-          <option value="5">+5</option><option value="6">+6</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label>Def Stage</label>
-        <select id="defStage" class="stage-select" onchange="renderResults()">
-          <option value="-6">-6</option><option value="-5">-5</option>
-          <option value="-4">-4</option><option value="-3">-3</option>
-          <option value="-2">-2</option><option value="-1">-1</option>
-          <option value="0" selected>0</option>
-          <option value="1">+1</option><option value="2">+2</option>
-          <option value="3">+3</option><option value="4">+4</option>
-          <option value="5">+5</option><option value="6">+6</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label>SpD Stage</label>
-        <select id="spdStage" class="stage-select" onchange="renderResults()">
+        <label>Def / SpD Stage</label>
+        <select id="defenseStage" onchange="renderResults()">
           <option value="-6">-6</option><option value="-5">-5</option>
           <option value="-4">-4</option><option value="-3">-3</option>
           <option value="-2">-2</option><option value="-1">-1</option>
@@ -1231,7 +1155,6 @@ function selectDefenderTab(i) {
       document.getElementById('defenderInfo').classList.add('visible');
       document.getElementById('resultsSection').style.display = 'block';
       renderResults();
-      updateWeaknessOverlay();
     }
   }
   renderDefenderTabs();
@@ -2056,10 +1979,8 @@ function computeResults(loadedMeta, defender) {
 function renderResults() {
   const weather       = document.getElementById('weatherMode')?.value || 'none';
   const terrainMode   = document.getElementById('terrainMode')?.value || 'none';
-  const atkStage    = Number(document.getElementById('atkStage')?.value || 0);
-  const spaStage    = Number(document.getElementById('spaStage')?.value || 0);
-  const defStage    = Number(document.getElementById('defStage')?.value || 0);
-  const spdStage    = Number(document.getElementById('spdStage')?.value || 0);
+  const offenseStage  = Number(document.getElementById('offenseStage')?.value || 0);
+  const defenseStage  = Number(document.getElementById('defenseStage')?.value || 0);
   const maxRollMode   = document.getElementById('maxRollMode')?.checked || false;
   const attackingMode = document.getElementById('attackingMode')?.checked || false;
   const maxInvest     = document.getElementById('maxInvestMode')?.checked || false;
@@ -2131,11 +2052,9 @@ function renderResults() {
         if (r.defender && r.defender.types.includes('ice')) adjustedDmg /= 1.5;
       }
 
-      // Stat stage modifiers — physical uses atkStage/defStage, special uses spaStage/spdStage
-      const offStage = m.move.cat === 'physical' ? atkStage : spaStage;
-      const dfdStage = m.move.cat === 'physical' ? defStage : spdStage;
-      adjustedDmg *= stageMultiplier(offStage);
-      adjustedDmg /= stageMultiplier(dfdStage);
+      // Stat stage modifiers
+      adjustedDmg *= stageMultiplier(offenseStage);
+      adjustedDmg /= stageMultiplier(defenseStage);
 
       // Terrain/screen defense
       adjustedDmg *= applyTerrainScreenMul(m.move.cat, terrainMode);
@@ -2195,10 +2114,8 @@ function renderResults() {
       } else {
         adjustedDmg *= applyWeatherModifier(moveType2, weather);
       }
-      const offStage2 = m.move.cat === 'physical' ? atkStage : spaStage;
-      const dfdStage2 = m.move.cat === 'physical' ? defStage : spdStage;
-      adjustedDmg *= stageMultiplier(offStage2);
-      adjustedDmg /= stageMultiplier(dfdStage2);
+      adjustedDmg *= stageMultiplier(offenseStage);
+      adjustedDmg /= stageMultiplier(defenseStage);
       // Sand: Rock-type attacker gets +50% SpD (defender here is the meta pokemon)
       if (weather === 'sand' && m.move.cat === 'special') {
         if (r.attacker.types && r.attacker.types.includes('rock')) adjustedDmg /= 1.5;
@@ -2316,10 +2233,9 @@ function renderResults() {
     const pct    = r.displayPct || 0;
     const barW   = Math.min(pct / maxPct * 100, 100).toFixed(1);
     const barCls = pct >= 100 ? 'bar-ohko' : pct >= 60 ? 'bar-high' : pct >= 30 ? 'bar-mid' : 'bar-low';
-    const pctColor = pct >= 100 ? 'var(--red)' : pct >= 60 ? 'var(--orange)' : pct >= 30 ? 'var(--yellow)' : 'var(--green)';
     const pctLabel = pct >= 100
-      ? `<span style="color:${pctColor}">${pct.toFixed(0)}% OHKO</span>`
-      : `<span style="color:${pctColor}">${pct.toFixed(1)}%</span>`;
+      ? `<span class="pct-ohko">${pct.toFixed(0)}% OHKO</span>`
+      : `${pct.toFixed(1)}%`;
     const effLabel = r.displayEff > 1
       ? `<span class="eff-super">×${r.displayEff}</span>`
       : r.displayEff < 1 && r.displayEff > 0
@@ -2365,12 +2281,10 @@ function renderResults() {
       let pctDisplay;
       if (isStatusMove) {
         pctDisplay = `<span style="color:var(--text3);font-size:11px">status</span>`;
+      } else if ((m.adjustedPct ?? m.pct) >= 100) {
+        pctDisplay = `<span style="color:var(--red)">${(m.adjustedPct ?? m.pct).toFixed(0)}% OHKO</span>`;
       } else {
-        const dp = m.adjustedPct ?? m.pct;
-        const dpColor = dp >= 100 ? 'var(--red)' : dp >= 60 ? 'var(--orange)' : dp >= 30 ? 'var(--yellow)' : 'var(--green)';
-        pctDisplay = dp >= 100
-          ? `<span style="color:${dpColor}">${dp.toFixed(0)}% OHKO</span>`
-          : `<span style="color:${dpColor}">${dp.toFixed(1)}%</span>`;
+        pctDisplay = `${(m.adjustedPct ?? m.pct).toFixed(1)}%`;
       }
       return `<div class="move-breakdown-row" style="${rowFontSize}padding:${isPastDivider ? '3px 4px 3px 0' : '6px 0'};min-width:0;overflow:hidden;">
           <div class="move-breakdown-left" style="min-width:0;overflow:hidden;">
@@ -2458,9 +2372,9 @@ function renderResults() {
     html += `
       <div class="result-item${isPinned ? ' is-pinned' : ''}">
         <div class="result-row" onclick="toggleBreakdown(${index})" id="resultRow-${index}" data-specieskey="${r.attacker.speciesRaw.replace(/"/g,'&quot;')}">
-          <button class="add-defender-btn" title="Add ${r.attacker.speciesRaw} as defender tab" onclick="addAttackerAsDefender(event,'${r.attacker.speciesRaw.replace(/'/g,"\\'")}','${index}')">+</button>
-          <div class="result-expand">▶</div>
           <button class="pin-btn${isPinned ? ' pinned' : ''}" title="${pinTitle}" data-pinkey="${r.attacker.speciesRaw.replace(/"/g,'&quot;')}" onclick="handlePinClick(event)">${isPinned ? '📌' : '📍'}</button>
+          <button title="Add ${r.attacker.speciesRaw} as defender tab" onclick="addAttackerAsDefender(event,'${r.attacker.speciesRaw.replace(/'/g,"\\'")}','${index}')" style="width:22px;height:22px;border-radius:50%;border:0.5px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;" title="Use as defender">+</button>
+          <div class="result-expand">▶</div>
           <div class="result-rank">${mode === 'damage' ? index + 1 : pasteOrderLabel}</div>
           <div class="result-name">
             <div class="result-name-text">
@@ -2898,221 +2812,6 @@ function clearAll() {
   renderDefenderTabs();
   updateReadyHint();
 }
-
-// Clear only the meta — keep defenders/results intact
-function clearMeta() {
-  document.getElementById('metaInput').value = '';
-  document.getElementById('metaChips').innerHTML = '';
-  document.getElementById('metaError').textContent = '';
-  document.getElementById('metaStatus').textContent = '';
-  META_DB = [];
-  lastResults = [];
-  document.getElementById('resultsSection').style.display = 'none';
-  updateReadyHint();
-  document.getElementById('savedMetaSelect').value = '';
-}
-
-// Clear only defenders — keep meta intact
-function clearDefenders() {
-  document.getElementById('defenderInput').value = '';
-  document.getElementById('defenderError').textContent = '';
-  document.getElementById('defenderInfo').classList.remove('visible');
-  document.getElementById('resultsSection').style.display = 'none';
-  document.getElementById('weaknessOverlay').classList.remove('visible');
-  lastResults = [];
-  for (let i = 0; i < 6; i++) DEFENDER_SLOTS[i] = null;
-  activeDefenderSlot = 0;
-  renderDefenderTabs();
-}
-
-// ── Saved metas (persisted to localStorage) ───────────────────────────────────
-const SAVED_METAS_KEY = 'pokemonDamageProfiler_savedMetas';
-
-function getSavedMetas() {
-  try {
-    return JSON.parse(localStorage.getItem(SAVED_METAS_KEY) || '{}');
-  } catch { return {}; }
-}
-
-function putSavedMetas(metas) {
-  try { localStorage.setItem(SAVED_METAS_KEY, JSON.stringify(metas)); } catch {}
-}
-
-function refreshSavedMetaDropdown(selectValue) {
-  const sel = document.getElementById('savedMetaSelect');
-  if (!sel) return;
-  const metas = getSavedMetas();
-  const names = Object.keys(metas).sort();
-  sel.innerHTML = '<option value="">— saved metas —</option>' +
-    names.map(n => `<option value="${n.replace(/"/g,'&quot;')}">${n}</option>`).join('');
-  if (selectValue) sel.value = selectValue;
-}
-
-function saveCurrentMeta() {
-  const text = document.getElementById('metaInput').value.trim();
-  if (!text) { alert('Paste a meta first before saving.'); return; }
-  const sel  = document.getElementById('savedMetaSelect');
-  const existing = sel.value;
-  const name = prompt('Name this meta:', existing || '');
-  if (!name || !name.trim()) return;
-  const metas = getSavedMetas();
-  metas[name.trim()] = text;
-  putSavedMetas(metas);
-  refreshSavedMetaDropdown(name.trim());
-}
-
-function onSavedMetaSelect() {
-  const sel  = document.getElementById('savedMetaSelect');
-  const name = sel.value;
-  if (!name) return;
-  const metas = getSavedMetas();
-  if (metas[name]) {
-    document.getElementById('metaInput').value = metas[name];
-  }
-}
-
-function renameSavedMeta() {
-  const sel  = document.getElementById('savedMetaSelect');
-  const name = sel.value;
-  if (!name) { alert('Select a saved meta first.'); return; }
-  const newName = prompt('Rename to:', name);
-  if (!newName || !newName.trim() || newName.trim() === name) return;
-  const metas = getSavedMetas();
-  metas[newName.trim()] = metas[name];
-  delete metas[name];
-  putSavedMetas(metas);
-  refreshSavedMetaDropdown(newName.trim());
-}
-
-function deleteSavedMeta() {
-  const sel  = document.getElementById('savedMetaSelect');
-  const name = sel.value;
-  if (!name) { alert('Select a saved meta first.'); return; }
-  if (!confirm(`Delete "${name}"?`)) return;
-  const metas = getSavedMetas();
-  delete metas[name];
-  putSavedMetas(metas);
-  refreshSavedMetaDropdown('');
-}
-
-// Populate dropdown on load
-refreshSavedMetaDropdown('');
-
-// ── Saved teams (persisted to localStorage) ───────────────────────────────────
-const SAVED_TEAMS_KEY = 'pokemonDamageProfiler_savedTeams';
-
-function getSavedTeams() {
-  try { return JSON.parse(localStorage.getItem(SAVED_TEAMS_KEY) || '{}'); } catch { return {}; }
-}
-function putSavedTeams(teams) {
-  try { localStorage.setItem(SAVED_TEAMS_KEY, JSON.stringify(teams)); } catch {}
-}
-
-function refreshSavedTeamDropdown(selectValue) {
-  const sel = document.getElementById('savedTeamSelect');
-  if (!sel) return;
-  const teams = getSavedTeams();
-  const names = Object.keys(teams).sort();
-  sel.innerHTML = '<option value="">— saved teams —</option>' +
-    names.map(n => `<option value="${n.replace(/"/g,'&quot;')}">${n}</option>`).join('');
-  if (selectValue) sel.value = selectValue;
-}
-
-function saveCurrentTeam() {
-  // Collect raw text from all filled defender slots
-  const slots = DEFENDER_SLOTS.map(s => s ? (s._rawText || '') : null);
-  const filled = slots.filter(Boolean);
-  if (!filled.length) { alert('No defenders loaded to save.'); return; }
-  const sel      = document.getElementById('savedTeamSelect');
-  const existing = sel.value;
-  const name = prompt('Name this team:', existing || '');
-  if (!name || !name.trim()) return;
-  const teams = getSavedTeams();
-  teams[name.trim()] = slots; // array of 6 (nulls for empty slots)
-  putSavedTeams(teams);
-  refreshSavedTeamDropdown(name.trim());
-}
-
-async function onSavedTeamSelect() {
-  const sel  = document.getElementById('savedTeamSelect');
-  const name = sel.value;
-  if (!name) return;
-  const teams = getSavedTeams();
-  const slots = teams[name];
-  if (!slots) return;
-
-  const loadedMeta = META_DB.filter(p => p.loaded);
-  if (!loadedMeta.length) {
-    alert('Load a meta first so damage can be calculated for the loaded team.');
-    return;
-  }
-
-  // Clear existing defenders then load saved slots
-  for (let i = 0; i < 6; i++) DEFENDER_SLOTS[i] = null;
-  lastResults = [];
-
-  const btn = document.getElementById('calcBtn');
-  const prevText = btn.textContent;
-  btn.disabled = true; btn.textContent = 'Loading team…';
-
-  for (let i = 0; i < 6; i++) {
-    const rawText = slots[i];
-    if (!rawText) continue;
-    try {
-      const defender = await parseDefender(rawText);
-      const defMoveResults = await Promise.all((defender.moves||[]).map((m, mi) =>
-        fetchMoveData(m).then(r => r ? {...r, pasteIndex:mi} : {name:m, power:0, type:'normal', cat:'status', isSpread:false, pasteIndex:mi})
-      ));
-      defender.allMoves      = defMoveResults;
-      defender.resolvedMoves = defMoveResults.filter(m => m && m.power > 0);
-      const results = computeResults(loadedMeta, defender);
-      defender._rawText     = rawText;
-      defender._lastResults = results;
-      DEFENDER_SLOTS[i] = defender;
-    } catch(e) { console.warn('Failed to load saved team slot', i, e); }
-  }
-
-  // Activate first filled slot
-  const firstFilled = DEFENDER_SLOTS.findIndex(s => s);
-  activeDefenderSlot = firstFilled >= 0 ? firstFilled : 0;
-  const cur = DEFENDER_SLOTS[activeDefenderSlot];
-  if (cur) {
-    lastResults = cur._lastResults;
-    document.getElementById('defenderInput').value = cur._rawText || '';
-    showDefenderInfo(cur);
-    document.getElementById('resultsSection').style.display = 'block';
-  }
-  renderDefenderTabs();
-  renderResults();
-  updateWeaknessOverlay();
-  btn.disabled = false; btn.textContent = prevText;
-}
-
-function renameSavedTeam() {
-  const sel  = document.getElementById('savedTeamSelect');
-  const name = sel.value;
-  if (!name) { alert('Select a saved team first.'); return; }
-  const newName = prompt('Rename to:', name);
-  if (!newName || !newName.trim() || newName.trim() === name) return;
-  const teams = getSavedTeams();
-  teams[newName.trim()] = teams[name];
-  delete teams[name];
-  putSavedTeams(teams);
-  refreshSavedTeamDropdown(newName.trim());
-}
-
-function deleteSavedTeam() {
-  const sel  = document.getElementById('savedTeamSelect');
-  const name = sel.value;
-  if (!name) { alert('Select a saved team first.'); return; }
-  if (!confirm(`Delete team "${name}"?`)) return;
-  const teams = getSavedTeams();
-  delete teams[name];
-  putSavedTeams(teams);
-  refreshSavedTeamDropdown('');
-}
-
-refreshSavedTeamDropdown('');
 </script>
 <!-- Filter hint popup — lives at body level to escape all stacking contexts -->
 <div id="filterHint" style="display:none;position:fixed;background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:10px 12px;z-index:9998;font-size:11px;color:var(--text2);line-height:1.9;min-width:260px;max-width:320px;box-shadow:0 4px 16px rgba(0,0,0,0.4);">
