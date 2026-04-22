@@ -3295,7 +3295,8 @@ function refreshSavedTeamDropdown(selectValue) {
   const sel = document.getElementById('savedTeamSelect');
   if (!sel) return;
   const teams = getSavedTeams();
-  const wr    = getWinrates();
+  // getWinrates may not be defined yet on first call — guard safely
+  const wr = (typeof getWinrates === 'function') ? getWinrates() : {};
   const names = Object.keys(teams).sort((a, b) => {
     const ta = teams[a]?.savedAt || 0;
     const tb = teams[b]?.savedAt || 0;
@@ -3304,9 +3305,7 @@ function refreshSavedTeamDropdown(selectValue) {
   sel.innerHTML = '<option value="">— saved teams —</option>' +
     names.map(n => {
       const score = wr[n] || { wins: 0, losses: 0 };
-      const label = (score.wins || score.losses)
-        ? `${n} (${score.wins}W-${score.losses}L)`
-        : n;
+      const label = `${n} (${score.wins}W-${score.losses}L)`;
       return `<option value="${n.replace(/"/g,'&quot;')}">${label}</option>`;
     }).join('');
   if (selectValue) sel.value = selectValue;
@@ -3423,8 +3422,6 @@ function deleteSavedTeam() {
   putSavedTeams(teams);
   refreshSavedTeamDropdown('');
 }
-
-refreshSavedTeamDropdown('');
 
 function clearPins() {
   pinnedKeys.clear();
@@ -3637,6 +3634,9 @@ function adjustScore(side, delta) {
   document.getElementById('wrLosses').textContent = wr[_currentTeamName].losses;
   refreshSavedTeamDropdown(_currentTeamName); // keep dropdown label in sync
 }
+
+// Re-populate team dropdown now that getWinrates is defined — shows correct W/L on load
+refreshSavedTeamDropdown(document.getElementById('savedTeamSelect')?.value || '');
 
 // ── Sticky controls "stuck" shadow via IntersectionObserver ───────────────────
 // A zero-height sentinel sits just above the controls bar; when it scrolls out
