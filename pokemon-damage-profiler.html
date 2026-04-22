@@ -213,6 +213,40 @@
   .sort-row { display: flex; align-items: center; gap: 8px; }
   .sort-row label { font-size: 12px; color: var(--text2); }
 
+  /* ── Winrate widget ──────────────────────────────────────────────────── */
+  .winrate-widget {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    user-select: none;
+  }
+  .winrate-widget.visible { display: flex; }
+  .wr-score {
+    display: flex; align-items: baseline; gap: 5px;
+    font-size: 16px; font-weight: 700;
+    min-width: 64px; text-align: center; justify-content: center;
+  }
+  .wr-wins   { color: var(--green); }
+  .wr-losses { color: var(--red); }
+  .wr-sep    { color: var(--text3); font-size: 13px; }
+  .wr-btn {
+    border: none; background: transparent;
+    cursor: pointer; line-height: 1; padding: 2px 4px;
+    border-radius: 4px; transition: background 0.12s, color 0.12s;
+  }
+  .wr-plus {
+    font-size: 18px; font-weight: 700;
+  }
+  .wr-win  { color: var(--green); }
+  .wr-win:hover  { background: rgba(93,202,165,0.15); }
+  .wr-loss { color: var(--red); }
+  .wr-loss:hover { background: rgba(226,75,74,0.15); }
+  .wr-minus {
+    font-size: 14px; font-weight: 400;
+    color: var(--text3);
+  }
+  .wr-minus:hover { color: var(--text2); background: rgba(255,255,255,0.06); }
+
   select {
     font-size: 12px; padding: 5px 8px;
     border: 0.5px solid var(--border2);
@@ -798,6 +832,19 @@ Impish Nature
         </select>
         <button id="sortDirBtn" onclick="toggleSortDir()" title="Reverse sort order" style="padding:4px 8px;font-size:12px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;line-height:1;">↓</button>
       </div>
+
+      <div class="winrate-widget" id="winrateWidget">
+        <button class="wr-btn wr-minus" onclick="adjustScore('wins',-1)" title="Remove win">−</button>
+        <button class="wr-btn wr-plus wr-win" onclick="adjustScore('wins',1)" title="Add win">+</button>
+        <div class="wr-score">
+          <span class="wr-wins" id="wrWins">0</span>
+          <span class="wr-sep">–</span>
+          <span class="wr-losses" id="wrLosses">0</span>
+        </div>
+        <button class="wr-btn wr-plus wr-loss" onclick="adjustScore('losses',1)" title="Add loss">+</button>
+        <button class="wr-btn wr-minus" onclick="adjustScore('losses',-1)" title="Remove loss">−</button>
+      </div>
+
       <div id="defenderTag" class="defender-tag"></div>
     </div>
 
@@ -866,14 +913,19 @@ Impish Nature
         </select>
       </div>
 
+      <div class="control-group" style="justify-content:flex-end;">
+        <label>&nbsp;</label>
+        <button onclick="resetFieldConditions()" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;line-height:1;" title="Reset all weather, terrain, stages, and speed condition to defaults">Reset field</button>
+      </div>
+
       <div class="control-group">
         <label>Terrain / Screen</label>
         <select id="terrainMode" onchange="renderResults()">
           <option value="none">None</option>
           <option value="psychic">Psychic Terrain</option>
-          <option value="auroraveil">Aurora Veil (×0.5)</option>
-          <option value="reflect">Reflect (×0.5 phys)</option>
-          <option value="lightscreen">Light Screen (×0.5 spec)</option>
+          <option value="auroraveil">Aurora Veil</option>
+          <option value="reflect">Reflect</option>
+          <option value="lightscreen">Light Screen</option>
         </select>
       </div>
 
@@ -2988,6 +3040,18 @@ Impish Nature
 - Fire Blast`;
 }
 
+function resetFieldConditions() {
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+  setVal('weatherMode', 'none');
+  setVal('terrainMode', 'none');
+  setVal('speedCondition', 'none');
+  setVal('atkStage', '0');
+  setVal('spaStage', '0');
+  setVal('defStage', '0');
+  setVal('spdStage', '0');
+  renderResults();
+}
+
 function clearAll() {
   document.getElementById('metaInput').value = '';
   document.getElementById('defenderInput').value = '';
@@ -3218,6 +3282,7 @@ async function onSavedTeamSelect() {
   renderDefenderTabs();
   renderResults();
   updateWeaknessOverlay();
+  loadWinrateForTeam(name);
   if (teamSpinner) teamSpinner.classList.remove('active');
   btn.disabled = false; btn.textContent = prevText;
 }
@@ -3247,6 +3312,36 @@ function deleteSavedTeam() {
 }
 
 refreshSavedTeamDropdown('');
+
+// ── Winrate tracking ──────────────────────────────────────────────────────────
+const WINRATE_KEY = 'pokemonDamageProfiler_winrates';
+let _currentTeamName = null;
+
+function getWinrates() {
+  try { return JSON.parse(localStorage.getItem(WINRATE_KEY) || '{}'); } catch { return {}; }
+}
+function putWinrates(wr) {
+  try { localStorage.setItem(WINRATE_KEY, JSON.stringify(wr)); } catch {}
+}
+
+function loadWinrateForTeam(name) {
+  _currentTeamName = name;
+  const wr = getWinrates();
+  const score = wr[name] || { wins: 0, losses: 0 };
+  document.getElementById('wrWins').textContent   = score.wins;
+  document.getElementById('wrLosses').textContent = score.losses;
+  document.getElementById('winrateWidget').classList.add('visible');
+}
+
+function adjustScore(side, delta) {
+  if (!_currentTeamName) return;
+  const wr = getWinrates();
+  if (!wr[_currentTeamName]) wr[_currentTeamName] = { wins: 0, losses: 0 };
+  wr[_currentTeamName][side] = Math.max(0, wr[_currentTeamName][side] + delta);
+  putWinrates(wr);
+  document.getElementById('wrWins').textContent   = wr[_currentTeamName].wins;
+  document.getElementById('wrLosses').textContent = wr[_currentTeamName].losses;
+}
 
 // ── Sticky controls "stuck" shadow via IntersectionObserver ───────────────────
 // A zero-height sentinel sits just above the controls bar; when it scrolls out
