@@ -2550,7 +2550,7 @@ function renderResults() {
 
     const statSorts = { speed: 'Spe', atk: 'Atk', spa: 'SpA', def: 'Def', spd: 'SpD' };
     const statLabel = statSorts[mode]
-      ? `<span style="color:var(--text);font-size:10px;margin-left:5px;font-weight:400;">(${statSorts[mode]}: ${getStat(r, mode)})</span>`
+      ? `<span style="color:var(--text);font-size:10px;margin-left:5px;font-weight:400;">(${getStat(r, mode)})</span>`
       : '';
 
     html += `
