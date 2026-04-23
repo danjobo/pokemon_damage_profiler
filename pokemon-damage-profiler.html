@@ -806,6 +806,8 @@
     padding: 1.25rem 1.5rem;
   }
   #weaknessOverlay.visible { display: block; }
+  #weaknessOverlay .card-body { padding-top: 0; }
+  #weaknessOverlay .overlay-title { margin-bottom: 0; }
 
   .overlay-title {
     font-size: 11px;
@@ -994,9 +996,11 @@ Impish Nature
     </div><!-- end defenderCard -->
 
     <!-- Type weakness overlay (visible when 2+ tabs filled) -->
-    <div id="weaknessOverlay">
-      <div class="overlay-title" id="weaknessTitle">Team Type Weakness Overlap</div>
-      <div class="weakness-grid" id="weaknessGrid"></div>
+    <div id="weaknessOverlay" class="card-collapsible">
+      <div class="overlay-title card-label" id="weaknessTitle" onclick="toggleCard('weaknessOverlay',event)" style="cursor:pointer;margin-bottom:0;">Team Type Weakness Overlap <span class="card-collapse-hint">▼</span></div>
+      <div class="card-body">
+        <div class="weakness-grid" id="weaknessGrid" style="margin-top:14px;"></div>
+      </div>
     </div>
   <!-- </div> -->
 
@@ -1531,6 +1535,9 @@ const MEGA_FORMS = {
   'drampa':     [{label:'Mega',slug:'drampa-mega'}],
   'scovillain': [{label:'Mega',slug:'scovillain-mega'}],
   'glimmora':   [{label:'Mega',slug:'glimmora-mega'}],
+  'floette':         [{label:'Eternal',slug:'floette-eternal'}],
+  'floette-eternal': [{label:'Mega',   slug:'floette-mega'}],
+  'floette-mega':    [{label:'Eternal',slug:'floette-eternal'}],
   // Aegislash forms (same toggle UI)
   'aegislash': [{label:'Shield',slug:'aegislash-shield'},{label:'Blade',slug:'aegislash-blade'}],
   'aegislash-blade': [{label:'Shield',slug:'aegislash-shield'},{label:'Blade',slug:'aegislash-blade'}],
@@ -2978,7 +2985,7 @@ function renderResults() {
       : Object.keys(MEGA_FORMS).find(k => {
           const kn = k.replace(/[\s-]/g,'');
           // exact normalized match, or species starts with key (e.g. "charizard-mega-y" starts with "charizard")
-          return speciesNorm === kn || speciesNorm.startsWith(kn + 'mega') || speciesNorm.startsWith(kn + 'shield') || speciesNorm.startsWith(kn + 'blade');
+          return speciesNorm === kn || speciesNorm.startsWith(kn + 'mega') || speciesNorm.startsWith(kn + 'shield') || speciesNorm.startsWith(kn + 'blade') || speciesNorm.startsWith(kn + 'eternal');
         });
     const megaForms    = megaKey ? MEGA_FORMS[megaKey] : null;
     // Active slug: check override map first, then detect if speciesRaw IS already a mega form
@@ -3372,9 +3379,17 @@ async function addAttackerAsDefender(e, speciesRaw, resultIndex) {
 function toggleScarf(e, key) {
   e.stopPropagation();
   const current = scarfOverrides.get(key);
-  if (current === 'on')       scarfOverrides.set(key, 'off');
-  else if (current === 'off') scarfOverrides.delete(key);  // back to item-based
-  else                        scarfOverrides.set(key, 'on');
+  const entry = META_DB.find(p => p.speciesRaw === key);
+  const hasScarf = (entry?.item || '').toLowerCase().replace(/[\s-]/g,'') === 'choicescarf';
+  if (hasScarf) {
+    // 3-state for scarf holders: absent(use item=on) → 'off' → absent
+    if (current === 'off') scarfOverrides.delete(key);
+    else                   scarfOverrides.set(key, 'off');
+  } else {
+    // 2-state for non-scarf: absent(off) ↔ 'on'
+    if (current === 'on') scarfOverrides.delete(key);
+    else                  scarfOverrides.set(key, 'on');
+  }
   renderResults();
 }
 
@@ -3408,67 +3423,83 @@ function toggleExtraMoves(e, key) {
 
 async function toggleMegaForm(e, speciesRaw, megaSlug) {
   e.stopPropagation();
-  // Find entry by current name OR original name (handles already-renamed megas)
+
   const entry = META_DB.find(p => p.speciesRaw === speciesRaw || p._origSpeciesRaw === speciesRaw);
   if (!entry) { renderResults(); return; }
 
-  // The canonical base key is always the original un-renamed name
-  const baseKey = entry._origSpeciesRaw || entry.speciesRaw;
-  const currentOverride = megaOverrides.get(baseKey);
+  // baseKey = the lowercase base-form slug, always (e.g. 'aggron', 'charizard')
+  const currentName = entry.speciesRaw;
+  const rawSlug = toSlug(entry._origSpeciesRaw || entry.speciesRaw);
+  const baseKey = rawSlug === 'floette-mega' ? 'floette-eternal' :
+    rawSlug.replace(/-mega(-[xy])?$/, '').replace(/-gmax$/, '')
+    .replace(/-blade$|-shield$/, '').replace(/-eternal$/, '');
 
-  // Revert if: this mega is already active (either via override map or the entry IS this form)
-  const alreadyThisForm = currentOverride === megaSlug || toSlug(entry.speciesRaw) === megaSlug;
-  const newSlug = alreadyThisForm ? null : megaSlug;
+  // Is this mega already the current form?
+  const isAlreadyThisForm = toSlug(currentName) === megaSlug || megaOverrides.get(baseKey) === megaSlug;
 
-  if (newSlug) {
-    // Pre-ensure base form is in pokemonCache so getSpriteUrl fallback always works
-    if (!pokemonCache[baseKey]) {
-      try { await fetchPokemonData(baseKey); } catch {}
+
+  if (isAlreadyThisForm) {
+    // ── REVERT to base form ──
+    // Fetch base stats if we don't have them saved
+    if (!entry._megaBaseStats) {
+      try {
+        const base = await fetchPokemonData(baseKey);
+        entry._megaBaseStats     = base.baseStats;
+        entry._megaBaseTypes     = base.types;
+        entry._megaBaseSpriteUrl = base.spriteUrl;
+      } catch {}
     }
-    try {
-      const { baseStats, types, spriteUrl } = await fetchPokemonData(newSlug);
-      if (!entry._origSpeciesRaw) {
-        entry._origSpeciesRaw = entry.speciesRaw;
-        entry._megaBaseStats  = entry.baseStats;
-        entry._megaBaseTypes  = entry.types;
-        entry._megaBaseSpriteUrl = entry.spriteUrl;
-      }
-      const oldName = entry.speciesRaw; // name before rename
-      entry.speciesRaw = slugToDisplayName(newSlug);
-      entry.baseStats  = baseStats;
-      entry.types      = types;
-      // Use mega sprite if available, otherwise keep base sprite
-      entry.spriteUrl  = spriteUrl || entry._megaBaseSpriteUrl || null;
-      megaOverrides.set(baseKey, newSlug);
-      // Swap pin: remove old name, add new name so pin follows the form change
-      if (pinnedKeys.has(oldName)) { pinnedKeys.delete(oldName); pinnedKeys.add(entry.speciesRaw); }
-    } catch {
-      // Fetch failed (mega doesn't exist in PokeAPI) — still rename, keep base sprite
-      if (!entry._origSpeciesRaw) {
-        entry._origSpeciesRaw = entry.speciesRaw;
-        entry._megaBaseStats  = entry.baseStats;
-        entry._megaBaseTypes  = entry.types;
-        entry._megaBaseSpriteUrl = entry.spriteUrl;
-      }
-      const oldName = entry.speciesRaw;
-      entry.speciesRaw = slugToDisplayName(newSlug);
-      // Keep base sprite URL so it still displays correctly
-      megaOverrides.set(baseKey, newSlug);
-      if (pinnedKeys.has(oldName)) { pinnedKeys.delete(oldName); pinnedKeys.add(entry.speciesRaw); }
-    }
-  } else {
-    const revertOldName = entry.speciesRaw;
-    if (entry._origSpeciesRaw) { entry.speciesRaw = entry._origSpeciesRaw; entry._origSpeciesRaw = null; }
-    // Swap pin back to base name
-    if (pinnedKeys.has(revertOldName)) { pinnedKeys.delete(revertOldName); pinnedKeys.add(entry.speciesRaw); }
-    if (entry._megaBaseStats)  { entry.baseStats   = entry._megaBaseStats; entry._megaBaseStats  = null; }
-    if (entry._megaBaseTypes)  { entry.types       = entry._megaBaseTypes; entry._megaBaseTypes  = null; }
-    entry.spriteUrl = entry._megaBaseSpriteUrl || (pokemonCache[toSlug(baseKey)] || {}).spriteUrl || null;
+    const baseName = slugToDisplayName(baseKey); // e.g. 'Aggron'
+    // Update expandedBreakdowns key and pin key
+    if (expandedBreakdowns.has(currentName)) { expandedBreakdowns.delete(currentName); expandedBreakdowns.add(baseName); }
+    if (pinnedKeys.has(currentName))          { pinnedKeys.delete(currentName);          pinnedKeys.add(baseName); }
+    // Restore entry
+    entry.speciesRaw  = baseName;
+    if (entry._megaBaseStats) { entry.baseStats = entry._megaBaseStats; entry._megaBaseStats = null; }
+    if (entry._megaBaseTypes) { entry.types     = entry._megaBaseTypes; entry._megaBaseTypes = null; }
+    entry.spriteUrl   = entry._megaBaseSpriteUrl || pokemonCache[baseKey]?.spriteUrl || null;
     entry._megaBaseSpriteUrl = null;
+    entry._origSpeciesRaw    = null;
     megaOverrides.delete(baseKey);
+
+  } else {
+    // ── ACTIVATE mega form ──
+    // Save base stats if not already saved
+    if (!entry._megaBaseStats) {
+      // Pre-fetch base form so we always have it
+      try {
+        const base = await fetchPokemonData(baseKey);
+        entry._megaBaseStats     = entry.baseStats;   // save current (base) stats
+        entry._megaBaseTypes     = entry.types;
+        entry._megaBaseSpriteUrl = entry.spriteUrl;
+        entry._origSpeciesRaw    = entry.speciesRaw;  // save original name
+        // Also cache base sprite for later
+        if (!pokemonCache[baseKey]) pokemonCache[baseKey] = base;
+      } catch {
+        entry._megaBaseStats     = entry.baseStats;
+        entry._megaBaseTypes     = entry.types;
+        entry._megaBaseSpriteUrl = entry.spriteUrl;
+        entry._origSpeciesRaw    = entry.speciesRaw;
+      }
+    }
+    // Fetch mega stats
+    const megaName = slugToDisplayName(megaSlug);
+    try {
+      const mega = await fetchPokemonData(megaSlug);
+      entry.baseStats  = mega.baseStats;
+      entry.types      = mega.types;
+      entry.spriteUrl  = mega.spriteUrl || entry._megaBaseSpriteUrl || null;
+    } catch {
+      // Mega doesn't exist in PokeAPI — keep current stats, just rename
+    }
+    // Update keys
+    if (expandedBreakdowns.has(currentName)) { expandedBreakdowns.delete(currentName); expandedBreakdowns.add(megaName); }
+    if (pinnedKeys.has(currentName))          { pinnedKeys.delete(currentName);          pinnedKeys.add(megaName); }
+    entry.speciesRaw = megaName;
+    megaOverrides.set(baseKey, megaSlug);
   }
 
-  // Recompute damage with updated stats
+  // Recompute damage
   const cur = DEFENDER_SLOTS[activeDefenderSlot];
   if (cur) {
     const results = computeResults(META_DB.filter(p => p.loaded), cur);
@@ -4155,7 +4186,7 @@ function renderMatchWindow() {
         <div class="mw-hover-tip">${pip}</div>
         ${img}
         <div class="mw-spe" style="font-size:8px;color:var(--text3);">${label}</div>
-        <div class="mw-spe">Spe ${p.computedSpe}</div>
+        <div class="mw-spe">Spe <span style="color:var(--text)">${p.computedSpe}</span></div>
       </div>`;
     }).join('');
   }
@@ -4256,7 +4287,7 @@ async function loadBaseSprite(imgId, baseSlug) {
 function spriteImgHtmlCls(speciesRaw, size, savedUrl, extraCls) {
   size = size || 38; savedUrl = savedUrl || null; extraCls = extraCls || '';
   const slug = toSlug(speciesRaw);
-  const baseSlug = slug.replace(/-mega(-[xy])?$/,'').replace(/-gmax$/,'').replace(/-blade$|-shield$/,'').replace(/-eternal$/,'');
+  const baseSlug = slug === 'floette-mega' ? 'floette-eternal' : slug.replace(/-mega(-[xy])?$/,'').replace(/-gmax$/,'').replace(/-blade$|-shield$/,'').replace(/-eternal$/,'');
   const shortName = speciesRaw.split(/[\s-]/)[0].slice(0, 8);
   const isForm = baseSlug !== slug;
   // Use saved URL or cached URL; for megas try base form cache too
@@ -4281,7 +4312,7 @@ function spriteImgHtmlCls(speciesRaw, size, savedUrl, extraCls) {
 // Match window sprite: 52px, same PokeAPI-first fallback chain
 function matchWindowSpriteHtml(speciesRaw, spriteUrl) {
   const slug = toSlug(speciesRaw);
-  const baseSlug = slug.replace(/-mega(-[xy])?$/,'').replace(/-gmax$/,'').replace(/-blade$|-shield$/,'').replace(/-eternal$/,'');
+  const baseSlug = slug === 'floette-mega' ? 'floette-eternal' : slug.replace(/-mega(-[xy])?$/,'').replace(/-gmax$/,'').replace(/-blade$|-shield$/,'').replace(/-eternal$/,'');
   const shortName = speciesRaw.split(/[\s-]/)[0].slice(0, 6);
   const isForm = baseSlug !== slug;
   const src = spriteUrl || pokemonCache[slug]?.spriteUrl || (isForm ? pokemonCache[baseSlug]?.spriteUrl : null);
@@ -4332,12 +4363,9 @@ function renderMatchHistory() {
     const terms = searchRaw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
     matches = matches.filter(m => {
       // Collect all Pokémon names in this match (both sides)
-      const allNames = [
-        ...m.myTeam.map(p  => (typeof p === 'string' ? p : p.name).toLowerCase()),
-        ...m.opponent.map(p => (typeof p === 'string' ? p : p.name).toLowerCase()),
-      ];
-      // Every term must match at least one name
-      return terms.every(term => allNames.some(n => n.includes(term)));
+      // Search opponent names only
+      const oppNames = m.opponent.map(p => (typeof p === 'string' ? p : p.name).toLowerCase());
+      return terms.every(term => oppNames.some(n => n.includes(term)));
     });
   }
 
@@ -4470,6 +4498,7 @@ function toggleModeBtn(cbId, btnId) {
   if (!cb || !btn) return;
   cb.checked = !cb.checked;
   _setModeBtnActive(btnId, cb.checked);
+  if (btnId === 'maxRollBtn') btn.textContent = cb.checked ? 'Max rolls' : 'Min rolls';
   renderResults();
 }
 
@@ -4489,6 +4518,7 @@ function onAttackingModeToggle() {
   atk.checked     = !atk.checked;
   maxRoll.checked = !atk.checked;   // defending = max rolls on; attacking = off
   _setModeBtnActive('maxRollBtn', maxRoll.checked);
+  const rollBtn = document.getElementById('maxRollBtn'); if (rollBtn) rollBtn.textContent = maxRoll.checked ? 'Max rolls' : 'Min rolls';
   if (atkBtn) {
     if (atk.checked) {
       atkBtn.textContent       = 'Attacking';

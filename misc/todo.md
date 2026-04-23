@@ -1,12 +1,16 @@
 ## Feature Request
 
-- [__] no mega button on floette-mega
 
-- [__] unclicking both charizard mega buttons should revert to base charizard
+- [XX] make the speed value text (not the spe) in the current match window to be white
+- [XX] have the max rolls button's text change to Min rolls on deselect
+- [XX] make the type weakness table minizable as well
+- [XX] in the match history screen, have the pokemon searched only apply to the opponent team
 
-- [??] the buttons don't seem to be updating the damages in the listing, maybe the stats aren't updated. also, I'd like the name in the listing to change (Aggron-Mega > Aggron, Charizard-Mega-Y > Charizard-Mega-X > Charizard)
 
 
+- add a meta profile that will give you the top 4 offensive and top 4 defensive threats in a given meta against your current tabbed pokemon (go into more detail about damage and resistance) it should also pin those 6 pokemon.
+
+- on mega button unclick and click make sure the abilities are updated properly (venusaur clicks into mega button, gets thick fat, golurk unclicks, gets another legal ability like iron fist)
 
 - Item usage visibility
 - ability listed in breakdown with hover text
@@ -25,10 +29,13 @@
 - when you delete an entry in the match history, have it update the overall winrate accordingly
 - change drop downs for stat changes to vertically aligned plus and minus buttons that tick up and down by 1
 
+- change the fitting of the pokemon tabs to either be all 6 pokemon in a line or 2x3, never a 4 on top, 2 on bottom situation
 
 - body slam damage
 - add a button in move breakdown to show the nature and spread of the meta list (similar to “?” button)
 - move/ability search will filter with all possible not just run in meta
+
+- add a small button on each match history listing below the LOSS/WIN text to load match which will open a new match screen with the current team vs the opponent's pokemon will also replace the current pinned pokemon with the opponent pokemon from the match
 
 
 ## To-Do Stack
@@ -40,6 +47,10 @@
 ---
 #### Completed
 
+- [XX] the buttons don't seem to be updating the damages in the listing, maybe the stats aren't updated. also, I'd like the name in the listing to change (Aggron-Mega > Aggron, Charizard-Mega-Y > Charizard-Mega-X > Charizard)
+- [XX] MEGAS WORK well kind of, regular venusaur has a mega button that can be clicked on which turns it into mega venusaur with correct stats and everything. it's just the already mega ones in the meta that have a problem
+- [XX] no mega button on floette-mega
+- [XX] unclicking both charizard mega buttons should revert to base charizard
 - [XX] make it so the paste windows don't collaps if you click anywhere in the window, only the top of the window
 - [XX] sort saved team drop down by last updated (created or winrate adjusted)
 - [XX] add bunch more room to buffer at bottom of results tab so an empty screen takes up more space
