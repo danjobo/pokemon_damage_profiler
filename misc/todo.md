@@ -1,19 +1,10 @@
 ## Feature Request
 
-- [__] the autocomplete text needs to be updated to match the new starting point of the text with the added pin button
-- [__] non-meta pokemon need to also have sprites in the match screen. also the sprite it's pulling in the match results listings is not the pokeapi pull.
-- [__] charizard y is now adding a second copy of charizard x in the match screen enemy team
-- 
+- [__] no mega button on floette-mega
 
-- [__] older released mega pokemon have mega buttons, but new ones like golurk and floette don't have buttons
-- [__] the buttons don't seem to be updating the damages in the listing, maybe the stats aren't updated. also, I'd like the name in the listing to change (Aggron-Mega > Aggron, Charizard-Mega-Y > Charizard-Mega-X > Charizard)
-- [??] change attacking button to a toggling button that switches between “attacking”/“defending” text
-- [??] change the min button to a toggling button that switched between “min roll” / “max roll”
-- [??] Give the max investment button a matching style but have its text not switch, it’ll just light up and not light up
-- [??] search any Pokémon and add as temp pin with empty load out for replay image
-- [??] have sprite calls in match history for mega’s that couldnt be found default to their regular form sprites instead
+- [__] unclicking both charizard mega buttons should revert to base charizard
 
-- [??] max bulk and speed on the button, separate HP button
+- [??] the buttons don't seem to be updating the damages in the listing, maybe the stats aren't updated. also, I'd like the name in the listing to change (Aggron-Mega > Aggron, Charizard-Mega-Y > Charizard-Mega-X > Charizard)
 
 
 
@@ -23,11 +14,7 @@
 
 
 
-
-
 - load enemy team paste into pins
-- sort saved team drop down by last updated (created or winrate adjusted)
-- add bunch more room to buffer at bottom of results tab so an empty screen takes up more space
 
 
 - support for fixed multi hit moves
@@ -35,11 +22,12 @@
 
 - Water bubble not workin
 - Status ticker per Pokemon (burn/para/…) and have that status be displayed on the listing below the name like the games
+- when you delete an entry in the match history, have it update the overall winrate accordingly
+- change drop downs for stat changes to vertically aligned plus and minus buttons that tick up and down by 1
 
 
 - body slam damage
 - add a button in move breakdown to show the nature and spread of the meta list (similar to “?” button)
-- change drop downs for stat changes to vertically aligned plus and minus buttons that tick up and down by 1
 - move/ability search will filter with all possible not just run in meta
 
 
@@ -52,6 +40,21 @@
 ---
 #### Completed
 
+- [XX] make it so the paste windows don't collaps if you click anywhere in the window, only the top of the window
+- [XX] sort saved team drop down by last updated (created or winrate adjusted)
+- [XX] add bunch more room to buffer at bottom of results tab so an empty screen takes up more space
+- [XX] older released mega pokemon have mega buttons, but new ones like golurk and floette don't have buttons
+- [XX] the problem with charizard x isn't that it's necessarily duplicating, it's just keeping the pin value for charizard y when you switch to x and pin x. you just have to clear the pinned y when you add an x and vice versa.
+- [XX] move tabs section to right above the actual results screen, so below the winrate and the match screen that will appear 
+- [XX] charizard y is now adding a second copy of charizard x in the match screen enemy team
+- [XX] change attacking button to a toggling button that switches between “attacking”/“defending” text
+- [XX] change the min button to a toggling button that switched between “min roll” / “max roll”
+- [XX] Give the max investment button a matching style but have its text not switch, it’ll just light up and not light up
+- [XX] search any Pokémon and add as temp pin with empty load out for replay image
+- [XX] have sprite calls in match history for mega’s that couldnt be found default to their regular form sprites instead
+- [XX] max bulk and speed on the button, separate HP button
+- [XX] the autocomplete text needs to be updated to match the new starting point of the text with the added pin button
+- [XX] non-meta pokemon need to also have sprites in the match screen. also the sprite it's pulling in the match results listings is not the pokeapi pull.
 - [XX] little status bar connected to bottom of control bar that shows all active battlefield effects with colors (when cleared will be empty)
 - [XX] move clear effects button to left end of that status bar
 - [XX] collapsible paste windows that do a little growing and shrinking animation on hover

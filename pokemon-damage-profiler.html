@@ -461,11 +461,11 @@
     flex-wrap: wrap;
     gap: 12px;
     align-items: end;
-    margin-bottom: 14px;
+    margin-bottom: 0;
     padding: 12px;
     background: var(--bg2);
     border: 0.5px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: var(--radius) var(--radius) 0 0;
     position: sticky;
     top: 48px;
     z-index: 19;
@@ -895,8 +895,8 @@
   <!-- <div class="two-col"> -->
 
     <!-- META DATABASE -->
-    <div class="card card-collapsible" id="metaCard" onclick="toggleCard('metaCard',event)">
-      <div class="card-label">Meta database — attackers <span class="card-collapse-hint">▼</span></div>
+    <div class="card card-collapsible" id="metaCard">
+      <div class="card-label" onclick="toggleCard('metaCard',event)" style="cursor:pointer;">Meta database — attackers <span class="card-collapse-hint">▼</span></div>
       <div class="card-body">
 
       <!-- Saved metas row -->
@@ -954,8 +954,8 @@ Adamant Nature
     </div><!-- end metaCard -->
 
     <!-- DEFENDER -->
-    <div class="card card-collapsible" id="defenderCard" onclick="toggleCard('defenderCard',event)">
-      <div class="card-label">Your Pokémon — defender <span class="card-collapse-hint">▼</span></div>
+    <div class="card card-collapsible" id="defenderCard">
+      <div class="card-label" onclick="toggleCard('defenderCard',event)" style="cursor:pointer;">Your Pokémon — defender <span class="card-collapse-hint">▼</span></div>
       <div class="card-body">
 
       <!-- Saved teams row -->
@@ -1014,18 +1014,6 @@ Impish Nature
   <!-- RESULTS -->
   <div id="resultsSection" style="display:none">
     <!-- Defender slot tabs (up to 6) -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-      <div class="defender-tabs-row" id="defenderTabsRow" style="flex:1;margin-bottom:0;">
-        <div class="def-tab def-tab-empty" title="Slot 1" onclick="selectDefenderTab(0)" id="defTab-0">＋</div>
-        <div class="def-tab def-tab-empty" title="Slot 2" onclick="selectDefenderTab(1)" id="defTab-1">＋</div>
-        <div class="def-tab def-tab-empty" title="Slot 3" onclick="selectDefenderTab(2)" id="defTab-2">＋</div>
-        <div class="def-tab def-tab-empty" title="Slot 4" onclick="selectDefenderTab(3)" id="defTab-3">＋</div>
-        <div class="def-tab def-tab-empty" title="Slot 5" onclick="selectDefenderTab(4)" id="defTab-4">＋</div>
-        <div class="def-tab def-tab-empty" title="Slot 6" onclick="selectDefenderTab(5)" id="defTab-5">＋</div>
-      </div>
-      <button id="copyTeamBtn" onclick="copyTeamPaste()" title="Copy all tabs as a team paste" style="flex-shrink:0;padding:6px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;transition:background 0.15s,color 0.15s;">📋 Copy to Clipboard</button>
-    </div>
-
     <div class="results-header">
       <div class="sort-row">
         <label>Sort by:</label>
@@ -1110,11 +1098,6 @@ Impish Nature
         </select>
       </div>
 
-      <div class="control-group" style="justify-content:flex-end;">
-        <label>&nbsp;</label>
-        <button onclick="resetFieldConditions()" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;line-height:1;" title="Reset all weather, terrain, stages, and speed condition to defaults">Reset field</button>
-      </div>
-
       <div class="control-group">
         <label>Terrain / Screen</label>
         <select id="terrainMode" onchange="renderResults()">
@@ -1137,20 +1120,20 @@ Impish Nature
         </select>
       </div>
 
-      <label class="checkbox-toggle">
-        <input type="checkbox" id="maxRollMode" onchange="renderResults()">
-        <span>Show max rolls</span>
-      </label>
+      <button id="maxRollBtn" onclick="toggleModeBtn('maxRollMode','maxRollBtn')" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;align-self:flex-end;" title="Show max damage rolls">Max rolls</button>
 
-      <label class="checkbox-toggle">
-        <input type="checkbox" id="attackingMode" onchange="onAttackingModeChange()">
-        <span>Attacking mode</span>
-      </label>
+      <button id="attackingModeBtn" onclick="onAttackingModeToggle()" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;align-self:flex-end;" title="Toggle between defending (incoming damage) and attacking (outgoing damage)">Defending</button>
 
-      <label class="checkbox-toggle">
-        <input type="checkbox" id="maxInvestMode" onchange="renderResults()">
-        <span>Max invest override</span>
-      </label>
+      <button id="maxHpBtn" onclick="toggleModeBtn('maxHpMode','maxHpBtn')" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;align-self:flex-end;" title="Override HP to max investment (32 EVs)">Max HP</button>
+
+      <button id="maxStatsBtn" onclick="toggleModeBtn('maxStatsMode','maxStatsBtn')" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;align-self:flex-end;" title="Override Atk/SpA/Def/SpD/Spe to max investment">Max stats</button>
+
+      <!-- Hidden checkboxes drive the logic -->
+      <input type="checkbox" id="maxRollMode"  style="display:none" onchange="renderResults()">
+      <input type="checkbox" id="attackingMode" style="display:none">
+      <input type="checkbox" id="maxHpMode"    style="display:none" onchange="renderResults()">
+      <input type="checkbox" id="maxStatsMode" style="display:none" onchange="renderResults()">
+      <input type="checkbox" id="maxInvestMode" style="display:none">
 
       <div class="control-group" style="flex:1;min-width:180px;position:relative;">
         <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">
@@ -1171,6 +1154,11 @@ Impish Nature
       </div>
     </div>
 
+    <!-- Field status bar -->
+    <div id="fieldStatusBar" style="display:flex;align-items:center;gap:8px;padding:5px 12px;background:var(--bg2);border:0.5px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);font-size:11px;min-height:28px;margin-bottom:14px;position:sticky;top:calc(48px + 120px);z-index:18;">
+      <button onclick="resetFieldConditions()" style="padding:3px 8px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0;" title="Reset all field conditions">Reset</button>
+      <div id="fieldStatusText" style="flex:1;display:flex;flex-wrap:wrap;gap:4px;align-items:center;color:var(--text3);font-size:10px;"></div>
+    </div>
 
     <!-- Match history control bar -->
     <div class="match-bar" id="matchBar">
@@ -1201,9 +1189,22 @@ Impish Nature
     <!-- Active match window — expands between match bar and results -->
     <div id="matchWindow" style="display:none;"></div>
 
+    <!-- Defender tabs + clipboard — above results listing -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <div class="defender-tabs-row" id="defenderTabsRow" style="flex:1;margin-bottom:0;">
+        <div class="def-tab def-tab-empty" title="Slot 1" onclick="selectDefenderTab(0)" id="defTab-0">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 2" onclick="selectDefenderTab(1)" id="defTab-1">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 3" onclick="selectDefenderTab(2)" id="defTab-2">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 4" onclick="selectDefenderTab(3)" id="defTab-3">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 5" onclick="selectDefenderTab(4)" id="defTab-4">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 6" onclick="selectDefenderTab(5)" id="defTab-5">＋</div>
+      </div>
+      <button id="copyTeamBtn" onclick="copyTeamPaste()" title="Copy all tabs as a team paste" style="flex-shrink:0;padding:6px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;transition:background 0.15s,color 0.15s;">📋 Copy to Clipboard</button>
+    </div>
+
     <div class="card" style="padding: 0.5rem 1.25rem;">
       <div id="resultsList"></div>
-      <div style="height:140px"></div>
+      <div style="height:300px"></div>
     </div>
   </div>
 
@@ -1514,7 +1515,22 @@ const MEGA_FORMS = {
   'audino':    [{label:'Mega',slug:'audino-mega'}],
   'diancie':   [{label:'Mega',slug:'diancie-mega'}],
   'golurk':    [{label:'Mega',slug:'golurk-mega'}],
-  'floette':   [{label:'Eternal',slug:'floette-eternal'}],
+  'alakazam':  [{label:'Mega',slug:'alakazam-mega'}],
+  'dragonite':  [{label:'Mega',slug:'dragonite-mega'}],
+  'meganium':   [{label:'Mega',slug:'meganium-mega'}],
+  'feraligatr': [{label:'Mega',slug:'feraligatr-mega'}],
+  'starmie':    [{label:'Mega',slug:'starmie-mega'}],
+  'skarmory':   [{label:'Mega',slug:'skarmory-mega'}],
+  'greninja':   [{label:'Mega',slug:'greninja-mega'}],
+  'chesnaught': [{label:'Mega',slug:'chesnaught-mega'}],
+  'delphox':    [{label:'Mega',slug:'delphox-mega'}],
+  'hawlucha':   [{label:'Mega',slug:'hawlucha-mega'}],
+  'chandelure': [{label:'Mega',slug:'chandelure-mega'}],
+  'froslass':   [{label:'Mega',slug:'froslass-mega'}],
+  'crabominable':[{label:'Mega',slug:'crabominable-mega'}],
+  'drampa':     [{label:'Mega',slug:'drampa-mega'}],
+  'scovillain': [{label:'Mega',slug:'scovillain-mega'}],
+  'glimmora':   [{label:'Mega',slug:'glimmora-mega'}],
   // Aegislash forms (same toggle UI)
   'aegislash': [{label:'Shield',slug:'aegislash-shield'},{label:'Blade',slug:'aegislash-blade'}],
   'aegislash-blade': [{label:'Shield',slug:'aegislash-shield'},{label:'Blade',slug:'aegislash-blade'}],
@@ -2471,6 +2487,7 @@ function computeResults(loadedMeta, defender) {
 }
 
 function renderResults() {
+  updateFieldStatus();
   if (_historyViewActive) { renderMatchHistory(); return; }
   const weather       = document.getElementById('weatherMode')?.value || 'none';
   const terrainMode   = document.getElementById('terrainMode')?.value || 'none';
@@ -2480,7 +2497,8 @@ function renderResults() {
   const spdStage    = Number(document.getElementById('spdStage')?.value || 0);
   const maxRollMode   = document.getElementById('maxRollMode')?.checked || false;
   const attackingMode = document.getElementById('attackingMode')?.checked || false;
-  const maxInvest     = document.getElementById('maxInvestMode')?.checked || false;
+  const maxInvest     = document.getElementById('maxStatsMode')?.checked || false;
+  const maxHp         = document.getElementById('maxHpMode')?.checked || false;
   const searchQuery   = (document.getElementById('searchBar')?.value || '').toLowerCase().trim();
 
   lastResults.forEach(r => {
@@ -2574,7 +2592,12 @@ function renderResults() {
 
       if (maxRollMode) adjustedDmg /= 0.85;
 
-      m.adjustedPct  = adjustedDmg / r.defenderHp * 100;
+      let effectiveHp = r.defenderHp;
+      if (maxHp && r.defender) {
+        const maxHpVal = calcHP(r.defender.baseStats.hp || 0, 32, 31, 50);
+        if (maxHpVal > effectiveHp) effectiveHp = maxHpVal;
+      }
+      m.adjustedPct  = adjustedDmg / effectiveHp * 100;
       m.adjustedDmg  = adjustedDmg;
       m.resolvedType = moveType; // for display
       m.isEffectivelySpread = isEffectivelySpread;
@@ -2631,7 +2654,21 @@ function renderResults() {
       const isEffSpread = m.isSpread || terrainBoost.spreadOverride;
       if (isEffSpread) adjustedDmg *= 0.75;
       if (maxRollMode) adjustedDmg /= 0.85;
-      m.adjustedPct = adjustedDmg / r.attacker.computedHp * 100;
+      // maxStats: scale meta pokemon's offensive stat in attacking mode
+      if (maxInvest) {
+        const isPhysD = m.move.cat === 'physical';
+        const offBaseD = isPhysD ? r.attacker.baseStats.atk : r.attacker.baseStats.spa;
+        const offCurD  = isPhysD ? r.attacker.computedAtk   : r.attacker.computedSpa;
+        const offMaxD  = calcStat(offBaseD, 32, 31, 50, 1.1);
+        if (offCurD > 0 && offMaxD > offCurD) adjustedDmg *= offMaxD / offCurD;
+      }
+      // maxHp: scale attacker HP (reduces % damage they deal to you)
+      let atkEffHp = r.attacker.computedHp;
+      if (maxHp && r.attacker.baseStats.hp) {
+        const maxAtkHp = calcHP(r.attacker.baseStats.hp, 32, 31, 50);
+        if (maxAtkHp > atkEffHp) atkEffHp = maxAtkHp;
+      }
+      m.adjustedPct = adjustedDmg / atkEffHp * 100;
       m.adjustedDmg = adjustedDmg;
       m.resolvedType = moveType2;
       m.isEffectivelySpread = isEffSpread;
@@ -2647,12 +2684,24 @@ function renderResults() {
   let sorted = [...lastResults];
   // Helper to get a computed stat value from an attacker
   const getStat = (r, stat) => {
+    const a = r.attacker;
+    if (maxInvest && a.baseStats) {
+      const maxVal = (base) => base ? calcStat(base, 32, 31, 50, 1.1) : 0;
+      switch(stat) {
+        case 'speed': return Math.max(a.computedSpe||0, maxVal(a.baseStats.spe));
+        case 'atk':   return Math.max(a.computedAtk||0, maxVal(a.baseStats.atk));
+        case 'spa':   return Math.max(a.computedSpa||0, maxVal(a.baseStats.spa));
+        case 'def':   return Math.max(a.computedDef||0, maxVal(a.baseStats.def));
+        case 'spd':   return Math.max(a.computedSpd||0, maxVal(a.baseStats.spd));
+        default: return 0;
+      }
+    }
     switch(stat) {
-      case 'speed': return r.attacker.computedSpe || 0;
-      case 'atk':   return r.attacker.computedAtk || 0;
-      case 'spa':   return r.attacker.computedSpa || 0;
-      case 'def':   return r.attacker.computedDef || 0;
-      case 'spd':   return r.attacker.computedSpd || 0;
+      case 'speed': return a.computedSpe || 0;
+      case 'atk':   return a.computedAtk || 0;
+      case 'spa':   return a.computedSpa || 0;
+      case 'def':   return a.computedDef || 0;
+      case 'spd':   return a.computedSpd || 0;
       default: return 0;
     }
   };
@@ -2861,7 +2910,11 @@ function renderResults() {
     let speedHtml = '';
     if (r.defender) {
       const speedCond = document.getElementById('speedCondition')?.value || 'none';
-      const atkSpeRaw = r.attacker.computedSpe || calcStat(r.attacker.baseStats.spe||0, r.attacker.evs.spe||0, 31, 50, 1);
+      let atkSpeRaw = r.attacker.computedSpe || calcStat(r.attacker.baseStats.spe||0, r.attacker.evs.spe||0, 31, 50, 1);
+      if (maxInvest && r.attacker.baseStats.spe) {
+        const maxSpe = calcStat(r.attacker.baseStats.spe, 32, 31, 50, 1.1);
+        if (maxSpe > atkSpeRaw) atkSpeRaw = maxSpe;
+      }
       let atkSpeEff = atkScarfActive ? Math.floor(atkSpeRaw * 1.5) : atkSpeRaw;
       let defSpeEff = effectiveSpe(r.defender);
       // Tailwind doubles speed; Trick Room reverses comparison
@@ -2910,7 +2963,7 @@ function renderResults() {
     }
 
     const modeLabel = attackingMode ? `<span style="font-size:10px;color:var(--accent2);margin-left:6px;">→ attacking</span>` : '';
-    const maxInvestLabel = maxInvest ? `<span style="font-size:10px;color:var(--yellow);margin-left:4px;">max</span>` : '';
+    const maxInvestLabel = (maxInvest || maxHp) ? `<span style="font-size:10px;color:var(--yellow);margin-left:4px;">${[maxInvest?'max stats':'',maxHp?'max HP':''].filter(Boolean).join(' ')}</span>` : '';
 
     const statSorts = { speed: 'Spe', atk: 'Atk', spa: 'SpA', def: 'Def', spd: 'SpD' };
     const statLabel = statSorts[mode]
@@ -2928,7 +2981,13 @@ function renderResults() {
           return speciesNorm === kn || speciesNorm.startsWith(kn + 'mega') || speciesNorm.startsWith(kn + 'shield') || speciesNorm.startsWith(kn + 'blade');
         });
     const megaForms    = megaKey ? MEGA_FORMS[megaKey] : null;
-    const activeMegaSlug = megaOverrides.get(r.attacker.speciesRaw);
+    // Active slug: check override map first, then detect if speciesRaw IS already a mega form
+    const activeMegaSlug = megaOverrides.get(r.attacker.speciesRaw) ||
+      (megaForms && (() => {
+        const curSlug = toSlug(r.attacker.speciesRaw);
+        const match = megaForms.find(f => f.slug === curSlug);
+        return match ? match.slug : undefined;
+      })());
     let megaHtml = '';
     if (megaForms) {
       const isAegi = megaKey.includes('aegislash');
@@ -3177,8 +3236,10 @@ function updateSearchGhost() {
   // Ghost shows the full completed text; real input text is overlaid on top
   // We need to offset the ghost to account for the clear button width when visible
   const clearBtn = document.getElementById('searchClearBtn');
-  const clearW = (clearBtn && clearBtn.style.display !== 'none') ? clearBtn.offsetWidth : 0;
-  ghost.style.left = clearW + 'px';
+  const pinBtn   = clearBtn ? clearBtn.nextElementSibling : null;
+  const clearW = clearBtn ? (clearBtn.offsetWidth || 0) : 0;
+  const pinW   = (pinBtn && pinBtn.tagName === 'BUTTON') ? (pinBtn.offsetWidth || 0) : 0;
+  ghost.style.left = (clearW + pinW) + 'px';
   ghost.style.paddingLeft = '8px';
   ghost.value = suggestion || '';
 }
@@ -3347,36 +3408,67 @@ function toggleExtraMoves(e, key) {
 
 async function toggleMegaForm(e, speciesRaw, megaSlug) {
   e.stopPropagation();
-  const current = megaOverrides.get(speciesRaw);
-  const newSlug = (current === megaSlug) ? null : megaSlug;
-  megaOverrides.set(speciesRaw, newSlug);
-
+  // Find entry by current name OR original name (handles already-renamed megas)
   const entry = META_DB.find(p => p.speciesRaw === speciesRaw || p._origSpeciesRaw === speciesRaw);
   if (!entry) { renderResults(); return; }
 
+  // The canonical base key is always the original un-renamed name
+  const baseKey = entry._origSpeciesRaw || entry.speciesRaw;
+  const currentOverride = megaOverrides.get(baseKey);
+
+  // Revert if: this mega is already active (either via override map or the entry IS this form)
+  const alreadyThisForm = currentOverride === megaSlug || toSlug(entry.speciesRaw) === megaSlug;
+  const newSlug = alreadyThisForm ? null : megaSlug;
+
   if (newSlug) {
+    // Pre-ensure base form is in pokemonCache so getSpriteUrl fallback always works
+    if (!pokemonCache[baseKey]) {
+      try { await fetchPokemonData(baseKey); } catch {}
+    }
     try {
       const { baseStats, types, spriteUrl } = await fetchPokemonData(newSlug);
       if (!entry._origSpeciesRaw) {
-        entry._origSpeciesRaw = entry.speciesRaw; // save original name
+        entry._origSpeciesRaw = entry.speciesRaw;
         entry._megaBaseStats  = entry.baseStats;
         entry._megaBaseTypes  = entry.types;
+        entry._megaBaseSpriteUrl = entry.spriteUrl;
       }
-      entry.speciesRaw = slugToDisplayName(newSlug); // update display name
+      const oldName = entry.speciesRaw; // name before rename
+      entry.speciesRaw = slugToDisplayName(newSlug);
       entry.baseStats  = baseStats;
       entry.types      = types;
-      entry.spriteUrl  = spriteUrl;
-    } catch { /* fetch failed, still update name if we can */ }
+      // Use mega sprite if available, otherwise keep base sprite
+      entry.spriteUrl  = spriteUrl || entry._megaBaseSpriteUrl || null;
+      megaOverrides.set(baseKey, newSlug);
+      // Swap pin: remove old name, add new name so pin follows the form change
+      if (pinnedKeys.has(oldName)) { pinnedKeys.delete(oldName); pinnedKeys.add(entry.speciesRaw); }
+    } catch {
+      // Fetch failed (mega doesn't exist in PokeAPI) — still rename, keep base sprite
+      if (!entry._origSpeciesRaw) {
+        entry._origSpeciesRaw = entry.speciesRaw;
+        entry._megaBaseStats  = entry.baseStats;
+        entry._megaBaseTypes  = entry.types;
+        entry._megaBaseSpriteUrl = entry.spriteUrl;
+      }
+      const oldName = entry.speciesRaw;
+      entry.speciesRaw = slugToDisplayName(newSlug);
+      // Keep base sprite URL so it still displays correctly
+      megaOverrides.set(baseKey, newSlug);
+      if (pinnedKeys.has(oldName)) { pinnedKeys.delete(oldName); pinnedKeys.add(entry.speciesRaw); }
+    }
   } else {
-    // Revert to base form
+    const revertOldName = entry.speciesRaw;
     if (entry._origSpeciesRaw) { entry.speciesRaw = entry._origSpeciesRaw; entry._origSpeciesRaw = null; }
+    // Swap pin back to base name
+    if (pinnedKeys.has(revertOldName)) { pinnedKeys.delete(revertOldName); pinnedKeys.add(entry.speciesRaw); }
     if (entry._megaBaseStats)  { entry.baseStats   = entry._megaBaseStats; entry._megaBaseStats  = null; }
     if (entry._megaBaseTypes)  { entry.types       = entry._megaBaseTypes; entry._megaBaseTypes  = null; }
-    entry.spriteUrl = (pokemonCache[toSlug(speciesRaw)] || {}).spriteUrl || null;
-    megaOverrides.delete(speciesRaw);
+    entry.spriteUrl = entry._megaBaseSpriteUrl || (pokemonCache[toSlug(baseKey)] || {}).spriteUrl || null;
+    entry._megaBaseSpriteUrl = null;
+    megaOverrides.delete(baseKey);
   }
 
-  // Recompute damage with the new stats
+  // Recompute damage with updated stats
   const cur = DEFENDER_SLOTS[activeDefenderSlot];
   if (cur) {
     const results = computeResults(META_DB.filter(p => p.loaded), cur);
@@ -3688,8 +3780,13 @@ async function onSavedTeamSelect() {
   const teams = getSavedTeams();
   const entry = teams[name];
   if (!entry) return;
+  // Bump savedAt on load so recently loaded teams sort to top
+  const entryData = Array.isArray(entry) ? { slots: entry, savedAt: Date.now() } : entry;
+  entryData.savedAt = Date.now();
+  teams[name] = entryData;
+  putSavedTeams(teams);
   // Support both new {slots, savedAt} format and legacy plain array
-  const slots = Array.isArray(entry) ? entry : (entry.slots || []);
+  const slots = entryData.slots || [];
 
   const loadedMeta = META_DB.filter(p => p.loaded);
   if (!loadedMeta.length) {
@@ -3779,8 +3876,7 @@ function deleteSavedTeam() {
 
 // ── Collapsible cards ─────────────────────────────────────────────────────────
 function toggleCard(id, e) {
-  // Don't collapse when clicking buttons/inputs/selects inside the card
-  if (e.target.closest('button,input,select,textarea,a')) return;
+  e.stopPropagation();
   const card = document.getElementById(id);
   if (!card) return;
   card.classList.toggle('collapsed');
@@ -3805,12 +3901,20 @@ function pinTopResult() {
 
 // ── Attacking mode auto-max-roll ──────────────────────────────────────────────
 function onAttackingModeChange() {
-  const atk = document.getElementById('attackingMode');
+  // Legacy: called directly when checkbox changes (not from button)
+  const atk    = document.getElementById('attackingMode');
   const maxRoll = document.getElementById('maxRollMode');
   if (!atk || !maxRoll) return;
-  // Defending mode: auto-enable max roll (show worst case damage taken)
-  // Attacking mode: auto-disable max roll
   maxRoll.checked = !atk.checked;
+  _setModeBtnActive('maxRollBtn', maxRoll.checked);
+  const atkBtn = document.getElementById('attackingModeBtn');
+  if (atkBtn) {
+    if (atk.checked) {
+      atkBtn.textContent='Attacking'; atkBtn.style.borderColor='#2d6a4a'; atkBtn.style.color='var(--green)'; atkBtn.style.background='#1a3a2a';
+    } else {
+      atkBtn.textContent='Defending'; atkBtn.style.borderColor='var(--border2)'; atkBtn.style.color='var(--text3)'; atkBtn.style.background='transparent';
+    }
+  }
   renderResults();
 }
 
@@ -3827,17 +3931,35 @@ let _matchSortMode   = 'offense'; // 'offense' | 'defense'
 let _matchMyTeam     = [];   // [{speciesRaw, spriteUrl, computedSpe, types, result}]
 let _matchOppTeam    = [];   // same
 
+function getSpriteUrl(name) {
+  const slug = toSlug(name);
+  // 1. Try exact match in pokemonCache (loaded meta mons)
+  if (pokemonCache[slug]?.spriteUrl) return pokemonCache[slug].spriteUrl;
+  // 2. Try nonMetaCache (dummy pin mons)
+  if (nonMetaCache[slug]?.spriteUrl) return nonMetaCache[slug].spriteUrl;
+  // 3. For mega/form slugs with no sprite, fall back to base-form sprite
+  const baseSlug = slug
+    .replace(/-mega(-[xy])?$/, '')
+    .replace(/-gmax$/, '')
+    .replace(/-blade$|-shield$/, '')
+    .replace(/-eternal$/, '');
+  if (baseSlug !== slug && pokemonCache[baseSlug]?.spriteUrl) return pokemonCache[baseSlug].spriteUrl;
+  if (baseSlug !== slug && nonMetaCache[baseSlug]?.spriteUrl) return nonMetaCache[baseSlug].spriteUrl;
+  return null;
+}
+
 function startMatch() {
   const myTeam  = DEFENDER_SLOTS.filter(Boolean);
-  const oppKeys = [...pinnedKeys].slice(0, 6);
+  // Deduplicate — mega renames can cause duplicates in pinnedKeys
+  const oppKeys = [...new Set([...pinnedKeys])].slice(0, 6);
 
   if (!myTeam.length) { alert('Load your team into the defender tabs first.'); return; }
   if (!oppKeys.length) { alert('Pin the opponent\'s Pokémon (up to 6) in the results list first.'); return; }
 
   _matchMyTeam = myTeam.map(s => ({
     speciesRaw : s.speciesRaw,
-    spriteUrl  : (pokemonCache[toSlug(s.speciesRaw)] || {}).spriteUrl || null,
-    computedSpe: s.stats?.spe || 0,
+    spriteUrl  : getSpriteUrl(s.speciesRaw),
+    computedSpe: s.computedSpe || s.stats?.spe || 0,
     types      : s.types || [],
     ability    : s.ability || '',
     dividerIndex  : s.dividerIndex ?? 4,
@@ -3845,10 +3967,11 @@ function startMatch() {
   }));
 
   _matchOppTeam = oppKeys.map(name => {
-    const dbEntry = META_DB.find(p => p.speciesRaw === name);
+    // Find META_DB entry by current or original name (handles mega renames)
+    const dbEntry = META_DB.find(p => p.speciesRaw === name || p._origSpeciesRaw === name);
     return {
       speciesRaw : name,
-      spriteUrl  : (pokemonCache[toSlug(name)] || {}).spriteUrl || null,
+      spriteUrl  : getSpriteUrl(name),
       computedSpe: dbEntry?.computedSpe || 0,
       types      : dbEntry?.types || [],
       ability    : dbEntry?.ability || '',
@@ -4024,10 +4147,7 @@ function renderMatchWindow() {
       const hl    = _matchHighlighted[side].has(p.speciesRaw);
       const pip   = buildMatchupPips(p, oppSorted, isOffense);
       const label = getDamageLabel(p.speciesRaw, isMyTeam, isOffense);
-      const img   = p.spriteUrl
-        ? `<img src="${p.spriteUrl}" style="width:52px;height:52px;image-rendering:pixelated;object-fit:contain;" alt="${p.speciesRaw}"
-              onerror="this.src='https://img.pokemondb.net/sprites/home/normal/${toSlug(p.speciesRaw)}.png'">`
-        : `<div style="width:52px;height:52px;background:var(--bg3);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text3);">${p.speciesRaw.split(' ')[0].slice(0,6)}</div>`;
+      const img = matchWindowSpriteHtml(p.speciesRaw, p.spriteUrl);
 
       return `<div class="mw-sprite-cell${hl?' mw-highlighted':''}"
         onclick="toggleMatchHighlight('${side}','${p.speciesRaw.replace(/'/g,"\\'")}')"
@@ -4123,32 +4243,63 @@ function putMatchHistory(h) {
 function spriteImgHtml(speciesRaw, size = 38, savedUrl = null) {
   return spriteImgHtmlCls(speciesRaw, size, savedUrl, '');
 }
-function spriteImgHtmlCls(speciesRaw, size = 38, savedUrl = null, extraCls = '') {
-  const slug = toSlug(speciesRaw);
-  const shortName = speciesRaw.split(/[\s-]/)[0].slice(0, 8);
-  // Base-form slug for when a mega/form sprite 404s
-  const baseSlug = slug
-    .replace(/-mega(-[xy])?$/, '')
-    .replace(/-gmax$/, '')
-    .replace(/-blade$|-shield$/, '')
-    .replace(/-eternal$/, '');
-  const hasFormFallback = baseSlug !== slug; // only use base fallback for actual forms
-  const src1 = savedUrl || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${slug}.png`;
-  const src2 = `https://img.pokemondb.net/sprites/home/normal/${baseSlug}.png`; // pokemondb uses base slug
-  const src3 = hasFormFallback ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${baseSlug}.png` : null;
-  // Build onerror chain:
-  // Stage 1 (src1 fails): try pokemondb base-slug
-  // Stage 2 (src2 fails): if form has a different base, try PokeAPI base slug; else text chip
-  // Stage 3: text chip
-  const fallbackChain = src3
-    ? `if(!img._f1){img._f1=1;img.src='${src2}';}else if(!img._f2){img._f2=1;img.src='${src3}';}else{img.outerHTML='<div class=\\'match-sprite-fallback${extraCls}\\' style=\\'width:${size}px;height:${size}px;\\' title=\\'${speciesRaw}\\'>${shortName}</div>';}`
-    : `if(!img._f1){img._f1=1;img.src='${src2}';}else{img.outerHTML='<div class=\\'match-sprite-fallback${extraCls}\\' style=\\'width:${size}px;height:${size}px;\\' title=\\'${speciesRaw}\\'>${shortName}</div>';}`;
-  return `<img class="match-sprite${extraCls}" src="${src1}"
-    style="width:${size}px;height:${size}px;image-rendering:pixelated;"
-    alt="${speciesRaw}" title="${speciesRaw}"
-    onerror="(function(img){${fallbackChain}})(this)"
-  >`;
+// Fetch base-form sprite on demand and inject into an img element
+async function loadBaseSprite(imgId, baseSlug) {
+  try {
+    const data = await fetchPokemonData(baseSlug);
+    const img = document.getElementById(imgId);
+    if (img && data.spriteUrl) { img.src = data.spriteUrl; img.style.display = ''; }
+    else if (img) { img.outerHTML = '<div style="' + img.dataset.chipStyle + '">' + img.dataset.shortName + '</div>'; }
+  } catch {}
 }
+
+function spriteImgHtmlCls(speciesRaw, size, savedUrl, extraCls) {
+  size = size || 38; savedUrl = savedUrl || null; extraCls = extraCls || '';
+  const slug = toSlug(speciesRaw);
+  const baseSlug = slug.replace(/-mega(-[xy])?$/,'').replace(/-gmax$/,'').replace(/-blade$|-shield$/,'').replace(/-eternal$/,'');
+  const shortName = speciesRaw.split(/[\s-]/)[0].slice(0, 8);
+  const isForm = baseSlug !== slug;
+  // Use saved URL or cached URL; for megas try base form cache too
+  const src = savedUrl || pokemonCache[slug]?.spriteUrl || (isForm ? pokemonCache[baseSlug]?.spriteUrl : null);
+  if (src) {
+    return '<img class="match-sprite' + extraCls + '" src="' + src + '" style="width:' + size + 'px;height:' + size + 'px;image-rendering:pixelated;" alt="' + speciesRaw + '" title="' + speciesRaw + '">';
+  }
+  if (isForm) {
+    // No cached sprite — fetch base form on demand
+    const id = 'sp-' + slug + '-' + Date.now() + Math.random().toString(36).slice(2,6);
+    const chipStyle = 'display:inline-flex;width:' + size + 'px;height:' + size + 'px;align-items:center;justify-content:center;font-size:8px;color:var(--text3);';
+    setTimeout(function(){ loadBaseSprite(id, baseSlug); }, 0);
+    return '<img id="' + id + '" class="match-sprite' + extraCls + '" src="" style="width:' + size + 'px;height:' + size + 'px;image-rendering:pixelated;display:none;" data-chip-style="' + chipStyle + '" data-short-name="' + shortName + '" alt="' + speciesRaw + '" title="' + speciesRaw + '">';
+  }
+  return '<div class="match-sprite-fallback' + extraCls + '" style="width:' + size + 'px;height:' + size + 'px;" title="' + speciesRaw + '">' + shortName + '</div>';
+}
+
+
+
+
+
+// Match window sprite: 52px, same PokeAPI-first fallback chain
+function matchWindowSpriteHtml(speciesRaw, spriteUrl) {
+  const slug = toSlug(speciesRaw);
+  const baseSlug = slug.replace(/-mega(-[xy])?$/,'').replace(/-gmax$/,'').replace(/-blade$|-shield$/,'').replace(/-eternal$/,'');
+  const shortName = speciesRaw.split(/[\s-]/)[0].slice(0, 6);
+  const isForm = baseSlug !== slug;
+  const src = spriteUrl || pokemonCache[slug]?.spriteUrl || (isForm ? pokemonCache[baseSlug]?.spriteUrl : null);
+  if (src) {
+    return '<img src="' + src + '" style="width:52px;height:52px;image-rendering:pixelated;object-fit:contain;" alt="' + speciesRaw + '" title="' + speciesRaw + '">';
+  }
+  if (isForm) {
+    const id = 'mw-' + slug + '-' + Date.now() + Math.random().toString(36).slice(2,6);
+    const chipStyle = 'display:inline-flex;width:52px;height:52px;align-items:center;justify-content:center;font-size:8px;color:var(--text3);background:var(--bg3);border-radius:4px;';
+    setTimeout(function(){ loadBaseSprite(id, baseSlug); }, 0);
+    return '<img id="' + id + '" src="" style="width:52px;height:52px;image-rendering:pixelated;object-fit:contain;display:none;" data-chip-style="' + chipStyle + '" data-short-name="' + shortName + '" alt="' + speciesRaw + '" title="' + speciesRaw + '">';
+  }
+  return '<div style="width:52px;height:52px;background:var(--bg3);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text3);" title="' + speciesRaw + '">' + shortName + '</div>';
+}
+
+
+
+
 
 function toggleHistoryView() {
   _historyViewActive = !_historyViewActive;
@@ -4310,6 +4461,105 @@ function adjustScore(side, delta) {
 
 // Re-populate team dropdown now that getWinrates is defined — shows correct W/L on load
 refreshSavedTeamDropdown(document.getElementById('savedTeamSelect')?.value || '');
+
+
+// ── Toggle mode buttons ───────────────────────────────────────────────────────
+function toggleModeBtn(cbId, btnId) {
+  const cb  = document.getElementById(cbId);
+  const btn = document.getElementById(btnId);
+  if (!cb || !btn) return;
+  cb.checked = !cb.checked;
+  _setModeBtnActive(btnId, cb.checked);
+  renderResults();
+}
+
+function _setModeBtnActive(btnId, active) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.style.borderColor = active ? 'var(--accent)'  : 'var(--border2)';
+  btn.style.color       = active ? 'var(--accent2)' : 'var(--text3)';
+  btn.style.background  = active ? 'rgba(124,106,247,0.12)' : 'transparent';
+}
+
+function onAttackingModeToggle() {
+  const atk     = document.getElementById('attackingMode');
+  const maxRoll = document.getElementById('maxRollMode');
+  const atkBtn  = document.getElementById('attackingModeBtn');
+  if (!atk || !maxRoll) return;
+  atk.checked     = !atk.checked;
+  maxRoll.checked = !atk.checked;   // defending = max rolls on; attacking = off
+  _setModeBtnActive('maxRollBtn', maxRoll.checked);
+  if (atkBtn) {
+    if (atk.checked) {
+      atkBtn.textContent       = 'Attacking';
+      atkBtn.style.borderColor = '#2d6a4a';
+      atkBtn.style.color       = 'var(--green)';
+      atkBtn.style.background  = '#1a3a2a';
+    } else {
+      atkBtn.textContent       = 'Defending';
+      atkBtn.style.borderColor = 'var(--border2)';
+      atkBtn.style.color       = 'var(--text3)';
+      atkBtn.style.background  = 'transparent';
+    }
+  }
+  // Also sync the attackingMode checkbox listener
+  renderResults();
+}
+
+// ── Field status bar ──────────────────────────────────────────────────────────
+function updateFieldStatus() {
+  const el = document.getElementById('fieldStatusText');
+  if (!el) return;
+  const weather   = document.getElementById('weatherMode')?.value    || 'none';
+  const terrain   = document.getElementById('terrainMode')?.value    || 'none';
+  const speedCond = document.getElementById('speedCondition')?.value || 'none';
+  const atkStage  = Number(document.getElementById('atkStage')?.value  || 0);
+  const spaStage  = Number(document.getElementById('spaStage')?.value  || 0);
+  const defStage  = Number(document.getElementById('defStage')?.value  || 0);
+  const spdStage  = Number(document.getElementById('spdStage')?.value  || 0);
+
+  const chips = [];
+  const chip = (text, color) =>
+    `<span style="color:${color};white-space:nowrap;">${text}</span>`;
+
+  const wColors = { sun:'#EF9F27', rain:'#85B7EB', sand:'#D3B07A', snow:'#d0eeff' };
+  if (weather !== 'none') chips.push(chip(weather.charAt(0).toUpperCase()+weather.slice(1), wColors[weather]||'#ccc'));
+
+  const tMap = {
+    psychic:     ['Psychic Terrain','#ED93B1'],
+    auroraveil:  ['Aurora Veil','#d0eeff'],
+    reflect:     ['Reflect','#ED93B1'],
+    lightscreen: ['Light Screen','#ED93B1'],
+  };
+  if (terrain !== 'none' && tMap[terrain]) chips.push(chip(tMap[terrain][0], tMap[terrain][1]));
+
+  const sMap = {
+    'tailwind-atk':  ['Tailwind (atk)','#87ceeb'],
+    'tailwind-def':  ['Tailwind (def)','#87ceeb'],
+    'tailwind-both': ['Tailwind','#87ceeb'],
+    'trickroom':     ['Trick Room','#ED93B1'],
+  };
+  if (speedCond !== 'none' && sMap[speedCond]) chips.push(chip(sMap[speedCond][0], sMap[speedCond][1]));
+
+  [[atkStage,'Atk'],[spaStage,'SpA'],[defStage,'Def'],[spdStage,'SpD']].forEach(([val, label]) => {
+    if (val === 0) return;
+    chips.push(chip(`${val > 0 ? '+' : ''}${val} ${label}`, val > 0 ? '#f08080' : '#87b4f5'));
+  });
+
+  if (chips.length) {
+    el.innerHTML = chips.join('<span style="color:var(--border2);margin:0 2px;">·</span>');
+  } else {
+    el.innerHTML = '<span style="color:var(--text3);">No field effects active</span>';
+  }
+}
+
+// Startup init: max rolls on by default (defending mode), field status populated
+(function initModeButtons() {
+  const maxRollCb = document.getElementById('maxRollMode');
+  if (maxRollCb) { maxRollCb.checked = true; }
+  _setModeBtnActive('maxRollBtn', true);
+  updateFieldStatus();
+})();
 
 // ── Sticky controls "stuck" shadow via IntersectionObserver ───────────────────
 // A zero-height sentinel sits just above the controls bar; when it scrolls out
