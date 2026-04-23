@@ -308,6 +308,83 @@
     align-items: center;
   }
   .match-delete-btn:hover { opacity: 1; color: var(--red); }
+  /* ── Active match window ── */
+  #matchWindow {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px 16px;
+    margin-bottom: 14px;
+    animation: matchSlideIn 0.18s ease;
+  }
+  @keyframes matchSlideIn {
+    from { opacity:0; transform:translateY(-8px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .match-win-header  { color: var(--green); }
+  .match-loss-header { color: var(--red); }
+
+  /* Team grids inside match window */
+  .mw-team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+  .mw-sprite-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid transparent;
+    padding: 4px 2px 2px;
+    transition: border-color 0.12s, background 0.12s;
+    position: relative;
+    user-select: none;
+  }
+  .mw-sprite-cell:hover { background: rgba(255,255,255,0.04); }
+  .mw-sprite-cell.mw-highlighted {
+    border-color: var(--accent2);
+    background: rgba(124,106,247,0.1);
+  }
+  .mw-sprite-cell .mw-spe {
+    font-size: 9px; color: var(--text3);
+    text-align: center; line-height: 1;
+  }
+  .mw-sprite-cell .mw-name {
+    font-size: 8px; color: var(--text3);
+    text-align: center; line-height: 1;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    width: 100%;
+  }
+  /* Hover tooltip pip grid */
+  .mw-hover-tip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2a2a3a;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 5px;
+    z-index: 50;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  .mw-hover-tip .wk-pip {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.2);
+  }
+  .mw-sprite-cell:hover .mw-hover-tip { display: block; }
+
+  /* History sprites: highlighted = full, unhighlighted = dimmed */
+  .match-sprite.hl-dim { opacity: 0.3; filter: grayscale(0.6); }
+  .match-sprite-fallback.hl-dim { opacity: 0.3; filter: grayscale(0.6); }
   .wr-score {
     display: flex; align-items: baseline; gap: 5px;
     font-size: 16px; font-weight: 700;
@@ -333,6 +410,42 @@
     color: var(--text3);
   }
   .wr-minus:hover { color: var(--text2); background: rgba(255,255,255,0.06); }
+
+  /* Collapsible input cards */
+  .card-collapsible .card-body {
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease;
+    max-height: 2000px;
+    opacity: 1;
+  }
+  .card-collapsible.collapsed .card-body {
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .card-collapsible {
+    transition: transform 0.12s ease;
+  }
+  .card-collapsible .card-label {
+    cursor: pointer;
+    user-select: none;
+  }
+  .card-collapsible.collapsed {
+    cursor: pointer;
+  }
+  .card-collapsible.collapsed:hover {
+    transform: scaleY(1.04);
+    transform-origin: top;
+  }
+  .card-collapsible .card-body {
+    cursor: default;
+  }
+  .card-collapse-hint {
+    font-size: 10px; color: var(--text3);
+    float: right; margin-top: 1px;
+    transition: transform 0.2s;
+  }
+  .card-collapsible.collapsed .card-collapse-hint { transform: rotate(-90deg); }
 
   select {
     font-size: 12px; padding: 5px 8px;
@@ -751,6 +864,11 @@
   .wk-pip.immune  { background: #000; border-color: var(--border2); }
   .wk-pip.resist  { background: var(--green); opacity: 0.6; }
   .wk-pip.resist4x { background: #4a9eff; opacity: 0.85; }
+  /* Offense-perspective pip colors: blue=4x hit (matches resist4x), green=2x (matches resist), red=resisted (matches weak2x shade), black=immune to you */
+  .wk-pip.off-4x   { background: #4a9eff; opacity: 0.85; }
+  .wk-pip.off-2x   { background: var(--green); opacity: 0.6; }
+  .wk-pip.off-resist { background: var(--orange); }
+  .wk-pip.off-immune { background: #000; border-color: var(--border2); }
 
   .wk-count {
     font-size: 10px;
@@ -777,8 +895,9 @@
   <!-- <div class="two-col"> -->
 
     <!-- META DATABASE -->
-    <div class="card">
-      <div class="card-label">Meta database — attackers</div>
+    <div class="card card-collapsible" id="metaCard" onclick="toggleCard('metaCard',event)">
+      <div class="card-label">Meta database — attackers <span class="card-collapse-hint">▼</span></div>
+      <div class="card-body">
 
       <!-- Saved metas row -->
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
@@ -831,11 +950,13 @@ Adamant Nature
 
       <div id="metaError" class="error-msg"></div>
       <div id="metaChips" class="meta-chips"></div>
-    </div>
+      </div><!-- end card-body -->
+    </div><!-- end metaCard -->
 
     <!-- DEFENDER -->
-    <div class="card">
-      <div class="card-label">Your Pokémon — defender</div>
+    <div class="card card-collapsible" id="defenderCard" onclick="toggleCard('defenderCard',event)">
+      <div class="card-label">Your Pokémon — defender <span class="card-collapse-hint">▼</span></div>
+      <div class="card-body">
 
       <!-- Saved teams row -->
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
@@ -869,7 +990,8 @@ Impish Nature
         <button onclick="clearDefenders()" style="color:var(--text3)">Clear defenders</button>
         <button onclick="clearAll()" style="color:var(--text3)">Clear all</button>
       </div>
-    </div>
+      </div><!-- end card-body -->
+    </div><!-- end defenderCard -->
 
     <!-- Type weakness overlay (visible when 2+ tabs filled) -->
     <div id="weaknessOverlay">
@@ -1021,7 +1143,7 @@ Impish Nature
       </label>
 
       <label class="checkbox-toggle">
-        <input type="checkbox" id="attackingMode" onchange="renderResults()">
+        <input type="checkbox" id="attackingMode" onchange="onAttackingModeChange()">
         <span>Attacking mode</span>
       </label>
 
@@ -1031,9 +1153,13 @@ Impish Nature
       </label>
 
       <div class="control-group" style="flex:1;min-width:180px;position:relative;">
-        <label style="display:flex;align-items:center;gap:4px;">Filter results <button id="filterHintBtn" onclick="toggleFilterHint(event)" style="padding:1px 5px;font-size:10px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;line-height:1;flex-shrink:0;" title="Show filter syntax">?</button></label>
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">
+          <span style="font-size:11px;color:var(--text2);">Filter results</span>
+          <button id="filterHintBtn" onclick="toggleFilterHint(event)" style="padding:1px 5px;font-size:10px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;line-height:1;flex-shrink:0;" title="Show filter syntax">?</button>
+        </div>
         <div style="display:flex;align-items:stretch;flex:1;border:0.5px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden;background:var(--bg3);position:relative;">
           <button id="searchClearBtn" onclick="clearSearch()" style="padding:0 8px;border:none;border-right:0.5px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;line-height:1;z-index:2;position:relative;">✕</button>
+          <button onclick="pinTopResult()" style="padding:0 8px;border:none;border-right:0.5px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer;white-space:nowrap;line-height:1;z-index:2;position:relative;" title="Pin the top result in the current search">📍</button>
           <!-- Ghost suggestion shown behind real input -->
           <input id="searchGhost" tabindex="-1" readonly
             style="position:absolute;left:0;top:0;bottom:0;right:0;padding:5px 8px;font-size:12px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;z-index:1;">
@@ -1048,7 +1174,7 @@ Impish Nature
 
     <!-- Match history control bar -->
     <div class="match-bar" id="matchBar">
-      <!-- Left: W/L record + Win/Loss buttons -->
+      <!-- Left: W/L record + Start Match + Match Log buttons -->
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <div class="winrate-widget visible" id="winrateWidget" style="display:flex!important;">
           <button class="wr-btn wr-minus" onclick="adjustScore('wins',-1)" title="Remove win">−</button>
@@ -1062,24 +1188,18 @@ Impish Nature
           <button class="wr-btn wr-minus" onclick="adjustScore('losses',-1)" title="Remove loss">−</button>
         </div>
         <div style="width:0.5px;height:28px;background:var(--border2);flex-shrink:0;"></div>
-        <button onclick="recordMatch('win')" style="padding:5px 14px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid #2d6a4a;background:#1a3a2a;color:var(--green);cursor:pointer;font-weight:600;white-space:nowrap;" title="Record win and add to match history">Win</button>
-        <button onclick="recordMatch('loss')" style="padding:5px 14px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid #5a2020;background:#2a1414;color:var(--red);cursor:pointer;font-weight:600;white-space:nowrap;" title="Record loss and add to match history">Loss</button>
+        <button id="startMatchBtn" onclick="startMatch()" style="padding:5px 14px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-weight:600;white-space:nowrap;" title="Start a match against the currently pinned Pokémon — pin up to 6 opponents first">⚔ Start match</button>
+        <button id="historyToggleBtn" onclick="toggleHistoryView()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="View match history for the current team">📋 Match log</button>
       </div>
 
-      <!-- Center: legend -->
-      <div class="legend" style="margin:0;flex:1;justify-content:center;">
-        <div class="leg-item"><div class="leg-swatch" style="background:var(--green)"></div>&lt;30%</div>
-        <div class="leg-item"><div class="leg-swatch" style="background:var(--yellow)"></div>30–60%</div>
-        <div class="leg-item"><div class="leg-swatch" style="background:var(--orange)"></div>60–100%</div>
-        <div class="leg-item"><div class="leg-swatch" style="background:var(--red)"></div>OHKO+</div>
-      </div>
-
-      <!-- Right: clear pins + view toggle -->
+      <!-- Right: clear pins -->
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
         <button onclick="clearPins()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Clear all pinned Pokémon and collapse expanded rows">Clear pins</button>
-        <button id="historyToggleBtn" onclick="toggleHistoryView()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Toggle between damage results and match history">📋 History</button>
       </div>
     </div>
+
+    <!-- Active match window — expands between match bar and results -->
+    <div id="matchWindow" style="display:none;"></div>
 
     <div class="card" style="padding: 0.5rem 1.25rem;">
       <div id="resultsList"></div>
@@ -1346,6 +1466,60 @@ const scarfOverrides = new Map();
 const typeBoostOverrides = new Map();
 // collapsed extra moves: key absent = collapsed (default), key present = expanded
 const expandedExtras = new Set();
+// megaOverrides: speciesRaw → mega slug currently active (null = base form)
+const megaOverrides = new Map();
+
+// Mega/alternate form definitions: base species name → [{label, slug}]
+const MEGA_FORMS = {
+  'venusaur':  [{label:'Mega',slug:'venusaur-mega'}],
+  'charizard': [{label:'Mega X',slug:'charizard-mega-x'},{label:'Mega Y',slug:'charizard-mega-y'}],
+  'blastoise': [{label:'Mega',slug:'blastoise-mega'}],
+  'beedrill':  [{label:'Mega',slug:'beedrill-mega'}],
+  'pidgeot':   [{label:'Mega',slug:'pidgeot-mega'}],
+  'slowbro':   [{label:'Mega',slug:'slowbro-mega'}],
+  'gengar':    [{label:'Mega',slug:'gengar-mega'}],
+  'kangaskhan':[{label:'Mega',slug:'kangaskhan-mega'}],
+  'pinsir':    [{label:'Mega',slug:'pinsir-mega'}],
+  'gyarados':  [{label:'Mega',slug:'gyarados-mega'}],
+  'aerodactyl':[{label:'Mega',slug:'aerodactyl-mega'}],
+  'mewtwo':    [{label:'Mega X',slug:'mewtwo-mega-x'},{label:'Mega Y',slug:'mewtwo-mega-y'}],
+  'ampharos':  [{label:'Mega',slug:'ampharos-mega'}],
+  'steelix':   [{label:'Mega',slug:'steelix-mega'}],
+  'scizor':    [{label:'Mega',slug:'scizor-mega'}],
+  'heracross': [{label:'Mega',slug:'heracross-mega'}],
+  'houndoom':  [{label:'Mega',slug:'houndoom-mega'}],
+  'tyranitar': [{label:'Mega',slug:'tyranitar-mega'}],
+  'blaziken':  [{label:'Mega',slug:'blaziken-mega'}],
+  'gardevoir': [{label:'Mega',slug:'gardevoir-mega'}],
+  'mawile':    [{label:'Mega',slug:'mawile-mega'}],
+  'aggron':    [{label:'Mega',slug:'aggron-mega'}],
+  'medicham':  [{label:'Mega',slug:'medicham-mega'}],
+  'manectric': [{label:'Mega',slug:'manectric-mega'}],
+  'sharpedo':  [{label:'Mega',slug:'sharpedo-mega'}],
+  'camerupt':  [{label:'Mega',slug:'camerupt-mega'}],
+  'altaria':   [{label:'Mega',slug:'altaria-mega'}],
+  'banette':   [{label:'Mega',slug:'banette-mega'}],
+  'absol':     [{label:'Mega',slug:'absol-mega'}],
+  'glalie':    [{label:'Mega',slug:'glalie-mega'}],
+  'salamence': [{label:'Mega',slug:'salamence-mega'}],
+  'metagross': [{label:'Mega',slug:'metagross-mega'}],
+  'latias':    [{label:'Mega',slug:'latias-mega'}],
+  'latios':    [{label:'Mega',slug:'latios-mega'}],
+  'rayquaza':  [{label:'Mega',slug:'rayquaza-mega'}],
+  'lopunny':   [{label:'Mega',slug:'lopunny-mega'}],
+  'garchomp':  [{label:'Mega',slug:'garchomp-mega'}],
+  'lucario':   [{label:'Mega',slug:'lucario-mega'}],
+  'abomasnow': [{label:'Mega',slug:'abomasnow-mega'}],
+  'gallade':   [{label:'Mega',slug:'gallade-mega'}],
+  'audino':    [{label:'Mega',slug:'audino-mega'}],
+  'diancie':   [{label:'Mega',slug:'diancie-mega'}],
+  'golurk':    [{label:'Mega',slug:'golurk-mega'}],
+  'floette':   [{label:'Eternal',slug:'floette-eternal'}],
+  // Aegislash forms (same toggle UI)
+  'aegislash': [{label:'Shield',slug:'aegislash-shield'},{label:'Blade',slug:'aegislash-blade'}],
+  'aegislash-blade': [{label:'Shield',slug:'aegislash-shield'},{label:'Blade',slug:'aegislash-blade'}],
+  'aegislash-shield':[{label:'Shield',slug:'aegislash-shield'},{label:'Blade',slug:'aegislash-blade'}],
+};
 
 // ─── Defender tab state ───────────────────────────────────────────────────────
 const DEFENDER_SLOTS = [null, null, null, null, null, null]; // up to 6 saved defenders
@@ -1639,6 +1813,8 @@ async function loadMeta() {
       renderResults();
       window.scrollTo({ top: savedScroll, behavior: 'instant' });
     }
+    // Collapse meta card now that it's loaded
+    collapseCard('metaCard');
   }
 }
 
@@ -2558,21 +2734,51 @@ function renderResults() {
   const unpinned = sorted.filter(r => !pinnedKeys.has(r.attacker.speciesRaw));
   sorted = [...pinned, ...unpinned];
 
+  // Collect non-meta pins (pinned keys not found in sorted results)
+  const metaKeys = new Set(sorted.map(r => r.attacker.speciesRaw));
+  const nonMetaPinned = [...pinnedKeys].filter(k => !metaKeys.has(k) && nonMetaCache[toSlug(k)]);
+
   const maxPct = Math.min(Math.max(...sorted.map(r => r.displayPct || 0), 1), 150);
   let html = '';
-  const hasPinned = pinned.length > 0;
+  const hasPinned = pinned.length > 0 || nonMetaPinned.length > 0;
+
+  // Render non-meta pinned rows first
+  nonMetaPinned.forEach(name => {
+    const entry    = nonMetaCache[toSlug(name)];
+    if (!entry) return;
+    const typeBadges = (entry.types||[]).map(t => `<span class="type-badge t-${t}">${t}</span>`).join('');
+    const spriteHtml = entry.spriteUrl
+      ? `<img src="${entry.spriteUrl}" style="width:32px;height:32px;image-rendering:pixelated;object-fit:contain;flex-shrink:0;" alt="${name}">`
+      : `<div style="width:32px;height:32px;"></div>`;
+    html += `<div class="result-item is-pinned">
+      <div class="result-row" style="cursor:default;" data-specieskey="${name.replace(/"/g,'&quot;')}">
+        <button class="pin-btn pinned" data-pinkey="${name.replace(/"/g,'&quot;')}" onclick="handlePinClick(event)" title="Unpin">📌</button>
+        <div style="flex-shrink:0;">${spriteHtml}</div>
+        <div class="result-name">
+          <div class="result-name-text">${name}</div>
+          <div class="type-badges">${typeBadges}</div>
+        </div>
+        <div style="flex:1;"></div>
+        <div style="font-size:11px;color:var(--text3);flex-shrink:0;">not in meta</div>
+      </div>
+    </div>`;
+  });
+
+  if (nonMetaPinned.length > 0 && sorted.length > 0) {
+    html += `<div class="pinned-divider">meta results</div>`;
+  }
 
   sorted.forEach((r, index) => {
     const isPinned = pinnedKeys.has(r.attacker.speciesRaw);
 
-    if (hasPinned && index === pinned.length) {
+    if (pinned.length > 0 && index === pinned.length) {
       html += `<div class="pinned-divider">others</div>`;
     }
 
     const pct    = r.displayPct || 0;
     const barW   = Math.min(pct / maxPct * 100, 100).toFixed(1);
-    const barCls = pct >= 100 ? 'bar-ohko' : pct >= 60 ? 'bar-high' : pct >= 30 ? 'bar-mid' : 'bar-low';
-    const pctColor = pct >= 100 ? 'var(--red)' : pct >= 60 ? 'var(--orange)' : pct >= 30 ? 'var(--yellow)' : 'var(--green)';
+    const barCls = pct >= 100 ? 'bar-ohko' : pct >= 50 ? 'bar-high' : pct >= 33.3 ? 'bar-mid' : 'bar-low';
+    const pctColor = pct >= 100 ? 'var(--red)' : pct >= 50 ? 'var(--orange)' : pct >= 33.3 ? 'var(--yellow)' : 'var(--green)';
     const pctLabel = pct >= 100
       ? `<span style="color:${pctColor}">${pct.toFixed(0)}% OHKO</span>`
       : `<span style="color:${pctColor}">${pct.toFixed(1)}%</span>`;
@@ -2623,7 +2829,7 @@ function renderResults() {
         pctDisplay = `<span style="color:var(--text3);font-size:11px">status</span>`;
       } else {
         const dp = m.adjustedPct ?? m.pct;
-        const dpColor = dp >= 100 ? 'var(--red)' : dp >= 60 ? 'var(--orange)' : dp >= 30 ? 'var(--yellow)' : 'var(--green)';
+        const dpColor = dp >= 100 ? 'var(--red)' : dp >= 50 ? 'var(--orange)' : dp >= 33.3 ? 'var(--yellow)' : 'var(--green)';
         pctDisplay = dp >= 100
           ? `<span style="color:${dpColor}">${dp.toFixed(0)}% OHKO</span>`
           : `<span style="color:${dpColor}">${dp.toFixed(1)}%</span>`;
@@ -2711,6 +2917,32 @@ function renderResults() {
       ? `<span style="color:var(--text);font-size:10px;margin-left:5px;font-weight:400;">(${getStat(r, mode)})</span>`
       : '';
 
+    // Mega/alt form buttons — look up by exact lowercase species name first, then prefix
+    const speciesLower = r.attacker.speciesRaw.toLowerCase();
+    const speciesNorm  = speciesLower.replace(/[\s-]/g,'');
+    const megaKey = MEGA_FORMS[speciesLower]
+      ? speciesLower
+      : Object.keys(MEGA_FORMS).find(k => {
+          const kn = k.replace(/[\s-]/g,'');
+          // exact normalized match, or species starts with key (e.g. "charizard-mega-y" starts with "charizard")
+          return speciesNorm === kn || speciesNorm.startsWith(kn + 'mega') || speciesNorm.startsWith(kn + 'shield') || speciesNorm.startsWith(kn + 'blade');
+        });
+    const megaForms    = megaKey ? MEGA_FORMS[megaKey] : null;
+    const activeMegaSlug = megaOverrides.get(r.attacker.speciesRaw);
+    let megaHtml = '';
+    if (megaForms) {
+      const isAegi = megaKey.includes('aegislash');
+      const btnLabel = isAegi ? 'Form:' : 'Mega:';
+      const btns = megaForms.map(f => {
+        const isActive = activeMegaSlug === f.slug;
+        const style = isActive
+          ? 'color:var(--accent2);border-color:var(--accent);background:rgba(124,106,247,0.15);'
+          : 'color:var(--text3);border-color:var(--border2);opacity:0.5;';
+        return `<button onclick="toggleMegaForm(event,'${r.attacker.speciesRaw.replace(/'/g,"\\'")}','${f.slug}')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;background:transparent;${style}">${f.label}</button>`;
+      }).join('');
+      megaHtml = `<div style="display:flex;align-items:center;gap:5px;padding:4px 0 2px;flex-wrap:wrap;"><span style="font-size:10px;color:var(--text3);">${btnLabel}</span>${btns}</div>`;
+    }
+
     html += `
       <div class="result-item${isPinned ? ' is-pinned' : ''}">
         <div class="result-row" onclick="toggleBreakdown(${index})" id="resultRow-${index}" data-specieskey="${r.attacker.speciesRaw.replace(/"/g,'&quot;')}">
@@ -2731,6 +2963,7 @@ function renderResults() {
           <div class="result-move">${moveName} ${effLabel}</div>
         </div>
         <div class="move-breakdown" id="breakdown-${index}">
+          ${megaHtml}
           ${speedHtml}
           ${breakdownHtml || '<div class="move-breakdown-row">No damaging moves found.</div>'}
         </div>
@@ -2739,6 +2972,15 @@ function renderResults() {
 
   document.getElementById('resultsList').innerHTML = html ||
     '<div class="error-msg" style="padding:10px 0">No results match your search.</div>';
+
+  // If search is a plain name and no meta results matched by name, try PokéAPI as dummy
+  const isPlainSearch = searchQuery && !searchQuery.includes(':') && !searchQuery.includes(',');
+  const metaNameMatch = sorted.some(r =>
+    r.attacker.speciesRaw.toLowerCase().includes(searchQuery)
+  );
+  if (isPlainSearch && !metaNameMatch) {
+    renderNonMetaSearch(searchQuery);
+  }
 
   // Restore any previously-open breakdown panels after re-render
   if (expandedBreakdowns.size > 0) {
@@ -2751,6 +2993,70 @@ function renderResults() {
       }
     });
   }
+}
+
+// ── Non-meta Pokémon search (dummy pinnable rows) ─────────────────────────────
+// Fetches from PokéAPI when a search returns no meta results.
+// Dummy entries are pin-only: no damage calc, just name + sprite + types.
+const nonMetaCache = {}; // slug → {speciesRaw, types, spriteUrl} or null
+let _nonMetaSearchQuery = '';
+
+async function renderNonMetaSearch(query) {
+  _nonMetaSearchQuery = query;
+  const container = document.getElementById('resultsList');
+
+  // Use the full query as the search term (handles "Flutter Mane", "Iron Hands", etc.)
+  // Reject comma-separated multi-term searches
+  const term = query.trim().toLowerCase();
+  if (!term || term.includes(',')) return;
+  const slug = toSlug(term);
+
+  // Check cache
+  if (nonMetaCache[slug] === null) return; // known 404
+  if (!nonMetaCache[slug]) {
+    // Show loading
+    if (_nonMetaSearchQuery !== query) return;
+    container.innerHTML += `<div style="color:var(--text3);font-size:12px;padding:8px 0 4px;">Searching PokéAPI for "${term}"…</div>`;
+    try {
+      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${slug}`);
+      if (!res.ok) { nonMetaCache[slug] = null; return; }
+      const data = await res.json();
+      nonMetaCache[slug] = {
+        speciesRaw: term.replace(/\b\w/g, c => c.toUpperCase()), // Title case
+        types     : data.types.map(t => t.type.name),
+        spriteUrl : data.sprites?.front_default || null,
+      };
+    } catch { nonMetaCache[slug] = null; return; }
+  }
+
+  if (_nonMetaSearchQuery !== query) return; // stale
+  const entry = nonMetaCache[slug];
+  if (!entry) return;
+
+  const isPinned = pinnedKeys.has(entry.speciesRaw);
+  const typeBadges = entry.types.map(t => `<span class="type-badge t-${t}">${t}</span>`).join('');
+  const spriteHtml = entry.spriteUrl
+    ? `<img src="${entry.spriteUrl}" style="width:32px;height:32px;image-rendering:pixelated;object-fit:contain;flex-shrink:0;" alt="${entry.speciesRaw}">`
+    : `<div style="width:32px;height:32px;"></div>`;
+  const pinTitle = isPinned ? 'Unpin' : 'Pin (opponent only — not in meta)';
+
+  // Append below existing meta results (or replace the "no results" message)
+  const existing = container.innerHTML;
+  const isNoResults = existing.includes('No results match');
+  container.innerHTML = (isNoResults ? '' : existing) + `
+    <div style="font-size:11px;color:var(--text3);padding:6px 0 4px;border-bottom:0.5px solid var(--border);margin-top:${isNoResults?'0':'10px'};">Not in meta — pin as opponent only</div>
+    <div class="result-item" style="opacity:0.75;">
+      <div class="result-row" style="cursor:default;" id="resultRow-nm0" data-specieskey="${entry.speciesRaw.replace(/"/g,'&quot;')}">
+        <button class="pin-btn${isPinned?' pinned':''}" title="${pinTitle}" data-pinkey="${entry.speciesRaw.replace(/"/g,'&quot;')}" onclick="handlePinClick(event)">${isPinned?'📌':'📍'}</button>
+        <div style="flex-shrink:0;">${spriteHtml}</div>
+        <div class="result-name">
+          <div class="result-name-text">${entry.speciesRaw}</div>
+          <div class="type-badges">${typeBadges}</div>
+        </div>
+        <div style="flex:1;"></div>
+        <div style="font-size:11px;color:var(--text3);flex-shrink:0;">not in meta</div>
+      </div>
+    </div>`;
 }
 
 // Track which breakdown panels are open (by speciesRaw key)
@@ -3037,6 +3343,53 @@ function toggleExtraMoves(e, key) {
   if (expandedExtras.has(key)) { expandedExtras.delete(key); }
   else                         { expandedExtras.add(key); }
   renderResults();
+}
+
+async function toggleMegaForm(e, speciesRaw, megaSlug) {
+  e.stopPropagation();
+  const current = megaOverrides.get(speciesRaw);
+  const newSlug = (current === megaSlug) ? null : megaSlug;
+  megaOverrides.set(speciesRaw, newSlug);
+
+  const entry = META_DB.find(p => p.speciesRaw === speciesRaw || p._origSpeciesRaw === speciesRaw);
+  if (!entry) { renderResults(); return; }
+
+  if (newSlug) {
+    try {
+      const { baseStats, types, spriteUrl } = await fetchPokemonData(newSlug);
+      if (!entry._origSpeciesRaw) {
+        entry._origSpeciesRaw = entry.speciesRaw; // save original name
+        entry._megaBaseStats  = entry.baseStats;
+        entry._megaBaseTypes  = entry.types;
+      }
+      entry.speciesRaw = slugToDisplayName(newSlug); // update display name
+      entry.baseStats  = baseStats;
+      entry.types      = types;
+      entry.spriteUrl  = spriteUrl;
+    } catch { /* fetch failed, still update name if we can */ }
+  } else {
+    // Revert to base form
+    if (entry._origSpeciesRaw) { entry.speciesRaw = entry._origSpeciesRaw; entry._origSpeciesRaw = null; }
+    if (entry._megaBaseStats)  { entry.baseStats   = entry._megaBaseStats; entry._megaBaseStats  = null; }
+    if (entry._megaBaseTypes)  { entry.types       = entry._megaBaseTypes; entry._megaBaseTypes  = null; }
+    entry.spriteUrl = (pokemonCache[toSlug(speciesRaw)] || {}).spriteUrl || null;
+    megaOverrides.delete(speciesRaw);
+  }
+
+  // Recompute damage with the new stats
+  const cur = DEFENDER_SLOTS[activeDefenderSlot];
+  if (cur) {
+    const results = computeResults(META_DB.filter(p => p.loaded), cur);
+    cur._lastResults = results;
+    lastResults = results;
+  }
+  renderResults();
+}
+
+// Convert a PokeAPI slug to a readable display name
+// e.g. "charizard-mega-x" → "Charizard-Mega-X", "aggron-mega" → "Aggron-Mega"
+function slugToDisplayName(slug) {
+  return slug.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('-');
 }
 
 // ─── Custom move-effect tooltip ───────────────────────────────────────────────
@@ -3397,6 +3750,7 @@ async function onSavedTeamSelect() {
   loadWinrateForTeam(name);
   if (teamSpinner) teamSpinner.classList.remove('active');
   btn.disabled = false; btn.textContent = prevText;
+  collapseCard('defenderCard');
 }
 
 function renameSavedTeam() {
@@ -3423,10 +3777,335 @@ function deleteSavedTeam() {
   refreshSavedTeamDropdown('');
 }
 
+// ── Collapsible cards ─────────────────────────────────────────────────────────
+function toggleCard(id, e) {
+  // Don't collapse when clicking buttons/inputs/selects inside the card
+  if (e.target.closest('button,input,select,textarea,a')) return;
+  const card = document.getElementById(id);
+  if (!card) return;
+  card.classList.toggle('collapsed');
+}
+function collapseCard(id) {
+  const card = document.getElementById(id);
+  if (card) card.classList.add('collapsed');
+}
+
+// ── Pin top result ────────────────────────────────────────────────────────────
+function pinTopResult() {
+  // Find the first visible result row's pin button and fire it
+  const firstPin = document.querySelector('#resultsList .pin-btn:not(.pinned)');
+  if (firstPin) {
+    firstPin.click();
+  } else {
+    // If all visible are already pinned, pin first row regardless
+    const anyPin = document.querySelector('#resultsList .pin-btn');
+    if (anyPin) anyPin.click();
+  }
+}
+
+// ── Attacking mode auto-max-roll ──────────────────────────────────────────────
+function onAttackingModeChange() {
+  const atk = document.getElementById('attackingMode');
+  const maxRoll = document.getElementById('maxRollMode');
+  if (!atk || !maxRoll) return;
+  // Defending mode: auto-enable max roll (show worst case damage taken)
+  // Attacking mode: auto-disable max roll
+  maxRoll.checked = !atk.checked;
+  renderResults();
+}
+
 function clearPins() {
   pinnedKeys.clear();
   expandedBreakdowns.clear();
   renderResults();
+}
+
+// ── Active match state ────────────────────────────────────────────────────────
+let _matchActive     = false;
+let _matchHighlighted = { my: new Set(), opp: new Set() }; // highlighted species keys
+let _matchSortMode   = 'offense'; // 'offense' | 'defense'
+let _matchMyTeam     = [];   // [{speciesRaw, spriteUrl, computedSpe, types, result}]
+let _matchOppTeam    = [];   // same
+
+function startMatch() {
+  const myTeam  = DEFENDER_SLOTS.filter(Boolean);
+  const oppKeys = [...pinnedKeys].slice(0, 6);
+
+  if (!myTeam.length) { alert('Load your team into the defender tabs first.'); return; }
+  if (!oppKeys.length) { alert('Pin the opponent\'s Pokémon (up to 6) in the results list first.'); return; }
+
+  _matchMyTeam = myTeam.map(s => ({
+    speciesRaw : s.speciesRaw,
+    spriteUrl  : (pokemonCache[toSlug(s.speciesRaw)] || {}).spriteUrl || null,
+    computedSpe: s.stats?.spe || 0,
+    types      : s.types || [],
+    ability    : s.ability || '',
+    dividerIndex  : s.dividerIndex ?? 4,
+    resolvedMoves : s.resolvedMoves || [],
+  }));
+
+  _matchOppTeam = oppKeys.map(name => {
+    const dbEntry = META_DB.find(p => p.speciesRaw === name);
+    return {
+      speciesRaw : name,
+      spriteUrl  : (pokemonCache[toSlug(name)] || {}).spriteUrl || null,
+      computedSpe: dbEntry?.computedSpe || 0,
+      types      : dbEntry?.types || [],
+      ability    : dbEntry?.ability || '',
+      dividerIndex  : dbEntry?.dividerIndex ?? 4,
+      resolvedMoves : dbEntry?.resolvedMoves || [],
+    };
+  });
+
+  _matchHighlighted = { my: new Set(), opp: new Set() };
+  _matchActive = true;
+
+  // Disable start match button
+  const btn = document.getElementById('startMatchBtn');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; btn.style.cursor = 'not-allowed'; }
+
+  renderMatchWindow();
+}
+
+// Apply ability type override to a move type (for match window effectiveness calcs)
+function applyAbilityTypeOverride(moveType, ability) {
+  const ab = (ability||'').toLowerCase().replace(/[\s-]/g,'');
+  if (moveType !== 'normal') return moveType;
+  if (ab === 'pixilate')    return 'fairy';
+  if (ab === 'refrigerate') return 'ice';
+  if (ab === 'aerilate')    return 'flying';
+  if (ab === 'galvanize')   return 'electric';
+  if (ab === 'dragonize')   return 'dragon';
+  if (ab === 'normalize')   return 'normal';
+  return moveType;
+}
+
+// Apply liquid voice: sound moves become water
+const SOUND_MOVES = new Set(['hypervoice','boomburst','disarmingvoice','echoedvoice',
+  'round','snore','sparklingaria','overdrive','nobleroad','relicsong',
+  'bugbuzz','chatter','clangingscales','clangoroussoul','torchsong',
+  'alluringvoice','psychicnoise']);
+
+function getEffectiveMoveType(move, ability) {
+  const ab = (ability||'').toLowerCase().replace(/[\s-]/g,'');
+  const mn = move.name.toLowerCase().replace(/[\s-]/g,'');
+  // Liquid Voice: sound moves → water
+  if (ab === 'liquidvoice' && SOUND_MOVES.has(mn)) return 'water';
+  // Type-changing abilities for normal moves
+  return applyAbilityTypeOverride(move.type, ability);
+}
+
+// Returns primary move EFFECTIVE types for a species (above divider, ability-adjusted)
+function getMoveTypes(speciesRaw) {
+  // Try team entries first (live match data with ability stored)
+  const teamEntry = _matchMyTeam.concat(_matchOppTeam).find(p => p.speciesRaw === speciesRaw);
+  const ability = teamEntry?.ability || (() => {
+    const m = META_DB.find(p => p.speciesRaw === speciesRaw);
+    return m?.ability || '';
+  })();
+
+  function extractTypes(resolvedMoves, dividerIndex) {
+    const divIdx = dividerIndex ?? 4;
+    const primary = resolvedMoves.filter(m => (m.pasteIndex ?? 99) < divIdx);
+    const moves = primary.length ? primary : resolvedMoves;
+    return [...new Set(moves.map(m => getEffectiveMoveType(m, ability)).filter(Boolean))];
+  }
+
+  if (teamEntry?.resolvedMoves?.length) {
+    const types = extractTypes(teamEntry.resolvedMoves, teamEntry.dividerIndex);
+    if (types.length) return types;
+    return teamEntry.types || [];
+  }
+  const entry = META_DB.find(p => p.speciesRaw === speciesRaw);
+  if (entry?.resolvedMoves?.length) {
+    const types = extractTypes(entry.resolvedMoves, entry.dividerIndex);
+    if (types.length) return types;
+  }
+  return teamEntry ? (teamEntry.types || []) : [];
+}
+
+function bestOffenseEff(attackerSpecies, defenderTypes) {
+  // Best type effectiveness any of attacker's moves can deal to defenderTypes
+  const moveTypes = getMoveTypes(attackerSpecies);
+  if (!moveTypes.length) return 1;
+  return Math.max(...moveTypes.map(mt => typeEff(mt, defenderTypes)));
+}
+
+function getOffenseThreat(speciesRaw) {
+  // Sum of best effectiveness vs all opponents combined (higher = more threatening offensively)
+  return _matchOppTeam.reduce((sum, opp) => sum + bestOffenseEff(speciesRaw, opp.types), 0);
+}
+
+function getDefenseThreat(speciesRaw) {
+  // Sum of best effectiveness opponents can deal to this pokemon (higher = more vulnerable)
+  const entry = _matchMyTeam.concat(_matchOppTeam).find(p => p.speciesRaw === speciesRaw);
+  if (!entry) return 0;
+  return _matchOppTeam.concat(_matchMyTeam)
+    .filter(p => p.speciesRaw !== speciesRaw)
+    .reduce((sum, opp) => sum + bestOffenseEff(opp.speciesRaw, entry.types), 0);
+}
+
+// Score label shown above sprite: offense = total eff output, defense = total eff received
+function getDamageLabel(speciesRaw, isMyTeam, isOffenseMode) {
+  if (isOffenseMode) {
+    const opponents = isMyTeam ? _matchOppTeam : _matchMyTeam;
+    const total = opponents.reduce((sum, opp) => sum + bestOffenseEff(speciesRaw, opp.types), 0);
+    const avg = opponents.length ? (total / opponents.length).toFixed(1) : '—';
+    return `avg ×${avg} out`;
+  } else {
+    const opponents = isMyTeam ? _matchOppTeam : _matchMyTeam;
+    const team = isMyTeam ? _matchMyTeam : _matchOppTeam;
+    const self = team.find(p => p.speciesRaw === speciesRaw);
+    if (!self) return '';
+    const total = opponents.reduce((sum, opp) => sum + bestOffenseEff(opp.speciesRaw, self.types), 0);
+    const avg = opponents.length ? (total / opponents.length).toFixed(1) : '—';
+    return `avg ×${avg} in`;
+  }
+}
+
+// Build pip grid: for each opposing pokemon, show how this attacker's best move hits them (offense)
+// or how their best move hits this pokemon (defense)
+function buildMatchupPips(pokemon, opposingSorted, isOffenseMode) {
+  const pips = opposingSorted.map(opp => {
+    if (isOffenseMode) {
+      // How well does pokemon's best move hit opp? High eff = good (blue/green), resisted = bad (red)
+      const eff = bestOffenseEff(pokemon.speciesRaw, opp.types);
+      if (eff === 0)    return 'off-immune';  // they're immune to you = very dark
+      if (eff >= 4)     return 'off-4x';      // ×4 = blue (great)
+      if (eff >= 2)     return 'off-2x';      // ×2 = green (good)
+      if (eff < 1)      return 'off-resist';  // resisted = red (bad)
+      return '';                               // neutral
+    } else {
+      // How well does opp's best move hit pokemon? High eff = bad (red), resisted = good (green)
+      const eff = bestOffenseEff(opp.speciesRaw, pokemon.types);
+      if (eff === 0)    return 'immune';    // you're immune = black (best)
+      if (eff >= 4)     return 'weak4x';   // they hit ×4 = bright red (very bad)
+      if (eff >= 2)     return 'weak2x';   // they hit ×2 = orange (bad)
+      if (eff <= 0.25)  return 'resist4x'; // you resist ×0.25 = blue (very good)
+      if (eff < 1)      return 'resist';   // you resist = green (good)
+      return '';
+    }
+  });
+
+  const rows = [];
+  for (let i = 0; i < pips.length; i += 3) rows.push(pips.slice(i, i+3));
+  const rowHtml = rows.map(row =>
+    `<div class="wk-pip-row">${row.map(cls => `<div class="wk-pip${cls?' '+cls:''}"></div>`).join('')}</div>`
+  ).join('');
+  return `<div class="wk-pips" style="margin-bottom:2px;">${rowHtml}</div>`;
+}
+
+function sortTeamByThreat(team, isMyTeam) {
+  if (_matchSortMode === 'offense') {
+    return [...team].sort((a, b) => getOffenseThreat(b.speciesRaw) - getOffenseThreat(a.speciesRaw));
+  } else {
+    return [...team].sort((a, b) => getDefenseThreat(a.speciesRaw) - getDefenseThreat(b.speciesRaw));
+  }
+}
+
+function toggleMatchHighlight(side, name) {
+  const set = _matchHighlighted[side];
+  if (set.has(name)) set.delete(name);
+  else set.add(name);
+  renderMatchWindow();
+}
+
+function renderMatchWindow() {
+  const win = document.getElementById('matchWindow');
+  if (!win || !_matchActive) return;
+  win.style.display = 'block';
+
+  const sortedMy  = sortTeamByThreat(_matchMyTeam,  true);
+  const sortedOpp = sortTeamByThreat(_matchOppTeam, false);
+  const isOffense = _matchSortMode === 'offense';
+
+  function teamGrid(team, side, oppSorted, isMyTeam) {
+    return team.map(p => {
+      const hl    = _matchHighlighted[side].has(p.speciesRaw);
+      const pip   = buildMatchupPips(p, oppSorted, isOffense);
+      const label = getDamageLabel(p.speciesRaw, isMyTeam, isOffense);
+      const img   = p.spriteUrl
+        ? `<img src="${p.spriteUrl}" style="width:52px;height:52px;image-rendering:pixelated;object-fit:contain;" alt="${p.speciesRaw}"
+              onerror="this.src='https://img.pokemondb.net/sprites/home/normal/${toSlug(p.speciesRaw)}.png'">`
+        : `<div style="width:52px;height:52px;background:var(--bg3);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text3);">${p.speciesRaw.split(' ')[0].slice(0,6)}</div>`;
+
+      return `<div class="mw-sprite-cell${hl?' mw-highlighted':''}"
+        onclick="toggleMatchHighlight('${side}','${p.speciesRaw.replace(/'/g,"\\'")}')"
+        title="${p.speciesRaw}">
+        <div class="mw-hover-tip">${pip}</div>
+        ${img}
+        <div class="mw-spe" style="font-size:8px;color:var(--text3);">${label}</div>
+        <div class="mw-spe">Spe ${p.computedSpe}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // sortLabel shows the current mode; clicking switches to the other
+  const sortLabel = isOffense ? 'Sort: Offense' : 'Sort: Defense';
+  const sortOther = isOffense ? 'defense' : 'offense';
+
+  win.innerHTML = `
+    <!-- Top bar: Win/Loss centered, Cancel top-right -->
+    <div style="display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:14px;">
+      <div style="display:flex;gap:10px;">
+        <button onclick="reportMatch('win')" style="padding:5px 20px;font-size:12px;font-weight:700;border-radius:var(--radius-sm);border:0.5px solid #2d6a4a;background:#1a3a2a;color:var(--green);cursor:pointer;">Win</button>
+        <button onclick="reportMatch('loss')" style="padding:5px 20px;font-size:12px;font-weight:700;border-radius:var(--radius-sm);border:0.5px solid #5a2020;background:#2a1414;color:var(--red);cursor:pointer;">Loss</button>
+      </div>
+      <button onclick="cancelMatch()" style="position:absolute;right:0;padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;">Cancel</button>
+    </div>
+    <!-- Teams with sort button in the middle -->
+    <div style="display:flex;gap:0;align-items:flex-start;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:6px;text-align:center;">YOUR TEAM</div>
+        <div class="mw-team-grid">${teamGrid(sortedMy, 'my', sortedOpp, true)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 10px;gap:6px;align-self:center;">
+        <div style="width:0.5px;height:32px;background:var(--border2);"></div>
+        <button onclick="_matchSortMode='${sortOther}';renderMatchWindow();" style="padding:4px 8px;font-size:10px;border-radius:var(--radius-sm);border:0.5px solid var(--accent);background:rgba(124,106,247,0.12);color:var(--accent2);cursor:pointer;white-space:nowrap;writing-mode:horizontal-tb;">${sortLabel}</button>
+        <div style="width:0.5px;height:32px;background:var(--border2);"></div>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:6px;text-align:center;">OPPONENT</div>
+        <div class="mw-team-grid">${teamGrid(sortedOpp, 'opp', sortedMy, false)}</div>
+      </div>
+    </div>`;
+}
+
+function cancelMatch() {
+  _matchActive = false;
+  const win = document.getElementById('matchWindow');
+  if (win) win.style.display = 'none';
+  const btn = document.getElementById('startMatchBtn');
+  if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = ''; }
+}
+
+function reportMatch(result) {
+  if (!_currentTeamName) {
+    alert('Load a saved team first to record match history.');
+    cancelMatch();
+    return;
+  }
+
+  const myTeam  = _matchMyTeam.map(p => ({ name: p.speciesRaw, sprite: p.spriteUrl,
+    highlighted: _matchHighlighted.my.has(p.speciesRaw) }));
+  const opponent = _matchOppTeam.map(p => ({ name: p.speciesRaw, sprite: p.spriteUrl,
+    highlighted: _matchHighlighted.opp.has(p.speciesRaw) }));
+
+  const entry = {
+    id: Date.now(), result, myTeam, opponent,
+    date: new Date().toLocaleString(),
+  };
+
+  const history = getMatchHistory();
+  if (!history[_currentTeamName]) history[_currentTeamName] = [];
+  history[_currentTeamName].unshift(entry);
+  putMatchHistory(history);
+
+  adjustScore(result === 'win' ? 'wins' : 'losses', 1);
+  cancelMatch();
+
+  if (!_historyViewActive) toggleHistoryView();
+  else renderMatchHistory();
 }
 
 // ── Match History ─────────────────────────────────────────────────────────────
@@ -3442,64 +4121,33 @@ function putMatchHistory(h) {
 
 // Sprite img using PokeAPI front_default URL (from API fetch), with slug-based fallbacks
 function spriteImgHtml(speciesRaw, size = 38, savedUrl = null) {
+  return spriteImgHtmlCls(speciesRaw, size, savedUrl, '');
+}
+function spriteImgHtmlCls(speciesRaw, size = 38, savedUrl = null, extraCls = '') {
   const slug = toSlug(speciesRaw);
   const shortName = speciesRaw.split(/[\s-]/)[0].slice(0, 8);
-  // Priority: saved front_default URL > pokemondb home > pokeapi raw slug > text fallback
+  // Base-form slug for when a mega/form sprite 404s
+  const baseSlug = slug
+    .replace(/-mega(-[xy])?$/, '')
+    .replace(/-gmax$/, '')
+    .replace(/-blade$|-shield$/, '')
+    .replace(/-eternal$/, '');
+  const hasFormFallback = baseSlug !== slug; // only use base fallback for actual forms
   const src1 = savedUrl || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${slug}.png`;
-  const src2 = `https://img.pokemondb.net/sprites/home/normal/${slug}.png`;
-  return `<img class="match-sprite" src="${src1}"
+  const src2 = `https://img.pokemondb.net/sprites/home/normal/${baseSlug}.png`; // pokemondb uses base slug
+  const src3 = hasFormFallback ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${baseSlug}.png` : null;
+  // Build onerror chain:
+  // Stage 1 (src1 fails): try pokemondb base-slug
+  // Stage 2 (src2 fails): if form has a different base, try PokeAPI base slug; else text chip
+  // Stage 3: text chip
+  const fallbackChain = src3
+    ? `if(!img._f1){img._f1=1;img.src='${src2}';}else if(!img._f2){img._f2=1;img.src='${src3}';}else{img.outerHTML='<div class=\\'match-sprite-fallback${extraCls}\\' style=\\'width:${size}px;height:${size}px;\\' title=\\'${speciesRaw}\\'>${shortName}</div>';}`
+    : `if(!img._f1){img._f1=1;img.src='${src2}';}else{img.outerHTML='<div class=\\'match-sprite-fallback${extraCls}\\' style=\\'width:${size}px;height:${size}px;\\' title=\\'${speciesRaw}\\'>${shortName}</div>';}`;
+  return `<img class="match-sprite${extraCls}" src="${src1}"
     style="width:${size}px;height:${size}px;image-rendering:pixelated;"
     alt="${speciesRaw}" title="${speciesRaw}"
-    onerror="if(this.src!=='${src2}'){this.src='${src2}';}else{this.outerHTML='<div class=\\'match-sprite-fallback\\' style=\\'width:${size}px;height:${size}px;\\' title=\\'${speciesRaw}\\'>${shortName}</div>';}"
+    onerror="(function(img){${fallbackChain}})(this)"
   >`;
-}
-
-function recordMatch(result) {
-  if (!_currentTeamName) {
-    alert('Load a saved team first to record match history.');
-    return;
-  }
-
-  // My team: the 6 defender slots — include sprite URLs from defender data
-  const myTeam = DEFENDER_SLOTS
-    .filter(Boolean)
-    .map(s => ({
-      name: s.speciesRaw,
-      sprite: (pokemonCache[toSlug(s.speciesRaw)] || {}).spriteUrl || null,
-    }));
-
-  // Opponent: currently pinned Pokémon — look up sprite from META_DB
-  const opponent = [...pinnedKeys].slice(0, 6).map(name => ({
-    name,
-    sprite: (pokemonCache[toSlug(name)] || {}).spriteUrl || null,
-  }));
-
-  if (!myTeam.length) {
-    alert('Load defender tabs with your team first.');
-    return;
-  }
-  if (!opponent.length) {
-    alert('Pin the opponent\'s Pokémon in the results list first (up to 6).');
-    return;
-  }
-
-  const entry = {
-    id: Date.now(),
-    result,
-    myTeam,    // [{name, sprite}]
-    opponent,  // [{name, sprite}]
-    date: new Date().toLocaleString(),
-  };
-
-  const history = getMatchHistory();
-  if (!history[_currentTeamName]) history[_currentTeamName] = [];
-  history[_currentTeamName].unshift(entry);
-  putMatchHistory(history);
-
-  adjustScore(result === 'win' ? 'wins' : 'losses', 1);
-
-  if (!_historyViewActive) toggleHistoryView();
-  else renderMatchHistory();
 }
 
 function toggleHistoryView() {
@@ -3566,16 +4214,23 @@ function renderMatchHistory() {
     const datePart = dateParts[0] || m.date;
     const timePart = dateParts.slice(1).join(', ') || '';
 
-    const mySprites  = m.myTeam.map(p => {
+    function makeHistorySprite(p, idx, side) {
       const name   = typeof p === 'string' ? p : p.name;
       const sprite = typeof p === 'string' ? null : p.sprite;
-      return spriteImgHtml(name, 38, sprite);
-    }).join('');
-    const oppSprites = m.opponent.map(p => {
-      const name   = typeof p === 'string' ? p : p.name;
-      const sprite = typeof p === 'string' ? null : p.sprite;
-      return spriteImgHtml(name, 38, sprite);
-    }).join('');
+      const arr    = side === 'myTeam' ? m.myTeam : m.opponent;
+      const hasHl  = arr.some(q => (typeof q === 'string' ? false : q.highlighted));
+      const dimmed = hasHl && !(typeof p === 'string' ? false : p.highlighted);
+      const cls    = dimmed ? ' hl-dim' : '';
+      const safeTeam = _currentTeamName.replace(/'/g,"\\'");
+      const img = spriteImgHtmlCls(name, 38, sprite, cls);
+      // Wrap in a clickable div
+      return `<div onclick="toggleHistoryHighlight('${safeTeam}',${m.id},'${side}',${idx})"
+        style="cursor:pointer;display:inline-block;border-radius:4px;transition:outline 0.1s;"
+        title="Click to toggle highlight">${img}</div>`;
+    }
+
+    const mySprites  = m.myTeam.map((p, i)   => makeHistorySprite(p, i, 'myTeam')).join('');
+    const oppSprites = m.opponent.map((p, i)  => makeHistorySprite(p, i, 'opponent')).join('');
 
     // Layout: [date stacked] [my sprites] [WIN/LOSS badge] [opp sprites] [✕]
     html += `<div class="match-entry ${rowCls}">
@@ -3591,6 +4246,24 @@ function renderMatchHistory() {
   }
 
   container.innerHTML = html;
+}
+
+function toggleHistoryHighlight(teamName, matchId, side, index) {
+  const history = getMatchHistory();
+  const matches = history[teamName];
+  if (!matches) return;
+  const match = matches.find(m => m.id === matchId);
+  if (!match) return;
+  const arr = match[side]; // myTeam or opponent
+  if (!arr || !arr[index]) return;
+  const p = arr[index];
+  if (typeof p === 'string') {
+    arr[index] = { name: p, sprite: null, highlighted: true };
+  } else {
+    p.highlighted = !p.highlighted;
+  }
+  putMatchHistory(history);
+  renderMatchHistory();
 }
 
 function deleteMatch(teamName, id) {

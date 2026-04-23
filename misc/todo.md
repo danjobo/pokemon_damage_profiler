@@ -1,18 +1,85 @@
 ## Feature Request
 
-- [__] save pins as team matchup in match history with w/l
+- [__] the autocomplete text needs to be updated to match the new starting point of the text with the added pin button
+- [__] non-meta pokemon need to also have sprites in the match screen. also the sprite it's pulling in the match results listings is not the pokeapi pull.
+- [__] charizard y is now adding a second copy of charizard x in the match screen enemy team
+- 
+
+- [__] older released mega pokemon have mega buttons, but new ones like golurk and floette don't have buttons
+- [__] the buttons don't seem to be updating the damages in the listing, maybe the stats aren't updated. also, I'd like the name in the listing to change (Aggron-Mega > Aggron, Charizard-Mega-Y > Charizard-Mega-X > Charizard)
+- [??] change attacking button to a toggling button that switches between “attacking”/“defending” text
+- [??] change the min button to a toggling button that switched between “min roll” / “max roll”
+- [??] Give the max investment button a matching style but have its text not switch, it’ll just light up and not light up
+- [??] search any Pokémon and add as temp pin with empty load out for replay image
+- [??] have sprite calls in match history for mega’s that couldnt be found default to their regular form sprites instead
+
+- [??] max bulk and speed on the button, separate HP button
+
+
+
+- Item usage visibility
+- ability listed in breakdown with hover text
+- [__] item usage hover with other potential items (extra parsing and data needed)
+
+
+
+
+
+- load enemy team paste into pins
+- sort saved team drop down by last updated (created or winrate adjusted)
+- add bunch more room to buffer at bottom of results tab so an empty screen takes up more space
+
+
+- support for fixed multi hit moves
+- support for ranged multi-hitting moves
+
+- Water bubble not workin
+- Status ticker per Pokemon (burn/para/…) and have that status be displayed on the listing below the name like the games
+
+
+- body slam damage
+- add a button in move breakdown to show the nature and spread of the meta list (similar to “?” button)
+- change drop downs for stat changes to vertically aligned plus and minus buttons that tick up and down by 1
+- move/ability search will filter with all possible not just run in meta
+
 
 ## To-Do Stack
 
-- [__] make the control bar text not selectable either (outside of the search bar of course)
 
 ### Bug Stack
 
-- [__] when switching between loaded teams, the weakness chart doesn't get reordered accordingly
 
 ---
 #### Completed
 
+- [XX] little status bar connected to bottom of control bar that shows all active battlefield effects with colors (when cleared will be empty)
+- [XX] move clear effects button to left end of that status bar
+- [XX] collapsible paste windows that do a little growing and shrinking animation on hover
+- [XX] shrinking animation on “load meta” or “load paste”
+- [XX] have it auto tick max for defending and untick max for attacking
+- [XX] Pin top result button on top of search bar
+- [XX] adjust hitbox of ? To only cover the Text and button
+- [XX] Get rid of color legend and change thresholds to turn ko thresholds
+- [XX] clickable sprites to grey out moms not brought in match listing
+- [XX] in window winrate of matches updates to only searched matches
+- [XX] allow searching of non meta Pokemon to add as a temporary pin
+- [XX] Stance change switch for aegislash (also changes name on listing)
+- [XX] non-meta pins don't stick to the top of the results like regular pins do
+- [XX] in results, with Pokemon with mega forms, allow you to toggle between forms (just a button with the mega icon symbol that’s highlighted already if it’s already mega, and multiple buttons for multiple mega forms labeled x or y respectively (charizard)) Also changes names on listing
+- [XX] Add a calc button in match bar that calculates your and their kings (if pins present, use only pins; else use entire meta but only show top 6)
+- [XX] Sort by total damage first, then speed second
+- [XX] Offensive and defensive
+- [XX] Hover text on start match button will say starts match against pinned opponents
+- [XX] Each icon is clickable to give a hover grid like the type weakness
+- [XX] Clicking them will light them up showing who was brought, and this will carry over to the replay who was brought
+- [XX] List speed values on the king icons
+- [XX] put the match results to the right of the start match button
+- [XX] change background of hover to be something ligher as to not mistake with immunity
+- [XX] the win in the WL record is now white, not green for some reason
+- [XX] have the sprites in the match history listings be clickable to ungray them or gray them out and have that also update the saved value when you do.
+- [XX] save pins as team matchup in match history with w/l
+- [XX] make the control bar text not selectable either (outside of the search bar of course)
+- [XX] when switching between loaded teams, the weakness chart doesn't get reordered accordingly
 - [XX] have the plus button on the left side, then the collapsable arrow icon, then the pin button so the pin and plus are separated more
 - [XX] give the plus button some kind of hover glow or brightening
 - [XX] make the pin button a little bit bigger
