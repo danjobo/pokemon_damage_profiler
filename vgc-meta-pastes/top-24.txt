@@ -1,4 +1,4 @@
-Sneasler @ Mental Herb
+Sneasler @ Mental Herb, Focus Sash
 Ability: Unburden  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
@@ -11,7 +11,7 @@ _
 - Coaching
 - Rock Slide 
 
-Incineroar @ Sitrus Berry  
+Incineroar @ Sitrus Berry, Chople Berry, Shuca Berry  
 Ability: Intimidate  
 Level: 50  
 EVs: 32 HP / 14 Def / 20 SpD  
@@ -28,7 +28,7 @@ _
 - Close Combat
 - Helping Hand  
 
-Garchomp @ Choice Scarf  
+Garchomp @ Choice Scarf, White Herb, Soft Sand, Sitrus Berry, Haban Berry  
 Ability: Rough Skin  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
@@ -44,7 +44,7 @@ _
 - Stone Edge
 - Swords Dance
 
-Kingambit @ Black Glasses  
+Kingambit @ Black Glasses, Chople Berry  
 Ability: Defiant  
 Level: 50  
 EVs: 32 HP / 32 Atk / 2 SpD  
@@ -57,7 +57,7 @@ _
 - Low Kick
 - Swords Dance
 
-Sinistcha @ Sitrus Berry   
+Sinistcha @ Sitrus Berry, Leftovers   
 Ability: Hospitality  
 Level: 50  
 EVs: 32 HP / 14 Def / 20 SpD  
@@ -71,7 +71,7 @@ _
 - Strenth Sap
 - Shadow Ball
 
-Basculegion (M) @ Choice Scarf  
+Basculegion (M) @ Choice Scarf, Mystic Water  
 Ability: Adaptability  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
@@ -85,7 +85,7 @@ _
 - Liquidation  
 - Psychic Fangs   
 
-Aerodactyl @ Focus Sash  
+Aerodactyl @ Focus Sash, Aerodactylite  
 Ability: Unnerve  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
@@ -98,7 +98,7 @@ _
 - Wide Guard  
 
 Charizard-Mega-Y @ Charizardite Y  
-Ability: Drought  
+Ability: Drought, Blaze  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature
@@ -114,7 +114,7 @@ _
 - Dragon Dance
 - Dragon Pulse  
 
-Rotom-Wash @ Sitrus Berry
+Rotom-Wash @ Sitrus Berry, Leftovers, Choice Scarf
 Ability: Levitate  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
@@ -147,7 +147,7 @@ _
 - Endeavor  
 - Dazzling Gleam   
 
-Pelipper @ Focus Sash
+Pelipper @ Focus Sash, Sitrus Berry
 Ability: Drizzle  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
@@ -165,7 +165,7 @@ _
 - Hydro Pump
 
 Floette-Mega (F) @ Floettite  
-Ability: Fairy Aura  
+Ability: Fairy Aura, Flower Veil  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
@@ -178,8 +178,8 @@ _
 - Draining Kiss  
 - Psychic  
 
-Tyranitar-Mega @ Tyranitarite  
-Ability: Sand Stream  
+Tyranitar-Mega @ Tyranitarite, Chople Berry, Choice Scarf, Focus Sash  
+Ability: Sand Stream, Sand Stream  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
 Adamant Nature  
@@ -195,7 +195,7 @@ _
 - Stone Edge
 - High Horsepower
 
-Farigiraf @ Sitrus Berry  
+Farigiraf @ Sitrus Berry, Colbur Berry, Mental Herb, Leftovers  
 Ability: Armor Tail   
 Level: 50  
 EVs: 32 HP / 2 Def / 32 SpA  
@@ -212,7 +212,7 @@ _
 - Rain Dance
 - Ally Switch
 
-Archaludon @ Leftovers
+Archaludon @ Leftovers, Sitrus Berry, Chople Berry, White Herb
 Ability: Stamina  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
@@ -228,7 +228,7 @@ _
 - Snarl
 - Steel Beam
 
-Milotic @ Leftovers  
+Milotic @ Leftovers, Sitrus Berry  
 Ability: Competitive  
 Level: 50  
 EVs: 32 HP / 21 Def / 10 SpA / 1 SpD / 2 Spe  
@@ -245,8 +245,8 @@ _
 - Coil
 - Helping Hand
 
-Dragonite-Mega @ Dragoninite  
-Ability: Multiscale  
+Dragonite-Mega @ Dragoninite, Lum Berry  
+Ability: Multiscale, Multiscale  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
@@ -263,7 +263,7 @@ _
 - Thunderbolt
 
 Froslass-Mega (F) @ Froslassite  
-Ability: Snow Warning  
+Ability: Snow Warning, Cursed Body  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Timid Nature  
@@ -276,7 +276,7 @@ _
 - Nasty Plot 
 - Thunderbolt   
 
-Venusaur @ Focus Sash  
+Venusaur @ Focus Sash, Venusaurite, Leftovers  
 Ability: Chlorophyll  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
@@ -293,7 +293,7 @@ _
 - Leech Seed
 - Weather Ball  
 
-Talonflame @ Sharp Beak  
+Talonflame @ Sharp Beak, Focus Sash, White Herb, Leftovers  
 Ability: Gale Wings  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
@@ -311,7 +311,7 @@ _
 - Rain Dance 
 
 Meganium-Mega @ Meganiumite  
-Ability: Mega Sol  
+Ability: Mega Sol, Overgrow  
 Level: 50  
 EVs: 32 HP / 32 SpA / 2 Spe  
 Modest Nature  
@@ -323,7 +323,7 @@ _
 - Synthesis
 - Earth Power  
 
-Corviknight @ Leftovers  
+Corviknight @ Leftovers, Sitrus Berry, Occa Berry  
 Ability: Mirror Armor  
 Level: 50  
 EVs: 32 HP / 32 Def / 2 SpD  
@@ -339,7 +339,7 @@ _
 - Protect  
 
 Delphox-Mega @ Delphoxite  
-Ability: Levitate  
+Ability: Levitate, Blaze  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Timid Nature  
@@ -351,7 +351,7 @@ Timid Nature
 _  
 
 
-Gengar-Mega @ Gengarite  
+Gengar-Mega @ Gengarite, Focus Sash  
 Ability: Shadow Tag  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  

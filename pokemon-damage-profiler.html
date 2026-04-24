@@ -1310,7 +1310,7 @@ Impish Nature
         <label>Atk Stage</label>
         <div class="stage-spinner">
           <button class="stage-spinner-btn" onclick="stepStage('atkStage',1)">▲</button>
-          <div class="stage-spinner-val" id="atkStageDisplay">0</div>
+          <div class="stage-spinner-val" id="atkStageDisplay" onclick="stepStage('atkStage',0,true)" style="cursor:pointer;" title="Click to reset">0</div>
           <button class="stage-spinner-btn" onclick="stepStage('atkStage',-1)">▼</button>
         </div>
         <select id="atkStage" class="stage-select" onchange="renderResults()">
@@ -1328,7 +1328,7 @@ Impish Nature
         <label>SpA Stage</label>
         <div class="stage-spinner">
           <button class="stage-spinner-btn" onclick="stepStage('spaStage',1)">▲</button>
-          <div class="stage-spinner-val" id="spaStageDisplay">0</div>
+          <div class="stage-spinner-val" id="spaStageDisplay" onclick="stepStage('spaStage',0,true)" style="cursor:pointer;" title="Click to reset">0</div>
           <button class="stage-spinner-btn" onclick="stepStage('spaStage',-1)">▼</button>
         </div>
         <select id="spaStage" class="stage-select" onchange="renderResults()">
@@ -1346,7 +1346,7 @@ Impish Nature
         <label>Def Stage</label>
         <div class="stage-spinner">
           <button class="stage-spinner-btn" onclick="stepStage('defStage',1)">▲</button>
-          <div class="stage-spinner-val" id="defStageDisplay">0</div>
+          <div class="stage-spinner-val" id="defStageDisplay" onclick="stepStage('defStage',0,true)" style="cursor:pointer;" title="Click to reset">0</div>
           <button class="stage-spinner-btn" onclick="stepStage('defStage',-1)">▼</button>
         </div>
         <select id="defStage" class="stage-select" onchange="renderResults()">
@@ -1364,7 +1364,7 @@ Impish Nature
         <label>SpD Stage</label>
         <div class="stage-spinner">
           <button class="stage-spinner-btn" onclick="stepStage('spdStage',1)">▲</button>
-          <div class="stage-spinner-val" id="spdStageDisplay">0</div>
+          <div class="stage-spinner-val" id="spdStageDisplay" onclick="stepStage('spdStage',0,true)" style="cursor:pointer;" title="Click to reset">0</div>
           <button class="stage-spinner-btn" onclick="stepStage('spdStage',-1)">▼</button>
         </div>
         <select id="spdStage" class="stage-select" onchange="renderResults()">
@@ -1697,13 +1697,17 @@ function parseSinglePaste(text) {
   const m1 = lines[0].match(/^(.+?)(?:\s*@\s*(.+))?$/);
   if (!m1) throw new Error("Cannot parse species name from: " + lines[0]);
   let speciesRaw = m1[1].trim().replace(/\s*\([MF]\)\s*$/,'').trim();
-  const item = m1[2] || null;
+  // Support multiple items separated by commas: first is primary, rest are alternatives
+  const rawItemStr = m1[2] || null;
+  const allItems = rawItemStr ? rawItemStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const item = allItems[0] || null;
 
   // Handle "Nickname (Species)" format — species is inside the last parens
   const nicknameMatch = speciesRaw.match(/^.+\(([^)]+)\)\s*$/);
   if (nicknameMatch) speciesRaw = nicknameMatch[1].trim();
 
   let ability='', level=50, nature='hardy';
+  let allAbilities = null; // set if multiple abilities specified (mega + base form)
   let evs = {hp:0,atk:0,def:0,spa:0,spd:0,spe:0};
   let ivs = {hp:31,atk:31,def:31,spa:31,spd:31,spe:31};
   const moves = [];      // all move names including status (no divider sentinel)
@@ -1727,7 +1731,14 @@ function parseSinglePaste(text) {
       if (mvName) moves.push(mvName);
       continue;
     }
-    if (line.startsWith('Ability:'))    { ability=line.replace('Ability:','').trim(); continue; }
+    if (line.startsWith('Ability:')) {
+      const abilityStr = line.replace('Ability:', '').trim();
+      const allAbils = abilityStr.split(',').map(a => a.trim()).filter(Boolean);
+      ability = allAbils[0] || '';
+      // If multiple abilities, second one is the base-form ability for mega pokemon
+      if (allAbils.length > 1) allAbilities = allAbils;
+      continue;
+    }
     if (line.startsWith('Level:'))      { level=parseInt(line.replace('Level:','').trim())||50; continue; }
     if (line.match(/Nature$/))          { nature=line.replace(/\s*Nature$/,'').trim().toLowerCase(); continue; }
     if (line.startsWith('Tera Type:'))  { continue; }
@@ -1755,7 +1766,7 @@ function parseSinglePaste(text) {
   // If no _ divider found, threshold defaults to 4
   if (dividerIndex === null) dividerIndex = 4;
 
-  return { speciesRaw, item, ability, level, nature, evs, ivs, moves, dividerIndex };
+  return { speciesRaw, item, allItems, ability, allAbilities, level, nature, evs, ivs, moves, dividerIndex };
 }
 
 function splitPaste(text) {
@@ -2739,6 +2750,28 @@ function showDefenderInfo(defender) {
   document.getElementById('defenderTag').textContent = 'Defending: ' + defender.speciesRaw;
 }
 
+
+// Fixed multi-hit moves: slug → exact hit count
+const MULTI_HIT_FIXED = {
+  'dual-wingbeat': 2, 'dragon-darts': 2, 'double-hit': 2, 'double-slap': 2,
+  'bonemerang': 2, 'double-iron-bash': 2, 'dual-chop': 2, 'gear-grind': 2,
+  'twineedle': 2, 'surging-strikes': 3, 'triple-axel': 3, 'triple-kick': 3,
+};
+// Variable multi-hit moves: slug → [min, max] hits (avg used for damage, range shown)
+const MULTI_HIT_VARIABLE = {
+  'arm-thrust': [2,5], 'barrage': [2,5], 'bullet-seed': [2,5], 'comet-punch': [2,5],
+  'fury-attack': [2,5], 'fury-swipes': [2,5], 'pin-missile': [2,5], 'rock-blast': [2,5],
+  'spike-cannon': [2,5], 'tail-slap': [2,5], 'water-shuriken': [2,5],
+  'scale-shot': [2,5], 'population-bomb': [1,10],
+  'icicle-spear': [2,5], 'bone-rush': [2,5],
+};
+function getMultiHit(moveName) {
+  const slug = moveName.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  if (MULTI_HIT_FIXED[slug])    return { fixed: MULTI_HIT_FIXED[slug], min: MULTI_HIT_FIXED[slug], max: MULTI_HIT_FIXED[slug], avg: MULTI_HIT_FIXED[slug] };
+  if (MULTI_HIT_VARIABLE[slug]) { const [mn,mx] = MULTI_HIT_VARIABLE[slug]; return { variable: true, min: mn, max: mx, avg: (mn+mx)/2 }; }
+  return null;
+}
+
 function computeResults(loadedMeta, defender) {
   const results = [];
   for (const attacker of loadedMeta) {
@@ -2889,25 +2922,29 @@ function computeResults(loadedMeta, defender) {
       if (isFreezeDry && defender.types.includes('water')) activeMods.push('Freeze-Dry vs Water');
       if (isWeatherBall)  activeMods.push('Weather Ball');
 
-      // Dedup
+      // Multi-hit
+      const mhInfo = getMultiHit(move.name);
+      const mhDmg  = mhInfo ? dmg * mhInfo.avg : dmg;
+      const mhPct  = mhInfo ? pct * mhInfo.avg : pct;
+      if (mhInfo) {
+        if (mhInfo.variable) activeMods.push(`×${mhInfo.min}–${mhInfo.max} hits`);
+        else                  activeMods.push(`×${mhInfo.fixed} hits`);
+      }
+
       const uniqueMods = [...new Set(activeMods)].filter(Boolean);
 
       moveBreakdown.push({
-        move,
-        effectiveMoveType,
-        isSpread: move.isSpread,
-        isWeatherBall,
-        dmg, pct, eff,
-        stab: isStab > 1,
-        activeMods: uniqueMods,
-        atkStat, defStat,
-        isStab,
-        itemModsForMove,
-        pasteIndex: move.pasteIndex ?? 99,  // original slot in paste (0-based)
+        move, effectiveMoveType, isSpread: move.isSpread, isWeatherBall,
+        dmg: mhDmg, pct: mhPct, eff, stab: isStab > 1,
+        activeMods: uniqueMods, atkStat, defStat, isStab, itemModsForMove,
+        pasteIndex: move.pasteIndex ?? 99,
+        mhMin: mhInfo ? mhInfo.min : null,
+        mhMax: mhInfo ? mhInfo.max : null,
+        mhFixed: mhInfo && !mhInfo.variable,
       });
 
-      // Only count moves below the divider threshold as candidates for best-move summary
-      if (dmg > best.dmg && (move.pasteIndex ?? 99) < (attacker.dividerIndex ?? 4)) best = { dmg, move, eff };
+      // Only count moves below the divider as best-move candidates (use avg dmg)
+      if (mhDmg > best.dmg && (move.pasteIndex ?? 99) < (attacker.dividerIndex ?? 4)) best = { dmg: mhDmg, move, eff };
     }
 
     // ── Add status (non-damaging) moves to breakdown for display ──────────────
@@ -2982,7 +3019,21 @@ function computeResults(loadedMeta, defender) {
                        * getDefenderAbilityDmgMul(attacker.ability, effectiveMoveType, attacker.speciesRaw);
       const pct      = dmg / attacker.computedHp * 100;
 
-      defMoveBreakdown.push({ move, effectiveMoveType, isSpread: move.isSpread, isWeatherBall: mn === 'weather ball', dmg, pct, eff, stab: isStab > 1, activeMods: [], atkStat, defStat, isStab, pasteIndex: move.pasteIndex ?? 99 });
+      const mhInfo2  = getMultiHit(move.name);
+      const mhDmg2   = mhInfo2 ? dmg * mhInfo2.avg : dmg;
+      const defMods2 = [];
+      if (mhInfo2) {
+        if (mhInfo2.variable) defMods2.push(`×${mhInfo2.min}–${mhInfo2.max} hits`);
+        else                   defMods2.push(`×${mhInfo2.fixed} hits`);
+      }
+      defMoveBreakdown.push({
+        move, effectiveMoveType, isSpread: move.isSpread, isWeatherBall: mn === 'weather ball',
+        dmg: mhDmg2, pct: mhDmg2 / attacker.computedHp * 100, eff, stab: isStab > 1,
+        activeMods: defMods2, atkStat, defStat, isStab, pasteIndex: move.pasteIndex ?? 99,
+        mhMin: mhInfo2 ? mhInfo2.min : null,
+        mhMax: mhInfo2 ? mhInfo2.max : null,
+        mhFixed: mhInfo2 && !mhInfo2.variable,
+      });
       const defDivIdx = defender.dividerIndex ?? 4;
       if (dmg > defBest.dmg && (move.pasteIndex ?? 99) < defDivIdx) defBest = { dmg, move, eff };
     }
@@ -3127,12 +3178,8 @@ function renderResults() {
 
       if (maxRollMode) adjustedDmg /= 0.85;
 
-      let effectiveHp = r.defenderHp;
-      if (maxHp && r.defender) {
-        const maxHpVal = calcHP(r.defender.baseStats.hp || 0, 32, 31, 50);
-        if (maxHpVal > effectiveHp) effectiveHp = maxHpVal;
-      }
-      m.adjustedPct  = adjustedDmg / effectiveHp * 100;
+      // maxHp does NOT apply to the tab defender — only to meta-listing pokemon
+      m.adjustedPct  = adjustedDmg / r.defenderHp * 100;
       m.adjustedDmg  = adjustedDmg;
       m.resolvedType = moveType; // for display
       m.isEffectivelySpread = isEffectivelySpread;
@@ -3189,19 +3236,19 @@ function renderResults() {
       const isEffSpread = m.isSpread || terrainBoost.spreadOverride;
       if (isEffSpread) adjustedDmg *= 0.75;
       if (maxRollMode) adjustedDmg /= 0.85;
-      // maxStats: scale meta pokemon's offensive stat in attacking mode
-      if (maxInvest) {
-        const isPhysD = m.move.cat === 'physical';
-        const offBaseD = isPhysD ? r.attacker.baseStats.atk : r.attacker.baseStats.spa;
-        const offCurD  = isPhysD ? r.attacker.computedAtk   : r.attacker.computedSpa;
-        const offMaxD  = calcStat(offBaseD, 32, 31, 50, 1.1);
-        if (offCurD > 0 && offMaxD > offCurD) adjustedDmg *= offMaxD / offCurD;
+      // maxStats in attacking mode: scale meta pokemon's defensive stat (they're being hit)
+      if (maxInvest && m.defStat && r.attacker.baseStats) {
+        const isPhysM = m.move.cat === 'physical';
+        const defBase = isPhysM ? r.attacker.baseStats.def : r.attacker.baseStats.spd;
+        const defCur  = m.defStat; // stored per-move in computeResults
+        const defMax  = calcStat(defBase || 0, 32, 31, 50, 1.1);
+        if (defCur > 0 && defMax > defCur) adjustedDmg *= defCur / defMax;
       }
-      // maxHp: scale attacker HP (reduces % damage they deal to you)
+      // maxHp in attacking mode: scale meta pokemon's HP (they're being hit)
       let atkEffHp = r.attacker.computedHp;
-      if (maxHp && r.attacker.baseStats.hp) {
-        const maxAtkHp = calcHP(r.attacker.baseStats.hp, 32, 31, 50);
-        if (maxAtkHp > atkEffHp) atkEffHp = maxAtkHp;
+      if (maxHp && r.attacker.baseStats && r.attacker.baseStats.hp) {
+        const maxHpVal = calcHP(r.attacker.baseStats.hp, 32, 31, 50);
+        if (maxHpVal > atkEffHp) atkEffHp = maxHpVal;
       }
       m.adjustedPct = adjustedDmg / atkEffHp * 100;
       m.adjustedDmg = adjustedDmg;
@@ -3414,9 +3461,17 @@ function renderResults() {
       } else {
         const dp = m.adjustedPct ?? m.pct;
         const dpColor = dp >= 100 ? 'var(--red)' : dp >= 50 ? 'var(--orange)' : dp >= 33.3 ? 'var(--yellow)' : 'var(--green)';
-        pctDisplay = dp >= 100
-          ? `<span style="color:${dpColor}">${dp.toFixed(0)}% OHKO</span>`
-          : `<span style="color:${dpColor}">${dp.toFixed(1)}%</span>`;
+        // Variable multi-hit: show min–max range
+        if (m.mhMin && !m.mhFixed) {
+          const dpMin = dp * m.mhMin / ((m.mhMin + m.mhMax) / 2);
+          const dpMax = dp * m.mhMax / ((m.mhMin + m.mhMax) / 2);
+          const rangeColor = dpMax >= 100 ? 'var(--red)' : dpMax >= 50 ? 'var(--orange)' : dpMax >= 33.3 ? 'var(--yellow)' : 'var(--green)';
+          pctDisplay = `<span style="color:${rangeColor}">${dpMin.toFixed(0)}–${dpMax.toFixed(0)}%</span>`;
+        } else {
+          pctDisplay = dp >= 100
+            ? `<span style="color:${dpColor}">${dp.toFixed(0)}% OHKO</span>`
+            : `<span style="color:${dpColor}">${dp.toFixed(1)}%</span>`;
+        }
       }
       return `<div class="move-breakdown-row" style="${rowFontSize}padding:${isPastDivider ? '3px 4px 3px 0' : '6px 0'};min-width:0;overflow:hidden;">
           <div class="move-breakdown-left" style="min-width:0;overflow:hidden;">
@@ -3560,8 +3615,12 @@ function renderResults() {
     const _abHtml = _ab
       ? '<span data-ability-slug="' + _abSlug + '" data-ab-effect="" style="font-size:9px;color:var(--accent2);background:rgba(124,106,247,0.1);padding:2px 5px;border-radius:4px;cursor:help;border:0.5px solid rgba(124,106,247,0.25);text-align:center;line-height:1.2;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;">' + _ab + '</span>'
       : '';
+    const _allItems = r.attacker.allItems || [];
+    const _altItems = _allItems.slice(1); // items beyond the first
+    const _hasAltItems = _altItems.length > 0;
+    const _altItemsData = JSON.stringify(_altItems).replace(/"/g,'&quot;');
     const _itImg = _it
-      ? '<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/' + _itSlug + '.png" data-item-slug="' + _itSlug + '" data-item-name="' + _it.replace(/"/g,'&quot;') + '" data-it-effect="" style="width:24px;height:24px;image-rendering:pixelated;cursor:help;" onerror="this.src=\'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png\'">'
+      ? '<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/' + _itSlug + '.png" data-item-slug="' + _itSlug + '" data-item-name="' + _it.replace(/"/g,'&quot;') + '" data-it-effect="" style="width:24px;height:24px;image-rendering:pixelated;cursor:' + (_hasAltItems ? 'pointer' : 'help') + ';" onerror="this.src=\'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png\'"' + (_hasAltItems ? ' onclick="showAltItems(event,' + _altItemsData + ')"' : '') + '>'
       : '';
     const abilityItemColHtml = '<div class="breakdown-left-col">' + _abHtml + _itImg + '</div>';
 
@@ -3994,6 +4053,63 @@ function toggleMultiscale(e, defenderKey) {
   renderResults();
 }
 
+// ── Alt-item picker popup ─────────────────────────────────────────────────────
+let _altItemPopup = null;
+function showAltItems(e, altItems) {
+  e.stopPropagation();
+  if (_altItemPopup) { _altItemPopup.remove(); _altItemPopup = null; }
+  if (!altItems || !altItems.length) return;
+
+  const popup = document.createElement('div');
+  popup.id = 'alt-item-popup';
+  popup.style.cssText = 'position:fixed;z-index:9998;background:#1e1e2e;border:0.5px solid var(--border2);border-radius:8px;padding:8px 10px;box-shadow:0 4px 20px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:6px;';
+
+  const title = document.createElement('div');
+  title.textContent = 'Alt items:';
+  title.style.cssText = 'font-size:10px;color:var(--text3);margin-bottom:2px;';
+  popup.appendChild(title);
+
+  altItems.forEach(itemName => {
+    const slug = itemName.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:help;';
+    row.dataset.itemSlug = slug;
+    row.dataset.itemName = itemName;
+    row.dataset.itEffect = '';
+    const img = document.createElement('img');
+    img.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/' + slug + '.png';
+    img.style.cssText = 'width:20px;height:20px;image-rendering:pixelated;flex-shrink:0;';
+    img.onerror = () => { img.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'; };
+    const lbl = document.createElement('span');
+    lbl.textContent = itemName;
+    lbl.style.cssText = 'font-size:11px;color:var(--text2);white-space:nowrap;';
+    row.appendChild(img);
+    row.appendChild(lbl);
+    popup.appendChild(row);
+  });
+
+  document.body.appendChild(popup);
+  _altItemPopup = popup;
+
+  // Position near click
+  const r = e.target.getBoundingClientRect();
+  let x = r.right + 8, y = r.top;
+  const pw = popup.offsetWidth || 180;
+  const ph = popup.offsetHeight || 100;
+  if (x + pw > window.innerWidth - 8) x = r.left - pw - 8;
+  if (y + ph > window.innerHeight - 8) y = window.innerHeight - ph - 8;
+  popup.style.left = Math.max(8, x) + 'px';
+  popup.style.top  = Math.max(8, y) + 'px';
+
+  // Close on next outside click
+  setTimeout(() => {
+    document.addEventListener('click', function _close() {
+      if (_altItemPopup) { _altItemPopup.remove(); _altItemPopup = null; }
+      document.removeEventListener('click', _close);
+    });
+  }, 0);
+}
+
 function toggleExtraMoves(e, key) {
   e.stopPropagation();
   if (expandedExtras.has(key)) { expandedExtras.delete(key); }
@@ -4059,15 +4175,19 @@ async function toggleMegaForm(e, speciesRaw, megaSlug) {
       entry._megaBaseTypes     = entry.types;
       entry._megaBaseSpriteUrl = entry.spriteUrl;
       entry._origSpeciesRaw    = entry.speciesRaw;
-      // Save base ability: for natively-mega entries the current ability IS the mega ability,
-      // so derive the base ability from FORM_ABILITIES[baseKey] instead.
+      // Save base ability: check allAbilities first (user-specified in paste)
+      // allAbilities[0] = mega ability (current), allAbilities[1] = base form ability
+      const pasteBaseAbility = entry.allAbilities && entry.allAbilities.length > 1
+        ? entry.allAbilities[1]
+        : null;
       const nativelyMega = toSlug(entry.speciesRaw).includes('-mega') ||
                            toSlug(entry.speciesRaw).includes('-eternal');
-      if (nativelyMega && FORM_ABILITIES[baseKey]) {
+      if (pasteBaseAbility) {
+        entry._baseAbility = pasteBaseAbility;
+      } else if (nativelyMega && FORM_ABILITIES[baseKey]) {
         entry._baseAbility = FORM_ABILITIES[baseKey];
       } else if (nativelyMega) {
-        // No base ability defined — fetch from PokeAPI base form abilities
-        entry._baseAbility = null; // will be fetched on revert if needed
+        entry._baseAbility = null;
       } else {
         entry._baseAbility = entry.ability; // paste ability is already the base ability
       }
@@ -4277,11 +4397,10 @@ Impish Nature
 - Fire Blast`;
 }
 
-function stepStage(id, delta) {
+function stepStage(id, delta, reset) {
   const sel = document.getElementById(id);
   if (!sel) return;
-  const cur = Number(sel.value) || 0;
-  const next = Math.max(-6, Math.min(6, cur + delta));
+  const next = reset ? 0 : Math.max(-6, Math.min(6, (Number(sel.value) || 0) + delta));
   sel.value = String(next);
   updateStageDisplay(id, next);
   renderResults();

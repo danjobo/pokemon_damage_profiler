@@ -7,17 +7,11 @@
 
 
 
-
-- [__] item usage hover with other potential items (extra parsing and data needed)
-- [__] ability usage hover with other potential abilities (extra parsing and data needed)
-
 - add a button in move breakdown to show the nature and spread of the meta list (similar to “?” button)
 
 
 
 
-- support for fixed multi hit moves
-- support for ranged multi-hitting moves
 
 - Water bubble not workin
 - body slam damage
@@ -41,6 +35,12 @@
 ---
 #### Completed
 
+- [XX] support for ranged multi-hitting moves
+- [XX] in damage calculations for the results window, don't have the max stats and max hp buttons apply to the pokemon in the tab, only have it apply to the one in the listing
+- [XX] ability usage hover with other potential abilities (extra parsing and data needed)
+- [XX] support for fixed multi hit moves (dual wingbeat, dragon darts)
+- [XX] item usage hover with other potential items (extra parsing and data needed)
+- [XX] click the values in the stat buff spinners to reset them to 0
 - [XX] load enemy team paste into pins
 - [XX] when you delete an entry in the match history, have it update the overall winrate accordingly
 - [XX] in the meta analysis and current match analysis, have it not count damage to pokemon going over 130%. Also have immunities have a little extra weight in calculating defense.
