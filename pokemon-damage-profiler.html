@@ -1164,10 +1164,9 @@
     <!-- META DATABASE -->
     <div class="card card-collapsible" id="metaCard">
       <div class="card-label" onclick="toggleCard('metaCard',event)" style="cursor:pointer;">Meta database — attackers <span class="card-collapse-hint">▼</span></div>
-      <div class="card-body">
 
-      <!-- Saved metas row -->
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+      <!-- Saved metas row — always visible even when collapsed -->
+      <div style="display:flex;align-items:center;gap:6px;margin:6px 0 4px;flex-wrap:wrap;">
         <button class="btn-success" onclick="loadMeta()" style="font-size:11px;padding:4px 10px;flex-shrink:0;">Load meta</button>
         <select id="savedMetaSelect" style="font-size:12px;padding:4px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;flex:1;min-width:0;" onchange="onSavedMetaSelect()">
           <option value="">— saved metas —</option>
@@ -1176,6 +1175,8 @@
         <button onclick="renameSavedMeta()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Rename selected meta">Rename</button>
         <button onclick="deleteSavedMeta()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--red);cursor:pointer;white-space:nowrap;" title="Delete selected meta">Delete</button>
       </div>
+
+      <div class="card-body">
 
       <textarea id="metaInput" placeholder="Paste one or more PokéPaste sets here, separated by a blank line.
 
@@ -1223,10 +1224,9 @@ Adamant Nature
     <!-- DEFENDER -->
     <div class="card card-collapsible" id="defenderCard">
       <div class="card-label" onclick="toggleCard('defenderCard',event)" style="cursor:pointer;">Your Pokémon — defender <span class="card-collapse-hint">▼</span></div>
-      <div class="card-body">
 
-      <!-- Saved teams row -->
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+      <!-- Saved teams row — always visible even when collapsed -->
+      <div style="display:flex;align-items:center;gap:6px;margin:6px 0 4px;flex-wrap:wrap;">
         <button class="btn-success" onclick="onSavedTeamSelect()" style="font-size:11px;padding:4px 10px;flex-shrink:0;">Load team</button>
         <select id="savedTeamSelect" style="font-size:12px;padding:4px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;flex:1;min-width:0;">
           <option value="">— saved teams —</option>
@@ -1237,6 +1237,7 @@ Adamant Nature
         <div class="spinner" id="teamSpinner"></div>
       </div>
 
+      <div class="card-body">
       <textarea id="defenderInput" placeholder="Garchomp @ Rocky Helmet
 Ability: Rough Skin
 Level: 50
