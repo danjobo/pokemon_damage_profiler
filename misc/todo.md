@@ -8,6 +8,7 @@
 
 
 
+
 - move/ability search will filter with all possible not just run in meta
 
 - add a button in move breakdown to show the nature and spread of the meta list (similar to “?” button)
@@ -23,6 +24,14 @@
 ---
 #### Completed
 
+- [XX] in the match log listings, have a little notebook button below the date and time that when you click it, it will open a little text box that you can type into and will save that text in the listing data. then when you hover the notebook button, it'll show that text in the hover window.
+- [XX] it's highlighting the user's first 2 pokemon, but not the enemy's. I want it to highlight the first 2 of the user's team, and the first 2 of the enemy's team. also i'm not seeing any glowing of them in the match log
+- [XX] have first 2 pokemon clicked in current match be differnt color highlight then second 2, and if they're unclicked it will pass down to the next one clicked (so just have a queue). have the same feature for clicking sprites in match history, except the first 2 will just have like a soft gaussian glowing orb behind them while the other 2 won't. same appearance otherwise
+- [XX] when sorting by HP, have it use the same system appearance as the the other sorting by stats where it shows the value of the stat next to the name. try to use the same appearance if you can.
+- [XX] swap clear pins with copy to clipboard position
+- [XX] more color damage thresholds
+- [XX] get rid of A-Z sort, add HP sort
+- [XX] load match in match history also pins opponents pokemon
 - [XX] Water bubble not workin
 - [XX] heavy slam damage
 - [XX] change the percent text next to the bar in match listing headings that are over 130% to instead say 130%+ OHKO

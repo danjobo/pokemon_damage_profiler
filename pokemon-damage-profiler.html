@@ -350,6 +350,11 @@
     border-color: var(--accent2);
     background: rgba(124,106,247,0.1);
   }
+  .mw-sprite-cell.mw-primary {
+    border-color: var(--accent2);
+    background: rgba(124,106,247,0.18);
+    box-shadow: 0 0 10px 3px rgba(124,106,247,0.35), inset 0 0 8px rgba(124,106,247,0.15);
+  }
   .mw-sprite-cell .mw-spe {
     font-size: 9px; color: var(--text3);
     text-align: center; line-height: 1;
@@ -619,6 +624,7 @@
     border-radius: 5px; height: 10px; overflow: hidden; min-width: 60px;
   }
   .bar { height: 10px; border-radius: 5px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+  .bar-vlow { background: #6ab0f5; }
   .bar-low  { background: var(--green); }
   .bar-mid  { background: var(--yellow); }
   .bar-high { background: var(--orange); }
@@ -1278,13 +1284,13 @@ Impish Nature
         <label>Sort by:</label>
         <select id="sortMode" onchange="renderResults()">
           <option value="damage">Highest damage</option>
-          <option value="name">Name A–Z</option>
           <option value="order">Paste order</option>
           <option value="speed">Speed</option>
           <option value="atk">Attack</option>
           <option value="spa">Sp. Atk</option>
           <option value="def">Defense</option>
           <option value="spd">Sp. Def</option>
+          <option value="hp">HP</option>
         </select>
         <button id="sortDirBtn" onclick="toggleSortDir()" title="Reverse sort order" style="padding:4px 8px;font-size:12px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;line-height:1;">↓</button>
       </div>
@@ -1464,7 +1470,7 @@ Impish Nature
       <!-- Right: threat analysis + clear pins -->
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
         <button id="threatToggleBtn" onclick="toggleThreatPanel()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Show a threat analysis of the loaded meta against your team">🎯 Threat analysis</button>
-        <button onclick="clearPins()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Clear all pinned Pokémon and collapse expanded rows">Clear pins</button>
+        <button id="copyTeamBtn" onclick="copyTeamPaste()" title="Copy all tabs as a team paste" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;transition:background 0.15s,color 0.15s;">📋 Copy to Clipboard</button>
       </div>
     </div>
 
@@ -1506,7 +1512,7 @@ Impish Nature
         <div class="def-tab def-tab-empty" title="Slot 5" onclick="selectDefenderTab(4)" id="defTab-4">＋</div>
         <div class="def-tab def-tab-empty" title="Slot 6" onclick="selectDefenderTab(5)" id="defTab-5">＋</div>
       </div>
-      <button id="copyTeamBtn" onclick="copyTeamPaste()" title="Copy all tabs as a team paste" style="flex-shrink:0;padding:6px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;transition:background 0.15s,color 0.15s;">📋 Copy to Clipboard</button>
+      <button onclick="clearPins()" style="flex-shrink:0;padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Clear all pinned Pokémon and collapse expanded rows">Clear pins</button>
     </div>
 
     <div class="card" style="padding: 0.5rem 1.25rem;">
@@ -3324,6 +3330,7 @@ function renderResults() {
     }
     switch(stat) {
       case 'speed': return a.computedSpe || 0;
+      case 'hp':    return a.computedHp  || 0;
       case 'atk':   return a.computedAtk || 0;
       case 'spa':   return a.computedSpa || 0;
       case 'def':   return a.computedDef || 0;
@@ -3332,7 +3339,7 @@ function renderResults() {
     }
   };
   if (mode === 'damage') sorted.sort((a,b) => (b.displayPct - a.displayPct) * sortDir);
-  else if (mode === 'name') sorted.sort((a,b) => a.attacker.speciesRaw.localeCompare(b.attacker.speciesRaw) * sortDir);
+
   else if (mode === 'order') sorted.sort((a,b) => (a.originalOrder - b.originalOrder) * sortDir);
   else sorted.sort((a,b) => (getStat(b, mode) - getStat(a, mode)) * sortDir);
 
@@ -3451,9 +3458,9 @@ function renderResults() {
     }
 
     const pct    = r.displayPct || 0;
-    const barW   = Math.min(pct / maxPct * 100, 100).toFixed(1);
-    const barCls = pct >= 100 ? 'bar-ohko' : pct >= 50 ? 'bar-high' : pct >= 33.3 ? 'bar-mid' : 'bar-low';
-    const pctColor = pct >= 100 ? 'var(--red)' : pct >= 50 ? 'var(--orange)' : pct >= 33.3 ? 'var(--yellow)' : 'var(--green)';
+    const barW   = Math.min(pct, 100).toFixed(1);
+    const barCls = pct >= 100 ? 'bar-ohko' : pct >= 50 ? 'bar-high' : pct >= 33.3 ? 'bar-mid' : pct >= 25 ? 'bar-low' : 'bar-vlow';
+    const pctColor = pct >= 100 ? 'var(--red)' : pct >= 50 ? 'var(--orange)' : pct >= 33.3 ? 'var(--yellow)' : pct >= 25 ? 'var(--green)' : '#6ab0f5';
     const pctLabel = pct >= 130
       ? `<span style="color:${pctColor}">130%+ OHKO</span>`
       : pct >= 100
@@ -3506,7 +3513,7 @@ function renderResults() {
         pctDisplay = `<span style="color:var(--text3);font-size:11px">status</span>`;
       } else {
         const dp = m.adjustedPct ?? m.pct;
-        const dpColor = dp >= 100 ? 'var(--red)' : dp >= 50 ? 'var(--orange)' : dp >= 33.3 ? 'var(--yellow)' : 'var(--green)';
+        const dpColor = dp >= 100 ? 'var(--red)' : dp >= 50 ? 'var(--orange)' : dp >= 33.3 ? 'var(--yellow)' : dp >= 25 ? 'var(--green)' : '#6ab0f5';
         // Variable multi-hit: show min–max range
         if (m.mhMin && !m.mhFixed) {
           const dpMin = dp * m.mhMin / ((m.mhMin + m.mhMax) / 2);
@@ -3514,10 +3521,8 @@ function renderResults() {
           const rangeColor = dpMax >= 100 ? 'var(--red)' : dpMax >= 50 ? 'var(--orange)' : dpMax >= 33.3 ? 'var(--yellow)' : 'var(--green)';
           pctDisplay = `<span style="color:${rangeColor}">${dpMin.toFixed(0)}–${dpMax.toFixed(0)}%</span>`;
         } else {
-          pctDisplay = dp >= 130
-            ? `<span style="color:${dpColor}">130%+ OHKO</span>`
-            : dp >= 100
-            ? `<span style="color:${dpColor}">${dp.toFixed(0)}% OHKO</span>`
+          pctDisplay = dp >= 100
+            ? `<span style="color:${dpColor}">${dp.toFixed(0)}%</span>`
             : `<span style="color:${dpColor}">${dp.toFixed(1)}%</span>`;
         }
       }
@@ -3603,7 +3608,7 @@ function renderResults() {
     const modeLabel = attackingMode ? `<span style="font-size:10px;color:var(--accent2);margin-left:6px;">→ attacking</span>` : '';
     const maxInvestLabel = (maxInvest || maxHp) ? `<span style="font-size:10px;color:var(--yellow);margin-left:4px;">${[maxInvest?'max stats':'',maxHp?'max HP':''].filter(Boolean).join(' ')}</span>` : '';
 
-    const statSorts = { speed: 'Spe', atk: 'Atk', spa: 'SpA', def: 'Def', spd: 'SpD' };
+    const statSorts = { speed: 'Spe', atk: 'Atk', spa: 'SpA', def: 'Def', spd: 'SpD', hp: 'HP' };
     const statLabel = statSorts[mode]
       ? `<span style="color:var(--text);font-size:10px;margin-left:5px;font-weight:400;">(${getStat(r, mode)})</span>`
       : '';
@@ -4314,10 +4319,21 @@ function slugToDisplayName(slug) {
   }
 
   document.addEventListener('mouseover', async e => {
-    const el = e.target.closest('[data-effect],[data-ability-slug],[data-item-slug]');
+    const el = e.target.closest('[data-effect],[data-ability-slug],[data-item-slug],[data-note]');
     if (!el) { hideTip(); return; }
     if (el === current) return;
     current = el;
+
+    // Match note: smaller font, preserve newlines
+    if ('note' in el.dataset) {
+      const text = el.dataset.note || 'Click to add note';
+      tip.style.fontSize = '11px';
+      tip.style.whiteSpace = 'pre-wrap';
+      tip.textContent = text;
+      tip.style.display = 'block';
+      positionTip(e);
+      return;
+    }
 
     // Lazy-load ability description
     if (el.dataset.abilitySlug) {
@@ -4360,7 +4376,7 @@ function slugToDisplayName(slug) {
   });
 
   document.addEventListener('mouseout', e => {
-    const el = e.target.closest('[data-effect],[data-ability-slug],[data-item-slug]');
+    const el = e.target.closest('[data-effect],[data-ability-slug],[data-item-slug],[data-note]');
     if (el) hideTip();
   });
 
@@ -4377,6 +4393,8 @@ function slugToDisplayName(slug) {
 
   function hideTip() {
     tip.style.display = 'none';
+    tip.style.fontSize = '';
+    tip.style.whiteSpace = '';
     current = null;
   }
 })();
@@ -4793,7 +4811,8 @@ function clearPins() {
 
 // ── Active match state ────────────────────────────────────────────────────────
 let _matchActive     = false;
-let _matchHighlighted = { my: new Set(), opp: new Set() }; // highlighted species keys
+// Match highlight queues: separate per side, first 2 = primary (bright glow)
+let _matchHighlightQueue = { my: [], opp: [] };
 let _matchSortMode   = 'offense'; // 'offense' | 'defense'
 let _matchMyTeam     = [];   // [{speciesRaw, spriteUrl, computedSpe, types, result}]
 let _matchOppTeam    = [];   // same
@@ -4847,7 +4866,7 @@ function startMatch() {
     };
   });
 
-  _matchHighlighted = { my: new Set(), opp: new Set() };
+  _matchHighlightQueue = { my: [], opp: [] };
   _matchActive = true;
 
   // Disable start match button
@@ -4997,9 +5016,11 @@ function sortTeamByThreat(team, isMyTeam) {
 }
 
 function toggleMatchHighlight(side, name) {
-  const set = _matchHighlighted[side];
-  if (set.has(name)) set.delete(name);
-  else set.add(name);
+  const q = _matchHighlightQueue[side];
+  if (!q) return;
+  const idx = q.indexOf(name);
+  if (idx !== -1) q.splice(idx, 1);
+  else            q.push(name);
   renderMatchWindow();
 }
 
@@ -5014,12 +5035,17 @@ function renderMatchWindow() {
 
   function teamGrid(team, side, oppSorted, isMyTeam) {
     return team.map(p => {
-      const hl    = _matchHighlighted[side].has(p.speciesRaw);
+      const q        = _matchHighlightQueue[side] || [];
+      const queueIdx = q.indexOf(p.speciesRaw);
+      const isPrimary   = queueIdx !== -1 && queueIdx < 2;
+      const isSecondary = queueIdx !== -1 && queueIdx >= 2;
+      const hl = queueIdx !== -1;
       const pip   = buildMatchupPips(p, oppSorted, isOffense);
       const label = getDamageLabel(p.speciesRaw, isMyTeam, isOffense);
       const img = matchWindowSpriteHtml(p.speciesRaw, p.spriteUrl);
 
-      return `<div class="mw-sprite-cell${hl?' mw-highlighted':''}"
+      const hlClass = isPrimary ? ' mw-highlighted mw-primary' : isSecondary ? ' mw-highlighted' : '';
+      return `<div class="mw-sprite-cell${hlClass}"
         onclick="toggleMatchHighlight('${side}','${p.speciesRaw.replace(/'/g,"\\'")}')"
         title="${p.speciesRaw}">
         <div class="mw-hover-tip">${pip}</div>
@@ -5071,10 +5097,14 @@ function reportMatch(result) {
     return;
   }
 
-  const myTeam  = _matchMyTeam.map(p => ({ name: p.speciesRaw, sprite: p.spriteUrl,
-    highlighted: _matchHighlighted.my.has(p.speciesRaw) }));
-  const opponent = _matchOppTeam.map(p => ({ name: p.speciesRaw, sprite: p.spriteUrl,
-    highlighted: _matchHighlighted.opp.has(p.speciesRaw) }));
+  const myTeam  = _matchMyTeam.map(p => {
+    const qi = _matchHighlightQueue.my.indexOf(p.speciesRaw);
+    return { name: p.speciesRaw, sprite: p.spriteUrl, highlighted: qi !== -1, highlightOrder: qi };
+  });
+  const opponent = _matchOppTeam.map(p => {
+    const qi = _matchHighlightQueue.opp.indexOf(p.speciesRaw);
+    return { name: p.speciesRaw, sprite: p.spriteUrl, highlighted: qi !== -1, highlightOrder: qi };
+  });
 
   const entry = {
     id: Date.now(), result, myTeam, opponent,
@@ -5145,8 +5175,14 @@ function replayMatch(matchId) {
     };
   });
 
-  _matchHighlighted = { my: new Set(), opp: new Set() };
+  _matchHighlightQueue = { my: [], opp: [] };
   _matchActive = true;
+
+  // Pin opponent pokemon that are in the current meta
+  _matchOppTeam.forEach(p => {
+    const inMeta = META_DB.some(e => e.loaded && (e.speciesRaw === p.speciesRaw || e._origSpeciesRaw === p.speciesRaw));
+    if (inMeta) pinnedKeys.add(p.speciesRaw);
+  });
 
   // Disable start match button
   const btn = document.getElementById('startMatchBtn');
@@ -5296,25 +5332,38 @@ function renderMatchHistory() {
       const name   = typeof p === 'string' ? p : p.name;
       const sprite = typeof p === 'string' ? null : p.sprite;
       const arr    = side === 'myTeam' ? m.myTeam : m.opponent;
-      const hasHl  = arr.some(q => (typeof q === 'string' ? false : q.highlighted));
-      const dimmed = hasHl && !(typeof p === 'string' ? false : p.highlighted);
+      const hasHl  = arr.some(q => typeof q !== 'string' && q.highlighted);
+      const isHl   = typeof p !== 'string' && p.highlighted;
+      const dimmed = hasHl && !isHl;
       const cls    = dimmed ? ' hl-dim' : '';
+      // Primary = first 2 clicked, determined by highlightOrder (queue index saved at match time)
+      const hlOrder = typeof p !== 'string' && p.highlighted ? (p.highlightOrder ?? 99) : -1;
+      const isPrimary = hlOrder !== -1 && hlOrder < 2;
+      const glowStyle = isPrimary
+        ? 'border-radius:4px;background:radial-gradient(circle, rgba(124,106,247,0.35) 0%, transparent 70%);'
+        : '';
       const safeTeam = _currentTeamName.replace(/'/g,"\\'");
       const img = spriteImgHtmlCls(name, 38, sprite, cls);
-      // Wrap in a clickable div
       return `<div onclick="toggleHistoryHighlight('${safeTeam}',${m.id},'${side}',${idx})"
-        style="cursor:pointer;display:inline-block;border-radius:4px;transition:outline 0.1s;"
-        title="Click to toggle highlight">${img}</div>`;
+        style="cursor:pointer;display:inline-block;${glowStyle}"
+        title="${name}">${img}</div>`;
     }
 
     const mySprites  = m.myTeam.map((p, i)   => makeHistorySprite(p, i, 'myTeam')).join('');
     const oppSprites = m.opponent.map((p, i)  => makeHistorySprite(p, i, 'opponent')).join('');
 
     // Layout: [date stacked] [my sprites] [WIN/LOSS badge + replay] [opp sprites] [✕]
+    const noteText  = m.note || '';
+    const noteTitle = noteText || 'Click to add note';
+    const noteAttr  = noteTitle.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    const noteActive = noteText ? 'color:var(--accent2);border-color:var(--accent);' : 'color:var(--text3);border-color:var(--border2);';
     html += `<div class="match-entry ${rowCls}">
       <div class="match-date">
         <span class="match-date-day">${datePart}</span>
         <span class="match-date-time">${timePart}</span>
+        <button onclick="openMatchNote(event,'${_currentTeamName.replace(/'/g,"\\'")}',${m.id})"
+          data-note="${noteAttr}"
+          style="margin-top:4px;padding:1px 4px;font-size:11px;border-radius:3px;border:0.5px solid;background:transparent;cursor:pointer;${noteActive}line-height:1;">📝</button>
       </div>
       <div class="match-sprites">${mySprites}</div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;">
@@ -5329,19 +5378,104 @@ function renderMatchHistory() {
   container.innerHTML = html;
 }
 
+// ── Match note editor ─────────────────────────────────────────────────────────
+let _notePopup = null;
+function openMatchNote(e, teamName, matchId) {
+  e.stopPropagation();
+  // If same popup already open for this match, close it
+  if (_notePopup && _notePopup.dataset.matchId == matchId) {
+    _notePopup.remove(); _notePopup = null;
+    return;
+  }
+  if (_notePopup) { _notePopup.remove(); _notePopup = null; }
+
+  const history = getMatchHistory();
+  const match = (history[teamName] || []).find(m => m.id === matchId);
+  if (!match) return;
+
+  const popup = document.createElement('div');
+  popup.dataset.matchId = matchId;
+  popup.style.cssText = 'position:fixed;z-index:9997;background:#1e1e2e;border:0.5px solid var(--border2);border-radius:8px;padding:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:6px;width:220px;';
+
+  const label = document.createElement('div');
+  label.textContent = 'Match note:';
+  label.style.cssText = 'font-size:10px;color:var(--text3);';
+
+  const ta = document.createElement('textarea');
+  ta.value = match.note || '';
+  ta.placeholder = 'Add a note...';
+  ta.style.cssText = 'width:100%;height:80px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;padding:6px;resize:none;font-family:inherit;box-sizing:border-box;outline:none;';
+
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = 'Save';
+  saveBtn.style.cssText = 'padding:3px 10px;font-size:11px;border:0.5px solid var(--accent);border-radius:4px;background:rgba(124,106,247,0.15);color:var(--accent2);cursor:pointer;align-self:flex-end;';
+
+  const doSave = () => {
+    const text = ta.value.trim();
+    const hist2 = getMatchHistory();
+    const m2 = (hist2[teamName] || []).find(x => x.id === matchId);
+    if (m2) { m2.note = text; putMatchHistory(hist2); }
+    if (_notePopup) { _notePopup.remove(); _notePopup = null; }
+    renderMatchHistory();
+  };
+
+  saveBtn.addEventListener('click', e2 => { e2.stopPropagation(); doSave(); });
+  ta.addEventListener('keydown', ev => { if (ev.key === 'Escape') doSave(); });
+
+  popup.appendChild(label);
+  popup.appendChild(ta);
+  popup.appendChild(saveBtn);
+  document.body.appendChild(popup);
+  _notePopup = popup;
+
+  // Position near button
+  const r = e.target.getBoundingClientRect();
+  let x = r.right + 8, y = r.top;
+  if (x + 228 > window.innerWidth - 8) x = r.left - 228;
+  if (y + 150 > window.innerHeight - 8) y = window.innerHeight - 158;
+  popup.style.left = Math.max(8, x) + 'px';
+  popup.style.top  = Math.max(8, y) + 'px';
+
+  // Outside click closes (save first) — use bubble phase, 150ms delay to skip opening click
+  setTimeout(() => {
+    ta.focus();
+    const outsideClose = (ev) => {
+      if (!_notePopup) { document.removeEventListener('click', outsideClose); return; }
+      if (!_notePopup.contains(ev.target)) {
+        document.removeEventListener('click', outsideClose);
+        doSave();
+      }
+    };
+    document.addEventListener('click', outsideClose);
+  }, 150);
+}
+
 function toggleHistoryHighlight(teamName, matchId, side, index) {
   const history = getMatchHistory();
   const matches = history[teamName];
   if (!matches) return;
   const match = matches.find(m => m.id === matchId);
   if (!match) return;
-  const arr = match[side]; // myTeam or opponent
+  const arr = match[side];
   if (!arr || !arr[index]) return;
   const p = arr[index];
   if (typeof p === 'string') {
-    arr[index] = { name: p, sprite: null, highlighted: true };
+    // Count currently highlighted to assign next order
+    const nextOrder = arr.filter(q => typeof q !== 'string' && q.highlighted).length;
+    arr[index] = { name: p, sprite: null, highlighted: true, highlightOrder: nextOrder };
+  } else if (p.highlighted) {
+    // Unhighlight: remove and shift orders of remaining highlighted
+    p.highlighted = false;
+    p.highlightOrder = -1;
+    // Re-number remaining highlighted by their current order
+    const hlSorted = arr
+      .filter(q => typeof q !== 'string' && q.highlighted)
+      .sort((a, b) => (a.highlightOrder ?? 99) - (b.highlightOrder ?? 99));
+    hlSorted.forEach((q, i) => { q.highlightOrder = i; });
   } else {
-    p.highlighted = !p.highlighted;
+    const nextOrder = arr.filter(q => typeof q !== 'string' && q.highlighted).length;
+    p.highlighted = true;
+    p.highlightOrder = nextOrder;
   }
   putMatchHistory(history);
   renderMatchHistory();
