@@ -456,6 +456,13 @@
   }
 
 
+  .controls-sticky-wrap {
+    position: sticky;
+    top: 48px;
+    z-index: 19;
+    margin-bottom: 14px;
+  }
+
   .results-controls {
     display: flex;
     flex-wrap: wrap;
@@ -466,8 +473,6 @@
     background: var(--bg2);
     border: 0.5px solid var(--border);
     border-radius: var(--radius) var(--radius) 0 0;
-    position: sticky;
-    top: 48px;
     z-index: 19;
     user-select: none;
     transition: box-shadow 0.2s;
@@ -489,12 +494,50 @@
     color: var(--text2);
   }
 
-  .stage-select {
-    min-width: 0 !important;
-    width: 52px;
-    padding-left: 4px;
-    padding-right: 2px;
+  .stage-select { display: none; } /* hidden — JS reads value, spinner drives it */
+
+  .stage-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    width: 26px;
   }
+  .stage-spinner-btn {
+    width: 26px;
+    height: 13px;
+    background: var(--bg3);
+    border: 0.5px solid var(--border2);
+    color: var(--text3);
+    font-size: 8px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    transition: background 0.1s, color 0.1s;
+  }
+  .stage-spinner-btn:first-child { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+  .stage-spinner-btn:last-child  { border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
+  .stage-spinner-btn:hover { background: var(--border2); color: var(--text); }
+  .stage-spinner-val {
+    width: 26px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--bg3);
+    border-left: 0.5px solid var(--border2);
+    border-right: 0.5px solid var(--border2);
+    border-top: none;
+    border-bottom: none;
+  }
+  .stage-spinner-val.positive { color: #f08080; }
+  .stage-spinner-val.negative { color: #87b4f5; }
 
   .checkbox-toggle {
     display: flex;
@@ -587,12 +630,26 @@
 
   .move-breakdown {
     display: none;
-    padding: 0 0 12px 58px;
+    padding: 0 0 12px 0;
     user-select: none;
   }
-
   .move-breakdown.visible {
-    display: block;
+    display: flex;
+    gap: 0;
+  }
+  .breakdown-left-col {
+    width: 58px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding-top: 34px;
+  }
+  .breakdown-right-col {
+    flex: 1;
+    min-width: 0;
+    padding-bottom: 12px;
   }
 
   .move-breakdown-row {
@@ -703,16 +760,18 @@
 
   /* ── Defender Tabs ───────────────────────────────────────────────────── */
   .defender-tabs-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
     gap: 6px;
     margin-bottom: 10px;
-    flex-wrap: wrap;
+  }
+  @media (max-width: 580px) {
+    .defender-tabs-row { grid-template-columns: repeat(3, 1fr); }
   }
 
   .def-tab {
-    flex: 1;
-    min-width: 80px;
-    max-width: 140px;
+    min-width: 0;
+    max-width: none;
     padding: 7px 10px;
     border-radius: var(--radius-sm);
     border: 0.5px solid var(--border2);
@@ -880,6 +939,204 @@
   .wk-count.danger1 { color: var(--yellow); }
   .wk-count.danger2 { color: var(--orange); }
   .wk-count.danger3 { color: var(--red); }
+
+  /* ── Meta Threat Analysis Panel ─────────────────────────────────────────── */
+  #threatPanel {
+    display: none;
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    animation: matchSlideIn 0.18s ease;
+  }
+  #threatPanel.visible { display: block; }
+
+  .threat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .threat-mode-btns {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+  }
+
+  .threat-mode-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border2);
+    background: transparent;
+    color: var(--text3);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+    position: relative;
+  }
+  .threat-mode-btn:hover { background: var(--bg3); }
+  .threat-mode-btn.active {
+    border-color: var(--accent);
+    background: rgba(124,106,247,0.15);
+    color: var(--accent2);
+  }
+
+  /* Tooltip for mode buttons */
+  .threat-mode-btn .threat-btn-tip {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 160px;
+    background: #2a2a3a;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 6px 8px;
+    font-size: 10px;
+    color: var(--text2);
+    line-height: 1.45;
+    pointer-events: none;
+    z-index: 200;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.45);
+    text-align: left;
+    white-space: normal;
+  }
+  .threat-mode-btn:hover .threat-btn-tip { display: block; }
+
+  .threat-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+
+  .threat-sprites-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .threat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .threat-sprite-wrap {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    /* rank controls height of sprite area */
+  }
+
+  .threat-rank-badge {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 0.5px solid var(--border2);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    line-height: 1;
+  }
+  .threat-rank-badge.rank-1 { background: rgba(250,199,117,0.2); border-color: var(--yellow); color: var(--yellow); }
+  .threat-rank-badge.rank-2 { background: rgba(240,153,123,0.15); border-color: var(--orange); color: var(--orange); }
+  .threat-rank-badge.rank-3 { background: rgba(139,137,160,0.15); border-color: var(--text2); color: var(--text2); }
+
+  .threat-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text2);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+  }
+
+  .threat-stat-line {
+    font-size: 9px;
+    color: var(--text3);
+    text-align: center;
+    line-height: 1.4;
+  }
+  .threat-stat-val { color: var(--text2); font-weight: 600; }
+
+  /* Hover tooltip for threat card */
+  .threat-hover-tip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 88px;
+    background: #22222e;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 7px 8px 6px;
+    z-index: 300;
+    pointer-events: none;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.55);
+    text-align: left;
+  }
+  .threat-card:hover .threat-hover-tip { display: block; }
+
+  /* Speed bar for hover tip */
+  .threat-speed-bar {
+    position: relative;
+    height: 6px;
+    background: var(--bg3);
+    border-radius: 3px;
+    margin: 6px 0 4px;
+    overflow: visible;
+  }
+  .threat-speed-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    border: 1px solid var(--bg);
+    z-index: 1;
+  }
+  .threat-speed-marker.marker-team {
+    background: var(--text3);
+    width: 5px; height: 5px;
+  }
+  .threat-speed-marker.marker-threat { background: var(--red); }
+  .threat-speed-marker.marker-threat-faster { background: var(--orange); }
+  .threat-speed-marker.marker-threat-slower { background: var(--green); }
+  .threat-speed-label {
+    font-size: 8px;
+    color: var(--text3);
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2px;
+  }
+  .spd-outspeeds { color: var(--red); }
+  .spd-tied-c { color: var(--yellow); }
+  .spd-slower-c { color: var(--green); }
 </style>
 </head>
 <body>
@@ -903,6 +1160,7 @@
 
       <!-- Saved metas row -->
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+        <button class="btn-success" onclick="loadMeta()" style="font-size:11px;padding:4px 10px;flex-shrink:0;">Load meta</button>
         <select id="savedMetaSelect" style="font-size:12px;padding:4px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;flex:1;min-width:0;" onchange="onSavedMetaSelect()">
           <option value="">— saved metas —</option>
         </select>
@@ -943,7 +1201,6 @@ Adamant Nature
       </div>
 
       <div class="btn-row">
-        <button class="btn-success" onclick="loadMeta()">Load meta</button>
         <button onclick="loadMetaExample()">Load example</button>
         <button onclick="clearMeta()" style="color:var(--text3)">Clear meta</button>
         <div class="spinner" id="metaSpinner"></div>
@@ -962,12 +1219,14 @@ Adamant Nature
 
       <!-- Saved teams row -->
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+        <button class="btn-success" onclick="onSavedTeamSelect()" style="font-size:11px;padding:4px 10px;flex-shrink:0;">Load team</button>
         <select id="savedTeamSelect" style="font-size:12px;padding:4px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;flex:1;min-width:0;">
           <option value="">— saved teams —</option>
         </select>
         <button onclick="saveCurrentTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Save current defender tabs as a team">Save</button>
         <button onclick="renameSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Rename selected team">Rename</button>
         <button onclick="deleteSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--red);cursor:pointer;white-space:nowrap;" title="Delete selected team">Delete</button>
+        <div class="spinner" id="teamSpinner"></div>
       </div>
 
       <textarea id="defenderInput" placeholder="Garchomp @ Rocky Helmet
@@ -983,10 +1242,6 @@ Impish Nature
       <div id="defenderInfo" class="info-box"></div>
       <div id="defenderError" class="error-msg"></div>
 
-      <div class="btn-row">
-        <button class="btn-success" onclick="onSavedTeamSelect()">Load team</button>
-        <div class="spinner" id="teamSpinner"></div>
-      </div>
       <div class="btn-row">
         <button onclick="loadDefenderExample()">Load example</button>
         <button onclick="clearDefenders()" style="color:var(--text3)">Clear defenders</button>
@@ -1038,6 +1293,7 @@ Impish Nature
     </div>
 
     
+    <div class="controls-sticky-wrap">
     <div class="results-controls">
       <div class="control-group">
         <label>Weather</label>
@@ -1052,6 +1308,11 @@ Impish Nature
 
       <div class="control-group">
         <label>Atk Stage</label>
+        <div class="stage-spinner">
+          <button class="stage-spinner-btn" onclick="stepStage('atkStage',1)">▲</button>
+          <div class="stage-spinner-val" id="atkStageDisplay">0</div>
+          <button class="stage-spinner-btn" onclick="stepStage('atkStage',-1)">▼</button>
+        </div>
         <select id="atkStage" class="stage-select" onchange="renderResults()">
           <option value="-6">-6</option><option value="-5">-5</option>
           <option value="-4">-4</option><option value="-3">-3</option>
@@ -1065,6 +1326,11 @@ Impish Nature
 
       <div class="control-group">
         <label>SpA Stage</label>
+        <div class="stage-spinner">
+          <button class="stage-spinner-btn" onclick="stepStage('spaStage',1)">▲</button>
+          <div class="stage-spinner-val" id="spaStageDisplay">0</div>
+          <button class="stage-spinner-btn" onclick="stepStage('spaStage',-1)">▼</button>
+        </div>
         <select id="spaStage" class="stage-select" onchange="renderResults()">
           <option value="-6">-6</option><option value="-5">-5</option>
           <option value="-4">-4</option><option value="-3">-3</option>
@@ -1078,6 +1344,11 @@ Impish Nature
 
       <div class="control-group">
         <label>Def Stage</label>
+        <div class="stage-spinner">
+          <button class="stage-spinner-btn" onclick="stepStage('defStage',1)">▲</button>
+          <div class="stage-spinner-val" id="defStageDisplay">0</div>
+          <button class="stage-spinner-btn" onclick="stepStage('defStage',-1)">▼</button>
+        </div>
         <select id="defStage" class="stage-select" onchange="renderResults()">
           <option value="-6">-6</option><option value="-5">-5</option>
           <option value="-4">-4</option><option value="-3">-3</option>
@@ -1091,6 +1362,11 @@ Impish Nature
 
       <div class="control-group">
         <label>SpD Stage</label>
+        <div class="stage-spinner">
+          <button class="stage-spinner-btn" onclick="stepStage('spdStage',1)">▲</button>
+          <div class="stage-spinner-val" id="spdStageDisplay">0</div>
+          <button class="stage-spinner-btn" onclick="stepStage('spdStage',-1)">▼</button>
+        </div>
         <select id="spdStage" class="stage-select" onchange="renderResults()">
           <option value="-6">-6</option><option value="-5">-5</option>
           <option value="-4">-4</option><option value="-3">-3</option>
@@ -1156,13 +1432,14 @@ Impish Nature
             style="padding:5px 8px;font-size:12px;border:none;background:transparent;color:var(--text);outline:none;flex:1;min-width:0;position:relative;z-index:2;user-select:text;">
         </div>
       </div>
-    </div>
+    </div><!-- end results-controls -->
 
-    <!-- Field status bar -->
-    <div id="fieldStatusBar" style="display:flex;align-items:center;gap:8px;padding:5px 12px;background:var(--bg2);border:0.5px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);font-size:11px;min-height:28px;margin-bottom:14px;position:sticky;top:calc(48px + 120px);z-index:18;">
+    <!-- Field status bar — inside sticky wrap so it scrolls with controls -->
+    <div id="fieldStatusBar" style="display:flex;align-items:center;gap:8px;padding:5px 12px;background:var(--bg2);border:0.5px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);font-size:11px;min-height:28px;">
       <button onclick="resetFieldConditions()" style="padding:3px 8px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0;" title="Reset all field conditions">Reset</button>
       <div id="fieldStatusText" style="flex:1;display:flex;flex-wrap:wrap;gap:4px;align-items:center;color:var(--text3);font-size:10px;"></div>
-    </div>
+    </div><!-- end fieldStatusBar -->
+    </div><!-- end controls-sticky-wrap -->
 
     <!-- Match history control bar -->
     <div class="match-bar" id="matchBar">
@@ -1184,14 +1461,39 @@ Impish Nature
         <button id="historyToggleBtn" onclick="toggleHistoryView()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="View match history for the current team">📋 Match log</button>
       </div>
 
-      <!-- Right: clear pins -->
+      <!-- Right: threat analysis + clear pins -->
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <button id="threatToggleBtn" onclick="toggleThreatPanel()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Show a threat analysis of the loaded meta against your team">🎯 Threat analysis</button>
         <button onclick="clearPins()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Clear all pinned Pokémon and collapse expanded rows">Clear pins</button>
       </div>
     </div>
 
     <!-- Active match window — expands between match bar and results -->
     <div id="matchWindow" style="display:none;"></div>
+
+    <!-- Threat Analysis Panel — expands between match bar and tabs -->
+    <div id="threatPanel">
+      <div class="threat-header">
+        <div class="threat-mode-btns">
+          <button class="threat-mode-btn active" id="threatBtn-overall" onclick="setThreatMode('overall')">
+            Overall
+            <span class="threat-btn-tip">Damage dealt + taken + speed pressure combined.</span>
+          </button>
+          <button class="threat-mode-btn" id="threatBtn-offensive" onclick="setThreatMode('offensive')">
+            Offensive
+            <span class="threat-btn-tip">Most damage dealt to your team, weighted by speed.</span>
+          </button>
+          <button class="threat-mode-btn" id="threatBtn-defensive" onclick="setThreatMode('defensive')">
+            Defensive
+            <span class="threat-btn-tip">Hardest for your team to KO.</span>
+          </button>
+        </div>
+        <button onclick="closeThreatPanel()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;">Close</button>
+      </div>
+      <div class="threat-sprites-row" id="threatSpritesRow">
+        <div style="color:var(--text3);font-size:12px;padding:16px 0;">Load a meta and your team to see threat analysis.</div>
+      </div>
+    </div>
 
     <!-- Defender tabs + clipboard — above results listing -->
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
@@ -1469,8 +1771,208 @@ const pinnedKeys = new Set();
 const scarfOverrides = new Map();
 // type-boost item overrides: key = speciesRaw → 'on'|'off' (×1.2 to all damage)
 const typeBoostOverrides = new Map();
+// multiscale disabled: defender speciesRaw in this set → ignore multiscale
+const multiscaleOverrides = new Set();
 // collapsed extra moves: key absent = collapsed (default), key present = expanded
 const expandedExtras = new Set();
+
+// Abilities for mega/alt forms and base forms (Pokemon Champions specifics)
+// Format: slug → ability name (as it appears in paste / getAbilityMods)
+const FORM_ABILITIES = {
+  // Standard gen-6 megas
+  'venusaur-mega':    'Thick Fat',
+  'charizard-mega-x': 'Tough Claws',
+  'charizard-mega-y': 'Drought',
+  'blastoise-mega':   'Mega Launcher',
+  'beedrill-mega':    'Adaptability',
+  'pidgeot-mega':     'No Guard',
+  'slowbro-mega':     'Shell Armor',
+  'gengar-mega':      'Shadow Tag',
+  'kangaskhan-mega':  'Parental Bond',
+  'pinsir-mega':      'Aerilate',
+  'gyarados-mega':    'Mold Breaker',
+  'aerodactyl-mega':  'Tough Claws',
+  'mewtwo-mega-x':    'Steadfast',
+  'mewtwo-mega-y':    'Insomnia',
+  'ampharos-mega':    'Mold Breaker',
+  'steelix-mega':     'Sand Force',
+  'scizor-mega':      'Technician',
+  'heracross-mega':   'Skill Link',
+  'houndoom-mega':    'Solar Power',
+  'tyranitar-mega':   'Sand Stream',
+  'blaziken-mega':    'Speed Boost',
+  'gardevoir-mega':   'Pixilate',
+  'mawile-mega':      'Huge Power',
+  'aggron-mega':      'Filter',
+  'medicham-mega':    'Pure Power',
+  'manectric-mega':   'Intimidate',
+  'sharpedo-mega':    'Strong Jaw',
+  'camerupt-mega':    'Sheer Force',
+  'altaria-mega':     'Pixilate',
+  'banette-mega':     'Prankster',
+  'absol-mega':       'Magic Bounce',
+  'glalie-mega':      'Refrigerate',
+  'salamence-mega':   'Aerilate',
+  'metagross-mega':   'Tough Claws',
+  'latias-mega':      'Levitate',
+  'latios-mega':      'Levitate',
+  'rayquaza-mega':    'Delta Stream',
+  'lopunny-mega':     'Scrappy',
+  'garchomp-mega':    'Sand Force',
+  'lucario-mega':     'Adaptability',
+  'abomasnow-mega':   'Snow Warning',
+  'gallade-mega':     'Inner Focus',
+  'audino-mega':      'Healer',
+  'diancie-mega':     'Magic Bounce',
+  // Pokemon Champions custom megas
+  'alakazam-mega':    'Trace',
+  'golurk-mega':      'Unseen Fist',
+  'dragonite-mega':   'Multiscale',
+  'meganium-mega':    'Mega Sol',
+  'feraligatr-mega':  'Dragonize',
+  'starmie-mega':     'Huge Power',
+  'skarmory-mega':    'Stalwart',
+  'greninja-mega':    'Protean',
+  'chesnaught-mega':  'Bulletproof',
+  'delphox-mega':     'Levitate',
+  'hawlucha-mega':    'No Guard',
+  'chandelure-mega':  'Infiltrator',
+  'froslass-mega':    'Snow Warning',
+  'crabominable-mega':'Iron Fist',
+  'drampa-mega':      'Berserk',
+  'scovillain-mega':  'Spicy Spray',
+  'glimmora-mega':    'Adaptability',
+  'chimecho-mega':     'Levitate',
+  'clefable-mega':     'Magic Bounce',
+  'emboar-mega':     'Mold Breaker',
+  'excadrill-mega':     'Piercing Drill',
+  'floette-mega':     'Fairy Aura',
+  // Base-form abilities (used when reverting natively-mega paste entries)
+  'venusaur':   'Overgrow',
+  'charizard':  'Blaze',
+  'blastoise':  'Torrent',
+  'gengar':     'Cursed Body',
+  'kangaskhan': 'Early Bird',
+  'pinsir':     'Hyper Cutter',
+  'gyarados':   'Intimidate',
+  'aerodactyl': 'Rock Head',
+  'mewtwo':     'Pressure',
+  'ampharos':   'Static',
+  'steelix':    'Rock Head',
+  'scizor':     'Swarm',
+  'heracross':  'Swarm',
+  'houndoom':   'Flash Fire',
+  'tyranitar':  'Sand Stream',
+  'blaziken':   'Blaze',
+  'gardevoir':  'Synchronize',
+  'mawile':     'Hyper Cutter',
+  'aggron':     'Sturdy',
+  'medicham':   'Pure Power',
+  'manectric':  'Static',
+  'sharpedo':   'Rough Skin',
+  'camerupt':   'Magma Armor',
+  'altaria':    'Natural Cure',
+  'banette':    'Frisk',
+  'absol':      'Pressure',
+  'glalie':     'Ice Body',
+  'salamence':  'Intimidate',
+  'metagross':  'Clear Body',
+  'latias':     'Levitate',
+  'latios':     'Levitate',
+  'lopunny':    'Cute Charm',
+  'garchomp':   'Sand Veil',
+  'lucario':    'Steadfast',
+  'abomasnow':  'Snow Warning',
+  'gallade':    'Steadfast',
+  'audino':     'Healer',
+  'diancie':    'Clear Body',
+  'alakazam':   'Synchronize',
+  'dragonite':  'Inner Focus',
+  'meganium':   'Overgrow',
+  'feraligatr': 'Torrent',
+  'starmie':    'Natural Cure',
+  'skarmory':   'Keen Eye',
+  'greninja':   'Torrent',
+  'chesnaught': 'Overgrow',
+  'delphox':    'Blaze',
+  'hawlucha':   'Limber',
+  'chandelure': 'Flash Fire',
+  'froslass':   'Snow Cloak',
+  'crabominable':'Hyper Cutter',
+  'drampa':     'Berserk',
+  'scovillain': 'Chlorophyll',
+  'glimmora':   'Toxic Debris',
+  'golurk':     'Iron Fist',
+  'floette-eternal': 'Flower Veil',
+  'chimecho':   'Levitate',
+  'clefable':   'Cute Charm',
+  'emboar':     'Blaze',
+  'excadrill':  'Sand Rush',
+  'meowstic':   'Keen Eye',
+  'victreebel': 'Chlorophyll',
+};
+
+// Short descriptions for ability hover tooltips
+const ABILITY_DESC = {
+  'Thick Fat':      '×0.5 Fire & Ice damage received',
+  'Tough Claws':    '+30% contact move power',
+  'Drought':        'Summons harsh sunlight',
+  'Mega Launcher':  '+50% pulse move power',
+  'Adaptability':   'STAB becomes ×2 instead of ×1.5',
+  'Aerilate':       'Normal moves become Flying; +20% power',
+  'Refrigerate':    'Normal moves become Ice; +20% power',
+  'Pixilate':       'Normal moves become Fairy; +20% power',
+  'Galvanize':      'Normal moves become Electric; +20% power',
+  'Protean':        'STAB on every move (Libero)',
+  'Huge Power':     '×2 Attack',
+  'Pure Power':     '×2 Attack',
+  'Iron Fist':      '+20% punching move power',
+  'Technician':     '×1.5 moves with ≤60 BP',
+  'Sheer Force':    '+30% power on moves with secondary effects',
+  'Reckless':       '+20% recoil move power',
+  'Strong Jaw':     '+50% bite move power',
+  'Neuroforce':     '×1.25 super-effective damage dealt',
+  'Transistor':     '×1.5 Electric move power',
+  'Dragons Maw':    '×1.5 Dragon move power',
+  'Sand Stream':    'Summons a sandstorm',
+  'Speed Boost':    'Speed +1 each turn',
+  'Intimidate':     'Lowers opponent Attack on entry',
+  'Multiscale':     '×0.5 damage at full HP',
+  'Filter':         '×0.75 super-effective damage received',
+  'Magic Bounce':   'Reflects status moves',
+  'Levitate':       'Immune to Ground moves',
+  'Mold Breaker':   'Ignores most defensive abilities',
+  'Analytic':       '+30% power when moving last',
+  'Shadow Tag':     'Opponent cannot flee',
+  'No Guard':       'All moves always hit',
+  'Sand Force':     '+30% Rock/Steel/Ground in sand',
+  'Solar Power':    '+50% Sp.Atk in sun; HP loss each turn',
+  'Snow Warning':   'Summons snow on entry',
+  'Flash Fire':     'Immune to Fire; boosts Fire moves when hit',
+  'Scrappy':        'Normal/Fighting moves hit Ghosts',
+  'Skill Link':     'Multi-hit moves always hit max times',
+  'Parental Bond':  'Hits twice; second hit ×0.25',
+  'Healer':         'May cure allies of status',
+  'Bulletproof':    'Immune to ball and bomb moves',
+  'Chlorophyll':    '×2 Speed in sun',
+  'Unburden':       '×2 Speed after using/losing held item',
+  'Cursed Body':    'May disable moves that hit this Pokémon',
+  'Magician':       'Steals held item on contact',
+  'Toxic Debris':   'Scatters Toxic Spikes when hit by physical',
+  'Trace':          'Copies opponent ability on entry',
+  'Inner Focus':    'Cannot flinch',
+  'Sturdy':         'Cannot be OHKOd; survives at 1 HP',
+  'Cloud Nine':     'Eliminates weather effects',
+  'Delta Stream':   'Summons strong winds; Flying resistant to weaknesses',
+  'Prankster':      'Status moves have +1 priority',
+  'Flower Veil':    'Ally Grass-types protected from status',
+  'Shell Armor':    'Cannot receive critical hits',
+  'Sticky Hold':    'Item cannot be removed',
+  'Hydration':      'Cures status in rain',
+  'Insomnia':       'Cannot fall asleep',
+  'Steadfast':      'Speed +1 when flinching',
+};
+
 // megaOverrides: speciesRaw → mega slug currently active (null = base form)
 const megaOverrides = new Map();
 
@@ -1519,6 +2021,13 @@ const MEGA_FORMS = {
   'audino':    [{label:'Mega',slug:'audino-mega'}],
   'diancie':   [{label:'Mega',slug:'diancie-mega'}],
   'golurk':    [{label:'Mega',slug:'golurk-mega'}],
+  'chimecho':   [{label:'Mega',slug:'chimecho-mega'}],
+  'clefable':   [{label:'Mega',slug:'clefable-mega'}],
+  'emboar':     [{label:'Mega',slug:'emboar-mega'}],
+  'excadrill':  [{label:'Mega',slug:'excadrill-mega'}],
+  'meowstic':   [{label:'Mega',slug:'meowstic-mega'}],
+  'victreebel': [{label:'Mega',slug:'victreebel-mega'}],
+
   'alakazam':  [{label:'Mega',slug:'alakazam-mega'}],
   'dragonite':  [{label:'Mega',slug:'dragonite-mega'}],
   'meganium':   [{label:'Mega',slug:'meganium-mega'}],
@@ -2065,12 +2574,14 @@ function getDefenderRuinDebuff(attackerAbility, moveCat) {
 
 // Defender ability damage reduction multiplier (applied to incoming damage)
 // Returns a multiplier < 1 when the defender's ability reduces damage from this move type
-function getDefenderAbilityDmgMul(defenderAbility, moveType) {
+function getDefenderAbilityDmgMul(defenderAbility, moveType, defenderKey) {
   const ab = (defenderAbility || '').toLowerCase().replace(/[\s-]/g,'');
-  if (ab === 'waterbubble' && moveType === 'fire') return 0.5;  // Water Bubble halves fire damage taken
+  if (ab === 'waterbubble' && moveType === 'fire') return 0.5;
   if (ab === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) return 0.5;
-  if (ab === 'fluffy' && moveType === 'fire') return 2;   // Fluffy doubles fire damage
-  if (ab === 'dryskin' && moveType === 'fire') return 1.25; // Dry Skin 25% more fire damage
+  if (ab === 'fluffy' && moveType === 'fire') return 2;
+  if (ab === 'dryskin' && moveType === 'fire') return 1.25;
+  if ((ab === 'multiscale' || ab === 'shadowshield') && !multiscaleOverrides.has(defenderKey)) return 0.5;
+  if (ab === 'levitate' && moveType === 'ground') return 0;
   return 1;
 }
 
@@ -2280,6 +2791,22 @@ function computeResults(loadedMeta, defender) {
       }
       if (eff === 0) continue;
 
+      // Bulletproof: immune to ball and bomb moves
+      const defAb = (defender.ability||'').toLowerCase().replace(/[\s-]/g,'');
+      const atkAb = (attacker.ability||'').toLowerCase().replace(/[\s-]/g,'');
+      const moldBreaker = atkAb === 'moldbreaker' || atkAb === 'turboblaze' || atkAb === 'teravolt' || atkAb === 'piercingdrill';
+      if (!moldBreaker && defAb === 'bulletproof') {
+        const ballBombMoves = ['acid spray','aura sphere','barrage','beak blast','bullet seed',
+          'cannon','egg bomb','electro ball','energy ball','fire blast','focus blast',
+          'gyro ball','ice ball','magnet bomb','mist ball','mud bomb','octazooka',
+          'pollen puff','pyro ball','rock blast','rock wrecker','searing shot',
+          'seed bomb','shadow ball','sludge bomb','weather ball','zap cannon'];
+        if (ballBombMoves.some(b => mn.includes(b.split(' ')[0]) || b.includes(mn))) continue;
+      }
+
+      // Levitate: ground immunity (unless Mold Breaker)
+      if (!moldBreaker && defAb === 'levitate' && effectiveMoveType === 'ground') continue;
+
       // Recalculate STAB and atk boosts using effective type
       const abMeff = getAbilityMods(attacker.ability, effectiveMoveType, attacker.types, move.name);
       const isStab = abMeff.stabBonus;
@@ -2329,7 +2856,7 @@ function computeResults(loadedMeta, defender) {
       const effectivePower  = move.power * abilityPowerMul * itemPowerMul;
 
       const dmg = damageFormula(50, effectivePower, atkStat, defStat, eff, isStab)
-                  * getDefenderAbilityDmgMul(defender.ability, effectiveMoveType);
+                  * (moldBreaker ? 1 : getDefenderAbilityDmgMul(defender.ability, effectiveMoveType, defender.speciesRaw));
       const pct = dmg / defender.stats.hp * 100;
 
       // ── Build activeMods list for display ──
@@ -2452,7 +2979,7 @@ function computeResults(loadedMeta, defender) {
       const defStat  = rawDef * ruinMul;
       const pwrMul   = abMeff.powerMul * getAbilityMovePowerMul(defender.ability, move, eff) * defItForMove.powerMul * getItemPerMoveMul(defender.item, effectiveMoveType, eff);
       const dmg      = damageFormula(defender.level, move.power * pwrMul, atkStat, defStat, eff, isStab)
-                       * getDefenderAbilityDmgMul(attacker.ability, effectiveMoveType);
+                       * getDefenderAbilityDmgMul(attacker.ability, effectiveMoveType, attacker.speciesRaw);
       const pct      = dmg / attacker.computedHp * 100;
 
       defMoveBreakdown.push({ move, effectiveMoveType, isSpread: move.isSpread, isWeatherBall: mn === 'weather ball', dmg, pct, eff, stab: isStab > 1, activeMods: [], atkStat, defStat, isStab, pasteIndex: move.pasteIndex ?? 99 });
@@ -2496,6 +3023,7 @@ function computeResults(loadedMeta, defender) {
 function renderResults() {
   updateFieldStatus();
   if (_historyViewActive) { renderMatchHistory(); return; }
+  refreshThreatPanelIfOpen();
   const weather       = document.getElementById('weatherMode')?.value || 'none';
   const terrainMode   = document.getElementById('terrainMode')?.value || 'none';
   const atkStage    = Number(document.getElementById('atkStage')?.value || 0);
@@ -2553,7 +3081,7 @@ function renderResults() {
           const wbStab = atkTypes.includes(newType) ? (m.isStab > 1.5 ? 2 : 1.5) : (m.isStab||1);
           wbDmg = damageFormula(50, wbPower, m.atkStat, m.defStat, newEff, wbStab);
           wbDmg *= weatherBoost;
-          wbDmg *= getDefenderAbilityDmgMul(r.defender ? r.defender.ability : '', newType);
+          wbDmg *= getDefenderAbilityDmgMul(r.defender ? r.defender.ability : '', newType, r.defender ? r.defender.speciesRaw : '');
         } else {
           // Fallback ratio: m.dmg was 50BP normal-type, correct for 100BP + newType eff + weather
           const origEff = m.eff > 0 ? m.eff : 1;
@@ -2609,7 +3137,7 @@ function renderResults() {
       m.resolvedType = moveType; // for display
       m.isEffectivelySpread = isEffectivelySpread;
 
-      if (adjustedDmg > best.dmg && (m.pasteIndex ?? 99) < (r.dividerIndex ?? 4)) best = { dmg: adjustedDmg, pct: m.adjustedPct, move: m.move, eff: m.eff };
+      if (adjustedDmg > best.dmg && (m.pasteIndex ?? 99) < (r.dividerIndex ?? 4)) best = { dmg: adjustedDmg, pct: Math.min(m.adjustedPct, 130), move: m.move, eff: m.eff };
     });
 
     // ── Attacking mode: defender hits each meta Pokémon ──
@@ -2679,7 +3207,7 @@ function renderResults() {
       m.adjustedDmg = adjustedDmg;
       m.resolvedType = moveType2;
       m.isEffectivelySpread = isEffSpread;
-      if (adjustedDmg > defBest.dmg && (m.pasteIndex ?? 99) < (r.defDividerIndex ?? 4)) defBest = { dmg: adjustedDmg, pct: m.adjustedPct, move: m.move, eff: m.eff };
+      if (adjustedDmg > defBest.dmg && (m.pasteIndex ?? 99) < (r.defDividerIndex ?? 4)) defBest = { dmg: adjustedDmg, pct: Math.min(m.adjustedPct, 130), move: m.move, eff: m.eff };
     });
 
     r.displayPct  = attackingMode ? defBest.pct  : best.pct;
@@ -3009,6 +3537,34 @@ function renderResults() {
       megaHtml = `<div style="display:flex;align-items:center;gap:5px;padding:4px 0 2px;flex-wrap:wrap;"><span style="font-size:10px;color:var(--text3);">${btnLabel}</span>${btns}</div>`;
     }
 
+    // Multiscale/Shadow Shield toggle — attacker (meta mon) has ability
+    // In attacking mode: halves damage they receive from user's moves
+    // In defending mode: doesn't directly apply but show anyway for reference
+    const _atkAbNorm = (r.attacker.ability || '').toLowerCase().replace(/[\s-]/g,'');
+    const _hasMultiscale = _atkAbNorm === 'multiscale' || _atkAbNorm === 'shadowshield';
+    const _multiscaleKey = r.attacker.speciesRaw;
+    const _multiscaleOff = _hasMultiscale && multiscaleOverrides.has(_multiscaleKey);
+    const multiscaleHtml = _hasMultiscale ? (() => {
+      const style = _multiscaleOff
+        ? 'color:var(--text3);border-color:var(--border2);'
+        : 'color:var(--green);border-color:var(--green);background:rgba(93,202,165,0.1);';
+      const safeKey = _multiscaleKey.replace(/'/g,"\\'");
+      return `<div style="padding:2px 0 4px;"><button onclick="toggleMultiscale(event,'${safeKey}')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;background:transparent;${style}" title="Toggle Multiscale — ×0.5 at full HP">Multiscale${_multiscaleOff ? ' off' : ' ✓'}</button></div>`;
+    })() : '';
+
+    // Ability + item left-column for breakdown
+    const _ab = r.attacker.ability || '';
+    const _it = r.attacker.item || '';
+    const _abSlug = _ab.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const _itSlug = _it.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const _abHtml = _ab
+      ? '<span data-ability-slug="' + _abSlug + '" data-ab-effect="" style="font-size:9px;color:var(--accent2);background:rgba(124,106,247,0.1);padding:2px 5px;border-radius:4px;cursor:help;border:0.5px solid rgba(124,106,247,0.25);text-align:center;line-height:1.2;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;">' + _ab + '</span>'
+      : '';
+    const _itImg = _it
+      ? '<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/' + _itSlug + '.png" data-item-slug="' + _itSlug + '" data-item-name="' + _it.replace(/"/g,'&quot;') + '" data-it-effect="" style="width:24px;height:24px;image-rendering:pixelated;cursor:help;" onerror="this.src=\'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png\'">'
+      : '';
+    const abilityItemColHtml = '<div class="breakdown-left-col">' + _abHtml + _itImg + '</div>';
+
     html += `
       <div class="result-item${isPinned ? ' is-pinned' : ''}">
         <div class="result-row" onclick="toggleBreakdown(${index})" id="resultRow-${index}" data-specieskey="${r.attacker.speciesRaw.replace(/"/g,'&quot;')}">
@@ -3029,9 +3585,13 @@ function renderResults() {
           <div class="result-move">${moveName} ${effLabel}</div>
         </div>
         <div class="move-breakdown" id="breakdown-${index}">
+          ${abilityItemColHtml}
+          <div class="breakdown-right-col">
           ${megaHtml}
+          ${multiscaleHtml}
           ${speedHtml}
           ${breakdownHtml || '<div class="move-breakdown-row">No damaging moves found.</div>'}
+          </div>
         </div>
       </div>`;
   });
@@ -3146,7 +3706,12 @@ function handlePinClick(e) {
   e.stopPropagation();
   const key = e.currentTarget.dataset.pinkey;
   if (!key) return;
-  if (pinnedKeys.has(key)) { pinnedKeys.delete(key); } else { pinnedKeys.add(key); }
+  if (pinnedKeys.has(key)) {
+    pinnedKeys.delete(key);
+    expandedBreakdowns.delete(key); // collapse when unpinning
+  } else {
+    pinnedKeys.add(key);
+  }
   renderResults();
 }
 
@@ -3414,6 +3979,21 @@ function toggleTypeBoost(e, key) {
   renderResults();
 }
 
+function toggleMultiscale(e, defenderKey) {
+  e.stopPropagation();
+  if (multiscaleOverrides.has(defenderKey)) multiscaleOverrides.delete(defenderKey);
+  else                                       multiscaleOverrides.add(defenderKey);
+  // Must recompute — multiscale affects cached damage values, not just rendering
+  const cur = DEFENDER_SLOTS[activeDefenderSlot];
+  if (cur) {
+    const loadedMeta = META_DB.filter(p => p.loaded);
+    const results = computeResults(loadedMeta, cur);
+    cur._lastResults = results;
+    lastResults = results;
+  }
+  renderResults();
+}
+
 function toggleExtraMoves(e, key) {
   e.stopPropagation();
   if (expandedExtras.has(key)) { expandedExtras.delete(key); }
@@ -3460,26 +4040,36 @@ async function toggleMegaForm(e, speciesRaw, megaSlug) {
     entry.spriteUrl   = entry._megaBaseSpriteUrl || pokemonCache[baseKey]?.spriteUrl || null;
     entry._megaBaseSpriteUrl = null;
     entry._origSpeciesRaw    = null;
+    // Restore base ability
+    // _baseAbility is set during activate. If undefined, this is a natively-mega entry
+    // that was reverted directly — look up base ability from FORM_ABILITIES.
+    const restoredAbility = entry._baseAbility !== undefined
+      ? (entry._baseAbility !== null ? entry._baseAbility : FORM_ABILITIES[baseKey])
+      : FORM_ABILITIES[baseKey];
+    if (restoredAbility) entry.ability = restoredAbility;
+    entry._baseAbility = undefined;
     megaOverrides.delete(baseKey);
 
   } else {
     // ── ACTIVATE mega form ──
-    // Save base stats if not already saved
+    // Save base data if not already saved
     if (!entry._megaBaseStats) {
-      // Pre-fetch base form so we always have it
-      try {
-        const base = await fetchPokemonData(baseKey);
-        entry._megaBaseStats     = entry.baseStats;   // save current (base) stats
-        entry._megaBaseTypes     = entry.types;
-        entry._megaBaseSpriteUrl = entry.spriteUrl;
-        entry._origSpeciesRaw    = entry.speciesRaw;  // save original name
-        // Also cache base sprite for later
-        if (!pokemonCache[baseKey]) pokemonCache[baseKey] = base;
-      } catch {
-        entry._megaBaseStats     = entry.baseStats;
-        entry._megaBaseTypes     = entry.types;
-        entry._megaBaseSpriteUrl = entry.spriteUrl;
-        entry._origSpeciesRaw    = entry.speciesRaw;
+      try { const base = await fetchPokemonData(baseKey); if (!pokemonCache[baseKey]) pokemonCache[baseKey] = base; } catch {}
+      entry._megaBaseStats     = entry.baseStats;
+      entry._megaBaseTypes     = entry.types;
+      entry._megaBaseSpriteUrl = entry.spriteUrl;
+      entry._origSpeciesRaw    = entry.speciesRaw;
+      // Save base ability: for natively-mega entries the current ability IS the mega ability,
+      // so derive the base ability from FORM_ABILITIES[baseKey] instead.
+      const nativelyMega = toSlug(entry.speciesRaw).includes('-mega') ||
+                           toSlug(entry.speciesRaw).includes('-eternal');
+      if (nativelyMega && FORM_ABILITIES[baseKey]) {
+        entry._baseAbility = FORM_ABILITIES[baseKey];
+      } else if (nativelyMega) {
+        // No base ability defined — fetch from PokeAPI base form abilities
+        entry._baseAbility = null; // will be fetched on revert if needed
+      } else {
+        entry._baseAbility = entry.ability; // paste ability is already the base ability
       }
     }
     // Fetch mega stats
@@ -3496,6 +4086,9 @@ async function toggleMegaForm(e, speciesRaw, megaSlug) {
     if (expandedBreakdowns.has(currentName)) { expandedBreakdowns.delete(currentName); expandedBreakdowns.add(megaName); }
     if (pinnedKeys.has(currentName))          { pinnedKeys.delete(currentName);          pinnedKeys.add(megaName); }
     entry.speciesRaw = megaName;
+    // Set the correct mega ability
+    const megaAbility = FORM_ABILITIES[megaSlug];
+    if (megaAbility) entry.ability = megaAbility;
     megaOverrides.set(baseKey, megaSlug);
   }
 
@@ -3520,11 +4113,74 @@ function slugToDisplayName(slug) {
   const tip = document.getElementById('move-tooltip');
   let current = null;
 
-  document.addEventListener('mouseover', e => {
-    const el = e.target.closest('[data-effect]');
-    if (!el || !el.dataset.effect) { hideTip(); return; }
+  const abilityDescCache = {};
+  const itemDescCache    = {};
+
+  async function fetchAbilityDesc(slug) {
+    if (abilityDescCache[slug] !== undefined) return abilityDescCache[slug];
+    abilityDescCache[slug] = '…';
+    try {
+      const r = await fetch('https://pokeapi.co/api/v2/ability/' + slug + '/');
+      if (!r.ok) throw 0;
+      const d = await r.json();
+      // Prefer English short_effect, fallback to flavor text
+      const entry = d.effect_entries?.find(e => e.language.name === 'en');
+      const text = entry?.short_effect || d.flavor_text_entries?.find(e => e.language.name === 'en')?.flavor_text || slug;
+      abilityDescCache[slug] = text.replace(/\s+/g, ' ');
+    } catch { abilityDescCache[slug] = slug; }
+    return abilityDescCache[slug];
+  }
+
+  async function fetchItemDesc(slug, name) {
+    if (itemDescCache[slug] !== undefined) return itemDescCache[slug];
+    itemDescCache[slug] = '…';
+    try {
+      const r = await fetch('https://pokeapi.co/api/v2/item/' + slug + '/');
+      if (!r.ok) throw 0;
+      const d = await r.json();
+      const entry = d.effect_entries?.find(e => e.language.name === 'en');
+      const text = name + ': ' + (entry?.short_effect || d.flavor_text_entries?.find(e => e.language.name === 'en')?.text || '');
+      itemDescCache[slug] = text.replace(/\s+/g, ' ');
+    } catch { itemDescCache[slug] = name; }
+    return itemDescCache[slug];
+  }
+
+  document.addEventListener('mouseover', async e => {
+    const el = e.target.closest('[data-effect],[data-ability-slug],[data-item-slug]');
+    if (!el) { hideTip(); return; }
     if (el === current) return;
     current = el;
+
+    // Lazy-load ability description
+    if (el.dataset.abilitySlug) {
+      if (!el.dataset.abEffect) {
+        const desc = await fetchAbilityDesc(el.dataset.abilitySlug);
+        el.dataset.abEffect = desc;
+        if (el === current) { tip.textContent = desc; tip.style.display = 'block'; positionTip(e); }
+      } else {
+        tip.textContent = el.dataset.abEffect;
+        tip.style.display = 'block';
+        positionTip(e);
+      }
+      return;
+    }
+
+    // Lazy-load item description
+    if (el.dataset.itemSlug) {
+      if (!el.dataset.itEffect) {
+        const desc = await fetchItemDesc(el.dataset.itemSlug, el.dataset.itemName || el.dataset.itemSlug);
+        el.dataset.itEffect = desc;
+        if (el === current) { tip.textContent = desc; tip.style.display = 'block'; positionTip(e); }
+      } else {
+        tip.textContent = el.dataset.itEffect;
+        tip.style.display = 'block';
+        positionTip(e);
+      }
+      return;
+    }
+
+    // Existing data-effect (moves)
+    if (!el.dataset.effect) { hideTip(); return; }
     tip.textContent = el.dataset.effect;
     tip.style.display = 'block';
     positionTip(e);
@@ -3536,7 +4192,7 @@ function slugToDisplayName(slug) {
   });
 
   document.addEventListener('mouseout', e => {
-    const el = e.target.closest('[data-effect]');
+    const el = e.target.closest('[data-effect],[data-ability-slug],[data-item-slug]');
     if (el) hideTip();
   });
 
@@ -3545,7 +4201,6 @@ function slugToDisplayName(slug) {
     const tw = tip.offsetWidth, th = tip.offsetHeight;
     let x = e.clientX + margin;
     let y = e.clientY - th - margin;
-    // Keep within viewport
     if (x + tw > window.innerWidth  - 8) x = e.clientX - tw - margin;
     if (y < 8) y = e.clientY + margin;
     tip.style.left = x + 'px';
@@ -3622,15 +4277,29 @@ Impish Nature
 - Fire Blast`;
 }
 
+function stepStage(id, delta) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  const cur = Number(sel.value) || 0;
+  const next = Math.max(-6, Math.min(6, cur + delta));
+  sel.value = String(next);
+  updateStageDisplay(id, next);
+  renderResults();
+}
+
+function updateStageDisplay(id, val) {
+  const disp = document.getElementById(id + 'Display');
+  if (!disp) return;
+  disp.textContent = val > 0 ? '+' + val : String(val);
+  disp.className = 'stage-spinner-val' + (val > 0 ? ' positive' : val < 0 ? ' negative' : '');
+}
+
 function resetFieldConditions() {
   const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
   setVal('weatherMode', 'none');
   setVal('terrainMode', 'none');
   setVal('speedCondition', 'none');
-  setVal('atkStage', '0');
-  setVal('spaStage', '0');
-  setVal('defStage', '0');
-  setVal('spdStage', '0');
+  ['atkStage','spaStage','defStage','spdStage'].forEach(id => { setVal(id, '0'); updateStageDisplay(id, 0); });
   renderResults();
 }
 
@@ -4085,25 +4754,28 @@ function bestOffenseEff(attackerSpecies, defenderTypes) {
   return Math.max(...moveTypes.map(mt => typeEff(mt, defenderTypes)));
 }
 
+// Cap eff at 1.3 (130%) for weighting — going over 1x is enough, no need to overvalue huge KOs
+function cappedEff(eff) { return eff === 0 ? 0 : Math.min(eff, 1.3); }
+// Immunity bonus: immunities are extra valuable defensively
+function defEffScore(eff) { return eff === 0 ? -0.5 : -cappedEff(eff); }
+
 function getOffenseThreat(speciesRaw) {
-  // Sum of best effectiveness vs all opponents combined (higher = more threatening offensively)
-  return _matchOppTeam.reduce((sum, opp) => sum + bestOffenseEff(speciesRaw, opp.types), 0);
+  return _matchOppTeam.reduce((sum, opp) => sum + cappedEff(bestOffenseEff(speciesRaw, opp.types)), 0);
 }
 
 function getDefenseThreat(speciesRaw) {
-  // Sum of best effectiveness opponents can deal to this pokemon (higher = more vulnerable)
   const entry = _matchMyTeam.concat(_matchOppTeam).find(p => p.speciesRaw === speciesRaw);
   if (!entry) return 0;
+  // Lower = better defensively; immunity gives -0.5 bonus
   return _matchOppTeam.concat(_matchMyTeam)
     .filter(p => p.speciesRaw !== speciesRaw)
-    .reduce((sum, opp) => sum + bestOffenseEff(opp.speciesRaw, entry.types), 0);
+    .reduce((sum, opp) => sum + defEffScore(bestOffenseEff(opp.speciesRaw, entry.types)), 0);
 }
 
-// Score label shown above sprite: offense = total eff output, defense = total eff received
 function getDamageLabel(speciesRaw, isMyTeam, isOffenseMode) {
   if (isOffenseMode) {
     const opponents = isMyTeam ? _matchOppTeam : _matchMyTeam;
-    const total = opponents.reduce((sum, opp) => sum + bestOffenseEff(speciesRaw, opp.types), 0);
+    const total = opponents.reduce((sum, opp) => sum + cappedEff(bestOffenseEff(speciesRaw, opp.types)), 0);
     const avg = opponents.length ? (total / opponents.length).toFixed(1) : '—';
     return `avg ×${avg} out`;
   } else {
@@ -4111,7 +4783,7 @@ function getDamageLabel(speciesRaw, isMyTeam, isOffenseMode) {
     const team = isMyTeam ? _matchMyTeam : _matchOppTeam;
     const self = team.find(p => p.speciesRaw === speciesRaw);
     if (!self) return '';
-    const total = opponents.reduce((sum, opp) => sum + bestOffenseEff(opp.speciesRaw, self.types), 0);
+    const total = opponents.reduce((sum, opp) => sum + cappedEff(bestOffenseEff(opp.speciesRaw, self.types)), 0);
     const avg = opponents.length ? (total / opponents.length).toFixed(1) : '—';
     return `avg ×${avg} in`;
   }
@@ -4196,24 +4868,19 @@ function renderMatchWindow() {
   const sortOther = isOffense ? 'defense' : 'offense';
 
   win.innerHTML = `
-    <!-- Top bar: Win/Loss centered, Cancel top-right -->
-    <div style="display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:14px;">
-      <div style="display:flex;gap:10px;">
-        <button onclick="reportMatch('win')" style="padding:5px 20px;font-size:12px;font-weight:700;border-radius:var(--radius-sm);border:0.5px solid #2d6a4a;background:#1a3a2a;color:var(--green);cursor:pointer;">Win</button>
-        <button onclick="reportMatch('loss')" style="padding:5px 20px;font-size:12px;font-weight:700;border-radius:var(--radius-sm);border:0.5px solid #5a2020;background:#2a1414;color:var(--red);cursor:pointer;">Loss</button>
-      </div>
-      <button onclick="cancelMatch()" style="position:absolute;right:0;padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;">Cancel</button>
-    </div>
-    <!-- Teams with sort button in the middle -->
+    <!-- Teams with Win/Loss/Cancel in the center column -->
     <div style="display:flex;gap:0;align-items:flex-start;">
       <div style="flex:1;min-width:0;">
         <div style="font-size:10px;color:var(--text3);margin-bottom:6px;text-align:center;">YOUR TEAM</div>
         <div class="mw-team-grid">${teamGrid(sortedMy, 'my', sortedOpp, true)}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 10px;gap:6px;align-self:center;">
-        <div style="width:0.5px;height:32px;background:var(--border2);"></div>
-        <button onclick="_matchSortMode='${sortOther}';renderMatchWindow();" style="padding:4px 8px;font-size:10px;border-radius:var(--radius-sm);border:0.5px solid var(--accent);background:rgba(124,106,247,0.12);color:var(--accent2);cursor:pointer;white-space:nowrap;writing-mode:horizontal-tb;">${sortLabel}</button>
-        <div style="width:0.5px;height:32px;background:var(--border2);"></div>
+        <button onclick="reportMatch('win')" style="padding:5px 14px;font-size:12px;font-weight:700;border-radius:var(--radius-sm);border:0.5px solid #2d6a4a;background:#1a3a2a;color:var(--green);cursor:pointer;width:100%;">Win</button>
+        <button onclick="reportMatch('loss')" style="padding:5px 14px;font-size:12px;font-weight:700;border-radius:var(--radius-sm);border:0.5px solid #5a2020;background:#2a1414;color:var(--red);cursor:pointer;width:100%;">Loss</button>
+        <div style="width:0.5px;height:12px;background:var(--border2);"></div>
+        <button onclick="_matchSortMode='${sortOther}';renderMatchWindow();" style="padding:3px 8px;font-size:10px;border-radius:var(--radius-sm);border:0.5px solid var(--accent);background:rgba(124,106,247,0.12);color:var(--accent2);cursor:pointer;white-space:nowrap;">${sortLabel}</button>
+        <div style="width:0.5px;height:12px;background:var(--border2);"></div>
+        <button onclick="cancelMatch()" style="padding:3px 8px;font-size:10px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;">Cancel</button>
       </div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:10px;color:var(--text3);margin-bottom:6px;text-align:center;">OPPONENT</div>
@@ -4257,6 +4924,71 @@ function reportMatch(result) {
 
   if (!_historyViewActive) toggleHistoryView();
   else renderMatchHistory();
+}
+
+function replayMatch(matchId) {
+  // Find the match entry in history
+  const history = getMatchHistory();
+  const teamMatches = _currentTeamName ? (history[_currentTeamName] || []) : [];
+  const m = teamMatches.find(x => x.id === matchId);
+  if (!m) { alert('Match entry not found.'); return; }
+
+  // Build my team from currently loaded defender slots (live data)
+  const myTeam = DEFENDER_SLOTS.filter(Boolean);
+  if (!myTeam.length) { alert('Load your team into the defender tabs first.'); return; }
+
+  _matchMyTeam = myTeam.map(s => ({
+    speciesRaw   : s.speciesRaw,
+    spriteUrl    : getSpriteUrl(s.speciesRaw),
+    computedSpe  : s.computedSpe || s.stats?.spe || 0,
+    types        : s.types || [],
+    ability      : s.ability || '',
+    dividerIndex : s.dividerIndex ?? 4,
+    resolvedMoves: s.resolvedMoves || [],
+  }));
+
+  // Build opp team from history entry names, pulling live meta data where available
+  _matchOppTeam = m.opponent.map(p => {
+    const name = typeof p === 'string' ? p : p.name;
+    const sprite = (typeof p === 'object' && p.sprite) ? p.sprite : null;
+    // Try live META_DB first (handles mega renames too)
+    const dbEntry = META_DB.find(e => e.loaded && (e.speciesRaw === name || e._origSpeciesRaw === name));
+    if (dbEntry) {
+      return {
+        speciesRaw   : name,
+        spriteUrl    : getSpriteUrl(name) || sprite,
+        computedSpe  : dbEntry.computedSpe || 0,
+        types        : dbEntry.types || [],
+        ability      : dbEntry.ability || '',
+        dividerIndex : dbEntry.dividerIndex ?? 4,
+        resolvedMoves: dbEntry.resolvedMoves || [],
+      };
+    }
+    // Fallback: non-meta cache or saved sprite
+    const slug = toSlug(name);
+    const cached = nonMetaCache[slug] || pokemonCache[slug];
+    return {
+      speciesRaw   : name,
+      spriteUrl    : getSpriteUrl(name) || sprite,
+      computedSpe  : 0,
+      types        : cached?.types || [],
+      ability      : '',
+      dividerIndex : 4,
+      resolvedMoves: [],
+    };
+  });
+
+  _matchHighlighted = { my: new Set(), opp: new Set() };
+  _matchActive = true;
+
+  // Disable start match button
+  const btn = document.getElementById('startMatchBtn');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; btn.style.cursor = 'not-allowed'; }
+
+  // Switch back to results view so match window is visible
+  if (_historyViewActive) toggleHistoryView();
+
+  renderMatchWindow();
 }
 
 // ── Match History ─────────────────────────────────────────────────────────────
@@ -4411,14 +5143,17 @@ function renderMatchHistory() {
     const mySprites  = m.myTeam.map((p, i)   => makeHistorySprite(p, i, 'myTeam')).join('');
     const oppSprites = m.opponent.map((p, i)  => makeHistorySprite(p, i, 'opponent')).join('');
 
-    // Layout: [date stacked] [my sprites] [WIN/LOSS badge] [opp sprites] [✕]
+    // Layout: [date stacked] [my sprites] [WIN/LOSS badge + replay] [opp sprites] [✕]
     html += `<div class="match-entry ${rowCls}">
       <div class="match-date">
         <span class="match-date-day">${datePart}</span>
         <span class="match-date-time">${timePart}</span>
       </div>
       <div class="match-sprites">${mySprites}</div>
-      ${badge}
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;">
+        ${badge}
+        <button onclick="replayMatch(${m.id})" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Reopen this match in the match window">▶ Load</button>
+      </div>
       <div class="match-sprites">${oppSprites}</div>
       <button class="match-delete-btn" onclick="deleteMatch('${_currentTeamName.replace(/'/g,"\\'")}',${m.id})" title="Delete this match">✕</button>
     </div>`;
@@ -4449,8 +5184,19 @@ function deleteMatch(teamName, id) {
   if (!confirm('Delete this match entry?')) return;
   const history = getMatchHistory();
   if (history[teamName]) {
+    const deleted = history[teamName].find(m => m.id === id);
     history[teamName] = history[teamName].filter(m => m.id !== id);
     putMatchHistory(history);
+    // Subtract 1 from the appropriate counter
+    if (deleted) {
+      const wr = getWinrates();
+      const score = wr[teamName] || { wins: 0, losses: 0 };
+      if (deleted.result === 'win')  score.wins   = Math.max(0, score.wins   - 1);
+      if (deleted.result === 'loss') score.losses = Math.max(0, score.losses - 1);
+      wr[teamName] = score;
+      putWinrates(wr);
+      loadWinrateForTeam(teamName);
+    }
   }
   renderMatchHistory();
 }
@@ -4591,17 +5337,309 @@ function updateFieldStatus() {
   updateFieldStatus();
 })();
 
+// ── Meta Threat Analysis ──────────────────────────────────────────────────────
+let _threatPanelOpen = false;
+let _threatMode = 'overall'; // 'overall' | 'offensive' | 'defensive'
+
+function toggleThreatPanel() {
+  _threatPanelOpen = !_threatPanelOpen;
+  const panel = document.getElementById('threatPanel');
+  const btn   = document.getElementById('threatToggleBtn');
+  if (_threatPanelOpen) {
+    panel.classList.add('visible');
+    btn.style.background   = 'rgba(124,106,247,0.15)';
+    btn.style.borderColor  = 'var(--accent)';
+    btn.style.color        = 'var(--accent2)';
+    renderThreatPanel();
+  } else {
+    panel.classList.remove('visible');
+    btn.style.background  = '';
+    btn.style.borderColor = '';
+    btn.style.color       = '';
+  }
+}
+
+function closeThreatPanel() {
+  _threatPanelOpen = false;
+  const panel = document.getElementById('threatPanel');
+  const btn   = document.getElementById('threatToggleBtn');
+  panel.classList.remove('visible');
+  btn.style.background  = '';
+  btn.style.borderColor = '';
+  btn.style.color       = '';
+}
+
+function setThreatMode(mode) {
+  _threatMode = mode;
+  ['overall','offensive','defensive'].forEach(m => {
+    const b = document.getElementById('threatBtn-' + m);
+    if (b) b.classList.toggle('active', m === mode);
+  });
+  renderThreatPanel();
+}
+
+// Compute per-meta-pokemon aggregate scores vs all filled defender slots
+function computeThreatScores() {
+  const filledSlots = DEFENDER_SLOTS.filter(Boolean);
+  if (!filledSlots.length) return [];
+
+  const loadedMeta = META_DB.filter(p => p.loaded);
+  if (!loadedMeta.length) return [];
+
+  return loadedMeta.map(attacker => {
+    // For each defender slot, get that slot's results for this attacker
+    let totalDmgPct   = 0; // avg % HP damage dealt to defenders
+    let totalDefPct   = 0; // avg % HP damage received from defenders (lower = more defensive threat)
+    let outspeeds     = 0; // count of defender slots this attacker outspeeds
+    let slotCount     = 0;
+
+    for (const slot of filledSlots) {
+      const results = slot._lastResults || [];
+      const row = results.find(r => r.attacker.speciesRaw === attacker.speciesRaw);
+      if (!row) continue;
+      slotCount++;
+
+      // Best damage attacker deals to this defender (as % HP)
+      totalDmgPct += (row.pct || 0);
+      // Best damage defender deals back (as % HP of attacker)
+      totalDefPct += (row.defBestPct || 0);
+
+      // Speed comparison: attacker vs defender (scarf-aware)
+      const atkSpe = attacker.computedSpe || 0;
+      const defSpe = effectiveSpe(slot);
+      if (atkSpe > defSpe) outspeeds++;
+    }
+
+    const avgDmgPct = slotCount > 0 ? totalDmgPct / slotCount : 0;
+    const avgDefPct = slotCount > 0 ? totalDefPct / slotCount : 0;
+    const outspeedFrac = filledSlots.length > 0 ? outspeeds / filledSlots.length : 0;
+
+    // Scores — higher = more threatening
+    const offensiveScore  = avgDmgPct + outspeedFrac * 15; // dmg + speed bonus
+    const defensiveScore  = 100 - avgDefPct;               // lower dmg received = more threatening defensively
+    const overallScore    = offensiveScore * 0.5 + defensiveScore * 0.35 + outspeedFrac * 15 * 0.15;
+
+    return {
+      attacker,
+      avgDmgPct,
+      avgDefPct,
+      outspeeds,
+      outspeedFrac,
+      offensiveScore,
+      defensiveScore,
+      overallScore,
+    };
+  });
+}
+
+function renderThreatPanel() {
+  if (!_threatPanelOpen) return;
+  const container = document.getElementById('threatSpritesRow');
+  if (!container) return;
+
+  const filledSlots = DEFENDER_SLOTS.filter(Boolean);
+  const loadedMeta  = META_DB.filter(p => p.loaded);
+
+  if (!filledSlots.length || !loadedMeta.length) {
+    container.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:16px 0;">Load a meta and your team to see threat analysis.</div>';
+    return;
+  }
+
+  const scores = computeThreatScores();
+  if (!scores.length) {
+    container.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:16px 0;">No results yet — calculate damage first.</div>';
+    return;
+  }
+
+  // Sort by selected mode
+  const sorted = [...scores].sort((a, b) => {
+    if (_threatMode === 'offensive')  return b.offensiveScore  - a.offensiveScore;
+    if (_threatMode === 'defensive')  return b.defensiveScore  - a.defensiveScore;
+    return b.overallScore - a.overallScore;
+  });
+
+  const top4 = sorted.slice(0, 4);
+
+  // Sprite sizes: rank 1 = biggest, descending
+  const sizes = [80, 64, 56, 48];
+
+  // Helper: best eff meta mon's primary moves deal to targetTypes
+  function bestMetaOffEff(entry, targetTypes) {
+    const metaMoves   = entry.attacker.resolvedMoves || [];
+    const divIdx      = entry.attacker.dividerIndex ?? 4;
+    const metaAbility = entry.attacker.ability || '';
+    const primary = metaMoves.filter(m => (m.pasteIndex ?? 99) < divIdx);
+    const moves   = primary.length ? primary : metaMoves;
+    if (!moves.length) return 1;
+    return Math.max(...moves.map(m => typeEff(getEffectiveMoveType(m, metaAbility), targetTypes)));
+  }
+
+  // Helper: best eff a slot's primary moves deal to metaTypes
+  function bestSlotOffEff(entry, slot) {
+    const metaTypes  = entry.attacker.types || [];
+    const slotMoves  = slot.resolvedMoves || [];
+    const slotDivIdx = slot.dividerIndex ?? 4;
+    const primary    = slotMoves.filter(m => (m.pasteIndex ?? 99) < slotDivIdx);
+    const moves      = primary.length ? primary : slotMoves;
+    if (!moves.length) return 1;
+    return Math.max(...moves.map(m => typeEff(getEffectiveMoveType(m, slot.ability || ''), metaTypes)));
+  }
+
+  // Build a single row of pips + initial-letter labels for up to 6 slots
+  function buildPipRow(pips) {
+    const padded = [...pips];
+    while (padded.length < 6) padded.push('empty-slot');
+    const rows = [];
+    for (let i = 0; i < padded.length; i += 3) rows.push(padded.slice(i, i+3));
+    return rows.map(row =>
+      `<div class="wk-pip-row">${row.map(cls => {
+        const empty = cls === 'empty-slot';
+        return `<div class="wk-pip${empty||!cls ? '' : ' '+cls}" style="${empty?'opacity:0.15;':''}"></div>`;
+      }).join('')}</div>`
+    ).join('');
+  }
+
+  function buildSlotLabels() {
+    const labels = filledSlots.map(s => s.speciesRaw.split(/[\s-]/)[0].slice(0,1));
+    while (labels.length < 6) labels.push('');
+    const rows = [];
+    for (let i = 0; i < labels.length; i += 3) rows.push(labels.slice(i, i+3));
+    return rows.map(row =>
+      `<div class="wk-pip-row">${row.map(n =>
+        `<div style="width:8px;text-align:center;font-size:7px;color:var(--text3);">${n}</div>`
+      ).join('')}</div>`
+    ).join('');
+  }
+
+  // Offensive pips: meta mon's best move vs each slot
+  function offPips(entry) {
+    return filledSlots.map(slot => {
+      const eff = bestMetaOffEff(entry, slot.types || []);
+      if (eff === 0)  return 'off-immune';
+      if (eff >= 4)   return 'off-4x';
+      if (eff >= 2)   return 'off-2x';
+      if (eff < 1)    return 'off-resist';
+      return '';
+    });
+  }
+
+  // Defensive pips: each slot's best move vs meta mon
+  function defPips(entry) {
+    return filledSlots.map(slot => {
+      const eff = bestSlotOffEff(entry, slot);
+      if (eff === 0)   return 'immune';
+      if (eff >= 4)    return 'weak4x';
+      if (eff >= 2)    return 'weak2x';
+      if (eff <= 0.25) return 'resist4x';
+      if (eff < 1)     return 'resist';
+      return '';
+    });
+  }
+
+  // Speed bar — just the bar + min/max labels, no text
+  function buildSpeedBar(entry) {
+    const threatSpe  = entry.attacker.computedSpe || 0;
+    const teamSpeeds = filledSlots.map(s => effectiveSpe(s)).sort((a,b) => a-b);
+    const allSpeeds  = [...teamSpeeds, threatSpe];
+    const minSpe     = Math.max(0, Math.min(...allSpeeds) - 5);
+    const maxSpe     = Math.max(...allSpeeds) + 5;
+    const range      = maxSpe - minSpe || 1;
+    const pct        = v => Math.max(2, Math.min(98, ((v - minSpe) / range) * 100));
+    const outspeeds  = teamSpeeds.filter(s => threatSpe > s).length;
+    const markerCls  = outspeeds > filledSlots.length / 2 ? 'marker-threat'
+                     : outspeeds === 0 ? 'marker-threat-slower' : 'marker-threat-faster';
+
+    let bar = `<div class="threat-speed-bar">`;
+    filledSlots.forEach(s => {
+      bar += `<div class="threat-speed-marker marker-team" style="left:${pct(effectiveSpe(s))}%;"></div>`;
+    });
+    bar += `<div class="threat-speed-marker ${markerCls}" style="left:${pct(threatSpe)}%;"></div>`;
+    bar += `</div><div class="threat-speed-label"><span>${minSpe}</span><span>${maxSpe}</span></div>`;
+    return bar;
+  }
+
+  let html = '';
+  top4.forEach((entry, i) => {
+    const rank    = i + 1;
+    const size    = sizes[i] || 48;
+    const rankCls = rank <= 3 ? `rank-${rank}` : '';
+
+    const imgHtml = spriteImgHtmlCls(entry.attacker.speciesRaw, size, entry.attacker.spriteUrl || null, '');
+
+    const dmgLabel  = entry.avgDmgPct > 0 ? `~${entry.avgDmgPct.toFixed(0)}% dmg` : '—';
+    const spdLabel  = `Spe ${entry.attacker.computedSpe}`;
+    const outsLabel = entry.outspeeds > 0 ? `⚡${entry.outspeeds}/${filledSlots.length}` : '';
+
+    const isPinned  = pinnedKeys.has(entry.attacker.speciesRaw);
+    const safeKey   = entry.attacker.speciesRaw.replace(/"/g, '&quot;');
+
+    // Build hover tip contents based on mode
+    const labelBlock = `<div class="wk-pips" style="margin-top:1px;">${buildSlotLabels()}</div>`;
+
+    let tipBody = '';
+    if (_threatMode === 'overall') {
+      // Both offensive and defensive rows, shared labels at bottom
+      tipBody = `
+        <div style="font-size:8px;color:var(--text3);margin-bottom:2px;">vs your team ▶</div>
+        <div class="wk-pips">${buildPipRow(offPips(entry))}</div>
+        <div style="font-size:8px;color:var(--text3);margin:4px 0 2px;">your team ▶ it</div>
+        <div class="wk-pips">${buildPipRow(defPips(entry))}</div>
+        ${labelBlock}`;
+    } else if (_threatMode === 'offensive') {
+      tipBody = `
+        <div class="wk-pips">${buildPipRow(offPips(entry))}</div>
+        ${labelBlock}`;
+    } else {
+      tipBody = `
+        <div class="wk-pips">${buildPipRow(defPips(entry))}</div>
+        ${labelBlock}`;
+    }
+
+    html += `
+    <div class="threat-card" style="min-width:${size + 16}px;position:relative;">
+      <div class="threat-hover-tip">
+        ${tipBody}
+        ${buildSpeedBar(entry)}
+      </div>
+      <div class="threat-sprite-wrap" style="height:${sizes[0] + 10}px;align-items:flex-end;">
+        <div style="position:relative;">
+          <span class="threat-rank-badge ${rankCls}">${rank}</span>
+          ${imgHtml}
+        </div>
+      </div>
+      <div class="threat-name">${entry.attacker.speciesRaw}</div>
+      <div class="threat-stat-line">
+        <span class="threat-stat-val">${dmgLabel}</span>${outsLabel ? ` · <span style="color:var(--yellow)">${outsLabel}</span>` : ''}
+      </div>
+      <div class="threat-stat-line">${spdLabel}</div>
+      <button class="pin-btn${isPinned ? ' pinned' : ''}" data-pinkey="${safeKey}"
+        onclick="handlePinClick(event);renderThreatPanel();"
+        title="${isPinned ? 'Unpin' : 'Pin'}"
+        style="position:absolute;bottom:0;right:0;width:20px;height:20px;font-size:11px;"
+      >${isPinned ? '📌' : '📍'}</button>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+// Re-render threat panel when team changes
+function refreshThreatPanelIfOpen() {
+  if (_threatPanelOpen) renderThreatPanel();
+}
+
 // ── Sticky controls "stuck" shadow via IntersectionObserver ───────────────────
 // A zero-height sentinel sits just above the controls bar; when it scrolls out
 // of view the bar is stuck, and we add a bottom shadow to act as a visual anchor.
 (function() {
-  const controls = document.querySelector('.results-controls');
+  const controls = document.querySelector('.controls-sticky-wrap');
   if (!controls) return;
   const sentinel = document.createElement('div');
   sentinel.style.cssText = 'position:relative;height:1px;margin-bottom:-1px;pointer-events:none;';
   controls.parentElement.insertBefore(sentinel, controls);
   new IntersectionObserver(([entry]) => {
     controls.classList.toggle('is-stuck', !entry.isIntersecting);
+    const rc = controls.querySelector('.results-controls'); if (rc) rc.classList.toggle('is-stuck', !entry.isIntersecting);
   }, { threshold: 0 }).observe(sentinel);
 })();
 
