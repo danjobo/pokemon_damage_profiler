@@ -5420,7 +5420,10 @@ function openMatchNote(e, teamName, matchId) {
   };
 
   saveBtn.addEventListener('click', e2 => { e2.stopPropagation(); doSave(); });
-  ta.addEventListener('keydown', ev => { if (ev.key === 'Escape') doSave(); });
+  ta.addEventListener('keydown', ev => {
+    if (ev.key === 'Escape') { doSave(); return; }
+    if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); doSave(); }
+  });
 
   popup.appendChild(label);
   popup.appendChild(ta);
