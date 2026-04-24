@@ -871,8 +871,10 @@
     padding: 1.25rem 1.5rem;
   }
   #weaknessOverlay.visible { display: block; }
+  #weaknessOverlay.visible.collapsed .card-body { max-height: 0; opacity: 0; pointer-events: none; }
   #weaknessOverlay .card-body { padding-top: 0; }
-  #weaknessOverlay .overlay-title { margin-bottom: 0; }
+  #weaknessOverlay .overlay-title { margin-bottom: 0; cursor: pointer; }
+  #weaknessOverlay .card-collapse-hint { font-size: 12px; float: right; margin-top: 0; }
 
   .overlay-title {
     font-size: 11px;
@@ -1303,7 +1305,7 @@ Impish Nature
     <div class="results-controls">
       <div class="control-group">
         <label>Weather</label>
-        <select id="weatherMode" onchange="renderResults()">
+        <select id="weatherMode" onchange="recomputeAndRender()">
           <option value="none">None</option>
           <option value="sun">Sun</option>
           <option value="rain">Rain</option>
@@ -1386,7 +1388,7 @@ Impish Nature
 
       <div class="control-group">
         <label>Terrain / Screen</label>
-        <select id="terrainMode" onchange="renderResults()">
+        <select id="terrainMode" onchange="recomputeAndRender()">
           <option value="none">None</option>
           <option value="psychic">Psychic Terrain</option>
           <option value="auroraveil">Aurora Veil</option>
@@ -1449,7 +1451,7 @@ Impish Nature
 
     <!-- Match history control bar -->
     <div class="match-bar" id="matchBar">
-      <!-- Left: W/L record + Start Match + Match Log buttons -->
+      <!-- Left: W/L | Start match | Match log | Meta analysis -->
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <div class="winrate-widget visible" id="winrateWidget" style="display:flex!important;">
           <button class="wr-btn wr-minus" onclick="adjustScore('wins',-1)" title="Remove win">−</button>
@@ -1465,12 +1467,13 @@ Impish Nature
         <div style="width:0.5px;height:28px;background:var(--border2);flex-shrink:0;"></div>
         <button id="startMatchBtn" onclick="startMatch()" style="padding:5px 14px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-weight:600;white-space:nowrap;" title="Start a match against the currently pinned Pokémon — pin up to 6 opponents first">⚔ Start match</button>
         <button id="historyToggleBtn" onclick="toggleHistoryView()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="View match history for the current team">📋 Match log</button>
+        <button id="threatToggleBtn" onclick="toggleThreatPanel()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Show a meta analysis of the loaded meta against your team">🎯 Meta analysis</button>
       </div>
 
-      <!-- Right: threat analysis + clear pins -->
+      <!-- Right: Copy to Clipboard | Pin tabs -->
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-        <button id="threatToggleBtn" onclick="toggleThreatPanel()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Show a threat analysis of the loaded meta against your team">🎯 Threat analysis</button>
         <button id="copyTeamBtn" onclick="copyTeamPaste()" title="Copy all tabs as a team paste" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;transition:background 0.15s,color 0.15s;">📋 Copy to Clipboard</button>
+        <button onclick="loadTabsIntoPins()" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Pin the tab Pokémon as temporary meta listings using their exact stats/moves/items">📌 Pin tabs</button>
       </div>
     </div>
 
@@ -1806,6 +1809,8 @@ const scarfOverrides = new Map();
 const typeBoostOverrides = new Map();
 // multiscale disabled: defender speciesRaw in this set → ignore multiscale
 const multiscaleOverrides = new Set();
+// defender mega overrides: slot index → mega slug (null = base form)
+const defenderMegaOverrides = new Map();
 // collapsed extra moves: key absent = collapsed (default), key present = expanded
 const expandedExtras = new Set();
 
@@ -2120,11 +2125,40 @@ function renderDefenderTabs() {
       const dots = slot.types.map(t =>
         `<div class="def-tab-dot" style="background:${TYPE_COLORS[t]||'#888'}"></div>`
       ).join('');
+      // Mega button for this slot
+      const defSlugForMega = toSlug(slot.speciesRaw);
+      const defSpeciesNorm = defSlugForMega.replace(/[\s-]/g,'');
+      const defMegaKey = MEGA_FORMS[defSlugForMega]
+        ? defSlugForMega
+        : Object.keys(MEGA_FORMS).find(k => {
+            const kn = k.replace(/[\s-]/g,'');
+            return defSpeciesNorm === kn || defSpeciesNorm.startsWith(kn+'mega') || defSpeciesNorm.startsWith(kn+'eternal');
+          });
+      const defMegaForms = defMegaKey ? MEGA_FORMS[defMegaKey] : null;
+      const defActiveMegaSlug = defenderMegaOverrides.get(i) ||
+        (defMegaForms && (() => {
+          const match = defMegaForms.find(f => f.slug === defSlugForMega);
+          return match ? match.slug : undefined;
+        })());
+      const defMegaBtns = defMegaForms ? defMegaForms.map(f => {
+        const isAct = defActiveMegaSlug === f.slug;
+        const st = isAct
+          ? 'color:var(--accent2);border-color:var(--accent);background:rgba(124,106,247,0.15);'
+          : 'color:var(--text3);border-color:var(--border2);opacity:0.6;';
+        return `<button onclick="toggleDefenderMega(event,${i},'${f.slug}')" style="padding:1px 5px;font-size:9px;border-radius:3px;border:0.5px solid;cursor:pointer;background:transparent;${st};flex-shrink:0;">${f.label}</button>`;
+      }).join('') : '';
+      const defMegaRow = defMegaForms ? `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:2px;">${defMegaBtns}</div>` : '';
+
       tab.innerHTML = `
         <span class="def-tab-close" onclick="clearDefenderSlot(event,${i})">✕</span>
         <div class="def-tab-name">${slot.speciesRaw}</div>
-        <div class="def-tab-types">${dots}</div>`;
-      tab.onclick = (e) => { if (!e.target.classList.contains('def-tab-close')) selectDefenderTab(i); };
+        <div class="def-tab-types">${dots}</div>
+        ${defMegaRow}`;
+      tab.onclick = (e) => {
+        if (e.target.classList.contains('def-tab-close')) return;
+        if (e.target.tagName === 'BUTTON') return;
+        selectDefenderTab(i);
+      };
     }
   }
   updateWeaknessOverlay();
@@ -2968,7 +3002,6 @@ function computeResults(loadedMeta, defender) {
       // Multi-hit
       const mhInfo = getMultiHit(move.name);
       const mhDmg  = mhInfo ? dmg * mhInfo.avg : dmg;
-      const mhPct  = mhInfo ? pct * mhInfo.avg : pct;
       if (mhInfo) {
         if (mhInfo.variable) activeMods.push(`×${mhInfo.min}–${mhInfo.max} hits`);
         else                  activeMods.push(`×${mhInfo.fixed} hits`);
@@ -2978,7 +3011,7 @@ function computeResults(loadedMeta, defender) {
 
       moveBreakdown.push({
         move, effectiveMoveType, isSpread: move.isSpread, isWeatherBall,
-        dmg: mhDmg, pct: mhPct, eff, stab: isStab > 1,
+        dmg: mhDmg, pct: mhDmg / defender.stats.hp * 100, eff, stab: isStab > 1,
         activeMods: uniqueMods, atkStat, defStat, isStab, itemModsForMove,
         pasteIndex: move.pasteIndex ?? 99,
         mhMin: mhInfo ? mhInfo.min : null,
@@ -3121,6 +3154,22 @@ function computeResults(loadedMeta, defender) {
   return results;
 }
 
+function recomputeAndRender() {
+  // Field condition changed — recompute cached results for all slots then render
+  const loadedMeta = META_DB.filter(p => p.loaded);
+  for (let i = 0; i < DEFENDER_SLOTS.length; i++) {
+    const slot = DEFENDER_SLOTS[i];
+    if (slot) {
+      slot._lastResults = computeResults(loadedMeta, slot);
+      if (i === activeDefenderSlot) lastResults = slot._lastResults;
+    }
+  }
+  renderResults();
+  // Re-render threat panel and match window if active
+  if (_threatPanelOpen) renderThreatPanel();
+  if (_matchActive) renderMatchWindow();
+}
+
 function renderResults() {
   updateFieldStatus();
   if (_historyViewActive) { renderMatchHistory(); return; }
@@ -3191,7 +3240,6 @@ function renderResults() {
         adjustedDmg = wbDmg;
         moveType = newType;
       } else {
-        // Non-weather-ball: apply standard weather modifier
         adjustedDmg *= applyWeatherModifier(moveType, weather);
       }
 
@@ -3307,9 +3355,11 @@ function renderResults() {
       if (adjustedDmg > defBest.dmg && (m.pasteIndex ?? 99) < (r.defDividerIndex ?? 4)) defBest = { dmg: adjustedDmg, pct: Math.min(m.adjustedPct, 130), move: m.move, eff: m.eff };
     });
 
-    r.displayPct  = attackingMode ? defBest.pct  : best.pct;
-    r.displayMove = attackingMode ? defBest.move  : best.move;
-    r.displayEff  = attackingMode ? defBest.eff   : best.eff;
+    // In defending mode, displayPct comes from the weather/field-adjusted best
+    // (local 'best' was updated above with adjustedDmg which includes all field modifiers)
+    r.displayPct  = attackingMode ? defBest.pct : (best.pct || 0);
+    r.displayMove = attackingMode ? defBest.move : best.move;
+    r.displayEff  = attackingMode ? defBest.eff  : best.eff;
   });
 
   const mode = document.getElementById('sortMode').value;
@@ -3820,10 +3870,83 @@ function handlePinClick(e) {
   if (!key) return;
   if (pinnedKeys.has(key)) {
     pinnedKeys.delete(key);
-    expandedBreakdowns.delete(key); // collapse when unpinning
+    expandedBreakdowns.delete(key);
+    // If this was a tab-pinned entry, remove it from META_DB and recompute
+    const tabPinIdx = META_DB.findIndex(p => p._isTabPin && p.speciesRaw === key);
+    if (tabPinIdx !== -1) {
+      META_DB.splice(tabPinIdx, 1);
+      _recomputeAllSlots();
+    }
   } else {
     pinnedKeys.add(key);
   }
+  renderResults();
+}
+
+// ── Load tabs into pins ───────────────────────────────────────────────────────
+// Creates temporary META_DB entries from defender tabs with their exact stats/moves,
+// separate from any existing meta entries. Unpinning removes them.
+async function loadTabsIntoPins() {
+  const filledSlots = DEFENDER_SLOTS.filter(Boolean);
+  if (!filledSlots.length) { alert('Load your team into the defender tabs first.'); return; }
+
+  // Remove any previous tab pins that are no longer pinned
+  for (let i = META_DB.length - 1; i >= 0; i--) {
+    if (META_DB[i]._isTabPin && !pinnedKeys.has(META_DB[i].speciesRaw)) {
+      META_DB.splice(i, 1);
+    }
+  }
+
+  const loadedMeta = META_DB.filter(p => p.loaded);
+
+  for (const slot of filledSlots) {
+    // Give the tab pin a unique name to avoid collision with existing meta entries
+    // Use a suffix if the name already exists in meta
+    const baseName = slot.speciesRaw;
+    // Always give tab pins a star suffix to distinguish from meta entries
+    const pinName = baseName + ' ★';
+
+    // Don't add duplicate tab pins
+    if (META_DB.some(p => p._isTabPin && p.speciesRaw === pinName)) {
+      pinnedKeys.add(pinName);
+      continue;
+    }
+
+    // Build a META_DB-compatible entry from the slot
+    const nat = NATURES[slot.nature] || {};
+    const entry = {
+      speciesRaw:    pinName,
+      ability:       slot.ability || '',
+      item:          slot.item || '',
+      allItems:      slot.allItems || [],
+      allAbilities:  slot.allAbilities || null,
+      nature:        slot.nature || 'hardy',
+      level:         slot.level || 50,
+      evs:           { ...slot.evs },
+      ivs:           { ...slot.ivs },
+      baseStats:     { ...slot.baseStats },
+      types:         [...(slot.types || [])],
+      spriteUrl:     slot.spriteUrl || null,
+      weight:        slot.weight || null,
+      resolvedMoves: slot.resolvedMoves ? [...slot.resolvedMoves] : [],
+      allMoves:      slot.allMoves     ? [...slot.allMoves]     : [],
+      dividerIndex:  slot.dividerIndex ?? 4,
+      computedAtk:   calcStat(slot.baseStats.atk, slot.evs.atk||0, slot.ivs.atk??31, slot.level, nat.atk||1),
+      computedSpa:   calcStat(slot.baseStats.spa, slot.evs.spa||0, slot.ivs.spa??31, slot.level, nat.spa||1),
+      computedDef:   calcStat(slot.baseStats.def, slot.evs.def||0, slot.ivs.def??31, slot.level, nat.def||1),
+      computedSpd:   calcStat(slot.baseStats.spd, slot.evs.spd||0, slot.ivs.spd??31, slot.level, nat.spd||1),
+      computedSpe:   calcStat(slot.baseStats.spe, slot.evs.spe||0, slot.ivs.spe??31, slot.level, nat.spe||1),
+      computedHp:    calcHP  (slot.baseStats.hp,  slot.evs.hp ||0, slot.ivs.hp ??31, slot.level),
+      loaded:        true,
+      failed:        false,
+      _isTabPin:     true,  // marker: remove from META_DB when unpinned
+    };
+
+    META_DB.push(entry);
+    pinnedKeys.add(pinName);
+  }
+
+  _recomputeAllSlots();
   renderResults();
 }
 
@@ -4088,6 +4211,75 @@ function toggleTypeBoost(e, key) {
   const current = typeBoostOverrides.get(key);
   if (current === 'on') typeBoostOverrides.delete(key); // toggle off
   else                  typeBoostOverrides.set(key, 'on');
+  renderResults();
+}
+
+// ── Defender tab mega toggle ──────────────────────────────────────────────────
+async function toggleDefenderMega(e, slotIdx, megaSlug) {
+  e.stopPropagation();
+  const slot = DEFENDER_SLOTS[slotIdx];
+  if (!slot) return;
+
+  const curSlug   = toSlug(slot.speciesRaw);
+  const baseKey   = toSlug(slot._origSpeciesRaw || slot.speciesRaw)
+    .replace(/-mega(-[xy])?$/, '').replace(/-gmax$/, '')
+    .replace(/-blade$|-shield$/, '').replace(/-eternal$/, '');
+  const isAlready = curSlug === megaSlug || defenderMegaOverrides.get(slotIdx) === megaSlug;
+
+  if (isAlready) {
+    // Revert to base form
+    if (!slot._megaBaseStats) {
+      try { const b = await fetchPokemonData(baseKey); slot._megaBaseStats = b.baseStats; slot._megaBaseTypes = b.types; slot._megaBaseSpriteUrl = b.spriteUrl; } catch {}
+    }
+    slot.speciesRaw  = slot._origSpeciesRaw || slugToDisplayName(baseKey);
+    if (slot._megaBaseStats) { slot.baseStats = slot._megaBaseStats; slot._megaBaseStats = null; }
+    if (slot._megaBaseTypes) { slot.types     = slot._megaBaseTypes; slot._megaBaseTypes = null; }
+    if (slot._megaBaseAbility !== undefined) { slot.ability = slot._megaBaseAbility; slot._megaBaseAbility = undefined; }
+    slot._origSpeciesRaw = null;
+    defenderMegaOverrides.delete(slotIdx);
+  } else {
+    // Activate mega
+    if (!pokemonCache[baseKey]) { try { await fetchPokemonData(baseKey); } catch {} }
+    if (!slot._megaBaseStats) {
+      slot._megaBaseStats   = slot.baseStats;
+      slot._megaBaseTypes   = slot.types;
+      slot._megaBaseSpriteUrl = slot.spriteUrl;
+      slot._origSpeciesRaw  = slot.speciesRaw;
+      // Save base ability
+      const nativelyMega = curSlug.includes('-mega') || curSlug.includes('-eternal');
+      slot._megaBaseAbility = nativelyMega ? (FORM_ABILITIES[baseKey] || slot.ability) : slot.ability;
+    }
+    try {
+      const mega = await fetchPokemonData(megaSlug);
+      slot.baseStats = mega.baseStats;
+      slot.types     = mega.types;
+      slot.spriteUrl = mega.spriteUrl || slot._megaBaseSpriteUrl || null;
+    } catch {
+      // Fan-game mega: keep current stats, just rename
+    }
+    slot.speciesRaw = slugToDisplayName(megaSlug);
+    const megaAbility = FORM_ABILITIES[megaSlug];
+    if (megaAbility) slot.ability = megaAbility;
+    defenderMegaOverrides.set(slotIdx, megaSlug);
+  }
+
+  // Recompute stats for this slot
+  const nat = NATURES[slot.nature] || {};
+  slot.stats = {
+    hp:  calcHP  (slot.baseStats.hp  || 0, slot.evs.hp  || 0, slot.ivs.hp  ?? 31, slot.level),
+    atk: calcStat(slot.baseStats.atk || 0, slot.evs.atk || 0, slot.ivs.atk ?? 31, slot.level, nat.atk || 1),
+    def: calcStat(slot.baseStats.def || 0, slot.evs.def || 0, slot.ivs.def ?? 31, slot.level, nat.def || 1),
+    spa: calcStat(slot.baseStats.spa || 0, slot.evs.spa || 0, slot.ivs.spa ?? 31, slot.level, nat.spa || 1),
+    spd: calcStat(slot.baseStats.spd || 0, slot.evs.spd || 0, slot.ivs.spd ?? 31, slot.level, nat.spd || 1),
+    spe: calcStat(slot.baseStats.spe || 0, slot.evs.spe || 0, slot.ivs.spe ?? 31, slot.level, nat.spe || 1),
+  };
+
+  // Recompute results and re-render
+  const loadedMeta = META_DB.filter(p => p.loaded);
+  const results = computeResults(loadedMeta, slot);
+  slot._lastResults = results;
+  if (slotIdx === activeDefenderSlot) lastResults = results;
+  renderDefenderTabs();
   renderResults();
 }
 
@@ -4806,7 +4998,24 @@ function onAttackingModeChange() {
 function clearPins() {
   pinnedKeys.clear();
   expandedBreakdowns.clear();
+  // Remove all tab-pinned entries from META_DB
+  for (let i = META_DB.length - 1; i >= 0; i--) {
+    if (META_DB[i]._isTabPin) META_DB.splice(i, 1);
+  }
+  // Recompute since META_DB changed
+  _recomputeAllSlots();
   renderResults();
+}
+
+function _recomputeAllSlots() {
+  const loadedMeta = META_DB.filter(p => p.loaded);
+  for (let i = 0; i < DEFENDER_SLOTS.length; i++) {
+    const s = DEFENDER_SLOTS[i];
+    if (s) s._lastResults = computeResults(loadedMeta, s);
+  }
+  if (DEFENDER_SLOTS[activeDefenderSlot]) {
+    lastResults = DEFENDER_SLOTS[activeDefenderSlot]._lastResults;
+  }
 }
 
 // ── Active match state ────────────────────────────────────────────────────────
@@ -4818,7 +5027,12 @@ let _matchMyTeam     = [];   // [{speciesRaw, spriteUrl, computedSpe, types, res
 let _matchOppTeam    = [];   // same
 
 function getSpriteUrl(name) {
-  const slug = toSlug(name);
+  // Strip tab-pin suffix before lookup
+  const cleanName = name.replace(/\s*★$/, '').trim();
+  // Check if the META_DB entry has a spriteUrl directly (tab pins store it)
+  const dbEntry = META_DB.find(p => p.speciesRaw === name);
+  if (dbEntry?.spriteUrl) return dbEntry.spriteUrl;
+  const slug = toSlug(cleanName);
   // 1. Try exact match in pokemonCache (loaded meta mons)
   if (pokemonCache[slug]?.spriteUrl) return pokemonCache[slug].spriteUrl;
   // 2. Try nonMetaCache (dummy pin mons)
@@ -4934,10 +5148,15 @@ function getMoveTypes(speciesRaw) {
 }
 
 function bestOffenseEff(attackerSpecies, defenderTypes) {
-  // Best type effectiveness any of attacker's moves can deal to defenderTypes
   const moveTypes = getMoveTypes(attackerSpecies);
   if (!moveTypes.length) return 1;
-  return Math.max(...moveTypes.map(mt => typeEff(mt, defenderTypes)));
+  const weather = document.getElementById('weatherMode')?.value || 'none';
+  // Apply weather modifier to type eff score so rain-boosted Water moves rank higher etc.
+  return Math.max(...moveTypes.map(mt => {
+    const eff = typeEff(mt, defenderTypes);
+    if (eff === 0) return 0; // immunities always 0 regardless of weather
+    return eff * applyWeatherModifier(mt, weather);
+  }));
 }
 
 // Cap eff at 1.3 (130%) for weighting — going over 1x is enough, no need to overvalue huge KOs
@@ -5683,6 +5902,8 @@ function setThreatMode(mode) {
 }
 
 // Compute per-meta-pokemon aggregate scores vs all filled defender slots
+// Uses raw damage from computeResults + weather multiplier only — unaffected by
+// UI mode (attacking/defending), active tab, max stats, scarf overrides etc.
 function computeThreatScores() {
   const filledSlots = DEFENDER_SLOTS.filter(Boolean);
   if (!filledSlots.length) return [];
@@ -5690,12 +5911,13 @@ function computeThreatScores() {
   const loadedMeta = META_DB.filter(p => p.loaded);
   if (!loadedMeta.length) return [];
 
+  const weather = document.getElementById('weatherMode')?.value || 'none';
+
   return loadedMeta.map(attacker => {
-    // For each defender slot, get that slot's results for this attacker
-    let totalDmgPct   = 0; // avg % HP damage dealt to defenders
-    let totalDefPct   = 0; // avg % HP damage received from defenders (lower = more defensive threat)
-    let outspeeds     = 0; // count of defender slots this attacker outspeeds
-    let slotCount     = 0;
+    let totalDmgPct = 0;
+    let totalDefPct = 0;
+    let outspeeds   = 0;
+    let slotCount   = 0;
 
     for (const slot of filledSlots) {
       const results = slot._lastResults || [];
@@ -5703,36 +5925,36 @@ function computeThreatScores() {
       if (!row) continue;
       slotCount++;
 
-      // Best damage attacker deals to this defender (as % HP)
-      totalDmgPct += (row.pct || 0);
-      // Best damage defender deals back (as % HP of attacker)
+      // Best offensive damage: use raw pct from computeResults, apply weather only
+      const bestMovePct = (() => {
+        let best = 0;
+        (row.moveBreakdown || []).forEach(m => {
+          if (!m.move || m.move.power <= 0) return;
+          if ((m.pasteIndex ?? 99) >= (row.dividerIndex ?? 4)) return;
+          const weatherMul = applyWeatherModifier(m.effectiveMoveType || m.move.type, weather);
+          const wpct = (m.pct || 0) * weatherMul;
+          if (wpct > best) best = wpct;
+        });
+        return best || row.pct || 0;
+      })();
+
+      totalDmgPct += bestMovePct;
       totalDefPct += (row.defBestPct || 0);
 
-      // Speed comparison: attacker vs defender (scarf-aware)
       const atkSpe = attacker.computedSpe || 0;
       const defSpe = effectiveSpe(slot);
       if (atkSpe > defSpe) outspeeds++;
     }
 
-    const avgDmgPct = slotCount > 0 ? totalDmgPct / slotCount : 0;
-    const avgDefPct = slotCount > 0 ? totalDefPct / slotCount : 0;
+    const avgDmgPct    = slotCount > 0 ? totalDmgPct / slotCount : 0;
+    const avgDefPct    = slotCount > 0 ? totalDefPct / slotCount : 0;
     const outspeedFrac = filledSlots.length > 0 ? outspeeds / filledSlots.length : 0;
 
-    // Scores — higher = more threatening
-    const offensiveScore  = avgDmgPct + outspeedFrac * 15; // dmg + speed bonus
-    const defensiveScore  = 100 - avgDefPct;               // lower dmg received = more threatening defensively
-    const overallScore    = offensiveScore * 0.5 + defensiveScore * 0.35 + outspeedFrac * 15 * 0.15;
+    const offensiveScore = avgDmgPct + outspeedFrac * 15;
+    const defensiveScore = 100 - avgDefPct;
+    const overallScore   = offensiveScore * 0.5 + defensiveScore * 0.35 + outspeedFrac * 15 * 0.15;
 
-    return {
-      attacker,
-      avgDmgPct,
-      avgDefPct,
-      outspeeds,
-      outspeedFrac,
-      offensiveScore,
-      defensiveScore,
-      overallScore,
-    };
+    return { attacker, avgDmgPct, avgDefPct, outspeeds, outspeedFrac, offensiveScore, defensiveScore, overallScore };
   });
 }
 
