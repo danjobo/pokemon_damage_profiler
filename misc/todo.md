@@ -7,24 +7,12 @@
 
 
 
-- add a button in move breakdown to show the nature and spread of the meta list (similar to “?” button)
-
-
-
-
-
-- Water bubble not workin
-- body slam damage
-
-
-- Status ticker per Pokemon (burn/para/…) and have that status be displayed on the listing below the name like the games
-
-
 
 - move/ability search will filter with all possible not just run in meta
 
-- add a small button on each match history listing below the LOSS/WIN text to load match which will open a new match screen with the current team vs the opponent's pokemon will also replace the current pinned pokemon with the opponent pokemon from the match
+- add a button in move breakdown to show the nature and spread of the meta list (similar to “?” button)
 
+- Status ticker per Pokemon (burn/para/…) and have that status be displayed on the listing below the name like the games
 
 ## To-Do Stack
 
@@ -35,6 +23,11 @@
 ---
 #### Completed
 
+- [XX] Water bubble not workin
+- [XX] heavy slam damage
+- [XX] change the percent text next to the bar in match listing headings that are over 130% to instead say 130%+ OHKO
+- [XX] Move the attacking/defending button to the tab section at the left end
+- [XX] add a small button on each match history listing below the LOSS/WIN text to load match which will open a new match screen with the current team vs the opponent's pokemon will also replace the current pinned pokemon with the opponent pokemon from the match
 - [XX] support for ranged multi-hitting moves
 - [XX] in damage calculations for the results window, don't have the max stats and max hp buttons apply to the pokemon in the tab, only have it apply to the one in the listing
 - [XX] ability usage hover with other potential abilities (extra parsing and data needed)

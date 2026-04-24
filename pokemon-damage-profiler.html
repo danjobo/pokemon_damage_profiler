@@ -1402,7 +1402,7 @@ Impish Nature
 
       <button id="maxRollBtn" onclick="toggleModeBtn('maxRollMode','maxRollBtn')" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;align-self:flex-end;" title="Show max damage rolls">Max rolls</button>
 
-      <button id="attackingModeBtn" onclick="onAttackingModeToggle()" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;align-self:flex-end;" title="Toggle between defending (incoming damage) and attacking (outgoing damage)">Defending</button>
+
 
       <button id="maxHpBtn" onclick="toggleModeBtn('maxHpMode','maxHpBtn')" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;align-self:flex-end;" title="Override HP to max investment (32 EVs)">Max HP</button>
 
@@ -1497,6 +1497,7 @@ Impish Nature
 
     <!-- Defender tabs + clipboard — above results listing -->
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <button id="attackingModeBtn" onclick="onAttackingModeToggle()" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0;" title="Toggle between defending (incoming damage) and attacking (outgoing damage)">Defending</button>
       <div class="defender-tabs-row" id="defenderTabsRow" style="flex:1;margin-bottom:0;">
         <div class="def-tab def-tab-empty" title="Slot 1" onclick="selectDefenderTab(0)" id="defTab-0">＋</div>
         <div class="def-tab def-tab-empty" title="Slot 2" onclick="selectDefenderTab(1)" id="defTab-1">＋</div>
@@ -1656,7 +1657,8 @@ async function fetchPokemonData(slug) {
   }
   const types = data.types.map(t => t.type.name);
   const spriteUrl = data.sprites?.front_default || null;
-  const result = { baseStats, types, spriteUrl };
+  const weight = data.weight || null; // in hectograms (PokeAPI)
+  const result = { baseStats, types, spriteUrl, weight };
   pokemonCache[slug] = result;
   return result;
 }
@@ -1676,11 +1678,25 @@ async function fetchMoveData(moveName) {
     const effectDesc = effectEntry
       ? (effectEntry.short_effect || effectEntry.effect || '').replace(/\$effect_chance/g, data.effect_chance || '?')
       : '';
+    // Variable-power moves: PokeAPI returns null power; assign sentinel value
+    // that will be overridden by the damage calc based on the actual formula
+    const VARIABLE_POWER_MOVES = {
+      'heavy-slam': 80, 'heat-crash': 80,   // weight-based: 40-120
+      'grass-knot': 80, 'low-kick': 80,      // weight-based: 20-120
+      'gyro-ball': 80,                        // speed-based
+      'electro-ball': 80,                     // speed-based
+      'trump-card': 40,                       // PP-based
+      'return': 102, 'frustration': 1,        // friendship-based
+      'stored-power': 20, 'power-trip': 20,   // stat-stage based
+      'punishment': 60,                       // stat-stage based
+    };
+    const movePowerRaw = data.power != null ? data.power : (VARIABLE_POWER_MOVES[slug] || 0);
+    const damageCls = data.damage_class?.name;
     const result = {
       name: moveName,
-      power: data.power || 0,
+      power: movePowerRaw,
       type: data.type.name,
-      cat: data.damage_class.name === 'physical' ? 'physical' : 'special',
+      cat: damageCls === 'physical' ? 'physical' : damageCls === 'special' ? 'special' : 'status',
       isSpread: spreadTargets.has(data.target.name),
       effect: effectDesc,
     };
@@ -2310,10 +2326,11 @@ async function loadMeta() {
     if (pokemon.failed) return;
     try {
       const slug = toSlug(pokemon.speciesRaw);
-      const { baseStats, types, spriteUrl } = await fetchPokemonData(slug);
+      const { baseStats, types, spriteUrl, weight } = await fetchPokemonData(slug);
       pokemon.baseStats = baseStats;
       pokemon.types = types;
       pokemon.spriteUrl = spriteUrl || null;
+      pokemon.weight = weight || null; // hectograms from PokeAPI
 
       // Fetch all moves concurrently; keep all for display, filter to damaging for calc
       const moveResults = await Promise.all(pokemon.moves.map((m, i) => fetchMoveData(m).then(r => r ? { ...r, pasteIndex: i } : { name: m, power: 0, type: 'normal', cat: 'status', isSpread: false, pasteIndex: i })));
@@ -2365,9 +2382,10 @@ async function loadMeta() {
 async function parseDefender(text) {
   const p = parseSinglePaste(text);
   const slug = toSlug(p.speciesRaw);
-  const { baseStats, types } = await fetchPokemonData(slug);
+  const { baseStats, types, weight } = await fetchPokemonData(slug);
   p.baseStats = baseStats;
   p.types = types;
+  p.weight = weight || null;
 
   const nat = NATURES[p.nature] || {};
   const nm = s => nat[s] || 1;
@@ -2772,6 +2790,18 @@ function getMultiHit(moveName) {
   return null;
 }
 
+
+// Heavy Slam / Heat Crash BP: depends on attacker weight vs target weight ratio
+function heavySlamBP(atkWeightHg, defWeightHg) {
+  if (!atkWeightHg || !defWeightHg || defWeightHg === 0) return 80; // safe default
+  const ratio = atkWeightHg / defWeightHg;
+  if (ratio >= 5) return 120;
+  if (ratio >= 4) return 100;
+  if (ratio >= 3) return 80;
+  if (ratio >= 2) return 60;
+  return 40;
+}
+
 function computeResults(loadedMeta, defender) {
   const results = [];
   for (const attacker of loadedMeta) {
@@ -2886,7 +2916,14 @@ function computeResults(loadedMeta, defender) {
       const origPowerMul = typeChangedBy ? abMOrig.powerMul : 1; // only bring in orig if type was changed
       const abilityPowerMul = (typeChangedBy ? origPowerMul : abMeff.powerMul) * getAbilityMovePowerMul(attacker.ability, move, eff);
       const itemPowerMul    = itemModsForMove.powerMul * getItemPerMoveMul(attacker.item, effectiveMoveType, eff);
-      const effectivePower  = move.power * abilityPowerMul * itemPowerMul;
+      // Heavy Slam / Heat Crash: variable BP based on attacker vs defender weight ratio
+      let movePower = move.power;
+      if (mn === 'heavy slam' || mn === 'heat crash') {
+        const atkW = attacker.weight;
+        const defW = defender.weight || pokemonCache[toSlug(defender.speciesRaw)]?.weight || null;
+        movePower = heavySlamBP(atkW, defW);
+      }
+      const effectivePower  = movePower * abilityPowerMul * itemPowerMul;
 
       const dmg = damageFormula(50, effectivePower, atkStat, defStat, eff, isStab)
                   * (moldBreaker ? 1 : getDefenderAbilityDmgMul(defender.ability, effectiveMoveType, defender.speciesRaw));
@@ -3015,7 +3052,14 @@ function computeResults(loadedMeta, defender) {
       const ruinMul  = getDefenderRuinDebuff(defender.ability, move.cat);
       const defStat  = rawDef * ruinMul;
       const pwrMul   = abMeff.powerMul * getAbilityMovePowerMul(defender.ability, move, eff) * defItForMove.powerMul * getItemPerMoveMul(defender.item, effectiveMoveType, eff);
-      const dmg      = damageFormula(defender.level, move.power * pwrMul, atkStat, defStat, eff, isStab)
+      // Heavy Slam / Heat Crash: variable BP — defender's pokemon (tab) is the attacker here
+      let atkMovePower = move.power;
+      if (mn === 'heavy slam' || mn === 'heat crash') {
+        const atkW2 = defender.weight || null;
+        const defW2 = attacker.weight || pokemonCache[toSlug(attacker.speciesRaw)]?.weight || null;
+        atkMovePower = heavySlamBP(atkW2, defW2);
+      }
+      const dmg      = damageFormula(defender.level, atkMovePower * pwrMul, atkStat, defStat, eff, isStab)
                        * getDefenderAbilityDmgMul(attacker.ability, effectiveMoveType, attacker.speciesRaw);
       const pct      = dmg / attacker.computedHp * 100;
 
@@ -3410,7 +3454,9 @@ function renderResults() {
     const barW   = Math.min(pct / maxPct * 100, 100).toFixed(1);
     const barCls = pct >= 100 ? 'bar-ohko' : pct >= 50 ? 'bar-high' : pct >= 33.3 ? 'bar-mid' : 'bar-low';
     const pctColor = pct >= 100 ? 'var(--red)' : pct >= 50 ? 'var(--orange)' : pct >= 33.3 ? 'var(--yellow)' : 'var(--green)';
-    const pctLabel = pct >= 100
+    const pctLabel = pct >= 130
+      ? `<span style="color:${pctColor}">130%+ OHKO</span>`
+      : pct >= 100
       ? `<span style="color:${pctColor}">${pct.toFixed(0)}% OHKO</span>`
       : `<span style="color:${pctColor}">${pct.toFixed(1)}%</span>`;
     const effLabel = r.displayEff > 1
@@ -3468,7 +3514,9 @@ function renderResults() {
           const rangeColor = dpMax >= 100 ? 'var(--red)' : dpMax >= 50 ? 'var(--orange)' : dpMax >= 33.3 ? 'var(--yellow)' : 'var(--green)';
           pctDisplay = `<span style="color:${rangeColor}">${dpMin.toFixed(0)}–${dpMax.toFixed(0)}%</span>`;
         } else {
-          pctDisplay = dp >= 100
+          pctDisplay = dp >= 130
+            ? `<span style="color:${dpColor}">130%+ OHKO</span>`
+            : dp >= 100
             ? `<span style="color:${dpColor}">${dp.toFixed(0)}% OHKO</span>`
             : `<span style="color:${dpColor}">${dp.toFixed(1)}%</span>`;
         }

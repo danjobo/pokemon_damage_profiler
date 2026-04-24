@@ -629,7 +629,7 @@ Brave Nature
 _  
 - Drain Punch  
 
-Clefable @ Sitrus Berry  
+Clefable @ Sitrus Berry, Leftovers, Clefablite
 Ability: Unaware  
 Level: 50  
 EVs: 32 HP / 32 Def / 2 SpD  
@@ -641,7 +641,7 @@ Bold Nature
 _
 - Life Dew  
 
-Hydreigon @ Choice Scarf  
+Hydreigon @ Choice Scarf, Focus Sash, Sitrus Berry, Chople Berry, Black Glasses
 Ability: Levitate  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
