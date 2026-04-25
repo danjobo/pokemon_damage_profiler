@@ -375,11 +375,12 @@
     background: #2a2a3a;
     border: 0.5px solid var(--border2);
     border-radius: var(--radius-sm);
-    padding: 5px;
+    padding: 5px 7px;
     z-index: 50;
     pointer-events: none;
     white-space: nowrap;
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    min-width: 120px;
   }
   .mw-hover-tip .wk-pip {
     background: rgba(255,255,255,0.12);
@@ -501,20 +502,42 @@
 
   .stage-select { display: none; } /* hidden — JS reads value, spinner drives it */
 
+  /* Stage spinner: value on left, up/down buttons stacked on right */
   .stage-spinner {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row;
+    align-items: stretch;
     gap: 0;
-    width: 26px;
+  }
+  .stage-spinner-val {
+    min-width: 22px;
+    padding: 0 4px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--bg3);
+    border: 0.5px solid var(--border2);
+    border-right: none;
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  }
+  .stage-spinner-val.positive { color: #f08080; }
+  .stage-spinner-val.negative { color: #87b4f5; }
+  .stage-spinner-btns {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
   }
   .stage-spinner-btn {
-    width: 26px;
+    width: 18px;
     height: 13px;
     background: var(--bg3);
     border: 0.5px solid var(--border2);
     color: var(--text3);
-    font-size: 8px;
+    font-size: 7px;
     line-height: 1;
     cursor: pointer;
     display: flex;
@@ -523,26 +546,9 @@
     user-select: none;
     transition: background 0.1s, color 0.1s;
   }
-  .stage-spinner-btn:first-child { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
-  .stage-spinner-btn:last-child  { border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
+  .stage-spinner-btn:first-child { border-radius: 0 var(--radius-sm) 0 0; border-bottom: none; }
+  .stage-spinner-btn:last-child  { border-radius: 0 0 var(--radius-sm) 0; }
   .stage-spinner-btn:hover { background: var(--border2); color: var(--text); }
-  .stage-spinner-val {
-    width: 26px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text);
-    background: var(--bg3);
-    border-left: 0.5px solid var(--border2);
-    border-right: 0.5px solid var(--border2);
-    border-top: none;
-    border-bottom: none;
-  }
-  .stage-spinner-val.positive { color: #f08080; }
-  .stage-spinner-val.negative { color: #87b4f5; }
 
   .checkbox-toggle {
     display: flex;
@@ -624,8 +630,9 @@
     border-radius: 5px; height: 10px; overflow: hidden; min-width: 60px;
   }
   .bar { height: 10px; border-radius: 5px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
-  .bar-vlow { background: #6ab0f5; }
-  .bar-low  { background: var(--green); }
+  .bar-vvlow { background: #6c5ce7; }
+  .bar-vlow  { background: #6ab0f5; }
+  .bar-low   { background: var(--green); }
   .bar-mid  { background: var(--yellow); }
   .bar-high { background: var(--orange); }
   .bar-ohko { background: var(--red); }
@@ -778,7 +785,7 @@
   .def-tab {
     min-width: 0;
     max-width: none;
-    padding: 7px 10px;
+    padding: 4px 6px;
     border-radius: var(--radius-sm);
     border: 0.5px solid var(--border2);
     background: var(--bg3);
@@ -787,10 +794,12 @@
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
     text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow: visible;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
   }
   .def-tab:hover { background: #252535; }
   .def-tab.active {
@@ -835,9 +844,9 @@
   .def-tab-empty {
     border-style: dashed;
     color: var(--text3);
-    font-size: 20px;
+    font-size: 18px;
     line-height: 1;
-    padding: 9px 10px;
+    padding: 6px 10px;
   }
   .def-tab-empty:hover { color: var(--text2); }
 
@@ -923,8 +932,8 @@
     gap: 2px;
   }
   .wk-pip {
-    width: 8px; height: 8px;
-    border-radius: 2px;
+    width: 14px; height: 14px;
+    border-radius: 3px;
     background: transparent;
     border: 0.5px solid var(--border2);
   }
@@ -1097,11 +1106,11 @@
     bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
-    width: 88px;
+    width: 200px;
     background: #22222e;
     border: 0.5px solid var(--border2);
     border-radius: var(--radius);
-    padding: 7px 8px 6px;
+    padding: 8px 10px 7px;
     z-index: 300;
     pointer-events: none;
     box-shadow: 0 6px 20px rgba(0,0,0,0.55);
@@ -1122,15 +1131,11 @@
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 6px;
-    height: 6px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
-    border: 1px solid var(--bg);
+    border: 1.5px solid rgba(0,0,0,0.4);
     z-index: 1;
-  }
-  .threat-speed-marker.marker-team {
-    background: var(--text3);
-    width: 5px; height: 5px;
   }
   .threat-speed-marker.marker-threat { background: var(--red); }
   .threat-speed-marker.marker-threat-faster { background: var(--orange); }
@@ -1318,9 +1323,11 @@ Impish Nature
       <div class="control-group">
         <label>Atk Stage</label>
         <div class="stage-spinner">
-          <button class="stage-spinner-btn" onclick="stepStage('atkStage',1)">▲</button>
           <div class="stage-spinner-val" id="atkStageDisplay" onclick="stepStage('atkStage',0,true)" style="cursor:pointer;" title="Click to reset">0</div>
-          <button class="stage-spinner-btn" onclick="stepStage('atkStage',-1)">▼</button>
+          <div class="stage-spinner-btns">
+            <button class="stage-spinner-btn" onclick="stepStage('atkStage',1)">▲</button>
+            <button class="stage-spinner-btn" onclick="stepStage('atkStage',-1)">▼</button>
+          </div>
         </div>
         <select id="atkStage" class="stage-select" onchange="renderResults()">
           <option value="-6">-6</option><option value="-5">-5</option>
@@ -1336,9 +1343,11 @@ Impish Nature
       <div class="control-group">
         <label>SpA Stage</label>
         <div class="stage-spinner">
-          <button class="stage-spinner-btn" onclick="stepStage('spaStage',1)">▲</button>
           <div class="stage-spinner-val" id="spaStageDisplay" onclick="stepStage('spaStage',0,true)" style="cursor:pointer;" title="Click to reset">0</div>
-          <button class="stage-spinner-btn" onclick="stepStage('spaStage',-1)">▼</button>
+          <div class="stage-spinner-btns">
+            <button class="stage-spinner-btn" onclick="stepStage('spaStage',1)">▲</button>
+            <button class="stage-spinner-btn" onclick="stepStage('spaStage',-1)">▼</button>
+          </div>
         </div>
         <select id="spaStage" class="stage-select" onchange="renderResults()">
           <option value="-6">-6</option><option value="-5">-5</option>
@@ -1354,9 +1363,11 @@ Impish Nature
       <div class="control-group">
         <label>Def Stage</label>
         <div class="stage-spinner">
-          <button class="stage-spinner-btn" onclick="stepStage('defStage',1)">▲</button>
           <div class="stage-spinner-val" id="defStageDisplay" onclick="stepStage('defStage',0,true)" style="cursor:pointer;" title="Click to reset">0</div>
-          <button class="stage-spinner-btn" onclick="stepStage('defStage',-1)">▼</button>
+          <div class="stage-spinner-btns">
+            <button class="stage-spinner-btn" onclick="stepStage('defStage',1)">▲</button>
+            <button class="stage-spinner-btn" onclick="stepStage('defStage',-1)">▼</button>
+          </div>
         </div>
         <select id="defStage" class="stage-select" onchange="renderResults()">
           <option value="-6">-6</option><option value="-5">-5</option>
@@ -1372,9 +1383,11 @@ Impish Nature
       <div class="control-group">
         <label>SpD Stage</label>
         <div class="stage-spinner">
-          <button class="stage-spinner-btn" onclick="stepStage('spdStage',1)">▲</button>
           <div class="stage-spinner-val" id="spdStageDisplay" onclick="stepStage('spdStage',0,true)" style="cursor:pointer;" title="Click to reset">0</div>
-          <button class="stage-spinner-btn" onclick="stepStage('spdStage',-1)">▼</button>
+          <div class="stage-spinner-btns">
+            <button class="stage-spinner-btn" onclick="stepStage('spdStage',1)">▲</button>
+            <button class="stage-spinner-btn" onclick="stepStage('spdStage',-1)">▼</button>
+          </div>
         </div>
         <select id="spdStage" class="stage-select" onchange="renderResults()">
           <option value="-6">-6</option><option value="-5">-5</option>
@@ -1388,6 +1401,16 @@ Impish Nature
       </div>
 
       <div class="control-group">
+        <label>Speed Condition</label>
+        <select id="speedCondition" onchange="renderResults()">
+          <option value="none">Normal</option>
+          <option value="tailwind-atk">Tailwind (attacker)</option>
+          <option value="tailwind-def">Tailwind (defender)</option>
+          <option value="trickroom">Trick Room</option>
+        </select>
+      </div>
+
+      <div class="control-group">
         <label>Terrain / Screen</label>
         <select id="terrainMode" onchange="recomputeAndRender()">
           <option value="none">None</option>
@@ -1395,17 +1418,6 @@ Impish Nature
           <option value="auroraveil">Aurora Veil</option>
           <option value="reflect">Reflect</option>
           <option value="lightscreen">Light Screen</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label>Speed Condition</label>
-        <select id="speedCondition" onchange="renderResults()">
-          <option value="none">Normal</option>
-          <option value="tailwind-atk">Tailwind (attacker)</option>
-          <option value="tailwind-def">Tailwind (defender)</option>
-          <option value="tailwind-both">Tailwind (both)</option>
-          <option value="trickroom">Trick Room</option>
         </select>
       </div>
 
@@ -1444,10 +1456,26 @@ Impish Nature
     </div><!-- end results-controls -->
 
     <!-- Field status bar — inside sticky wrap so it scrolls with controls -->
-    <div id="fieldStatusBar" style="display:flex;align-items:center;gap:8px;padding:5px 12px;background:var(--bg2);border:0.5px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);font-size:11px;min-height:28px;">
+    <div id="fieldStatusBar" style="display:flex;align-items:center;gap:8px;padding:5px 12px;background:var(--bg2);border:0.5px solid var(--border);border-top:none;border-radius:0;font-size:11px;min-height:28px;">
       <button onclick="resetFieldConditions()" style="padding:3px 8px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0;" title="Reset all field conditions">Reset</button>
       <div id="fieldStatusText" style="flex:1;display:flex;flex-wrap:wrap;gap:4px;align-items:center;color:var(--text3);font-size:10px;"></div>
     </div><!-- end fieldStatusBar -->
+    <!-- Defender tabs row — sticks with control bar -->
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg2);border:0.5px solid var(--border);border-top:none;margin-bottom:10px;">
+      <button id="attackingModeBtn" onclick="onAttackingModeToggle()" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0;" title="Toggle between defending (incoming damage) and attacking (outgoing damage)">Defending</button>
+      <div class="defender-tabs-row" id="defenderTabsRow" style="flex:1;margin-bottom:0;">
+        <div class="def-tab def-tab-empty" title="Slot 1" onclick="selectDefenderTab(0)" id="defTab-0">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 2" onclick="selectDefenderTab(1)" id="defTab-1">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 3" onclick="selectDefenderTab(2)" id="defTab-2">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 4" onclick="selectDefenderTab(3)" id="defTab-3">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 5" onclick="selectDefenderTab(4)" id="defTab-4">＋</div>
+        <div class="def-tab def-tab-empty" title="Slot 6" onclick="selectDefenderTab(5)" id="defTab-5">＋</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;">
+        <button onclick="loadTabsIntoPins()" style="padding:3px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Pin the tab Pokémon as temporary meta listings using their exact stats/moves/items">📌 Pin tabs</button>
+        <button onclick="clearPins()" style="padding:3px 12px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Clear all pinned Pokémon and collapse expanded rows">Clear pins</button>
+      </div>
+    </div>
     </div><!-- end controls-sticky-wrap -->
 
     <!-- Match history control bar -->
@@ -1474,7 +1502,6 @@ Impish Nature
       <!-- Right: Copy to Clipboard | Pin tabs -->
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
         <button id="copyTeamBtn" onclick="copyTeamPaste()" title="Copy all tabs as a team paste" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;transition:background 0.15s,color 0.15s;">📋 Copy to Clipboard</button>
-        <button onclick="loadTabsIntoPins()" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Pin the tab Pokémon as temporary meta listings using their exact stats/moves/items">📌 Pin tabs</button>
       </div>
     </div>
 
@@ -1505,19 +1532,7 @@ Impish Nature
       </div>
     </div>
 
-    <!-- Defender tabs + clipboard — above results listing -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-      <button id="attackingModeBtn" onclick="onAttackingModeToggle()" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0;" title="Toggle between defending (incoming damage) and attacking (outgoing damage)">Defending</button>
-      <div class="defender-tabs-row" id="defenderTabsRow" style="flex:1;margin-bottom:0;">
-        <div class="def-tab def-tab-empty" title="Slot 1" onclick="selectDefenderTab(0)" id="defTab-0">＋</div>
-        <div class="def-tab def-tab-empty" title="Slot 2" onclick="selectDefenderTab(1)" id="defTab-1">＋</div>
-        <div class="def-tab def-tab-empty" title="Slot 3" onclick="selectDefenderTab(2)" id="defTab-2">＋</div>
-        <div class="def-tab def-tab-empty" title="Slot 4" onclick="selectDefenderTab(3)" id="defTab-3">＋</div>
-        <div class="def-tab def-tab-empty" title="Slot 5" onclick="selectDefenderTab(4)" id="defTab-4">＋</div>
-        <div class="def-tab def-tab-empty" title="Slot 6" onclick="selectDefenderTab(5)" id="defTab-5">＋</div>
-      </div>
-      <button onclick="clearPins()" style="flex-shrink:0;padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Clear all pinned Pokémon and collapse expanded rows">Clear pins</button>
-    </div>
+
 
     <div class="card" style="padding: 0.5rem 1.25rem;">
       <div id="resultsList"></div>
@@ -2146,15 +2161,17 @@ function renderDefenderTabs() {
         const st = isAct
           ? 'color:var(--accent2);border-color:var(--accent);background:rgba(124,106,247,0.15);'
           : 'color:var(--text3);border-color:var(--border2);opacity:0.6;';
-        return `<button onclick="toggleDefenderMega(event,${i},'${f.slug}')" style="padding:1px 5px;font-size:9px;border-radius:3px;border:0.5px solid;cursor:pointer;background:transparent;${st};flex-shrink:0;">${f.label}</button>`;
+        return `<button onclick="toggleDefenderMega(event,${i},'${f.slug}')" style="padding:1px 4px;font-size:9px;border-radius:3px;border:0.5px solid;cursor:pointer;background:transparent;${st};flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.label}</button>`;
       }).join('') : '';
-      const defMegaRow = defMegaForms ? `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:2px;">${defMegaBtns}</div>` : '';
+      const defMegaRow = defMegaForms ? `<div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end;">${defMegaBtns}</div>` : '';
 
       tab.innerHTML = `
         <span class="def-tab-close" onclick="clearDefenderSlot(event,${i})">✕</span>
-        <div class="def-tab-name">${slot.speciesRaw}</div>
-        <div class="def-tab-types">${dots}</div>
-        ${defMegaRow}`;
+        <div class="def-tab-name" style="width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${slot.speciesRaw}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:3px;">
+          <div class="def-tab-types" style="margin-top:0;flex-shrink:0;">${dots}</div>
+          ${defMegaRow}
+        </div>`;
       tab.onclick = (e) => {
         if (e.target.classList.contains('def-tab-close')) return;
         if (e.target.tagName === 'BUTTON') return;
@@ -3510,8 +3527,8 @@ function renderResults() {
 
     const pct    = r.displayPct || 0;
     const barW   = Math.min(pct, 100).toFixed(1);
-    const barCls = pct >= 100 ? 'bar-ohko' : pct >= 50 ? 'bar-high' : pct >= 33.3 ? 'bar-mid' : pct >= 25 ? 'bar-low' : 'bar-vlow';
-    const pctColor = pct >= 100 ? 'var(--red)' : pct >= 50 ? 'var(--orange)' : pct >= 33.3 ? 'var(--yellow)' : pct >= 25 ? 'var(--green)' : '#6ab0f5';
+    const barCls = pct >= 100 ? 'bar-ohko' : pct >= 50 ? 'bar-high' : pct >= 33.3 ? 'bar-mid' : pct >= 25 ? 'bar-low' : pct >= 20 ? 'bar-vlow' : 'bar-vvlow';
+    const pctColor = pct >= 100 ? 'var(--red)' : pct >= 50 ? 'var(--orange)' : pct >= 33.3 ? 'var(--yellow)' : pct >= 25 ? 'var(--green)' : pct >= 20 ? '#6ab0f5' : '#6c5ce7';
     const pctLabel = pct >= 130
       ? `<span style="color:${pctColor}">130%+ OHKO</span>`
       : pct >= 100
@@ -3564,7 +3581,7 @@ function renderResults() {
         pctDisplay = `<span style="color:var(--text3);font-size:11px">status</span>`;
       } else {
         const dp = m.adjustedPct ?? m.pct;
-        const dpColor = dp >= 100 ? 'var(--red)' : dp >= 50 ? 'var(--orange)' : dp >= 33.3 ? 'var(--yellow)' : dp >= 25 ? 'var(--green)' : '#6ab0f5';
+        const dpColor = dp >= 100 ? 'var(--red)' : dp >= 50 ? 'var(--orange)' : dp >= 33.3 ? 'var(--yellow)' : dp >= 25 ? 'var(--green)' : dp >= 20 ? '#6ab0f5' : '#6c5ce7';
         // Variable multi-hit: show min–max range
         if (m.mhMin && !m.mhFixed) {
           const dpMin = dp * m.mhMin / ((m.mhMin + m.mhMax) / 2);
@@ -5061,6 +5078,7 @@ function startMatch() {
     speciesRaw : s.speciesRaw,
     spriteUrl  : getSpriteUrl(s.speciesRaw),
     computedSpe: s.computedSpe || s.stats?.spe || 0,
+    item       : s.item || '',
     types      : s.types || [],
     ability    : s.ability || '',
     dividerIndex  : s.dividerIndex ?? 4,
@@ -5074,6 +5092,7 @@ function startMatch() {
       speciesRaw : name,
       spriteUrl  : getSpriteUrl(name),
       computedSpe: dbEntry?.computedSpe || 0,
+      item       : dbEntry?.item || '',
       types      : dbEntry?.types || [],
       ability    : dbEntry?.ability || '',
       dividerIndex  : dbEntry?.dividerIndex ?? 4,
@@ -5244,6 +5263,38 @@ function toggleMatchHighlight(side, name) {
   renderMatchWindow();
 }
 
+
+// Speed timeline for match window hover tips
+function buildMatchSpeedBar(p, opposingTeam) {
+  const selfSpe = effectiveSpe(p);
+  const oppSpeeds = opposingTeam.map(o => effectiveSpe(o));
+  const allSpeeds = [selfSpe, ...oppSpeeds];
+  const minSpe = Math.max(0, Math.min(...allSpeeds) - 5);
+  const maxSpe = Math.max(...allSpeeds) + 5;
+  const range  = maxSpe - minSpe || 1;
+  const pct    = v => Math.max(2, Math.min(98, ((v - minSpe) / range) * 100));
+
+  // Color each opp circle by best eff this pokemon has against them
+  function oppColor(opp) {
+    const eff = bestOffenseEff(p.speciesRaw, opp.types || []);
+    if (eff === 0)  return '#222';
+    if (eff >= 4)   return '#4a9eff';
+    if (eff >= 2)   return 'var(--green)';
+    if (eff < 1)    return '#555';
+    return '#888';
+  }
+
+  let bar = `<div class="threat-speed-bar" style="margin-top:5px;">`;
+  opposingTeam.forEach(o => {
+    const col = oppColor(o);
+    bar += `<div class="threat-speed-marker" style="left:${pct(effectiveSpe(o))}%;width:8px;height:8px;background:${col};border-color:${col};"></div>`;
+  });
+  // Self = white, slightly larger
+  bar += `<div class="threat-speed-marker" style="left:${pct(selfSpe)}%;width:12px;height:12px;background:#fff;border-color:rgba(255,255,255,0.6);box-shadow:0 0 5px rgba(255,255,255,0.6);"></div>`;
+  bar += `</div><div class="threat-speed-label"><span>${minSpe}</span><span>${maxSpe}</span></div>`;
+  return bar;
+}
+
 function renderMatchWindow() {
   const win = document.getElementById('matchWindow');
   if (!win || !_matchActive) return;
@@ -5268,10 +5319,10 @@ function renderMatchWindow() {
       return `<div class="mw-sprite-cell${hlClass}"
         onclick="toggleMatchHighlight('${side}','${p.speciesRaw.replace(/'/g,"\\'")}')"
         title="${p.speciesRaw}">
-        <div class="mw-hover-tip">${pip}</div>
+        <div class="mw-hover-tip">${pip}${buildMatchSpeedBar(p, oppSorted)}</div>
         ${img}
         <div class="mw-spe" style="font-size:8px;color:var(--text3);">${label}</div>
-        <div class="mw-spe">Spe <span style="color:var(--text)">${p.computedSpe}</span></div>
+        <div class="mw-spe">Spe <span style="color:var(--text)">${effectiveSpe(p)}</span></div>
       </div>`;
     }).join('');
   }
@@ -5337,6 +5388,7 @@ function reportMatch(result) {
   putMatchHistory(history);
 
   adjustScore(result === 'win' ? 'wins' : 'losses', 1);
+  resetFieldConditions();
   cancelMatch();
 
   if (!_historyViewActive) toggleHistoryView();
@@ -5942,7 +5994,7 @@ function computeThreatScores() {
       totalDmgPct += bestMovePct;
       totalDefPct += (row.defBestPct || 0);
 
-      const atkSpe = attacker.computedSpe || 0;
+      const atkSpe = effectiveSpe(attacker) || 0;
       const defSpe = effectiveSpe(slot);
       if (atkSpe > defSpe) outspeeds++;
     }
@@ -5988,7 +6040,7 @@ function renderThreatPanel() {
   const top4 = sorted.slice(0, 4);
 
   // Sprite sizes: rank 1 = biggest, descending
-  const sizes = [80, 64, 56, 48];
+  const sizes = [160, 128, 112, 96];
 
   // Helper: best eff meta mon's primary moves deal to targetTypes
   function bestMetaOffEff(entry, targetTypes) {
@@ -6033,7 +6085,7 @@ function renderThreatPanel() {
     for (let i = 0; i < labels.length; i += 3) rows.push(labels.slice(i, i+3));
     return rows.map(row =>
       `<div class="wk-pip-row">${row.map(n =>
-        `<div style="width:8px;text-align:center;font-size:7px;color:var(--text3);">${n}</div>`
+        `<div style="width:14px;text-align:center;font-size:8px;color:var(--text3);">${n}</div>`
       ).join('')}</div>`
     ).join('');
   }
@@ -6065,22 +6117,31 @@ function renderThreatPanel() {
 
   // Speed bar — just the bar + min/max labels, no text
   function buildSpeedBar(entry) {
-    const threatSpe  = entry.attacker.computedSpe || 0;
-    const teamSpeeds = filledSlots.map(s => effectiveSpe(s)).sort((a,b) => a-b);
-    const allSpeeds  = [...teamSpeeds, threatSpe];
+    const threatSpe  = effectiveSpe(entry.attacker) || 0;
+    const allSpeeds  = [...filledSlots.map(s => effectiveSpe(s)), threatSpe];
     const minSpe     = Math.max(0, Math.min(...allSpeeds) - 5);
     const maxSpe     = Math.max(...allSpeeds) + 5;
     const range      = maxSpe - minSpe || 1;
     const pct        = v => Math.max(2, Math.min(98, ((v - minSpe) / range) * 100));
-    const outspeeds  = teamSpeeds.filter(s => threatSpe > s).length;
-    const markerCls  = outspeeds > filledSlots.length / 2 ? 'marker-threat'
-                     : outspeeds === 0 ? 'marker-threat-slower' : 'marker-threat-faster';
+
+    // Color each team slot circle by best offensive eff the threat has vs it
+    // Matches the pip colors in offPips: off-4x=#4a9eff, off-2x=green, neutral=gray, resist=darker, immune=black
+    function slotMarkerColor(slot) {
+      const eff = bestMetaOffEff(entry, slot.types || []);
+      if (eff === 0)  return '#222';           // immune — black
+      if (eff >= 4)   return '#4a9eff';        // 4x — blue
+      if (eff >= 2)   return 'var(--green)';   // 2x — green (same as off-2x pip)
+      if (eff < 1)    return '#555';           // resist — dark gray
+      return '#888';                            // neutral
+    }
 
     let bar = `<div class="threat-speed-bar">`;
     filledSlots.forEach(s => {
-      bar += `<div class="threat-speed-marker marker-team" style="left:${pct(effectiveSpe(s))}%;"></div>`;
+      const col = slotMarkerColor(s);
+      bar += `<div class="threat-speed-marker" style="left:${pct(effectiveSpe(s))}%;background:${col};border-color:${col};"></div>`;
     });
-    bar += `<div class="threat-speed-marker ${markerCls}" style="left:${pct(threatSpe)}%;"></div>`;
+    // Threat pokemon always white and slightly larger
+    bar += `<div class="threat-speed-marker" style="left:${pct(threatSpe)}%;width:14px;height:14px;background:#fff;border-color:rgba(255,255,255,0.6);box-shadow:0 0 6px rgba(255,255,255,0.6);"></div>`;
     bar += `</div><div class="threat-speed-label"><span>${minSpe}</span><span>${maxSpe}</span></div>`;
     return bar;
   }
@@ -6094,7 +6155,7 @@ function renderThreatPanel() {
     const imgHtml = spriteImgHtmlCls(entry.attacker.speciesRaw, size, entry.attacker.spriteUrl || null, '');
 
     const dmgLabel  = entry.avgDmgPct > 0 ? `~${entry.avgDmgPct.toFixed(0)}% dmg` : '—';
-    const spdLabel  = `Spe ${entry.attacker.computedSpe}`;
+    const spdLabel  = `Spe ${effectiveSpe(entry.attacker)}`;
     const outsLabel = entry.outspeeds > 0 ? `⚡${entry.outspeeds}/${filledSlots.length}` : '';
 
     const isPinned  = pinnedKeys.has(entry.attacker.speciesRaw);
@@ -6105,21 +6166,33 @@ function renderThreatPanel() {
 
     let tipBody = '';
     if (_threatMode === 'overall') {
-      // Both offensive and defensive rows, shared labels at bottom
+      // Two 3×2 pip grids side by side: offensive | divider | defensive
       tipBody = `
-        <div style="font-size:8px;color:var(--text3);margin-bottom:2px;">vs your team ▶</div>
-        <div class="wk-pips">${buildPipRow(offPips(entry))}</div>
-        <div style="font-size:8px;color:var(--text3);margin:4px 0 2px;">your team ▶ it</div>
-        <div class="wk-pips">${buildPipRow(defPips(entry))}</div>
-        ${labelBlock}`;
+        <div style="display:flex;gap:8px;align-items:flex-start;justify-content:center;">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="font-size:8px;color:var(--text3);margin-bottom:3px;">vs team ▶</div>
+            ${buildPipRow(offPips(entry))}
+            ${buildSlotLabels()}
+          </div>
+          <div style="width:0.5px;background:var(--border2);align-self:stretch;flex-shrink:0;margin-top:14px;"></div>
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="font-size:8px;color:var(--text3);margin-bottom:3px;">team ▶ it</div>
+            ${buildPipRow(defPips(entry))}
+            ${buildSlotLabels()}
+          </div>
+        </div>`;
     } else if (_threatMode === 'offensive') {
       tipBody = `
-        <div class="wk-pips">${buildPipRow(offPips(entry))}</div>
-        ${labelBlock}`;
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div class="wk-pips">${buildPipRow(offPips(entry))}</div>
+          ${buildSlotLabels()}
+        </div>`;
     } else {
       tipBody = `
-        <div class="wk-pips">${buildPipRow(defPips(entry))}</div>
-        ${labelBlock}`;
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div class="wk-pips">${buildPipRow(defPips(entry))}</div>
+          ${buildSlotLabels()}
+        </div>`;
     }
 
     html += `

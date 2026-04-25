@@ -3,6 +3,8 @@
 
 
 
+
+
 - move/ability search will filter with all possible not just run in meta
 
 - add a button in move breakdown to show the nature and spread of the meta list (similar to “?” button)
@@ -19,6 +21,11 @@
 ---
 #### Completed
 
+- [XX] add a speed timeline with same implementation from meta analysis into current match screen in the hover windows for each pokemon, except it will compare each hovered pokemon the other team it's facing
+- [XX] move the pin tabs button to on top of the clear pins button
+- [XX] have the tab bar section stick to the bottom of the control bar when it scrolls down
+- [XX] have reporting a match in the match screen as win or loss reset the field effects
+- [XX] remove the tailwind (both) option from the speed condition dropdown
 - [XX] move pin tabs button to in the section with the meta analysis button and copy to clipboard. maybe have the meta analysis button stuck to the left of the match log button and the copy to clipboard on the right with pin tabs button on it's right.
 - [XX] load current team into pins with exact stats and moves
 - [XX] have the meta analysis damage calculation be affected by field conditions in the control bar (rain set up will make water do more damage and turn weather ball into water type and fire moves do half damage, etc...) we already have that logic for the results listings so maybe try and use that somehow
