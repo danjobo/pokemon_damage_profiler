@@ -1,11 +1,21 @@
 ## Feature Request
 
+- [__] let the plus and minus buttons be clickable when there's none clicked.
+- [__] make the actual stat value text in the slider window be white
+- [__] in the slider window, make the whole X / 66 text turn green only when it says "66 / 66"
+- [__] you can get rid of the text below the team paste dropdown. (the one that says the name in bold | types: _ | level 50 ...)
+- [__] triple axel damage is not uniform per hit, it goes base power 20 for first, 40 for second, 60 for third
+- [__] add a turtle or lightning icon on the results listings to show if you're outsped or not matching the move breakdown's outsped line
+- add a button in move breakdown to show the nature and spread of the 
+meta list (similar to “?” button)
+
+
+
 
 
 
 - move/ability search will filter with all possible not just run in meta
 
-- add a button in move breakdown to show the nature and spread of the meta list (similar to “?” button)
 
 - Status ticker per Pokemon (burn/para/…) and have that status be displayed on the listing below the name like the games
 - [__] lil triangle on type weakness overlap window to show it's collapsable like the other ones
@@ -26,6 +36,7 @@
 ---
 #### Completed
 
+- [XX] EV investment sliders + nature dropdown swicher in team paste window that live update the tab's text and the damage calcs as they change
 - [XX] item boost are working in the results display damage calcs, but I'm only seeing it in blue text in defending mode, not attacking mode when some of the tabs are using damage boosting items (it is applying the item boost damage, just not showing the blue text)
 - [XX] have clicking trickroom in drop down affect the speed and threat calculation in the meta analysis window
 - [XX] on match completion (clicking the win/loss button), can you have it keep the window in the results window, not auto switch to the match log?
