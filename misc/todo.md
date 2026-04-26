@@ -3,8 +3,6 @@
 
 
 
-
-
 - move/ability search will filter with all possible not just run in meta
 
 - add a button in move breakdown to show the nature and spread of the meta list (similar to “?” button)
@@ -12,8 +10,15 @@
 - Status ticker per Pokemon (burn/para/…) and have that status be displayed on the listing below the name like the games
 - [__] lil triangle on type weakness overlap window to show it's collapsable like the other ones
 
+
+%SystemRoot%\System32\SHELL32.dll
 ## To-Do Stack
 
+- clear pins was never found
+- [??] auto switching to match history after clicking win was kind of confusing
+- [??] having to clear pins after was kind of confusing
+- having to press calculate before saving a team was kind of confusing
+- 
 
 ### Bug Stack
 
@@ -21,6 +26,11 @@
 ---
 #### Completed
 
+- [XX] item boost are working in the results display damage calcs, but I'm only seeing it in blue text in defending mode, not attacking mode when some of the tabs are using damage boosting items (it is applying the item boost damage, just not showing the blue text)
+- [XX] have clicking trickroom in drop down affect the speed and threat calculation in the meta analysis window
+- [XX] on match completion (clicking the win/loss button), can you have it keep the window in the results window, not auto switch to the match log?
+- [XX] for the buttons attached to the search bar, just switch the positions of the x button and the pin to top button
+- [XX] on match completion, clear the current pinned mons
 - [XX] add a speed timeline with same implementation from meta analysis into current match screen in the hover windows for each pokemon, except it will compare each hovered pokemon the other team it's facing
 - [XX] move the pin tabs button to on top of the clear pins button
 - [XX] have the tab bar section stick to the bottom of the control bar when it scrolls down

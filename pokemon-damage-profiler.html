@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pokémon Damage Profiler</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='white' stroke='%23111' stroke-width='4'/%3E%3CclipPath id='toph'%3E%3Crect x='0' y='0' width='100' height='50'/%3E%3C/clipPath%3E%3Ccircle cx='50' cy='50' r='48' fill='%23e74c3c' clip-path='url(%23toph)'/%3E%3Crect x='2' y='46' width='96' height='8' fill='%23111'/%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='%23111' stroke-width='4'/%3E%3Ccircle cx='50' cy='50' r='16' fill='white' stroke='%23111' stroke-width='5'/%3E%3Ccircle cx='50' cy='50' r='7' fill='%23ddd'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23e74c3c' stroke='%23111' stroke-width='4'/%3E%3Crect x='2' y='46' width='96' height='8' fill='%23111'/%3E%3Ccircle cx='50' cy='96' r='48' fill='white' stroke='none'/%3E%3Crect x='2' y='50' width='96' height='48' fill='white'/%3E%3Ccircle cx='50' cy='50' r='16' fill='white' stroke='%23111' stroke-width='5'/%3E%3Ccircle cx='50' cy='50' r='7' fill='%23ddd'/%3E%3C/svg%3E">
 <style>
   :root {
     --bg: #0f0f14;
@@ -64,10 +66,9 @@
 
   .logo {
     width: 44px; height: 44px;
-    background: linear-gradient(135deg, var(--accent), #a594ff);
     border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 22px; flex-shrink: 0;
+    flex-shrink: 0;
   }
 
   h1 { font-size: 22px; font-weight: 600; }
@@ -1157,7 +1158,7 @@
 <div id="move-tooltip"></div>
 
   <header>
-    <div class="logo">⚡</div>
+    <div class="logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="48" fill="white" stroke="#111" stroke-width="4"/><clipPath id="toph"><rect x="0" y="0" width="100" height="50"/></clipPath><circle cx="50" cy="50" r="48" fill="#e74c3c" clip-path="url(#toph)"/><rect x="2" y="46" width="96" height="8" fill="#111"/><circle cx="50" cy="50" r="48" fill="none" stroke="#111" stroke-width="4"/><circle cx="50" cy="50" r="16" fill="white" stroke="#111" stroke-width="5"/><circle cx="50" cy="50" r="7" fill="#ddd"/></svg></div>
     <div>
       <h1>Pokémon Damage Calculator</h1>
       <div class="tagline">Paste real PokéPaste sets — base stats &amp; types fetched live from PokéAPI</div>
@@ -1442,8 +1443,8 @@ Impish Nature
           <button id="filterHintBtn" onclick="toggleFilterHint(event)" style="padding:1px 5px;font-size:10px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;line-height:1;flex-shrink:0;" title="Show filter syntax">?</button>
         </div>
         <div style="display:flex;align-items:stretch;flex:1;border:0.5px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden;background:var(--bg3);position:relative;">
-          <button id="searchClearBtn" onclick="clearSearch()" style="padding:0 8px;border:none;border-right:0.5px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;line-height:1;z-index:2;position:relative;">✕</button>
           <button onclick="pinTopResult()" style="padding:0 8px;border:none;border-right:0.5px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer;white-space:nowrap;line-height:1;z-index:2;position:relative;" title="Pin the top result in the current search">📍</button>
+          <button id="searchClearBtn" onclick="clearSearch()" style="padding:0 8px;border:none;border-right:0.5px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;line-height:1;z-index:2;position:relative;">✕</button>
           <!-- Ghost suggestion shown behind real input -->
           <input id="searchGhost" tabindex="-1" readonly
             style="position:absolute;left:0;top:0;bottom:0;right:0;padding:5px 8px;font-size:12px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;z-index:1;">
@@ -3127,6 +3128,11 @@ function computeResults(loadedMeta, defender) {
         if (mhInfo2.variable) defMods2.push(`×${mhInfo2.min}–${mhInfo2.max} hits`);
         else                   defMods2.push(`×${mhInfo2.fixed} hits`);
       }
+      // Item boost labels for the tab pokemon's item
+      if (defItForMove.atkMul > 1)  defMods2.push(defender.item);
+      if (defItForMove.powerMul > 1) defMods2.push(defender.item);
+      const perMoveItemMul2 = getItemPerMoveMul(defender.item, effectiveMoveType, eff);
+      if (perMoveItemMul2 > 1) defMods2.push(defender.item);
       defMoveBreakdown.push({
         move, effectiveMoveType, isSpread: move.isSpread, isWeatherBall: mn === 'weather ball',
         dmg: mhDmg2, pct: mhDmg2 / attacker.computedHp * 100, eff, stab: isStab > 1,
@@ -4060,11 +4066,11 @@ function updateSearchGhost() {
   const suggestion = getAutocompleteSuggestion(bar.value);
   // Ghost shows the full completed text; real input text is overlaid on top
   // We need to offset the ghost to account for the clear button width when visible
+  const pinBtn   = document.querySelector('#searchBar').parentElement?.querySelector('button[title]');
   const clearBtn = document.getElementById('searchClearBtn');
-  const pinBtn   = clearBtn ? clearBtn.nextElementSibling : null;
-  const clearW = clearBtn ? (clearBtn.offsetWidth || 0) : 0;
   const pinW   = (pinBtn && pinBtn.tagName === 'BUTTON') ? (pinBtn.offsetWidth || 0) : 0;
-  ghost.style.left = (clearW + pinW) + 'px';
+  const clearW = clearBtn ? (clearBtn.offsetWidth || 0) : 0;
+  ghost.style.left = (pinW + clearW) + 'px';
   ghost.style.paddingLeft = '8px';
   ghost.value = suggestion || '';
 }
@@ -5389,10 +5395,10 @@ function reportMatch(result) {
 
   adjustScore(result === 'win' ? 'wins' : 'losses', 1);
   resetFieldConditions();
+  pinnedKeys.clear();
+  expandedBreakdowns.clear();
   cancelMatch();
-
-  if (!_historyViewActive) toggleHistoryView();
-  else renderMatchHistory();
+  renderResults();
 }
 
 function replayMatch(matchId) {
@@ -5996,7 +6002,8 @@ function computeThreatScores() {
 
       const atkSpe = effectiveSpe(attacker) || 0;
       const defSpe = effectiveSpe(slot);
-      if (atkSpe > defSpe) outspeeds++;
+      const _trickRoom = document.getElementById('speedCondition')?.value === 'trickroom';
+      if (_trickRoom ? atkSpe < defSpe : atkSpe > defSpe) outspeeds++;
     }
 
     const avgDmgPct    = slotCount > 0 ? totalDmgPct / slotCount : 0;
@@ -6118,11 +6125,15 @@ function renderThreatPanel() {
   // Speed bar — just the bar + min/max labels, no text
   function buildSpeedBar(entry) {
     const threatSpe  = effectiveSpe(entry.attacker) || 0;
+    const _trRoom    = document.getElementById('speedCondition')?.value === 'trickroom';
     const allSpeeds  = [...filledSlots.map(s => effectiveSpe(s)), threatSpe];
     const minSpe     = Math.max(0, Math.min(...allSpeeds) - 5);
     const maxSpe     = Math.max(...allSpeeds) + 5;
     const range      = maxSpe - minSpe || 1;
-    const pct        = v => Math.max(2, Math.min(98, ((v - minSpe) / range) * 100));
+    // Trick Room inverts: fast = right normally, but in TR slow = advantaged = right
+    const pct        = v => _trRoom
+      ? Math.max(2, Math.min(98, 100 - ((v - minSpe) / range) * 100))
+      : Math.max(2, Math.min(98, ((v - minSpe) / range) * 100));
 
     // Color each team slot circle by best offensive eff the threat has vs it
     // Matches the pip colors in offPips: off-4x=#4a9eff, off-2x=green, neutral=gray, resist=darker, immune=black
