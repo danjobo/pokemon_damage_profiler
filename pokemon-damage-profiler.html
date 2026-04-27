@@ -946,12 +946,16 @@
   }
 
   .weakness-grid {
-    display: grid;
-    grid-template-columns: repeat(9, 1fr);
-    gap: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .weakness-grid .wk-cell {
+    flex: 1 1 calc(11.1% - 4px);
+    min-width: 48px;
   }
   @media (max-width: 600px) {
-    .weakness-grid { grid-template-columns: repeat(6, 1fr); }
+    .weakness-grid .wk-cell { flex-basis: calc(16.6% - 4px); }
   }
 
   .wk-cell {
@@ -1683,7 +1687,7 @@ const TYPE_CHART = {
   poison:   {grass:2,fairy:2,poison:0.5,ground:0.5,rock:0.5,ghost:0.5,steel:0},
   ground:   {fire:2,electric:2,poison:2,rock:2,steel:2,grass:0.5,bug:0.5,flying:0,water:0.5},
   flying:   {grass:2,fighting:2,bug:2,electric:0.5,rock:0.5,steel:0.5},
-  psychic:  {fighting:2,poison:2,psychic:0.5,steel:0.5,dark:0,ghost:0},
+  psychic:  {fighting:2,poison:2,psychic:0.5,steel:0.5,dark:0},
   bug:      {grass:2,psychic:2,dark:2,fire:0.5,fighting:0.5,flying:0.5,ghost:0.5,steel:0.5,fairy:0.5,poison:0.5},
   rock:     {fire:2,ice:2,flying:2,bug:2,fighting:0.5,ground:0.5,steel:0.5},
   ghost:    {ghost:2,psychic:2,dark:0.5,normal:0,fairy:0.5},
@@ -1700,6 +1704,12 @@ function typeEff(moveType, defTypes) {
     if (r[t] !== undefined) e *= r[t];
   }
   return e;
+}
+
+// Like typeEff but also applies ability immunities (Levitate → ground immune)
+function typeEffWithAbility(moveType, defTypes, defAbility) {
+  if ((defAbility || '').toLowerCase() === 'levitate' && moveType === 'ground') return 0;
+  return typeEff(moveType, defTypes);
 }
 
 // ─── Stat formulae ────────────────────────────────────────────────────────────
@@ -2625,7 +2635,7 @@ function updateWeaknessOverlay() {
 
   // For each attacking type, tally effectiveness across all filled defenders
   const typeData = ALL_TYPES.map(atkType => {
-    const effs = filled.map(def => typeEff(atkType, def.types));
+    const effs = filled.map(def => typeEffWithAbility(atkType, def.types, def.ability));
     const weakCount   = effs.filter(e => e > 1).length;
     const immuneCount = effs.filter(e => e === 0).length;
     const resistCount = effs.filter(e => e > 0 && e < 1).length;
@@ -3654,11 +3664,17 @@ function renderResults() {
       // Spread penalty: ×0.75 in doubles
       if (isEffectivelySpread) adjustedDmg *= 0.75;
 
-      // Type-boost item override (×1.2, e.g. Mystic Water / Black Glasses)
+      // Type-boost item override (×1.2)
+      // If attacker already has a type-boost item, the 1.2 is already in computeResults.
+      // Toggle ON with item = no-op (already applied). Toggle ON without item = add 1.2.
+      // The '−item' case: toggle ON means REMOVE the boost (÷1.2).
       const tbState = typeBoostOverrides.get(r.attacker.speciesRaw);
       const atkHasTypeBoostItem = hasTypeBoostItem(r.attacker.item);
-      const typeBoostActive = tbState === 'on' ? true : tbState === 'off' ? false : false; // default off
-      if (typeBoostActive) adjustedDmg *= 1.2;
+      const typeBoostActive = tbState === 'on';
+      if (typeBoostActive) {
+        if (atkHasTypeBoostItem) adjustedDmg /= 1.2; // remove the already-applied boost
+        else                     adjustedDmg *= 1.2; // add boost for item-less pokemon
+      }
 
       if (maxRollMode) adjustedDmg /= 0.85;
 
@@ -4064,12 +4080,15 @@ function renderResults() {
       const tbState2 = typeBoostOverrides.get(atkKey);
       const atkHasTypeBoost = hasTypeBoostItem(r.attacker.item);
       const typeBoostOn = tbState2 === 'on';
-      const typeBoostBtnStyle = typeBoostOn
+      // Visual: for pokemon WITH a boost item, default (no override) = boost is active = yellow
+      //         for pokemon WITHOUT a boost item, default = inactive = grey
+      const typeBoostVisuallyOn = atkHasTypeBoost ? !typeBoostOn : typeBoostOn;
+      const typeBoostBtnStyle = typeBoostVisuallyOn
         ? 'color:var(--yellow);border-color:var(--yellow);background:rgba(250,199,117,0.12)'
         : 'color:var(--text3);border-color:var(--border2)';
       // Label: if they already have a type-boost item, button removes it; otherwise adds it
       const typeBoostBtnText = atkHasTypeBoost
-        ? (typeBoostOn ? '×1.2 item ✓' : '−item ×1.2')
+        ? (typeBoostOn ? '+item ×1.2' : '−item ×1.2 ✓')
         : (typeBoostOn ? '×1.2 item ✓' : '+item ×1.2');
 
       speedHtml = `
@@ -5622,14 +5641,13 @@ function getMoveTypes(speciesRaw) {
   return teamEntry ? (teamEntry.types || []) : [];
 }
 
-function bestOffenseEff(attackerSpecies, defenderTypes) {
+function bestOffenseEff(attackerSpecies, defenderTypes, defAbility) {
   const moveTypes = getMoveTypes(attackerSpecies);
   if (!moveTypes.length) return 1;
   const weather = document.getElementById('weatherMode')?.value || 'none';
-  // Apply weather modifier to type eff score so rain-boosted Water moves rank higher etc.
   return Math.max(...moveTypes.map(mt => {
-    const eff = typeEff(mt, defenderTypes);
-    if (eff === 0) return 0; // immunities always 0 regardless of weather
+    const eff = typeEffWithAbility(mt, defenderTypes, defAbility);
+    if (eff === 0) return 0;
     return eff * applyWeatherModifier(mt, weather);
   }));
 }
@@ -5649,7 +5667,7 @@ function getDefenseThreat(speciesRaw) {
   // Lower = better defensively; immunity gives -0.5 bonus
   return _matchOppTeam.concat(_matchMyTeam)
     .filter(p => p.speciesRaw !== speciesRaw)
-    .reduce((sum, opp) => sum + defEffScore(bestOffenseEff(opp.speciesRaw, entry.types)), 0);
+    .reduce((sum, opp) => sum + defEffScore(bestOffenseEff(opp.speciesRaw, entry.types, entry.ability)), 0);
 }
 
 function getDamageLabel(speciesRaw, isMyTeam, isOffenseMode) {
@@ -5663,7 +5681,7 @@ function getDamageLabel(speciesRaw, isMyTeam, isOffenseMode) {
     const team = isMyTeam ? _matchMyTeam : _matchOppTeam;
     const self = team.find(p => p.speciesRaw === speciesRaw);
     if (!self) return '';
-    const total = opponents.reduce((sum, opp) => sum + cappedEff(bestOffenseEff(opp.speciesRaw, self.types)), 0);
+    const total = opponents.reduce((sum, opp) => sum + cappedEff(bestOffenseEff(opp.speciesRaw, self.types, self.ability)), 0);
     const avg = opponents.length ? (total / opponents.length).toFixed(1) : '—';
     return `avg ×${avg} in`;
   }
@@ -5675,7 +5693,7 @@ function buildMatchupPips(pokemon, opposingSorted, isOffenseMode) {
   const pips = opposingSorted.map(opp => {
     if (isOffenseMode) {
       // How well does pokemon's best move hit opp? High eff = good (blue/green), resisted = bad (red)
-      const eff = bestOffenseEff(pokemon.speciesRaw, opp.types);
+      const eff = bestOffenseEff(pokemon.speciesRaw, opp.types, opp.ability);
       if (eff === 0)    return 'off-immune';  // they're immune to you = very dark
       if (eff >= 4)     return 'off-4x';      // ×4 = blue (great)
       if (eff >= 2)     return 'off-2x';      // ×2 = green (good)
@@ -5683,7 +5701,7 @@ function buildMatchupPips(pokemon, opposingSorted, isOffenseMode) {
       return '';                               // neutral
     } else {
       // How well does opp's best move hit pokemon? High eff = bad (red), resisted = good (green)
-      const eff = bestOffenseEff(opp.speciesRaw, pokemon.types);
+      const eff = bestOffenseEff(opp.speciesRaw, pokemon.types, pokemon.ability);
       if (eff === 0)    return 'immune';    // you're immune = black (best)
       if (eff >= 4)     return 'weak4x';   // they hit ×4 = bright red (very bad)
       if (eff >= 2)     return 'weak2x';   // they hit ×2 = orange (bad)
@@ -5731,7 +5749,7 @@ function buildMatchSpeedBar(p, opposingTeam) {
 
   // Color each opp circle by best eff this pokemon has against them
   function oppColor(opp) {
-    const eff = bestOffenseEff(p.speciesRaw, opp.types || []);
+    const eff = bestOffenseEff(p.speciesRaw, opp.types || [], opp.ability);
     if (eff === 0)  return '#222';
     if (eff >= 4)   return '#4a9eff';
     if (eff >= 2)   return 'var(--green)';
@@ -6786,14 +6804,14 @@ function renderThreatPanel() {
   const sizes = [160, 128, 112, 96];
 
   // Helper: best eff meta mon's primary moves deal to targetTypes
-  function bestMetaOffEff(entry, targetTypes) {
+  function bestMetaOffEff(entry, targetTypes, targetAbility) {
     const metaMoves   = entry.attacker.resolvedMoves || [];
     const divIdx      = entry.attacker.dividerIndex ?? 4;
     const metaAbility = entry.attacker.ability || '';
     const primary = metaMoves.filter(m => (m.pasteIndex ?? 99) < divIdx);
     const moves   = primary.length ? primary : metaMoves;
     if (!moves.length) return 1;
-    return Math.max(...moves.map(m => typeEff(getEffectiveMoveType(m, metaAbility), targetTypes)));
+    return Math.max(...moves.map(m => typeEffWithAbility(getEffectiveMoveType(m, metaAbility), targetTypes, targetAbility)));
   }
 
   // Helper: best eff a slot's primary moves deal to metaTypes
@@ -6804,7 +6822,7 @@ function renderThreatPanel() {
     const primary    = slotMoves.filter(m => (m.pasteIndex ?? 99) < slotDivIdx);
     const moves      = primary.length ? primary : slotMoves;
     if (!moves.length) return 1;
-    return Math.max(...moves.map(m => typeEff(getEffectiveMoveType(m, slot.ability || ''), metaTypes)));
+    return Math.max(...moves.map(m => typeEffWithAbility(getEffectiveMoveType(m, slot.ability || ''), metaTypes, entry.attacker.ability || '')));
   }
 
   // Build a single row of pips + initial-letter labels for up to 6 slots
@@ -6836,7 +6854,7 @@ function renderThreatPanel() {
   // Offensive pips: meta mon's best move vs each slot
   function offPips(entry) {
     return filledSlots.map(slot => {
-      const eff = bestMetaOffEff(entry, slot.types || []);
+      const eff = bestMetaOffEff(entry, slot.types || [], slot.ability);
       if (eff === 0)  return 'off-immune';
       if (eff >= 4)   return 'off-4x';
       if (eff >= 2)   return 'off-2x';
@@ -6874,7 +6892,7 @@ function renderThreatPanel() {
     // Color each team slot circle by best offensive eff the threat has vs it
     // Matches the pip colors in offPips: off-4x=#4a9eff, off-2x=green, neutral=gray, resist=darker, immune=black
     function slotMarkerColor(slot) {
-      const eff = bestMetaOffEff(entry, slot.types || []);
+      const eff = bestMetaOffEff(entry, slot.types || [], slot.ability);
       if (eff === 0)  return '#222';           // immune — black
       if (eff >= 4)   return '#4a9eff';        // 4x — blue
       if (eff >= 2)   return 'var(--green)';   // 2x — green (same as off-2x pip)

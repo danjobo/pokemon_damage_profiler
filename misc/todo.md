@@ -2,9 +2,10 @@
 
 
 
+- [XX] aegislash is not able to be hit by psychic moves even though he's only steel ghost and not dark type
+- [__] results listings with black glasses/damage boosting items are applying their damage correctly, but if i press the +-item x1.2 button, it will increase it by an additional 1.2 instead of recognizing it has black glasses already and decreasing it
+- [__] have levitate ground immunity affect pip graphics in current match window hover windows, in the type weakness overlap window, and the meta analysis hover windows. and if it's not already, also have it affect the damage calculation for each of those.
 
-
-- [__] lil triangle on type weakness overlap window to show it's collapsable like the other ones
 
 
 - move/ability search will filter with all possible not just run in meta
@@ -12,6 +13,7 @@
 
 - Status ticker per Pokemon (burn/para/…) and have that status be displayed on the listing below the name like the games
 
+- [__] lil triangle on type weakness overlap window to show it's collapsable like the other ones
 
 %SystemRoot%\System32\SHELL32.dll
 ## To-Do Stack
