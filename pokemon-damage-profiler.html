@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Google APIs -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer></script>
 <title>Pokémon Damage Profiler</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='white' stroke='%23111' stroke-width='4'/%3E%3CclipPath id='toph'%3E%3Crect x='0' y='0' width='100' height='50'/%3E%3C/clipPath%3E%3Ccircle cx='50' cy='50' r='48' fill='%23e74c3c' clip-path='url(%23toph)'/%3E%3Crect x='2' y='46' width='96' height='8' fill='%23111'/%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='%23111' stroke-width='4'/%3E%3Ccircle cx='50' cy='50' r='16' fill='white' stroke='%23111' stroke-width='5'/%3E%3Ccircle cx='50' cy='50' r='7' fill='%23ddd'/%3E%3C/svg%3E">
 
@@ -1362,6 +1365,8 @@ Adamant Nature
           <button onclick="exportAllData()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Export all saved data to a JSON file">⬇ Export</button>
           <button onclick="document.getElementById('importDataInput').click()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Import data from a previously exported JSON file">⬆ Import</button>
           <input type="file" id="importDataInput" accept=".json" style="display:none" onchange="importAllData(event)">
+          <button onclick="driveSave()" style="font-size:11px;padding:4px 8px;border:0.5px solid #4285f4;border-radius:var(--radius-sm);background:transparent;color:#4285f4;cursor:pointer;white-space:nowrap;" title="Save all data to Google Drive">Drive ⬆</button>
+          <button onclick="driveLoad()" style="font-size:11px;padding:4px 8px;border:0.5px solid #4285f4;border-radius:var(--radius-sm);background:transparent;color:#4285f4;cursor:pointer;white-space:nowrap;" title="Load data from Google Drive">Drive ⬇</button>
         </div>
       </div>
 
@@ -5366,6 +5371,119 @@ function refreshSavedTeamDropdown(selectValue) {
     }).join('');
   if (selectValue) sel.value = selectValue;
 }
+
+// ── Google Drive Integration ──────────────────────────────────────────────────
+const DRIVE_CLIENT_ID = '352257766580-3ntfo6ga148ovb9rtbpq08otv5dqh615.apps.googleusercontent.com';
+const DRIVE_API_KEY   = 'AIzaSyDdZnpYCv5Yh9iJCynuCX55nbQ6WqgAS9k';
+const DRIVE_SCOPES    = 'https://www.googleapis.com/auth/drive.file';
+const DRIVE_FILENAME  = 'damage-profiler-saves.json';
+let _driveTokenClient = null;
+let _driveAccessToken = null;
+let _drivePendingAction = null; // 'save' | 'load'
+
+function _driveGetData() {
+  return JSON.stringify({
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    savedTeams:   JSON.parse(localStorage.getItem(SAVED_TEAMS_KEY)   || '{}'),
+    savedMetas:   JSON.parse(localStorage.getItem(SAVED_METAS_KEY)   || '{}'),
+    matchHistory: JSON.parse(localStorage.getItem(MATCH_HISTORY_KEY) || '{}'),
+    winrates:     JSON.parse(localStorage.getItem(WINRATE_KEY)       || '{}'),
+    notebooks:    JSON.parse(localStorage.getItem(NOTEBOOK_KEY)      || '{}'),
+  }, null, 2);
+}
+
+function _driveEnsureAuth(action) {
+  _drivePendingAction = action;
+  if (_driveAccessToken) { _driveExecute(action); return; }
+  if (!_driveTokenClient) {
+    _driveTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: DRIVE_CLIENT_ID,
+      scope: DRIVE_SCOPES,
+      callback: (resp) => {
+        if (resp.error) { alert('Google sign-in failed: ' + resp.error); return; }
+        _driveAccessToken = resp.access_token;
+        _driveExecute(_drivePendingAction);
+      },
+    });
+  }
+  _driveTokenClient.requestAccessToken({ prompt: 'consent' });
+}
+
+async function _driveExecute(action) {
+  if (action === 'save') await _driveSaveExec();
+  else if (action === 'load') await _driveLoadExec();
+}
+
+async function _driveFindFile() {
+  const resp = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FILENAME}'+and+trashed=false&spaces=drive&fields=files(id,name)`,
+    { headers: { Authorization: 'Bearer ' + _driveAccessToken } }
+  );
+  const data = await resp.json();
+  return data.files && data.files.length ? data.files[0].id : null;
+}
+
+async function _driveSaveExec() {
+  const content = _driveGetData();
+  const blob = new Blob([content], { type: 'application/json' });
+  const existing = await _driveFindFile();
+
+  let url, method;
+  if (existing) {
+    url = `https://www.googleapis.com/upload/drive/v3/files/${existing}?uploadType=media`;
+    method = 'PATCH';
+  } else {
+    // Create with metadata first
+    const meta = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + _driveAccessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: DRIVE_FILENAME, mimeType: 'application/json' })
+    });
+    const metaData = await meta.json();
+    url = `https://www.googleapis.com/upload/drive/v3/files/${metaData.id}?uploadType=media`;
+    method = 'PATCH';
+  }
+
+  const resp = await fetch(url, {
+    method,
+    headers: { Authorization: 'Bearer ' + _driveAccessToken, 'Content-Type': 'application/json' },
+    body: blob
+  });
+  if (resp.ok) alert('Saved to Google Drive successfully!');
+  else alert('Drive save failed: ' + (await resp.text()));
+}
+
+async function _driveLoadExec() {
+  const fileId = await _driveFindFile();
+  if (!fileId) {
+    alert('No save file found in Google Drive. Save first from another device.');
+    return;
+  }
+  const resp = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+    { headers: { Authorization: 'Bearer ' + _driveAccessToken } }
+  );
+  if (!resp.ok) { alert('Drive load failed: ' + (await resp.text())); return; }
+  const data = await resp.json();
+  if (!data.version || !data.savedTeams) { alert('Invalid save file in Drive.'); return; }
+  const count = Object.keys(data.savedTeams).length;
+  if (!confirm(`Load ${count} team(s) from Google Drive? This will merge with your local data.`)) return;
+  const merge = (key, incoming) => {
+    const existing = JSON.parse(localStorage.getItem(key) || '{}');
+    localStorage.setItem(key, JSON.stringify({ ...existing, ...incoming }));
+  };
+  merge(SAVED_TEAMS_KEY,   data.savedTeams   || {});
+  merge(SAVED_METAS_KEY,   data.savedMetas   || {});
+  merge(MATCH_HISTORY_KEY, data.matchHistory || {});
+  merge(WINRATE_KEY,       data.winrates     || {});
+  merge(NOTEBOOK_KEY,      data.notebooks    || {});
+  populateSavedTeamSelect();
+  alert(`Loaded ${count} team(s) from Google Drive!`);
+}
+
+function driveSave() { _driveEnsureAuth('save'); }
+function driveLoad() { _driveEnsureAuth('load'); }
 
 function exportAllData() {
   const data = {
