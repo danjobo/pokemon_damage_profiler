@@ -159,7 +159,7 @@
     line-height: 1.6;
   }
   textarea:focus { border-color: var(--accent); }
-  #defenderInput { height: 200px; }
+  #defenderInput { height: 90px; min-height: 90px; }
   #metaInput     { height: 340px; }
 
   .btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
@@ -242,9 +242,6 @@
     justify-content: space-between;
     flex-wrap: wrap; gap: 10px;
     margin-bottom: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 20;
     background: var(--bg);
     padding: 10px 0 0;
     margin-left: -1.25rem;
@@ -514,10 +511,13 @@
 
   .controls-sticky-wrap {
     position: sticky;
-    top: 48px;
+    top: 0;
     z-index: 19;
     margin-bottom: 14px;
   }
+
+  /* In split view the results-header is also sticky at top:0;
+     offset controls-sticky-wrap below it using JS-set --header-h var */
 
   .results-controls {
     display: flex;
@@ -1200,6 +1200,27 @@
   .spd-outspeeds { color: var(--red); }
   .spd-tied-c { color: var(--yellow); }
   .spd-slower-c { color: var(--green); }
+
+  /* ── Wide-screen two-column layout ─────────────────────────────────────────── */
+  .wide-layout { display: block; }
+  .wide-left, .wide-right { display: block; }
+
+  @media (min-width: 1100px) {
+    .container { max-width: min(95vw, 1700px); padding: 0 24px; }
+    .wide-layout {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+    .wide-left  { min-width: 0; }
+    .wide-right { min-width: 0; position: sticky; top: 0; max-height: 100vh; overflow-y: auto; }
+    .wide-right::-webkit-scrollbar { width: 6px; }
+    .wide-right::-webkit-scrollbar-track { background: transparent; }
+    .wide-right::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+    .wide-right::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+  }
+
 </style>
 </head>
 <body>
@@ -1216,7 +1237,9 @@
 
   <!-- <div class="two-col"> -->
 
-    <!-- META DATABASE -->
+  <div class="wide-layout">
+  <div class="wide-left">
+  <!-- META DATABASE -->
     <div class="card card-collapsible" id="metaCard">
       <div class="card-label" onclick="toggleCard('metaCard',event)" style="cursor:pointer;">Meta database — attackers <span class="card-collapse-hint">▼</span></div>
 
@@ -1310,7 +1333,6 @@ Impish Nature
         <button onclick="loadDefenderExample()">Load example</button>
         <button id="copyTeamBtn" onclick="copyTeamPaste()" title="Copy all tabs as a team paste" style="transition:background 0.15s,color 0.15s;">📋 Copy to Clipboard</button>
         <button onclick="clearDefenders()" style="color:var(--text3)">Clear defenders</button>
-        <button onclick="clearAll()" style="color:var(--text3)">Clear all</button>
       </div>
 
       <!-- EV / Nature editor — only shown when a slot is loaded -->
@@ -1349,6 +1371,8 @@ Impish Nature
     <button class="btn-primary" onclick="calculate()" id="calcBtn">Calculate damage</button>
   </div>
 
+  </div><!-- end wide-left -->
+  <div class="wide-right">
   <!-- RESULTS -->
   <div id="resultsSection" style="display:none">
     <!-- Defender slot tabs (up to 6) -->
@@ -3639,6 +3663,7 @@ function renderResults() {
 
       // maxHp does NOT apply to the tab defender — only to meta-listing pokemon
       m.adjustedPct  = adjustedDmg / r.defenderHp * 100;
+      m.minRollPct   = maxRollMode ? adjustedDmg * 0.85 / r.defenderHp * 100 : m.adjustedPct;
       m.adjustedDmg  = adjustedDmg;
       m.resolvedType = moveType; // for display
       m.isEffectivelySpread = isEffectivelySpread;
@@ -3710,6 +3735,7 @@ function renderResults() {
         if (maxHpVal > atkEffHp) atkEffHp = maxHpVal;
       }
       m.adjustedPct = adjustedDmg / atkEffHp * 100;
+      m.minRollPct  = maxRollMode ? adjustedDmg * 0.85 / atkEffHp * 100 : m.adjustedPct;
       m.adjustedDmg = adjustedDmg;
       m.resolvedType = moveType2;
       m.isEffectivelySpread = isEffSpread;
@@ -3872,15 +3898,16 @@ function renderResults() {
     const barW   = Math.min(pct, 100).toFixed(1);
     const barCls = pct >= 100 ? 'bar-ohko' : pct >= 50 ? 'bar-high' : pct >= 33.3 ? 'bar-mid' : pct >= 25 ? 'bar-low' : pct >= 20 ? 'bar-vlow' : 'bar-vvlow';
     const pctColor = pct >= 100 ? 'var(--red)' : pct >= 50 ? 'var(--orange)' : pct >= 33.3 ? 'var(--yellow)' : pct >= 25 ? 'var(--green)' : pct >= 20 ? '#6ab0f5' : '#6c5ce7';
-    const minPct = pct; // 0.85 roll
-    const maxPct85 = pct / 0.85; // 1.00 roll
+    // OHKO chance: r.pct is always the min roll. r.displayPct has field mods + possibly max roll.
+    const rawBestPct = r.pct || 0;
+    const fieldModsR = rawBestPct > 0 ? (maxRollMode ? pct * 0.85 / rawBestPct : pct / rawBestPct) : 1;
+    const trueMinPct = maxRollMode ? pct * 0.85 : pct;
+    const trueMaxPct = trueMinPct / 0.85;
     let ohkoLine = '';
-    if (pct >= 100) {
-      // All rolls OHKO
+    if (trueMinPct >= 100) {
       ohkoLine = '<div style="font-size:9px;color:var(--red);opacity:0.8;">100% OHKO</div>';
-    } else if (maxPct85 >= 100) {
-      // Some rolls OHKO — 16 damage rolls uniformly spaced
-      const rolls16 = Array.from({length:16}, (_,i) => minPct * (85 + i) / 85);
+    } else if (trueMaxPct >= 100) {
+      const rolls16 = Array.from({length:16}, (_,i) => trueMinPct * (85 + i) / 85);
       const ohkoRolls = rolls16.filter(r => r >= 100).length;
       const chance = Math.round(ohkoRolls / 16 * 100);
       ohkoLine = `<div style="font-size:9px;color:var(--red);opacity:0.8;">${chance}% OHKO</div>`;
@@ -3951,15 +3978,20 @@ function renderResults() {
       } else {
         const dp = m.adjustedPct ?? m.pct;
         const dpColor = dp >= 100 ? 'var(--red)' : dp >= 50 ? 'var(--orange)' : dp >= 33.3 ? 'var(--yellow)' : dp >= 25 ? 'var(--green)' : dp >= 20 ? '#6ab0f5' : '#6c5ce7';
-        // OHKO chance for non-guaranteed KOs
+        // OHKO chance: m.pct is always the min roll (0.85 factor) from computeResults.
+        // adjustedPct may have weather/stage mods AND optionally max-roll (/0.85).
+        // Compute field multiplier from non-roll part only.
+        // If maxRollMode: adjustedPct = m.pct/0.85 * fieldMods → fieldMods = adjustedPct*0.85/m.pct
+        // If !maxRollMode: adjustedPct = m.pct * fieldMods → fieldMods = adjustedPct/m.pct
+        const rawPct = m.pct || 0;
+        const adjPct = m.adjustedPct ?? rawPct;
+        const trueMinPct = m.minRollPct ?? (maxRollMode ? adjPct * 0.85 : adjPct);
+        const trueMaxPct = trueMinPct / 0.85;
         let ohkoChanceLine = '';
-        if (dp < 100) {
-          const dpMax = dp / 0.85;
-          if (dpMax >= 100) {
-            const rolls16 = Array.from({length:16}, (_,i) => dp * (85 + i) / 85);
-            const ohkoRolls = rolls16.filter(r => r >= 100).length;
-            ohkoChanceLine = `<span style="font-size:9px;color:var(--red);opacity:0.85;margin-right:4px;">${Math.round(ohkoRolls/16*100)}% KO</span>`;
-          }
+        if (trueMinPct < 100 && trueMaxPct >= 100) {
+          const rolls16 = Array.from({length:16}, (_,i) => trueMinPct * (85 + i) / 85);
+          const ohkoRolls = rolls16.filter(r => r >= 100).length;
+          ohkoChanceLine = `<span style="font-size:9px;color:var(--red);opacity:0.85;margin-right:4px;">${Math.round(ohkoRolls/16*100)}% KO</span>`;
         }
         // Variable multi-hit: show min–max range
         if (m.mhMin && !m.mhFixed) {
@@ -3968,9 +4000,7 @@ function renderResults() {
           const rangeColor = dpMax >= 100 ? 'var(--red)' : dpMax >= 50 ? 'var(--orange)' : dpMax >= 33.3 ? 'var(--yellow)' : 'var(--green)';
           pctDisplay = `${ohkoChanceLine}<span style="color:${rangeColor}">${dpMin.toFixed(0)}–${dpMax.toFixed(0)}%</span>`;
         } else {
-          pctDisplay = dp >= 100
-            ? `<span style="color:${dpColor}">${dp.toFixed(0)}%</span>`
-            : `${ohkoChanceLine}<span style="color:${dpColor}">${dp.toFixed(1)}%</span>`;
+          pctDisplay = `${ohkoChanceLine}<span style="color:${dpColor}">${dp >= 100 ? dp.toFixed(0) : dp.toFixed(1)}%</span>`;
         }
       }
       return `<div class="move-breakdown-row" style="${rowFontSize}padding:${isPastDivider ? '3px 4px 3px 0' : '6px 0'};min-width:0;overflow:hidden;">
@@ -4480,27 +4510,51 @@ function handleSearchKey(e) {
 }
 
 // ── Return to top button ───────────────────────────────────────────────────────
+function getScrollContainer() {
+  // In split view the wide-right div is the scroll container; otherwise window
+  const wr = document.querySelector('.wide-right');
+  if (wr && getComputedStyle(wr).overflowY === 'auto') return wr;
+  return null;
+}
+
 function scrollToResults() {
+  const sc = getScrollContainer();
+  if (sc) { sc.scrollTo({ top: 0, behavior: 'instant' }); return; }
   const section = document.getElementById('resultsSection');
   if (section) section.scrollIntoView({ behavior: 'instant', block: 'start' });
 }
 
-window.addEventListener('scroll', () => {
+function _updateReturnBtn(scrollTop) {
   const btn = document.getElementById('returnToTopBtn');
   if (!btn) return;
-  const section = document.getElementById('resultsSection');
-  if (!section) return;
-  // Show when scrolled past the results section top by more than 200px
-  const sectionTop = section.getBoundingClientRect().top;
-  const shouldShow = sectionTop < -200;
+  const shouldShow = scrollTop > 300;
   if (shouldShow) {
+    // In split view, center within the wide-right column
+    const wr = document.querySelector('.wide-right');
+    if (wr && getComputedStyle(wr).overflowY === 'auto') {
+      const r = wr.getBoundingClientRect();
+      btn.style.left = (r.left + r.width / 2) + 'px';
+      btn.style.transform = 'translateX(-50%)';
+    } else {
+      btn.style.left = '50%';
+      btn.style.transform = 'translateX(-50%)';
+    }
     btn.style.display = 'block';
     requestAnimationFrame(() => { btn.style.opacity = '1'; });
   } else {
     btn.style.opacity = '0';
     setTimeout(() => { if (btn.style.opacity === '0') btn.style.display = 'none'; }, 200);
   }
-}, { passive: true });
+}
+
+window.addEventListener('scroll', () => { _updateReturnBtn(window.scrollY); });
+
+// Also watch wide-right scroll in split view
+(function attachWideRightScroll() {
+  const wr = document.querySelector('.wide-right');
+  if (wr) wr.addEventListener('scroll', () => { _updateReturnBtn(wr.scrollTop); });
+  else requestAnimationFrame(attachWideRightScroll);
+})();
 
 function toggleFilterHint(e) {
   e.stopPropagation();
@@ -6948,6 +7002,8 @@ function refreshThreatPanelIfOpen() {
   <div><span style="color:var(--accent2)">hits:fire</span> — has a move super effective vs fire</div>
   <div><span style="color:var(--accent2)">hits:garchomp</span> — has a move super effective vs that Pokémon</div>
   <div style="margin-top:6px;color:var(--text3);font-size:10px;">e.g. <em>weak:fire, type:dragon</em></div>
+  </div><!-- end wide-right -->
+</div><!-- end wide-layout -->
 </div>
 
 </body>
