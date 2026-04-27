@@ -1,13 +1,5 @@
 ## Feature Request
 
-- [__] let the plus and minus buttons be clickable when there's none clicked.
-- [__] make the actual stat value text in the slider window be white
-- [__] in the slider window, make the whole X / 66 text turn green only when it says "66 / 66"
-- [__] you can get rid of the text below the team paste dropdown. (the one that says the name in bold | types: _ | level 50 ...)
-- [__] triple axel damage is not uniform per hit, it goes base power 20 for first, 40 for second, 60 for third
-- [__] add a turtle or lightning icon on the results listings to show if you're outsped or not matching the move breakdown's outsped line
-- add a button in move breakdown to show the nature and spread of the 
-meta list (similar to “?” button)
 
 
 
@@ -36,6 +28,21 @@ meta list (similar to “?” button)
 ---
 #### Completed
 
+- [XX] you can get rid of the text below the team paste dropdown. (the one that says the name in bold | types: _ | level 50 ...)
+- [XX] unclicking the mega button on a mega results listing shows the wrong ability on first unclick (unclick dragonite-mega it shows innerfocus until i click and unclick again it shows multiscale)
+- [XX] make a show more text
+- [XX] less indentation on unordered/ordered lists now
+- [XX] pokemon with change to KO, put odds to KO in smaller text below the percent text in the results listing
+- [XX] add a button in move breakdown to show the nature and spread of the meta list (similar to “?” button)
+- [XX] star entries to pin them to top
+- [XX] Add a button in meta analysis to switch from team view to tab view, where team analyses whole team together while tab only view selected tab
+- [XX] add a notebook tab next to the right of match log button that switches the results screen area with a notebook section. this will have listing of note entries you've made with date and time on the left and when you click them, they will expand to show the full entry (maybe have a "show more"/"show less" text on it somewhere). When they're minimized, they should just show the text of the first line (thus newline characters should be supported). if you click them, a text box will open where you can type and change the text of the note. they should also read markdown formatting style and display it in the expanded entry (but not in the text editing window). at the top of the notes entry list, there will always be a plus button that lets you create a new note entry. this buttton should have the same size as a note entry (width and height), but should just have a plus in the middle of it, and new entries will appear below it. each note entry will have an x button on it's right to delete it. these notes will be saved per team in each team's save file.
+- [XX] within each listing, collapsable headers (each header text will collapse following text of lower heading rank)
+- [XX] let the plus and minus buttons be clickable when there's none clicked.
+- [XX] make the actual stat value text in the slider window be white
+- [XX] triple axel damage is not uniform per hit, it goes base power 20 for first, 40 for second, 60 for third
+- [XX] in the slider window, make the whole X / 66 text turn green only when it says "66 / 66"
+- [XX] add a turtle or lightning icon on the results listings to show if you're outsped or not matching the move breakdown's outsped line
 - [XX] EV investment sliders + nature dropdown swicher in team paste window that live update the tab's text and the damage calcs as they change
 - [XX] item boost are working in the results display damage calcs, but I'm only seeing it in blue text in defending mode, not attacking mode when some of the tabs are using damage boosting items (it is applying the item boost damage, just not showing the blue text)
 - [XX] have clicking trickroom in drop down affect the speed and threat calculation in the meta analysis window

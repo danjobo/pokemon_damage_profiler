@@ -28,7 +28,56 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── Custom move-effect tooltip ─────────────────────────────────────────── */
+  /* ── Notebook ─────────────────────────────────────────────────────────────── */
+  .nb-new-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; min-height: 48px;
+    border: 1px dashed var(--border2); border-radius: var(--radius);
+    background: transparent; color: var(--text3); font-size: 24px;
+    cursor: pointer; margin-bottom: 8px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .nb-new-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .nb-entry {
+    border: 0.5px solid var(--border2); border-radius: var(--radius);
+    background: var(--bg2); margin-bottom: 8px; overflow: hidden;
+  }
+  .nb-entry-header {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 10px 12px; cursor: pointer; user-select: none;
+  }
+  .nb-entry-header:hover { background: rgba(255,255,255,0.03); }
+  .nb-entry-date { font-size: 10px; color: var(--text3); white-space: nowrap; flex-shrink: 0; padding-top: 1px; }
+  .nb-entry-preview { font-size: 13px; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nb-entry-star { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 13px; flex-shrink: 0; padding: 0 2px; line-height: 1; }
+  .nb-entry-star.starred { color: #f5c842; }
+  .nb-entry-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 14px; flex-shrink: 0; padding: 0 2px; line-height: 1; }
+  .nb-entry-del:hover { color: var(--red); }
+  .nb-expanded { padding: 0 12px 10px; }
+  .nb-show-toggle { font-size: 11px; color: var(--accent2); cursor: pointer; margin-bottom: 6px; display: inline-block; }
+  .nb-editor textarea {
+    width: 100%; box-sizing: border-box; min-height: 120px;
+    background: var(--bg3); border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-size: 13px; font-family: inherit; padding: 8px;
+    resize: vertical; outline: none; line-height: 1.5;
+  }
+  .nb-editor-btns { display: flex; gap: 6px; margin-top: 6px; justify-content: flex-end; }
+  .nb-rendered { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .nb-rendered h1 { font-size: 18px; font-weight: 700; color: var(--text); margin: 8px 0 4px; border-bottom: 0.5px solid var(--border2); padding-bottom: 4px; }
+  .nb-rendered h2 { font-size: 15px; font-weight: 600; color: var(--text); margin: 6px 0 3px; }
+  .nb-rendered h3 { font-size: 13px; font-weight: 600; color: var(--text); margin: 4px 0 2px; }
+  .nb-rendered p  { margin: 4px 0; }
+  .nb-rendered ul, .nb-rendered ol { margin: 4px 0; padding-left: 26px; }
+  .nb-rendered li { margin: 2px 0; }
+  .nb-rendered strong { color: var(--text); font-weight: 600; }
+  .nb-rendered em { font-style: italic; }
+  .nb-rendered code { background: var(--bg3); border-radius: 3px; padding: 1px 4px; font-size: 12px; }
+  .nb-rendered hr { border: none; border-top: 0.5px solid var(--border2); margin: 8px 0; }
+  .nb-h-toggle { cursor: pointer; user-select: none; }
+  .nb-h-toggle::before { content: '▼ '; font-size: 9px; opacity: 0.6; }
+  .nb-h-toggle.nb-collapsed::before { content: '▶ '; }
+  .nb-h-section.nb-hidden { display: none; }
   #move-tooltip {
     position: fixed;
     z-index: 9999;
@@ -1254,11 +1303,12 @@ Impish Nature
 - Stealth Rock
 - Fire Blast"></textarea>
 
-      <div id="defenderInfo" class="info-box"></div>
+      <div id="defenderInfo" class="info-box" style="display:none!important;"></div>
       <div id="defenderError" class="error-msg"></div>
 
       <div class="btn-row">
         <button onclick="loadDefenderExample()">Load example</button>
+        <button id="copyTeamBtn" onclick="copyTeamPaste()" title="Copy all tabs as a team paste" style="transition:background 0.15s,color 0.15s;">📋 Copy to Clipboard</button>
         <button onclick="clearDefenders()" style="color:var(--text3)">Clear defenders</button>
         <button onclick="clearAll()" style="color:var(--text3)">Clear all</button>
       </div>
@@ -1511,12 +1561,12 @@ Impish Nature
         <div style="width:0.5px;height:28px;background:var(--border2);flex-shrink:0;"></div>
         <button id="startMatchBtn" onclick="startMatch()" style="padding:5px 14px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-weight:600;white-space:nowrap;" title="Start a match against the currently pinned Pokémon — pin up to 6 opponents first">⚔ Start match</button>
         <button id="historyToggleBtn" onclick="toggleHistoryView()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="View match history for the current team">📋 Match log</button>
+        <button id="notebookToggleBtn" onclick="toggleNotebookView()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Notes for the current team">📓 Notebook</button>
         <button id="threatToggleBtn" onclick="toggleThreatPanel()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Show a meta analysis of the loaded meta against your team">🎯 Meta analysis</button>
       </div>
 
       <!-- Right: Copy to Clipboard | Pin tabs -->
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-        <button id="copyTeamBtn" onclick="copyTeamPaste()" title="Copy all tabs as a team paste" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;transition:background 0.15s,color 0.15s;">📋 Copy to Clipboard</button>
       </div>
     </div>
 
@@ -1540,7 +1590,10 @@ Impish Nature
             <span class="threat-btn-tip">Hardest for your team to KO.</span>
           </button>
         </div>
-        <button onclick="closeThreatPanel()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;">Close</button>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button id="threatViewModeBtn" onclick="toggleThreatViewMode()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;" title="Switch between whole team and active tab only">👥 Team</button>
+          <button onclick="closeThreatPanel()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;">Close</button>
+        </div>
       </div>
       <div class="threat-sprites-row" id="threatSpritesRow">
         <div style="color:var(--text3);font-size:12px;padding:16px 0;">Load a meta and your team to see threat analysis.</div>
@@ -2172,9 +2225,9 @@ function renderEvPanel() {
   }
 
   const nat = NATURES[slot.nature] || {};
-  // Determine current nature's boosted/dropped stats for button highlighting
-  const natBoost = Object.keys(nat).find(k => nat[k] > 1) || null;
-  const natDrop  = Object.keys(nat).find(k => nat[k] < 1) || null;
+  // Use pending selections if present, otherwise derive from current nature
+  const natBoost = slot._pendingBoost || Object.keys(nat).find(k => nat[k] > 1) || null;
+  const natDrop  = slot._pendingDrop  || Object.keys(nat).find(k => nat[k] < 1) || null;
 
   const slidersDiv = document.getElementById('evSliders');
   if (!slidersDiv) return;
@@ -2201,7 +2254,7 @@ function renderEvPanel() {
         oninput="onEvSliderChange('${stat}', this.value, this)"
         id="evSlider_${stat}">
       <span id="evVal_${stat}" style="font-size:10px;color:var(--text2);width:20px;text-align:right;">${ev}</span>
-      <span id="evStat_${stat}" style="font-size:10px;color:var(--text3);width:28px;text-align:right;">${computed}</span>
+      <span id="evStat_${stat}" style="font-size:10px;color:var(--text);width:28px;text-align:right;font-weight:500;">${computed}</span>
     </div>`;
   }).join('');
 
@@ -2214,8 +2267,8 @@ function _updateEvTotal() {
   const total = EV_STATS.reduce((s, k) => s + (slot.evs[k] || 0), 0);
   const el = document.getElementById('evTotalDisplay');
   if (el) {
-    const over = total > 66;
-    el.innerHTML = `<span style="color:${over ? 'var(--red)' : 'var(--text3)'};">${total}</span> / 66 EVs`;
+    const color = total > 66 ? 'var(--red)' : total === 66 ? 'var(--green)' : 'var(--text3)';
+    el.innerHTML = `<span style="color:${color};">${total} / 66 EVs</span>`;
   }
 }
 
@@ -2240,24 +2293,31 @@ function onNatureStatBtn(stat, role) {
   const slot = DEFENDER_SLOTS[activeDefenderSlot];
   if (!slot) return;
   const nat = NATURES[slot.nature] || {};
-  const curBoost = Object.keys(nat).find(k => nat[k] > 1) || null;
-  const curDrop  = Object.keys(nat).find(k => nat[k] < 1) || null;
+  // Use pending state if set, otherwise derive from current nature
+  const curBoost = slot._pendingBoost !== undefined ? slot._pendingBoost : (Object.keys(nat).find(k => nat[k] > 1) || null);
+  const curDrop  = slot._pendingDrop  !== undefined ? slot._pendingDrop  : (Object.keys(nat).find(k => nat[k] < 1) || null);
 
   let newBoost = curBoost;
   let newDrop  = curDrop;
   if (role === 'boost') {
-    if (newBoost === stat) { newBoost = null; } // toggle off
-    else newBoost = stat;
+    newBoost = (newBoost === stat) ? null : stat; // toggle or set
+    // If same stat as drop, clear drop
+    if (newBoost && newBoost === newDrop) newDrop = null;
   } else {
-    if (newDrop === stat) { newDrop = null; }
-    else newDrop = stat;
+    newDrop = (newDrop === stat) ? null : stat;
+    if (newDrop && newDrop === newBoost) newBoost = null;
   }
 
-  if (newBoost && newDrop && newBoost !== newDrop) {
+  slot._pendingBoost = newBoost;
+  slot._pendingDrop  = newDrop;
+
+  if (newBoost && newDrop) {
     const key = newBoost + '_' + newDrop;
     const found = NATURE_BY_EFFECT[key];
     if (found) {
       slot.nature = found;
+      slot._pendingBoost = undefined;
+      slot._pendingDrop  = undefined;
       const sel = document.getElementById('evNatureSelect');
       if (sel) sel.value = found;
     }
@@ -2266,7 +2326,7 @@ function onNatureStatBtn(stat, role) {
     const sel = document.getElementById('evNatureSelect');
     if (sel) sel.value = 'hardy';
   }
-  _applyEvChanges(slot, true); // rebuild panel to show updated button highlights
+  _applyEvChanges(slot, true);
 }
 
 function resetEvs() {
@@ -3064,7 +3124,7 @@ function showDefenderInfo(defender) {
 const MULTI_HIT_FIXED = {
   'dual-wingbeat': 2, 'dragon-darts': 2, 'double-hit': 2, 'double-slap': 2,
   'bonemerang': 2, 'double-iron-bash': 2, 'dual-chop': 2, 'gear-grind': 2,
-  'twineedle': 2, 'surging-strikes': 3, 'triple-axel': 3, 'triple-kick': 3,
+  'twineedle': 2, 'surging-strikes': 3, 'triple-kick': 3,
 };
 // Variable multi-hit moves: slug → [min, max] hits (avg used for damage, range shown)
 const MULTI_HIT_VARIABLE = {
@@ -3095,6 +3155,7 @@ function heavySlamBP(atkWeightHg, defWeightHg) {
 
 function computeResults(loadedMeta, defender) {
   const results = [];
+  const weather = document.getElementById('weatherMode')?.value || 'none';
   for (const attacker of loadedMeta) {
     const nat = NATURES[attacker.nature] || {};
     let best = { dmg: 0, move: null, eff: 1 };
@@ -3250,9 +3311,22 @@ function computeResults(loadedMeta, defender) {
       if (isFreezeDry && defender.types.includes('water')) activeMods.push('Freeze-Dry vs Water');
       if (isWeatherBall)  activeMods.push('Weather Ball');
 
+      // Triple Axel: escalating power 20/40/60 — total 120, avg 40 per hit
+      const isTripleAxel = mn === 'triple axel' || mn === 'triple-axel';
       // Multi-hit
-      const mhInfo = getMultiHit(move.name);
-      const mhDmg  = mhInfo ? dmg * mhInfo.avg : dmg;
+      const mhInfo = isTripleAxel ? null : getMultiHit(move.name);
+      // For Triple Axel, compute each hit's damage with escalating BP and sum
+      let mhDmg;
+      if (isTripleAxel) {
+        const bpHits = [20, 40, 60];
+        const wm = applyWeatherModifier(effectiveMoveType, weather);
+        mhDmg = bpHits.reduce((sum, bp) => {
+          const p2 = bp * abilityPowerMul * itemPowerMul;
+          return sum + damageFormula(50, p2, atkStat, defStat, eff, isStab) * wm;
+        }, 0);
+      } else {
+        mhDmg  = mhInfo ? dmg * mhInfo.avg : dmg;
+      }
       if (mhInfo) {
         if (mhInfo.variable) activeMods.push(`×${mhInfo.min}–${mhInfo.max} hits`);
         else                  activeMods.push(`×${mhInfo.fixed} hits`);
@@ -3353,8 +3427,19 @@ function computeResults(loadedMeta, defender) {
                        * getDefenderAbilityDmgMul(attacker.ability, effectiveMoveType, attacker.speciesRaw);
       const pct      = dmg / attacker.computedHp * 100;
 
-      const mhInfo2  = getMultiHit(move.name);
-      const mhDmg2   = mhInfo2 ? dmg * mhInfo2.avg : dmg;
+      const isTripleAxel2 = mn === 'triple axel' || mn === 'triple-axel';
+      const mhInfo2  = isTripleAxel2 ? null : getMultiHit(move.name);
+      let mhDmg2;
+      if (isTripleAxel2) {
+        const bpHits2 = [20, 40, 60];
+        const wm2 = applyWeatherModifier(effectiveMoveType, weather);
+        mhDmg2 = bpHits2.reduce((sum, bp) => {
+          const p2 = bp * pwrMul;
+          return sum + damageFormula(defender.level, p2, atkStat, defStat, eff, isStab) * wm2;
+        }, 0);
+      } else {
+        mhDmg2 = mhInfo2 ? dmg * mhInfo2.avg : dmg;
+      }
       const defMods2 = [];
       if (mhInfo2) {
         if (mhInfo2.variable) defMods2.push(`×${mhInfo2.min}–${mhInfo2.max} hits`);
@@ -3767,11 +3852,24 @@ function renderResults() {
     const barW   = Math.min(pct, 100).toFixed(1);
     const barCls = pct >= 100 ? 'bar-ohko' : pct >= 50 ? 'bar-high' : pct >= 33.3 ? 'bar-mid' : pct >= 25 ? 'bar-low' : pct >= 20 ? 'bar-vlow' : 'bar-vvlow';
     const pctColor = pct >= 100 ? 'var(--red)' : pct >= 50 ? 'var(--orange)' : pct >= 33.3 ? 'var(--yellow)' : pct >= 25 ? 'var(--green)' : pct >= 20 ? '#6ab0f5' : '#6c5ce7';
+    const minPct = pct; // 0.85 roll
+    const maxPct85 = pct / 0.85; // 1.00 roll
+    let ohkoLine = '';
+    if (pct >= 100) {
+      // All rolls OHKO
+      ohkoLine = '<div style="font-size:9px;color:var(--red);opacity:0.8;">100% OHKO</div>';
+    } else if (maxPct85 >= 100) {
+      // Some rolls OHKO — 16 damage rolls uniformly spaced
+      const rolls16 = Array.from({length:16}, (_,i) => minPct * (85 + i) / 85);
+      const ohkoRolls = rolls16.filter(r => r >= 100).length;
+      const chance = Math.round(ohkoRolls / 16 * 100);
+      ohkoLine = `<div style="font-size:9px;color:var(--red);opacity:0.8;">${chance}% OHKO</div>`;
+    }
     const pctLabel = pct >= 130
-      ? `<span style="color:${pctColor}">130%+ OHKO</span>`
+      ? `<span style="color:${pctColor}">130%+ OHKO</span>${ohkoLine}`
       : pct >= 100
-      ? `<span style="color:${pctColor}">${pct.toFixed(0)}% OHKO</span>`
-      : `<span style="color:${pctColor}">${pct.toFixed(1)}%</span>`;
+      ? `<span style="color:${pctColor}">${pct.toFixed(0)}% OHKO</span>${ohkoLine}`
+      : `<span style="color:${pctColor}">${pct.toFixed(1)}%</span>${ohkoLine}`;
     const effLabel = r.displayEff > 1
       ? `<span class="eff-super">×${r.displayEff}</span>`
       : r.displayEff < 1 && r.displayEff > 0
@@ -3794,6 +3892,17 @@ function renderResults() {
     const atkScarfBtnLabel = atkScarfActive
       ? `<span style="color:var(--accent2)">Scarf ✓</span>`
       : `<span style="color:var(--text3)">+Scarf</span>`;
+
+    // Pre-compute speed comparison for row icon (also used in breakdown speedHtml)
+    const _speedCond = document.getElementById('speedCondition')?.value || 'none';
+    let _atkSpe = atkScarfActive ? Math.floor((r.attacker.computedSpe||0) * 1.5) : (r.attacker.computedSpe||0);
+    let _defSpe = r.defender ? effectiveSpe(r.defender) : 0;
+    if (_speedCond === 'tailwind-atk') _atkSpe *= 2;
+    if (_speedCond === 'tailwind-def') _defSpe *= 2;
+    const _trickRoom = _speedCond === 'trickroom';
+    const atkWins = r.defender ? (_trickRoom ? _atkSpe < _defSpe : _atkSpe > _defSpe) : false;
+    const tie = r.defender ? _atkSpe === _defSpe : true;
+    const rowSpeIcon = !r.defender ? '' : tie ? '⚖️' : atkWins ? '🐢' : '⚡';
 
     // Check if there are any moves at or beyond the divider threshold
     const hasExtraMoves = breakdownSource.some(m => (m.pasteIndex ?? 99) >= dividerThreshold);
@@ -3820,16 +3929,26 @@ function renderResults() {
       } else {
         const dp = m.adjustedPct ?? m.pct;
         const dpColor = dp >= 100 ? 'var(--red)' : dp >= 50 ? 'var(--orange)' : dp >= 33.3 ? 'var(--yellow)' : dp >= 25 ? 'var(--green)' : dp >= 20 ? '#6ab0f5' : '#6c5ce7';
+        // OHKO chance for non-guaranteed KOs
+        let ohkoChanceLine = '';
+        if (dp < 100) {
+          const dpMax = dp / 0.85;
+          if (dpMax >= 100) {
+            const rolls16 = Array.from({length:16}, (_,i) => dp * (85 + i) / 85);
+            const ohkoRolls = rolls16.filter(r => r >= 100).length;
+            ohkoChanceLine = `<span style="font-size:9px;color:var(--red);opacity:0.85;margin-right:4px;">${Math.round(ohkoRolls/16*100)}% KO</span>`;
+          }
+        }
         // Variable multi-hit: show min–max range
         if (m.mhMin && !m.mhFixed) {
           const dpMin = dp * m.mhMin / ((m.mhMin + m.mhMax) / 2);
           const dpMax = dp * m.mhMax / ((m.mhMin + m.mhMax) / 2);
           const rangeColor = dpMax >= 100 ? 'var(--red)' : dpMax >= 50 ? 'var(--orange)' : dpMax >= 33.3 ? 'var(--yellow)' : 'var(--green)';
-          pctDisplay = `<span style="color:${rangeColor}">${dpMin.toFixed(0)}–${dpMax.toFixed(0)}%</span>`;
+          pctDisplay = `${ohkoChanceLine}<span style="color:${rangeColor}">${dpMin.toFixed(0)}–${dpMax.toFixed(0)}%</span>`;
         } else {
           pctDisplay = dp >= 100
             ? `<span style="color:${dpColor}">${dp.toFixed(0)}%</span>`
-            : `<span style="color:${dpColor}">${dp.toFixed(1)}%</span>`;
+            : `${ohkoChanceLine}<span style="color:${dpColor}">${dp.toFixed(1)}%</span>`;
         }
       }
       return `<div class="move-breakdown-row" style="${rowFontSize}padding:${isPastDivider ? '3px 4px 3px 0' : '6px 0'};min-width:0;overflow:hidden;">
@@ -3838,7 +3957,7 @@ function renderResults() {
             <div class="move-breakdown-meta">${isStatusMove ? `${m.move.type} · status` : `${typeDisplay} · ${m.move.power} BP${m.stab ? ' · STAB' : ''}`}</div>
             ${isStatusMove ? '' : mEff} ${spreadTag} ${isStatusMove ? '' : modTags}
           </div>
-          <div class="move-breakdown-pct">${pctDisplay}</div>
+          <div class="move-breakdown-pct" style="display:flex;align-items:center;justify-content:flex-end;">${pctDisplay}</div>
         </div>`;
     };
 
@@ -3981,7 +4100,16 @@ function renderResults() {
     const _itImg = _it
       ? '<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/' + _itSlug + '.png" data-item-slug="' + _itSlug + '" data-item-name="' + _it.replace(/"/g,'&quot;') + '" data-it-effect="" style="width:24px;height:24px;image-rendering:pixelated;cursor:' + (_hasAltItems ? 'pointer' : 'help') + ';" onerror="this.src=\'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png\'"' + (_hasAltItems ? ' onclick="showAltItems(event,' + _altItemsData + ')"' : '') + '>'
       : '';
-    const abilityItemColHtml = '<div class="breakdown-left-col">' + _abHtml + _itImg + '</div>';
+    // Spread details: nature + invested EVs
+    const _evs = r.attacker.evs || {};
+    const _nat = r.attacker.nature || 'hardy';
+    const _natDisplay = _nat.charAt(0).toUpperCase() + _nat.slice(1);
+    const _evParts = ['hp','atk','def','spa','spd','spe']
+      .filter(s => (_evs[s] || 0) > 0)
+      .map(s => `${_evs[s]} ${({hp:'HP',atk:'Atk',def:'Def',spa:'SpA',spd:'SpD',spe:'Spe'})[s]}`);
+    const _spreadTip = _natDisplay + ' · ' + (_evParts.length ? _evParts.join(' / ') : 'No EVs');
+    const _spreadBtn = `<div data-effect="${_spreadTip.replace(/"/g,'&quot;')}" style="font-size:9px;color:var(--text3);cursor:help;text-align:center;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52px;" title="${_spreadTip.replace(/"/g,'&quot;')}">📋 Spread</div>`;
+    const abilityItemColHtml = '<div class="breakdown-left-col">' + _abHtml + _itImg + _spreadBtn + '</div>';
 
     html += `
       <div class="result-item${isPinned ? ' is-pinned' : ''}">
@@ -3998,6 +4126,7 @@ function renderResults() {
             </div>
             <div class="type-badges">${typeBadges}</div>
           </div>
+          <div style="font-size:13px;flex-shrink:0;width:20px;text-align:center;opacity:0.7;" title="${tie ? 'Speed tie' : atkWins ? 'You are outsped' : 'You outrun this'}">${rowSpeIcon}</div>
           <div class="bar-wrap"><div class="bar ${barCls}" style="width:${barW}%"></div></div>
           <div class="result-pct">${pctLabel}</div>
           <div class="result-move">${moveName} ${effLabel}</div>
@@ -4659,11 +4788,16 @@ async function toggleMegaForm(e, speciesRaw, megaSlug) {
     entry._megaBaseSpriteUrl = null;
     entry._origSpeciesRaw    = null;
     // Restore base ability
-    // _baseAbility is set during activate. If undefined, this is a natively-mega entry
-    // that was reverted directly — look up base ability from FORM_ABILITIES.
-    const restoredAbility = entry._baseAbility !== undefined
-      ? (entry._baseAbility !== null ? entry._baseAbility : FORM_ABILITIES[baseKey])
-      : FORM_ABILITIES[baseKey];
+    // Priority: _baseAbility (set during activate) > paste ability (stored before any mega logic)
+    // For natively-mega entries never activated: keep the paste ability, not the pokedex base ability
+    let restoredAbility;
+    if (entry._baseAbility !== undefined) {
+      // Was activated — restore whatever was saved
+      restoredAbility = entry._baseAbility !== null ? entry._baseAbility : FORM_ABILITIES[baseKey];
+    } else {
+      // Never activated (natively-mega, first-click revert) — keep current paste ability
+      restoredAbility = entry.ability;
+    }
     if (restoredAbility) entry.ability = restoredAbility;
     entry._baseAbility = undefined;
     megaOverrides.delete(baseKey);
@@ -5779,7 +5913,248 @@ function matchWindowSpriteHtml(speciesRaw, spriteUrl) {
 
 
 
+// ── Notebook ──────────────────────────────────────────────────────────────────
+const NOTEBOOK_KEY = 'pokemonDamageProfiler_notebooks';
+let _notebookActive = false;
+
+function getNotebooks() { try { return JSON.parse(localStorage.getItem(NOTEBOOK_KEY) || '{}'); } catch { return {}; } }
+function putNotebooks(nb) { try { localStorage.setItem(NOTEBOOK_KEY, JSON.stringify(nb)); } catch {} }
+
+function getTeamNotes() {
+  if (!_currentTeamName) return [];
+  return (getNotebooks()[_currentTeamName] || []);
+}
+function putTeamNotes(notes) {
+  if (!_currentTeamName) return;
+  const nb = getNotebooks();
+  nb[_currentTeamName] = notes;
+  putNotebooks(nb);
+}
+
+function toggleNotebookView() {
+  // Close other views
+  if (_historyViewActive) toggleHistoryView();
+  _notebookActive = !_notebookActive;
+  const btn = document.getElementById('notebookToggleBtn');
+  if (btn) {
+    btn.textContent = _notebookActive ? '⚔️ Results' : '📓 Notebook';
+    btn.style.background  = _notebookActive ? 'rgba(124,106,247,0.15)' : 'transparent';
+    btn.style.borderColor = _notebookActive ? 'var(--accent)' : 'var(--border2)';
+    btn.style.color       = _notebookActive ? 'var(--accent2)' : 'var(--text2)';
+  }
+  const section = document.getElementById('resultsSection');
+  if (section) section.style.display = 'block';
+  if (_notebookActive) renderNotebook();
+  else renderResults();
+}
+
+let _nbExpanded  = new Set(); // note ids that are expanded
+let _nbEditing   = null;      // note id currently being edited
+
+function renderNotebook() {
+  const container = document.getElementById('resultsList');
+  if (!container) return;
+  if (!_currentTeamName) {
+    container.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:20px 0;">Load a saved team to use the notebook.</div>';
+    return;
+  }
+  const notesRaw = getTeamNotes();
+  const notes = [...notesRaw.filter(n => n.starred), ...notesRaw.filter(n => !n.starred)];
+  let html = `<button class="nb-new-btn" onclick="nbNewNote()" title="New note">＋</button>`;
+  notes.forEach(note => {
+    const isExp  = _nbExpanded.has(note.id);
+    const isEdit = _nbEditing === note.id;
+    const firstLine = (note.text || '').split('\n')[0] || '(empty)';
+    // Strip leading heading markers for preview, then render inline markdown
+    const previewRaw = firstLine.replace(/^#{1,3}\s+/, '');
+    const previewHtml = nbInline(previewRaw);
+    const date = note.date ? new Date(note.date).toLocaleString() : '';
+    html += `<div class="nb-entry" id="nb-entry-${note.id}">
+      <div class="nb-entry-header" onclick="nbToggleExpand(${note.id})">
+        <div class="nb-entry-date">${date}</div>
+        <div style="flex:1;min-width:0;overflow:hidden;">
+          <div class="nb-entry-preview">${previewHtml}</div>
+          ${!isExp ? '<div style="font-size:10px;color:var(--text3);margin-top:1px;">Show more…</div>' : ''}
+        </div>
+        <button class="nb-entry-star${note.starred ? ' starred' : ''}" onclick="nbToggleStar(event,${note.id})" title="${note.starred ? 'Unstar' : 'Star'}">${note.starred ? '★' : '☆'}</button>
+        <button class="nb-entry-del" onclick="nbDeleteNote(event,${note.id})" title="Delete note">✕</button>
+      </div>`;
+    if (isExp) {
+      if (isEdit) {
+        html += `<div class="nb-expanded nb-editor">
+          <textarea id="nb-ta-${note.id}" onkeydown="nbTaKeydown(event,${note.id})">${escHtml(note.text || '')}</textarea>
+          <div class="nb-editor-btns">
+            <button onclick="nbSaveEdit(${note.id})" style="padding:3px 12px;font-size:11px;border:0.5px solid var(--accent);border-radius:var(--radius-sm);background:rgba(124,106,247,0.15);color:var(--accent2);cursor:pointer;">Save</button>
+            <button onclick="nbCancelEdit(${note.id})" style="padding:3px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;">Cancel</button>
+          </div>
+        </div>`;
+      } else {
+        const rendered = nbRenderMarkdown(note.text || '');
+        html += `<div class="nb-expanded">
+          <span class="nb-show-toggle" onclick="nbStartEdit(event,${note.id})">✏️ Edit</span>
+          <span class="nb-show-toggle" onclick="nbToggleExpand(${note.id})" style="margin-left:10px;">Show less</span>
+          <div class="nb-rendered" id="nb-rendered-${note.id}">${rendered}</div>
+        </div>`;
+      }
+    }
+    html += `</div>`;
+  });
+  container.innerHTML = html;
+  // Attach collapsible header events
+  container.querySelectorAll('.nb-h-toggle').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      el.classList.toggle('nb-collapsed');
+      const sec = el.nextElementSibling;
+      if (sec) sec.classList.toggle('nb-hidden');
+    });
+  });
+  // Focus textarea if editing
+  if (_nbEditing !== null) {
+    const ta = document.getElementById('nb-ta-' + _nbEditing);
+    if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+  }
+}
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function nbRenderMarkdown(text, minLevel) {
+  minLevel = minLevel || 1;
+  const lines = text.split('\n');
+  let html = '';
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    const hm = line.match(/^(#{1,3})\s+(.*)/);
+    if (hm) {
+      const level = hm[1].length;
+      if (level < minLevel) { html += nbRenderLine(line) + '\n'; i++; continue; }
+      const tag = `h${level}`;
+      const headText = nbInline(hm[2]);
+      const bodyLines = [];
+      let j = i + 1;
+      while (j < lines.length) {
+        const nm = lines[j].match(/^(#{1,3})\s+/);
+        if (nm && nm[1].length <= level) break;
+        bodyLines.push(lines[j]);
+        j++;
+      }
+      const bodyHtml = nbRenderMarkdown(bodyLines.join('\n'), level + 1);
+      html += `<${tag} class="nb-h-toggle">${headText}</${tag}><div class="nb-h-section">${bodyHtml}</div>`;
+      i = j;
+      continue;
+    }
+    // Group consecutive unordered list items
+    if (/^[\s]*[-*]\s+/.test(line)) {
+      let items = '';
+      while (i < lines.length && /^[\s]*[-*]\s+/.test(lines[i])) {
+        items += `<li>${nbInline(lines[i].replace(/^[\s]*[-*]\s+/, ''))}</li>`;
+        i++;
+      }
+      html += `<ul style="margin:4px 0;padding-left:26px;">${items}</ul>`;
+      continue;
+    }
+    // Group consecutive ordered list items
+    if (/^[\s]*\d+\.\s+/.test(line)) {
+      let items = '';
+      while (i < lines.length && /^[\s]*\d+\.\s+/.test(lines[i])) {
+        items += `<li>${nbInline(lines[i].replace(/^[\s]*\d+\.\s+/, ''))}</li>`;
+        i++;
+      }
+      html += `<ol style="margin:4px 0;padding-left:26px;">${items}</ol>`;
+      continue;
+    }
+    html += nbRenderLine(line) + '\n';
+    i++;
+  }
+  return html;
+}
+
+function nbRenderLine(line) {
+  if (line === '') return '<br>';
+  if (/^---+$/.test(line.trim())) return '<hr>';
+  return `<p>${nbInline(line)}</p>`;
+}
+
+function nbInline(s) {
+  return escHtml(s)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/~~(.+?)~~/g, '<del>$1</del>');
+}
+
+function nbToggleExpand(id) {
+  if (_nbEditing === id) return; // don't collapse while editing
+  if (_nbExpanded.has(id)) { _nbExpanded.delete(id); _nbEditing = null; }
+  else _nbExpanded.add(id);
+  renderNotebook();
+}
+
+function nbStartEdit(e, id) {
+  e.stopPropagation();
+  _nbEditing = id;
+  _nbExpanded.add(id);
+  renderNotebook();
+}
+
+function nbTaKeydown(e, id) {
+  if (e.key === 'Enter' && !e.shiftKey && e.ctrlKey) { e.preventDefault(); nbSaveEdit(id); }
+  if (e.key === 'Escape') nbCancelEdit(id);
+}
+
+function nbSaveEdit(id) {
+  const ta = document.getElementById('nb-ta-' + id);
+  if (!ta) return;
+  const notes = getTeamNotes();
+  const note = notes.find(n => n.id === id);
+  if (note) { note.text = ta.value; note.date = note.date || Date.now(); putTeamNotes(notes); }
+  _nbEditing = null;
+  renderNotebook();
+}
+
+function nbCancelEdit(id) {
+  _nbEditing = null;
+  renderNotebook();
+}
+
+function nbNewNote() {
+  const notes = getTeamNotes();
+  const newNote = { id: Date.now(), text: '', date: Date.now() };
+  notes.unshift(newNote);
+  putTeamNotes(notes);
+  _nbExpanded.add(newNote.id);
+  _nbEditing = newNote.id;
+  renderNotebook();
+}
+
+function nbToggleStar(e, id) {
+  e.stopPropagation();
+  const notes = getTeamNotes();
+  const note = notes.find(n => n.id === id);
+  if (note) { note.starred = !note.starred; putTeamNotes(notes); }
+  renderNotebook();
+}
+
+function nbDeleteNote(e, id) {
+  e.stopPropagation();
+  if (!confirm('Delete this note?')) return;
+  const notes = getTeamNotes().filter(n => n.id !== id);
+  putTeamNotes(notes);
+  _nbExpanded.delete(id);
+  if (_nbEditing === id) _nbEditing = null;
+  renderNotebook();
+}
+
 function toggleHistoryView() {
+  // Close notebook if open
+  if (_notebookActive) {
+    _notebookActive = false;
+    const nb = document.getElementById('notebookToggleBtn');
+    if (nb) { nb.textContent = '📓 Notebook'; nb.style.background = 'transparent'; nb.style.borderColor = 'var(--border2)'; nb.style.color = 'var(--text2)'; }
+  }
   _historyViewActive = !_historyViewActive;
   const btn = document.getElementById('historyToggleBtn');
   if (btn) {
@@ -6156,6 +6531,7 @@ function updateFieldStatus() {
 // ── Meta Threat Analysis ──────────────────────────────────────────────────────
 let _threatPanelOpen = false;
 let _threatMode = 'overall'; // 'overall' | 'offensive' | 'defensive'
+let _threatViewMode = 'team'; // 'team' | 'tab'
 
 function toggleThreatPanel() {
   _threatPanelOpen = !_threatPanelOpen;
@@ -6197,8 +6573,28 @@ function setThreatMode(mode) {
 // Compute per-meta-pokemon aggregate scores vs all filled defender slots
 // Uses raw damage from computeResults + weather multiplier only — unaffected by
 // UI mode (attacking/defending), active tab, max stats, scarf overrides etc.
+function toggleThreatViewMode() {
+  _threatViewMode = _threatViewMode === 'team' ? 'tab' : 'team';
+  const btn = document.getElementById('threatViewModeBtn');
+  if (btn) {
+    btn.textContent = _threatViewMode === 'team' ? '👥 Team' : '🎯 Tab';
+    btn.style.color       = _threatViewMode === 'tab' ? 'var(--accent2)' : 'var(--text3)';
+    btn.style.borderColor = _threatViewMode === 'tab' ? 'var(--accent)' : 'var(--border2)';
+    btn.style.background  = _threatViewMode === 'tab' ? 'rgba(124,106,247,0.12)' : 'transparent';
+  }
+  renderThreatPanel();
+}
+
+function _getThreatSlots() {
+  if (_threatViewMode === 'tab') {
+    const s = DEFENDER_SLOTS[activeDefenderSlot];
+    return s ? [s] : [];
+  }
+  return DEFENDER_SLOTS.filter(Boolean);
+}
+
 function computeThreatScores() {
-  const filledSlots = DEFENDER_SLOTS.filter(Boolean);
+  const filledSlots = _getThreatSlots();
   if (!filledSlots.length) return [];
 
   const loadedMeta = META_DB.filter(p => p.loaded);
@@ -6257,7 +6653,7 @@ function renderThreatPanel() {
   const container = document.getElementById('threatSpritesRow');
   if (!container) return;
 
-  const filledSlots = DEFENDER_SLOTS.filter(Boolean);
+  const filledSlots = _getThreatSlots();
   const loadedMeta  = META_DB.filter(p => p.loaded);
 
   if (!filledSlots.length || !loadedMeta.length) {
