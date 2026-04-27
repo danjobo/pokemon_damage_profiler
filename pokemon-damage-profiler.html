@@ -1466,6 +1466,26 @@ Impish Nature
       </div>
 
       <div class="control-group">
+        <label>Spe Stage</label>
+        <div class="stage-spinner">
+          <div class="stage-spinner-val" id="speStageDisplay" onclick="stepStage('speStage',0,true)" style="cursor:pointer;" title="Click to reset">0</div>
+          <div class="stage-spinner-btns">
+            <button class="stage-spinner-btn" onclick="stepStage('speStage',1)">▲</button>
+            <button class="stage-spinner-btn" onclick="stepStage('speStage',-1)">▼</button>
+          </div>
+        </div>
+        <select id="speStage" class="stage-select" onchange="renderResults()">
+          <option value="-6">-6</option><option value="-5">-5</option>
+          <option value="-4">-4</option><option value="-3">-3</option>
+          <option value="-2">-2</option><option value="-1">-1</option>
+          <option value="0" selected>0</option>
+          <option value="1">+1</option><option value="2">+2</option>
+          <option value="3">+3</option><option value="4">+4</option>
+          <option value="5">+5</option><option value="6">+6</option>
+        </select>
+      </div>
+
+      <div class="control-group">
         <label>Speed Condition</label>
         <select id="speedCondition" onchange="renderResults()">
           <option value="none">Normal</option>
@@ -3895,7 +3915,9 @@ function renderResults() {
 
     // Pre-compute speed comparison for row icon (also used in breakdown speedHtml)
     const _speedCond = document.getElementById('speedCondition')?.value || 'none';
+    const _speStageVal = Number(document.getElementById('speStage')?.value || 0);
     let _atkSpe = atkScarfActive ? Math.floor((r.attacker.computedSpe||0) * 1.5) : (r.attacker.computedSpe||0);
+    if (_speStageVal !== 0) _atkSpe = Math.floor(_atkSpe * stageMultiplier(_speStageVal));
     let _defSpe = r.defender ? effectiveSpe(r.defender) : 0;
     if (_speedCond === 'tailwind-atk') _atkSpe *= 2;
     if (_speedCond === 'tailwind-def') _defSpe *= 2;
@@ -3983,7 +4005,9 @@ function renderResults() {
         const maxSpe = calcStat(r.attacker.baseStats.spe, 32, 31, 50, 1.1);
         if (maxSpe > atkSpeRaw) atkSpeRaw = maxSpe;
       }
+      const speStageVal = Number(document.getElementById('speStage')?.value || 0);
       let atkSpeEff = atkScarfActive ? Math.floor(atkSpeRaw * 1.5) : atkSpeRaw;
+      if (speStageVal !== 0) atkSpeEff = Math.floor(atkSpeEff * stageMultiplier(speStageVal));
       let defSpeEff = effectiveSpe(r.defender);
       // Tailwind doubles speed; Trick Room reverses comparison
       if (speedCond === 'tailwind-atk' || speedCond === 'tailwind-both') atkSpeEff *= 2;
@@ -5067,7 +5091,7 @@ function resetFieldConditions() {
   setVal('weatherMode', 'none');
   setVal('terrainMode', 'none');
   setVal('speedCondition', 'none');
-  ['atkStage','spaStage','defStage','spdStage'].forEach(id => { setVal(id, '0'); updateStageDisplay(id, 0); });
+  ['atkStage','spaStage','defStage','spdStage','speStage'].forEach(id => { setVal(id, '0'); updateStageDisplay(id, 0); });
   renderResults();
 }
 
@@ -5950,6 +5974,9 @@ function toggleNotebookView() {
 
 let _nbExpanded  = new Set(); // note ids that are expanded
 let _nbEditing   = null;      // note id currently being edited
+// Session-only heading state: Map of noteId -> Set of hid strings that are OPEN
+// Starts empty so all headings default to collapsed on first open
+const _nbOpenHeadings = new Map();
 
 function renderNotebook() {
   const container = document.getElementById('resultsList');
@@ -6000,13 +6027,33 @@ function renderNotebook() {
     html += `</div>`;
   });
   container.innerHTML = html;
-  // Attach collapsible header events
+  // Attach collapsible header events — restore session state, default collapsed
   container.querySelectorAll('.nb-h-toggle').forEach(el => {
+    // Find which note this heading belongs to
+    const entry = el.closest('.nb-entry');
+    const noteId = entry ? parseInt(entry.id.replace('nb-entry-','')) : null;
+    const hid = el.dataset.hid;
+    const sec = el.nextElementSibling;
+
+    // Restore session state: if this heading was opened this session, expand it
+    const openSet = noteId ? (_nbOpenHeadings.get(noteId) || new Set()) : new Set();
+    if (hid && openSet.has(hid)) {
+      el.classList.remove('nb-collapsed');
+      if (sec) sec.classList.remove('nb-hidden');
+    }
+    // else stays collapsed (default from HTML)
+
     el.addEventListener('click', e => {
       e.stopPropagation();
-      el.classList.toggle('nb-collapsed');
-      const sec = el.nextElementSibling;
+      const isNowCollapsed = el.classList.toggle('nb-collapsed');
       if (sec) sec.classList.toggle('nb-hidden');
+      // Save state
+      if (noteId !== null && hid) {
+        if (!_nbOpenHeadings.has(noteId)) _nbOpenHeadings.set(noteId, new Set());
+        const set = _nbOpenHeadings.get(noteId);
+        if (isNowCollapsed) set.delete(hid); // collapsed = not open
+        else                set.add(hid);    // expanded = open
+      }
     });
   });
   // Focus textarea if editing
@@ -6042,7 +6089,7 @@ function nbRenderMarkdown(text, minLevel) {
         j++;
       }
       const bodyHtml = nbRenderMarkdown(bodyLines.join('\n'), level + 1);
-      html += `<${tag} class="nb-h-toggle">${headText}</${tag}><div class="nb-h-section">${bodyHtml}</div>`;
+      html += `<${tag} class="nb-h-toggle nb-collapsed" data-hid="${headText.replace(/[^a-z0-9]/gi,'_')}_${i}">${headText}</${tag}><div class="nb-h-section nb-hidden">${bodyHtml}</div>`;
       i = j;
       continue;
     }
@@ -6405,6 +6452,7 @@ function putWinrates(wr) {
 
 function loadWinrateForTeam(name) {
   _currentTeamName = name;
+  _nbOpenHeadings.clear(); // reset per-team heading state
   const wr = getWinrates();
   const score = wr[name] || { wins: 0, losses: 0 };
   document.getElementById('wrWins').textContent   = score.wins;
@@ -6484,6 +6532,7 @@ function updateFieldStatus() {
   const spaStage  = Number(document.getElementById('spaStage')?.value  || 0);
   const defStage  = Number(document.getElementById('defStage')?.value  || 0);
   const spdStage  = Number(document.getElementById('spdStage')?.value  || 0);
+  const speStage  = Number(document.getElementById('speStage')?.value  || 0);
 
   const chips = [];
   const chip = (text, color) =>
@@ -6508,7 +6557,7 @@ function updateFieldStatus() {
   };
   if (speedCond !== 'none' && sMap[speedCond]) chips.push(chip(sMap[speedCond][0], sMap[speedCond][1]));
 
-  [[atkStage,'Atk'],[spaStage,'SpA'],[defStage,'Def'],[spdStage,'SpD']].forEach(([val, label]) => {
+  [[atkStage,'Atk'],[spaStage,'SpA'],[defStage,'Def'],[spdStage,'SpD'],[speStage,'Spe']].forEach(([val, label]) => {
     if (val === 0) return;
     chips.push(chip(`${val > 0 ? '+' : ''}${val} ${label}`, val > 0 ? '#f08080' : '#87b4f5'));
   });
