@@ -2,9 +2,6 @@
 
 
 
-- [XX] aegislash is not able to be hit by psychic moves even though he's only steel ghost and not dark type
-- [__] results listings with black glasses/damage boosting items are applying their damage correctly, but if i press the +-item x1.2 button, it will increase it by an additional 1.2 instead of recognizing it has black glasses already and decreasing it
-- [__] have levitate ground immunity affect pip graphics in current match window hover windows, in the type weakness overlap window, and the meta analysis hover windows. and if it's not already, also have it affect the damage calculation for each of those.
 
 
 
@@ -30,6 +27,9 @@
 ---
 #### Completed
 
+- [XX] aegislash is not able to be hit by psychic moves even though he's only steel ghost and not dark type
+- [XX] results listings with black glasses/damage boosting items are applying their damage correctly, but if i press the +-item x1.2 button, it will increase it by an additional 1.2 instead of recognizing it has black glasses already and decreasing it
+- [XX] have levitate ground immunity affect pip graphics in current match window hover windows, in the type weakness overlap window, and the meta analysis hover windows. and if it's not already, also have it affect the damage calculation for each of those.
 - [XX] you can get rid of the text below the team paste dropdown. (the one that says the name in bold | types: _ | level 50 ...)
 - [XX] unclicking the mega button on a mega results listing shows the wrong ability on first unclick (unclick dragonite-mega it shows innerfocus until i click and unclick again it shows multiscale)
 - [XX] make a show more text

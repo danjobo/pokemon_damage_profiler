@@ -1,0 +1,23 @@
+{
+  "name": "Pokémon Damage Profiler",
+  "short_name": "Damage Calc",
+  "description": "VGC damage calculator and team analysis tool",
+  "start_url": "./pokemon-damage-profiler.html",
+  "display": "standalone",
+  "background_color": "#0f0f14",
+  "theme_color": "#0f0f14",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "pokeball.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "pokeball.ico",
+      "sizes": "256x256 128x128 64x64 48x48 32x32 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}
