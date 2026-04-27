@@ -933,7 +933,8 @@
   #weaknessOverlay.visible.collapsed .card-body { max-height: 0; opacity: 0; pointer-events: none; }
   #weaknessOverlay .card-body { padding-top: 0; }
   #weaknessOverlay .overlay-title { margin-bottom: 0; cursor: pointer; }
-  #weaknessOverlay .card-collapse-hint { font-size: 12px; float: right; margin-top: 0; }
+  #weaknessOverlay .card-collapse-hint { font-size: 12px; float: right; margin-top: 0; transition: transform 0.2s; }
+  #weaknessOverlay.collapsed .card-collapse-hint { transform: rotate(-90deg); }
 
   .overlay-title {
     font-size: 11px;
@@ -3757,7 +3758,7 @@ function renderResults() {
     if (maxInvest && a.baseStats) {
       const maxVal = (base) => base ? calcStat(base, 32, 31, 50, 1.1) : 0;
       switch(stat) {
-        case 'speed': return Math.max(a.computedSpe||0, maxVal(a.baseStats.spe));
+        case 'speed': return Math.max(effectiveSpe(a)||0, maxVal(a.baseStats.spe));
         case 'atk':   return Math.max(a.computedAtk||0, maxVal(a.baseStats.atk));
         case 'spa':   return Math.max(a.computedSpa||0, maxVal(a.baseStats.spa));
         case 'def':   return Math.max(a.computedDef||0, maxVal(a.baseStats.def));
@@ -3766,7 +3767,7 @@ function renderResults() {
       }
     }
     switch(stat) {
-      case 'speed': return a.computedSpe || 0;
+      case 'speed': return effectiveSpe(a) || 0;
       case 'hp':    return a.computedHp  || 0;
       case 'atk':   return a.computedAtk || 0;
       case 'spa':   return a.computedSpa || 0;
@@ -5394,7 +5395,9 @@ async function onSavedTeamSelect() {
   loadWinrateForTeam(name);
   if (teamSpinner) teamSpinner.classList.remove('active');
   btn.disabled = false; btn.textContent = prevText;
-  collapseCard('defenderCard');
+  // In split view (wide screen) keep the defender card open — it's on the left panel
+  const inSplitView = window.innerWidth >= 1100;
+  if (!inSplitView) collapseCard('defenderCard');
 }
 
 function renameSavedTeam() {

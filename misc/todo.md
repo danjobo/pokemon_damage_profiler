@@ -4,13 +4,13 @@
 
 
 
+- [__] lil triangle on type weakness overlap window to show it's collapsable like the other ones
 
 
 - move/ability search will filter with all possible not just run in meta
 
 
 - Status ticker per Pokemon (burn/para/…) and have that status be displayed on the listing below the name like the games
-- [__] lil triangle on type weakness overlap window to show it's collapsable like the other ones
 
 
 %SystemRoot%\System32\SHELL32.dll
