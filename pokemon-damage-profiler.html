@@ -447,7 +447,6 @@
 
   /* Match entry responsive layout */
   .match-entry-resp { flex-wrap: nowrap; }
-  .me-top-row { display: none; }
   .me-mid { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
   .match-delete-inline { display: none !important; }
   .match-delete-side { display: block; }
@@ -459,10 +458,12 @@
       gap: 8px;
       padding: 10px;
     }
-    .me-top-row {
+    .match-entry-resp .match-date {
       display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
     .me-mid {
       flex-direction: row;
@@ -471,9 +472,7 @@
     }
     .match-entry-resp .match-sprites { justify-content: flex-start; }
     .match-delete-side { display: none !important; }
-    .match-delete-inline { display: block !important; position: static; transform: none; }
-    .match-entry-resp .match-date { flex-direction: row; align-items: center; gap: 8px; }
-    .match-entry-resp .match-date .match-date-day { font-size: 11px; }
+    .match-delete-inline { display: block !important; position: static; transform: none; margin-left: auto; }
   }
   .match-sprite.hl-dim { opacity: 0.3; filter: grayscale(0.6); }
   .match-sprite-fallback.hl-dim { opacity: 0.3; filter: grayscale(0.6); }
@@ -1359,6 +1358,11 @@ Adamant Nature
         <button onclick="renameSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Rename selected team">Rename</button>
         <button onclick="deleteSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--red);cursor:pointer;white-space:nowrap;" title="Delete selected team">Delete</button>
         <div class="spinner" id="teamSpinner"></div>
+        <div style="margin-left:auto;display:flex;gap:4px;">
+          <button onclick="exportAllData()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Export all saved data to a JSON file">⬇ Export</button>
+          <button onclick="document.getElementById('importDataInput').click()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Import data from a previously exported JSON file">⬆ Import</button>
+          <input type="file" id="importDataInput" accept=".json" style="display:none" onchange="importAllData(event)">
+        </div>
       </div>
 
       <div class="card-body">
@@ -5363,6 +5367,62 @@ function refreshSavedTeamDropdown(selectValue) {
   if (selectValue) sel.value = selectValue;
 }
 
+function exportAllData() {
+  const data = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    savedTeams:   JSON.parse(localStorage.getItem(SAVED_TEAMS_KEY)   || '{}'),
+    savedMetas:   JSON.parse(localStorage.getItem(SAVED_METAS_KEY)   || '{}'),
+    matchHistory: JSON.parse(localStorage.getItem(MATCH_HISTORY_KEY) || '{}'),
+    winrates:     JSON.parse(localStorage.getItem(WINRATE_KEY)       || '{}'),
+    notebooks:    JSON.parse(localStorage.getItem(NOTEBOOK_KEY)      || '{}'),
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `damage-profiler-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importAllData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.version || !data.savedTeams) {
+        alert('This doesn\'t look like a valid Damage Profiler backup file.');
+        return;
+      }
+      const count = Object.keys(data.savedTeams).length;
+      if (!confirm(`Import ${count} team(s)? This will merge with your existing data (existing teams with the same name will be overwritten).`)) return;
+
+      // Merge each category
+      const merge = (key, incoming) => {
+        const existing = JSON.parse(localStorage.getItem(key) || '{}');
+        localStorage.setItem(key, JSON.stringify({ ...existing, ...incoming }));
+      };
+      merge(SAVED_TEAMS_KEY,   data.savedTeams   || {});
+      merge(SAVED_METAS_KEY,   data.savedMetas   || {});
+      merge(MATCH_HISTORY_KEY, data.matchHistory || {});
+      merge(WINRATE_KEY,       data.winrates     || {});
+      merge(NOTEBOOK_KEY,      data.notebooks    || {});
+
+      // Refresh UI
+      populateSavedTeamSelect();
+      alert(`Import successful! ${count} team(s) imported.`);
+    } catch (err) {
+      alert('Failed to read file: ' + err.message);
+    }
+    // Reset file input so same file can be imported again
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
 function saveCurrentTeam() {
   // Collect raw text from all filled defender slots
   const slots = DEFENDER_SLOTS.map(s => s ? (s._rawText || '') : null);
@@ -6430,15 +6490,12 @@ function renderMatchHistory() {
     const noteAttr  = noteTitle.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
     const noteActive = noteText ? 'color:var(--accent2);border-color:var(--accent);' : 'color:var(--text3);border-color:var(--border2);';
     html += `<div class="match-entry match-entry-resp ${rowCls}">
-      <div class="me-top-row">
-        <div class="match-date">
-          <span class="match-date-day">${datePart}</span>
-          <span class="match-date-time">${timePart}</span>
-          <button onclick="openMatchNote(event,'${_currentTeamName.replace(/'/g,"\\'")}',${m.id})"
-            data-note="${noteAttr}"
-            style="margin-top:4px;padding:1px 4px;font-size:11px;border-radius:3px;border:0.5px solid;background:transparent;cursor:pointer;${noteActive}line-height:1;">📝</button>
-        </div>
-        <button class="match-delete-btn match-delete-inline" onclick="deleteMatch('${_currentTeamName.replace(/'/g,"\\'")}',${m.id})" title="Delete this match">✕</button>
+      <div class="match-date">
+        <span class="match-date-day">${datePart}</span>
+        <span class="match-date-time">${timePart}</span>
+        <button onclick="openMatchNote(event,'${_currentTeamName.replace(/'/g,"\\'")}',${m.id})"
+          data-note="${noteAttr}"
+          style="margin-top:4px;padding:1px 4px;font-size:11px;border-radius:3px;border:0.5px solid;background:transparent;cursor:pointer;${noteActive}line-height:1;">📝</button>
       </div>
       <div class="match-sprites">${mySprites}</div>
       <div class="me-mid">
@@ -6447,6 +6504,7 @@ function renderMatchHistory() {
       </div>
       <div class="match-sprites">${oppSprites}</div>
       <button class="match-delete-btn match-delete-side" onclick="deleteMatch('${_currentTeamName.replace(/'/g,"\\'")}',${m.id})" title="Delete this match">✕</button>
+      <button class="match-delete-btn match-delete-inline" onclick="deleteMatch('${_currentTeamName.replace(/'/g,"\\'")}',${m.id})" title="Delete this match">✕</button>
     </div>`;
   }
 
