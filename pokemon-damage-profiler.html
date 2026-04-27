@@ -5478,7 +5478,7 @@ async function _driveLoadExec() {
   merge(MATCH_HISTORY_KEY, data.matchHistory || {});
   merge(WINRATE_KEY,       data.winrates     || {});
   merge(NOTEBOOK_KEY,      data.notebooks    || {});
-  populateSavedTeamSelect();
+  refreshSavedTeamDropdown('');
   alert(`Loaded ${count} team(s) from Google Drive!`);
 }
 
@@ -5530,7 +5530,7 @@ function importAllData(event) {
       merge(NOTEBOOK_KEY,      data.notebooks    || {});
 
       // Refresh UI
-      populateSavedTeamSelect();
+      refreshSavedTeamDropdown('');
       alert(`Import successful! ${count} team(s) imported.`);
     } catch (err) {
       alert('Failed to read file: ' + err.message);
