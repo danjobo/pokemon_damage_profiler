@@ -2636,27 +2636,12 @@ function renderDefenderTabs() {
       }).join('') : '';
       const defMegaRow = defMegaForms ? `<div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end;">${defMegaBtns}</div>` : '';
 
-      // Multiscale / Shadow Shield toggle button for tab
-      const tabAbNorm = (slot.ability || '').toLowerCase().replace(/[\s-]/g,'');
-      const hasTabMultiscale = tabAbNorm === 'multiscale' || tabAbNorm === 'shadowshield';
-      const tabKey = slot._defKey || `__tab_${i}__`;
-      const tabMultiscaleOn = multiscaleOverrides.has(tabKey); // in set = active (starts off)
-      const msTabStyle = tabMultiscaleOn
-        ? 'color:var(--green);border-color:var(--green);background:rgba(100,200,100,0.12);'
-        : 'color:var(--text3);border-color:var(--border2);opacity:0.5;';
-      const msTabBtn = hasTabMultiscale
-        ? `<button onclick="toggleTabMultiscale(event,${i})" style="padding:1px 5px;font-size:9px;border-radius:3px;border:0.5px solid;cursor:pointer;background:transparent;${msTabStyle};flex-shrink:0;" title="${tabMultiscaleOn ? 'Multiscale active — click to disable' : 'Multiscale disabled — click to enable'}">MS${tabMultiscaleOn ? '✓' : '✗'}</button>`
-        : '';
-
       tab.innerHTML = `
         <span class="def-tab-close" onclick="clearDefenderSlot(event,${i})">✕</span>
         <div class="def-tab-name" style="width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${slot.speciesRaw}</div>
         <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:3px;">
           <div class="def-tab-types" style="margin-top:0;flex-shrink:0;">${dots}</div>
-          <div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end;align-items:center;">
-            ${msTabBtn}
-            ${defMegaBtns}
-          </div>
+          ${defMegaRow}
         </div>`;
       tab.onclick = (e) => {
         if (e.target.classList.contains('def-tab-close')) return;
@@ -2697,11 +2682,6 @@ function selectDefenderTab(i) {
 
 function clearDefenderSlot(e, i) {
   e.stopPropagation();
-  const slot = DEFENDER_SLOTS[i];
-  if (slot) {
-    const key = slot._defKey || `__tab_${i}__`;
-    multiscaleOverrides.delete(key);
-  }
   DEFENDER_SLOTS[i] = null;
   if (activeDefenderSlot === i) {
     // Find next filled slot or go to 0
@@ -3352,7 +3332,6 @@ async function calculate() {
         const defMoveResults = await Promise.all((defender.moves||[]).map((m, i) => fetchMoveData(m).then(r => r ? { ...r, pasteIndex: i } : { name: m, power: 0, type: 'normal', cat: 'status', isSpread: false, pasteIndex: i })));
         defender.allMoves      = defMoveResults;
         defender.resolvedMoves = defMoveResults.filter(m => m && m.power > 0);
-        defender._defKey = `__tab_${slotIdx}__`;
         const results = computeResults(loadedMeta, defender);
         defender._rawText = blocksToLoad[bi];
         defender._lastResults = results;
@@ -3398,9 +3377,6 @@ async function calculate() {
   // Save to tab
   let slotIdx = DEFENDER_SLOTS.findIndex(s => !s);
   if (slotIdx === -1) slotIdx = activeDefenderSlot; // overwrite current
-  defender._defKey = `__tab_${slotIdx}__`;
-  defender._rawText = defText;
-  defender._lastResults = lastResults;
   DEFENDER_SLOTS[slotIdx] = defender;
   activeDefenderSlot = slotIdx;
   renderDefenderTabs();
@@ -3599,8 +3575,8 @@ function computeResults(loadedMeta, defender) {
       }
       const effectivePower  = movePower * abilityPowerMul * itemPowerMul;
 
-      let dmg = damageFormula(50, effectivePower, atkStat, defStat, eff, isStab)
-                  * (moldBreaker ? 1 : getDefenderAbilityDmgMul(defender.ability, effectiveMoveType, defender._defKey || defender.speciesRaw));
+      const dmg = damageFormula(50, effectivePower, atkStat, defStat, eff, isStab)
+                  * (moldBreaker ? 1 : getDefenderAbilityDmgMul(defender.ability, effectiveMoveType, defender.speciesRaw));
       const pct = dmg / defender.stats.hp * 100;
 
       // ── Build activeMods list for display ──
@@ -3632,13 +3608,6 @@ function computeResults(loadedMeta, defender) {
       if (isPsyshockLike) activeMods.push('Psyshock (Def)');
       if (isFreezeDry && defender.types.includes('water')) activeMods.push('Freeze-Dry vs Water');
       if (isWeatherBall)  activeMods.push('Weather Ball');
-
-      // Flower Trick always crits (×1.5 to final damage)
-      const isFlowerTrick = mn === 'flower trick';
-      if (isFlowerTrick) {
-        dmg *= 1.5;
-        activeMods.push('Critical Hit');
-      }
 
       // Triple Axel: escalating power 20/40/60 — total 120, avg 40 per hit
       const isTripleAxel = mn === 'triple axel' || mn === 'triple-axel';
@@ -3752,10 +3721,8 @@ function computeResults(loadedMeta, defender) {
         const defW2 = attacker.weight || pokemonCache[toSlug(attacker.speciesRaw)]?.weight || null;
         atkMovePower = heavySlamBP(atkW2, defW2);
       }
-      let dmg      = damageFormula(defender.level, atkMovePower * pwrMul, atkStat, defStat, eff, isStab)
+      const dmg      = damageFormula(defender.level, atkMovePower * pwrMul, atkStat, defStat, eff, isStab)
                        * getDefenderAbilityDmgMul(attacker.ability, effectiveMoveType, attacker.speciesRaw);
-      const isFlowerTrick2 = mn === 'flower trick';
-      if (isFlowerTrick2) dmg *= 1.5;
       const pct      = dmg / attacker.computedHp * 100;
 
       const isTripleAxel2 = mn === 'triple axel' || mn === 'triple-axel';
@@ -3781,7 +3748,6 @@ function computeResults(loadedMeta, defender) {
       if (defItForMove.powerMul > 1) defMods2.push(defender.item);
       const perMoveItemMul2 = getItemPerMoveMul(defender.item, effectiveMoveType, eff);
       if (perMoveItemMul2 > 1) defMods2.push(defender.item);
-      if (isFlowerTrick2) defMods2.push('Critical Hit');
       defMoveBreakdown.push({
         move, effectiveMoveType, isSpread: move.isSpread, isWeatherBall: mn === 'weather ball',
         dmg: mhDmg2, pct: mhDmg2 / attacker.computedHp * 100, eff, stab: isStab > 1,
@@ -3896,9 +3862,6 @@ function renderResults() {
         if (newEff === 0) { m.adjustedPct = 0; m.adjustedDmg = 0; return; }
         const wbPower       = 100;  // doubles in weather
         const weatherBoost  = applyWeatherModifier(newType, weather); // e.g. 1.5 for water in rain
-        // Type-boost item for the new Weather Ball type (e.g. Mystic Water in rain)
-        const wbItemMods = getItemMods(r.attacker.item, newType, m.move.cat);
-        const wbItemMul  = wbItemMods.powerMul * wbItemMods.atkMul;
         // Use stored atkStat/defStat/isStab if available, otherwise fall back to ratio method
         let wbDmg;
         if (m.atkStat && m.defStat) {
@@ -3907,16 +3870,11 @@ function renderResults() {
           const wbStab = atkTypes.includes(newType) ? (m.isStab > 1.5 ? 2 : 1.5) : (m.isStab||1);
           wbDmg = damageFormula(50, wbPower, m.atkStat, m.defStat, newEff, wbStab);
           wbDmg *= weatherBoost;
-          wbDmg *= wbItemMul;
-          wbDmg *= getDefenderAbilityDmgMul(r.defender ? r.defender.ability : '', newType, r.defender ? (r.defender._defKey || r.defender.speciesRaw) : '');
+          wbDmg *= getDefenderAbilityDmgMul(r.defender ? r.defender.ability : '', newType, r.defender ? r.defender.speciesRaw : '');
         } else {
           // Fallback ratio: m.dmg was 50BP normal-type, correct for 100BP + newType eff + weather
           const origEff = m.eff > 0 ? m.eff : 1;
-          wbDmg = m.dmg * (wbPower / 50) * (newEff / origEff) * weatherBoost * wbItemMul;
-        }
-        // Add item to activeMods if it's boosting (and not already listed)
-        if (wbItemMul > 1 && r.attacker.item && !m.activeMods.includes(r.attacker.item)) {
-          m.activeMods = [...m.activeMods, r.attacker.item];
+          wbDmg = m.dmg * (wbPower / 50) * (newEff / origEff) * weatherBoost;
         }
         adjustedDmg = wbDmg;
         moveType = newType;
@@ -3989,22 +3947,15 @@ function renderResults() {
         const newEff  = typeEff(newType, r.attacker.types || []);
         if (newEff === 0) { m.adjustedPct = 0; m.adjustedDmg = 0; return; }
         const weatherBoost2 = applyWeatherModifier(newType, weather);
-        // Type-boost item for the new Weather Ball type on the defender (tab pokemon)
-        const wbItemMods2 = getItemMods(r.defender ? r.defender.item : null, newType, m.move.cat);
-        const wbItemMul2  = wbItemMods2.powerMul * wbItemMods2.atkMul;
         let wbDmg2;
         if (m.atkStat && m.defStat) {
           const defTypes = r.defender ? r.defender.types : [];
           const wbStab2 = defTypes.includes(newType) ? 1.5 : (m.isStab||1);
           wbDmg2 = damageFormula(50, 100, m.atkStat, m.defStat, newEff, wbStab2);
           wbDmg2 *= weatherBoost2;
-          wbDmg2 *= wbItemMul2;
         } else {
           const origEff = m.eff > 0 ? m.eff : 1;
-          wbDmg2 = m.dmg * (100 / 50) * (newEff / origEff) * weatherBoost2 * wbItemMul2;
-        }
-        if (wbItemMul2 > 1 && r.defender && r.defender.item && !m.activeMods.includes(r.defender.item)) {
-          m.activeMods = [...(m.activeMods || []), r.defender.item];
+          wbDmg2 = m.dmg * (100 / 50) * (newEff / origEff) * weatherBoost2;
         }
         adjustedDmg = wbDmg2;
         moveType2 = newType;
@@ -4442,13 +4393,13 @@ function renderResults() {
     const _atkAbNorm = (r.attacker.ability || '').toLowerCase().replace(/[\s-]/g,'');
     const _hasMultiscale = _atkAbNorm === 'multiscale' || _atkAbNorm === 'shadowshield';
     const _multiscaleKey = r.attacker.speciesRaw;
-    const _multiscaleOn = _hasMultiscale && multiscaleOverrides.has(_multiscaleKey);
+    const _multiscaleOff = _hasMultiscale && multiscaleOverrides.has(_multiscaleKey);
     const multiscaleHtml = _hasMultiscale ? (() => {
-      const style = _multiscaleOn
-        ? 'color:var(--green);border-color:var(--green);background:rgba(93,202,165,0.1);'
-        : 'color:var(--text3);border-color:var(--border2);';
+      const style = _multiscaleOff
+        ? 'color:var(--text3);border-color:var(--border2);'
+        : 'color:var(--green);border-color:var(--green);background:rgba(93,202,165,0.1);';
       const safeKey = _multiscaleKey.replace(/'/g,"\\'");
-      return `<div style="padding:2px 0 4px;"><button onclick="toggleMultiscale(event,'${safeKey}')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;background:transparent;${style}" title="Toggle Multiscale — ×0.5 at full HP">Multiscale${_multiscaleOn ? ' ✓' : ' off'}</button></div>`;
+      return `<div style="padding:2px 0 4px;"><button onclick="toggleMultiscale(event,'${safeKey}')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;background:transparent;${style}" title="Toggle Multiscale — ×0.5 at full HP">Multiscale${_multiscaleOff ? ' off' : ' ✓'}</button></div>`;
     })() : '';
 
     // Ability + item left-column for breakdown
@@ -5059,22 +5010,6 @@ async function toggleDefenderMega(e, slotIdx, megaSlug) {
   renderResults();
 }
 
-function toggleTabMultiscale(e, slotIdx) {
-  e.stopPropagation();
-  const slot = DEFENDER_SLOTS[slotIdx];
-  if (!slot) return;
-  const key = slot._defKey || `__tab_${slotIdx}__`;
-  if (multiscaleOverrides.has(key)) multiscaleOverrides.delete(key);
-  else                               multiscaleOverrides.add(key);
-  // Recompute this slot's results with the new multiscale state
-  const loadedMeta = META_DB.filter(p => p.loaded);
-  const results = computeResults(loadedMeta, slot);
-  slot._lastResults = results;
-  if (slotIdx === activeDefenderSlot) lastResults = results;
-  renderDefenderTabs();
-  renderResults();
-}
-
 function toggleMultiscale(e, defenderKey) {
   e.stopPropagation();
   if (multiscaleOverrides.has(defenderKey)) multiscaleOverrides.delete(defenderKey);
@@ -5636,7 +5571,7 @@ function refreshSavedTeamDropdown(selectValue) {
 
 // ── Google Drive Integration ──────────────────────────────────────────────────
 const DRIVE_CLIENT_ID = '352257766580-3ntfo6ga148ovb9rtbpq08otv5dqh615.apps.googleusercontent.com';
-const DRIVE_API_KEY   = 'AIzaSyDdZnpYCv5Yh9iJCynuCX55nbQ6WqgAS9k';
+const DRIVE_API_KEY   = 'AIzaSyDaMeZNB9DcLVrJQYTstTAIhYTmaMl3VRk';
 const DRIVE_SCOPES    = 'https://www.googleapis.com/auth/drive.file';
 const DRIVE_FILENAME  = 'damage-profiler-saves.json';
 let _driveTokenClient = null;
@@ -5869,7 +5804,6 @@ async function onSavedTeamSelect() {
       if (_teamLoadGen !== myGen) { if (teamSpinner) teamSpinner.classList.remove('active'); return; }
       defender.allMoves      = defMoveResults;
       defender.resolvedMoves = defMoveResults.filter(m => m && m.power > 0);
-      defender._defKey = `__tab_${i}__`;
       const results = computeResults(loadedMeta, defender);
       defender._rawText     = rawText;
       defender._lastResults = results;
