@@ -2,6 +2,12 @@
 
 
 
+- [??] would it be a sacrifice to add some sort of autosaving for the google drive syncing?
+
+
+
+
+
 
 - move/ability search will filter with all possible not just run in meta
 
@@ -25,6 +31,11 @@
 ---
 #### Completed
 
+- [XX] fairy aura on tabbed pokemon attacking damage not showing in move breakdown text, not sure if it's applying to daamage
+- [XX] have abilities that boost speed in weather affects affect results listings speeds (setting sand with a sand rush excadrill will double it's speed. there's also chlorophyll, slush rush, swift swim)
+- [XX] I like the brighter gaussian blurred circle, but I don't like the border outline that was added to it
+- [XX] since weather ball shows as a normal type move even when weather is up, ghost types show immunity to it, so it's not showing up in the move breakdowns
+- [XX] in the match log, the gaussian blurred circle behind the first two selected pokemon on each team is not noticeable enough. maybe make it brighter
 - [XX] Add a multiscale toggle to pokemon that have it in the tabs
 - [XX] for weather ball, it looks like type boosting items like mystic water are not being applied to weather ball when it changes it's type in weather. for example, if i have a mystic water pelipper with weather ball, if I set it to rain, it doesn't add the mystic water damage to it and it doesn't show the mystic water text in the move breakdown.
 - [XX] aegislash is not able to be hit by psychic moves even though he's only steel ghost and not dark type

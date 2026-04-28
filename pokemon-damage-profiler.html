@@ -2371,10 +2371,19 @@ const TYPE_COLORS = {
 };
 
 function effectiveSpe(pokemon) {
-  // Returns the effective speed stat, applying Choice Scarf x1.5
   const spe = pokemon.stats ? pokemon.stats.spe : (pokemon.computedSpe || 0);
   const item = (pokemon.item || '').toLowerCase().replace(/[\s-]/g,'');
-  return item === 'choicescarf' ? Math.floor(spe * 1.5) : spe;
+  const ab   = (pokemon.ability || '').toLowerCase().replace(/[\s-]/g,'');
+  const weather = document.getElementById('weatherMode')?.value || 'none';
+  let result = item === 'choicescarf' ? Math.floor(spe * 1.5) : spe;
+  // Weather-based speed doubling abilities
+  if ((ab === 'sandrush'    && weather === 'sand') ||
+      (ab === 'swiftswim'   && weather === 'rain') ||
+      (ab === 'chlorophyll' && weather === 'sun')  ||
+      (ab === 'slushrush'   && weather === 'snow')) {
+    result = Math.floor(result * 2);
+  }
+  return result;
 }
 
 // ── EV / Nature editor panel ──────────────────────────────────────────────────
@@ -3464,14 +3473,18 @@ function computeResults(loadedMeta, defender) {
       // but we store base type here; weather ball power doubling also done in renderResults)
       // For now mark it for renderResults
       const isWeatherBall = mn === 'weather ball';
+      // Weather Ball: resolve type immediately so ghost immunity etc work
+      if (isWeatherBall && weather && weather !== 'none') {
+        effectiveMoveType = weatherBallType(weather);
+      }
 
       // Type-changing abilities on normal moves
-      // We call getAbilityMods with the ORIGINAL move type to get the typeOverride + powerMul
       const abMOrig = getAbilityMods(attacker.ability, move.type, attacker.types, move.name);
       if (abMOrig.typeOverride && abMOrig.typeOverride !== effectiveMoveType) {
         effectiveMoveType = abMOrig.typeOverride;
         typeChangedBy = attacker.ability;
       }
+
 
       // ── Special moves: Freeze-Dry is ice but super-effective vs water ──
       // ── handled in typeEff override below ──
@@ -3549,6 +3562,13 @@ function computeResults(loadedMeta, defender) {
         rawDef = move.cat === 'physical' ? defender.stats.def : defender.stats.spd;
       }
 
+      // Apply defender's aura as a power multiplier if attacker doesn't already have it
+      const _defAbNorm = (defender.ability||'').toLowerCase().replace(/[\s-]/g,'');
+      const _defAuraPow = (_defAbNorm === 'fairyaura' && effectiveMoveType === 'fairy') ? 4/3
+                        : (_defAbNorm === 'darkaura'  && effectiveMoveType === 'dark')  ? 4/3 : 1;
+      const _atkAbNorm2 = (attacker.ability||'').toLowerCase().replace(/[\s-]/g,'');
+      // Don't double-count if attacker also has the aura (both would make it × (4/3)^2, not ×2)
+      const defAuraMul = (_defAuraPow > 1 && _atkAbNorm2 !== _defAbNorm) ? _defAuraPow : 1;
       const abilityAtkMul = abMeff.atkMul * itemModsForMove.atkMul;
       const atkStat = rawAtk * abilityAtkMul;
 
@@ -3593,6 +3613,13 @@ function computeResults(loadedMeta, defender) {
       // Ability power/atk boosts
       if (abMeff.atkMul > 1)   activeMods.push(attacker.ability);
       if (abMeff.powerMul > 1 && !typeChangedBy) activeMods.push(attacker.ability);
+      // Fairy/Dark Aura from defender also boosts the move
+      const _defAbNorm2 = (defender.ability||'').toLowerCase().replace(/[\s-]/g,'');
+      const _defAuraMul = (_defAbNorm2 === 'fairyaura' && effectiveMoveType === 'fairy') ? 4/3
+                        : (_defAbNorm2 === 'darkaura'  && effectiveMoveType === 'dark')  ? 4/3 : 1;
+      if (_defAuraMul > 1 && !((attacker.ability||'').toLowerCase().replace(/[\s-]/g,'') === _defAbNorm2)) {
+        activeMods.push(defender.ability);
+      }
       const perMoveMul = getAbilityMovePowerMul(attacker.ability, move, eff);
       if (perMoveMul > 1) activeMods.push(attacker.ability);
 
@@ -3710,6 +3737,16 @@ function computeResults(loadedMeta, defender) {
         rawDef = move.cat === 'physical' ? attacker.computedDef : attacker.computedSpd;
       }
 
+      // Fairy/Dark Aura from attacker (meta pokemon) also boosts defender's moves of that type
+      const _metaAbNorm = (attacker.ability||'').toLowerCase().replace(/[\s-]/g,'');
+      const _metaAuraMul = (_metaAbNorm === 'fairyaura' && effectiveMoveType === 'fairy') ? 4/3
+                         : (_metaAbNorm === 'darkaura'  && effectiveMoveType === 'dark')  ? 4/3 : 1;
+      // Also check if defender (tab) has aura boosting its own moves
+      const _tabAbNorm = (defender.ability||'').toLowerCase().replace(/[\s-]/g,'');
+      const _tabAuraMul = (_tabAbNorm === 'fairyaura' && effectiveMoveType === 'fairy') ? 4/3
+                        : (_tabAbNorm === 'darkaura'  && effectiveMoveType === 'dark')  ? 4/3 : 1;
+      // Only apply once if both have same aura
+      const atkingAuraMul = (_metaAbNorm === _tabAbNorm) ? _tabAuraMul : Math.max(_metaAuraMul, _tabAuraMul);
       const atkStat  = rawAtk * abMeff.atkMul * defItForMove.atkMul;
       const ruinMul  = getDefenderRuinDebuff(defender.ability, move.cat);
       const defStat  = rawDef * ruinMul;
@@ -3739,6 +3776,10 @@ function computeResults(loadedMeta, defender) {
         mhDmg2 = mhInfo2 ? dmg * mhInfo2.avg : dmg;
       }
       const defMods2 = [];
+      if (atkingAuraMul > 1) {
+        const auraSource = (_tabAbNorm === 'fairyaura' || _tabAbNorm === 'darkaura') ? defender.ability : attacker.ability;
+        defMods2.push(auraSource);
+      }
       if (mhInfo2) {
         if (mhInfo2.variable) defMods2.push(`×${mhInfo2.min}–${mhInfo2.max} hits`);
         else                   defMods2.push(`×${mhInfo2.fixed} hits`);
@@ -4203,7 +4244,7 @@ function renderResults() {
     // Pre-compute speed comparison for row icon (also used in breakdown speedHtml)
     const _speedCond = document.getElementById('speedCondition')?.value || 'none';
     const _speStageVal = Number(document.getElementById('speStage')?.value || 0);
-    let _atkSpe = atkScarfActive ? Math.floor((r.attacker.computedSpe||0) * 1.5) : (r.attacker.computedSpe||0);
+    let _atkSpe = effectiveSpe(r.attacker); // includes scarf + weather ability
     if (_speStageVal !== 0) _atkSpe = Math.floor(_atkSpe * stageMultiplier(_speStageVal));
     let _defSpe = r.defender ? effectiveSpe(r.defender) : 0;
     if (_speedCond === 'tailwind-atk') _atkSpe *= 2;
@@ -4296,7 +4337,8 @@ function renderResults() {
         if (maxSpe > atkSpeRaw) atkSpeRaw = maxSpe;
       }
       const speStageVal = Number(document.getElementById('speStage')?.value || 0);
-      let atkSpeEff = atkScarfActive ? Math.floor(atkSpeRaw * 1.5) : atkSpeRaw;
+      // Use effectiveSpe for weather ability boosts, but respect maxInvest override
+      let atkSpeEff = maxInvest ? (atkScarfActive ? Math.floor(atkSpeRaw * 1.5) : atkSpeRaw) : effectiveSpe(r.attacker);
       if (speStageVal !== 0) atkSpeEff = Math.floor(atkSpeEff * stageMultiplier(speStageVal));
       let defSpeEff = effectiveSpe(r.defender);
       // Tailwind doubles speed; Trick Room reverses comparison
@@ -5547,6 +5589,7 @@ function getSavedTeams() {
 }
 function putSavedTeams(teams) {
   try { localStorage.setItem(SAVED_TEAMS_KEY, JSON.stringify(teams)); } catch {}
+  _driveAutoSave();
 }
 
 function refreshSavedTeamDropdown(selectValue) {
@@ -5679,6 +5722,13 @@ async function _driveLoadExec() {
   alert(`Loaded ${count} team(s) from Google Drive!`);
 }
 
+let _driveAutoSaveTimer = null;
+function _driveAutoSave() {
+  // Only auto-save if already authenticated (don't prompt for auth)
+  if (!_driveAccessToken) return;
+  clearTimeout(_driveAutoSaveTimer);
+  _driveAutoSaveTimer = setTimeout(() => { _driveSaveExec(); }, 3000);
+}
 function driveSave() { _driveEnsureAuth('save'); }
 function driveLoad() { _driveEnsureAuth('load'); }
 
@@ -6386,6 +6436,7 @@ function getMatchHistory() {
 }
 function putMatchHistory(h) {
   try { localStorage.setItem(MATCH_HISTORY_KEY, JSON.stringify(h)); } catch {}
+  _driveAutoSave();
 }
 
 // Sprite img using PokeAPI front_default URL (from API fetch), with slug-based fallbacks
@@ -6787,7 +6838,7 @@ function renderMatchHistory() {
       const hlOrder = typeof p !== 'string' && p.highlighted ? (p.highlightOrder ?? 99) : -1;
       const isPrimary = hlOrder !== -1 && hlOrder < 2;
       const glowStyle = isPrimary
-        ? 'border-radius:4px;background:radial-gradient(circle, rgba(124,106,247,0.35) 0%, transparent 70%);'
+        ? 'border-radius:4px;background:radial-gradient(circle, rgba(124,106,247,0.7) 0%, rgba(124,106,247,0.2) 50%, transparent 80%);'
         : '';
       const safeTeam = _currentTeamName.replace(/'/g,"\\'");
       const img = spriteImgHtmlCls(name, 38, sprite, cls);
