@@ -3,8 +3,6 @@
 
 
 
-
-
 - move/ability search will filter with all possible not just run in meta
 
 
@@ -27,6 +25,8 @@
 ---
 #### Completed
 
+- [XX] Add a multiscale toggle to pokemon that have it in the tabs
+- [XX] for weather ball, it looks like type boosting items like mystic water are not being applied to weather ball when it changes it's type in weather. for example, if i have a mystic water pelipper with weather ball, if I set it to rain, it doesn't add the mystic water damage to it and it doesn't show the mystic water text in the move breakdown.
 - [XX] aegislash is not able to be hit by psychic moves even though he's only steel ghost and not dark type
 - [XX] results listings with black glasses/damage boosting items are applying their damage correctly, but if i press the +-item x1.2 button, it will increase it by an additional 1.2 instead of recognizing it has black glasses already and decreasing it
 - [XX] have levitate ground immunity affect pip graphics in current match window hover windows, in the type weakness overlap window, and the meta analysis hover windows. and if it's not already, also have it affect the damage calculation for each of those.

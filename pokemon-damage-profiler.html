@@ -41,7 +41,33 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── Notebook ─────────────────────────────────────────────────────────────── */
+  /* ── Threat recommendations ─────────────────────────────────────────────── */
+  .rec-card {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg3); border: 0.5px solid var(--border);
+    border-radius: var(--radius); padding: 8px 10px;
+    margin-bottom: 8px; position: relative;
+  }
+  .rec-sprite { width: 64px; height: 64px; image-rendering: pixelated; object-fit: contain; flex-shrink: 0; }
+  .rec-info { flex: 1; min-width: 0; }
+  .rec-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .rec-sub  { font-size: 11px; color: var(--text3); }
+  .rec-matchups { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .rec-matchup-chip {
+    font-size: 10px; padding: 2px 7px; border-radius: 10px;
+    border: 0.5px solid var(--border2); color: var(--text2);
+    background: var(--bg2); white-space: nowrap; cursor: default;
+    position: relative;
+  }
+  .rec-matchup-chip.chip-great  { border-color: var(--green); color: var(--green); background: rgba(93,202,165,0.08); }
+  .rec-matchup-chip.chip-good   { border-color: var(--yellow); color: var(--yellow); background: rgba(250,199,117,0.08); }
+  .rec-matchup-chip.chip-ok     { border-color: var(--text3); color: var(--text3); }
+  .rec-add-btn {
+    padding: 4px 10px; font-size: 11px; border-radius: var(--radius-sm);
+    border: 0.5px solid var(--accent); background: rgba(124,106,247,0.12);
+    color: var(--accent2); cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  }
+  .rec-add-btn:hover { background: rgba(124,106,247,0.25); }
   .nb-new-btn {
     display: flex; align-items: center; justify-content: center;
     width: 100%; min-height: 48px;
@@ -1347,7 +1373,26 @@ Adamant Nature
       </div><!-- end card-body -->
     </div><!-- end metaCard -->
 
-    <!-- DEFENDER -->
+    <!-- COUNTER POOL -->
+    <div class="card card-collapsible collapsed" id="counterPoolCard">
+      <div class="card-label" onclick="toggleCard('counterPoolCard',event)" style="cursor:pointer;">Counter pool <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:6px;">optional — for recommendations</span> <span class="card-collapse-hint">▼</span></div>
+      <div class="card-body">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Paste a larger meta here (e.g. top 100). Recommendations will pull from this pool instead of the main meta.</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+          <button class="btn-success" onclick="loadCounterPool()" style="font-size:11px;padding:4px 10px;flex-shrink:0;">Load pool</button>
+          <select id="counterPoolMetaSelect" style="font-size:12px;padding:4px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;flex:1;min-width:0;" onchange="onCounterPoolMetaSelect()">
+            <option value="">— saved metas —</option>
+          </select>
+          <button onclick="clearCounterPool()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;">Clear</button>
+        </div>
+        <textarea id="counterPoolInput" style="height:80px;min-height:80px;" placeholder="Paste sets here…"></textarea>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+          <div class="spinner" id="counterPoolSpinner"></div>
+          <span id="counterPoolStatus" style="font-size:12px;color:var(--text2);"></span>
+        </div>
+        <div id="counterPoolChips" class="meta-chips" style="margin-top:6px;"></div>
+      </div>
+    </div><!-- end counterPoolCard -->
     <div class="card card-collapsible" id="defenderCard">
       <div class="card-label" onclick="toggleCard('defenderCard',event)" style="cursor:pointer;">Your Pokémon — defender <span class="card-collapse-hint">▼</span></div>
 
@@ -1691,12 +1736,14 @@ Impish Nature
         </div>
         <div style="display:flex;align-items:center;gap:6px;">
           <button id="threatViewModeBtn" onclick="toggleThreatViewMode()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;" title="Switch between whole team and active tab only">👥 Team</button>
+          <button id="threatRecsBtn" onclick="toggleThreatRecs()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;" title="Show recommended counters from meta">💡 Counters</button>
           <button onclick="closeThreatPanel()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;">Close</button>
         </div>
       </div>
       <div class="threat-sprites-row" id="threatSpritesRow">
         <div style="color:var(--text3);font-size:12px;padding:16px 0;">Load a meta and your team to see threat analysis.</div>
       </div>
+      <div id="threatRecsPanel" style="display:none;margin-top:14px;border-top:0.5px solid var(--border2);padding-top:12px;"></div>
     </div>
 
 
@@ -1758,7 +1805,21 @@ function typeEff(moveType, defTypes) {
 
 // Like typeEff but also applies ability immunities (Levitate → ground immune)
 function typeEffWithAbility(moveType, defTypes, defAbility) {
-  if ((defAbility || '').toLowerCase() === 'levitate' && moveType === 'ground') return 0;
+  const ab = (defAbility || '').toLowerCase().replace(/[\s-]/g, '');
+  // Ability-based immunities
+  if (ab === 'levitate'      && moveType === 'ground')    return 0;
+  if (ab === 'lightningrod'  && moveType === 'electric')  return 0;
+  if (ab === 'voltabsorb'    && moveType === 'electric')  return 0;
+  if (ab === 'motordrve'     && moveType === 'electric')  return 0; // typo-safe alias
+  if (ab === 'motordrive'    && moveType === 'electric')  return 0;
+  if (ab === 'flashfire'     && moveType === 'fire')      return 0;
+  if (ab === 'waterabsorb'   && moveType === 'water')     return 0;
+  if (ab === 'dryskin'       && moveType === 'water')     return 0;
+  if (ab === 'stormdrain'    && moveType === 'water')     return 0;
+  if (ab === 'sapsipper'     && moveType === 'grass')     return 0;
+  if (ab === 'eartheater'    && moveType === 'ground')    return 0;
+  if (ab === 'windrider'     && moveType === 'flying')    return 0;
+  if (ab === 'wellbakedbody' && moveType === 'fire')      return 0;
   return typeEff(moveType, defTypes);
 }
 
@@ -1835,8 +1896,21 @@ function toSlug(name) {
 }
 
 // ─── PokéAPI cache + fetchers ─────────────────────────────────────────────────
-const pokemonCache = {};
-const moveCache    = {};
+const POKEMON_CACHE_KEY = 'pokemonDamageProfiler_pokemonCache';
+const MOVE_CACHE_KEY    = 'pokemonDamageProfiler_moveCache';
+
+// Load persisted caches — in-memory objects start populated from localStorage
+let pokemonCache = {};
+let moveCache    = {};
+try { pokemonCache = JSON.parse(localStorage.getItem(POKEMON_CACHE_KEY) || '{}'); } catch {}
+try { moveCache    = JSON.parse(localStorage.getItem(MOVE_CACHE_KEY)    || '{}'); } catch {}
+
+function _persistPokemonCache() {
+  try { localStorage.setItem(POKEMON_CACHE_KEY, JSON.stringify(pokemonCache)); } catch {}
+}
+function _persistMoveCache() {
+  try { localStorage.setItem(MOVE_CACHE_KEY, JSON.stringify(moveCache)); } catch {}
+}
 
 async function fetchPokemonData(slug) {
   if (pokemonCache[slug]) return pokemonCache[slug];
@@ -1858,6 +1932,7 @@ async function fetchPokemonData(slug) {
   const weight = data.weight || null; // in hectograms (PokeAPI)
   const result = { baseStats, types, spriteUrl, weight };
   pokemonCache[slug] = result;
+  _persistPokemonCache();
   return result;
 }
 
@@ -1899,6 +1974,7 @@ async function fetchMoveData(moveName) {
       effect: effectDesc,
     };
     moveCache[slug] = result;
+    _persistMoveCache();
     return result;
   } catch { return null; }
 }
@@ -1928,8 +2004,9 @@ function parseSinglePaste(text) {
   let dividerIndex = null; // paste index where _ divider was found
 
   for (const line of lines.slice(1)) {
+    const trimmedLine = line.trim();
     // Bare "_" line (without "- " prefix) also acts as the divider
-    if (line === '_') {
+    if (trimmedLine === '_') {
       if (dividerIndex === null) dividerIndex = moves.length;
       continue;
     }
@@ -2559,12 +2636,27 @@ function renderDefenderTabs() {
       }).join('') : '';
       const defMegaRow = defMegaForms ? `<div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end;">${defMegaBtns}</div>` : '';
 
+      // Multiscale / Shadow Shield toggle button for tab
+      const tabAbNorm = (slot.ability || '').toLowerCase().replace(/[\s-]/g,'');
+      const hasTabMultiscale = tabAbNorm === 'multiscale' || tabAbNorm === 'shadowshield';
+      const tabKey = slot._defKey || `__tab_${i}__`;
+      const tabMultiscaleOn = multiscaleOverrides.has(tabKey); // in set = active (starts off)
+      const msTabStyle = tabMultiscaleOn
+        ? 'color:var(--green);border-color:var(--green);background:rgba(100,200,100,0.12);'
+        : 'color:var(--text3);border-color:var(--border2);opacity:0.5;';
+      const msTabBtn = hasTabMultiscale
+        ? `<button onclick="toggleTabMultiscale(event,${i})" style="padding:1px 5px;font-size:9px;border-radius:3px;border:0.5px solid;cursor:pointer;background:transparent;${msTabStyle};flex-shrink:0;" title="${tabMultiscaleOn ? 'Multiscale active — click to disable' : 'Multiscale disabled — click to enable'}">MS${tabMultiscaleOn ? '✓' : '✗'}</button>`
+        : '';
+
       tab.innerHTML = `
         <span class="def-tab-close" onclick="clearDefenderSlot(event,${i})">✕</span>
         <div class="def-tab-name" style="width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${slot.speciesRaw}</div>
         <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:3px;">
           <div class="def-tab-types" style="margin-top:0;flex-shrink:0;">${dots}</div>
-          ${defMegaRow}
+          <div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end;align-items:center;">
+            ${msTabBtn}
+            ${defMegaBtns}
+          </div>
         </div>`;
       tab.onclick = (e) => {
         if (e.target.classList.contains('def-tab-close')) return;
@@ -2605,6 +2697,11 @@ function selectDefenderTab(i) {
 
 function clearDefenderSlot(e, i) {
   e.stopPropagation();
+  const slot = DEFENDER_SLOTS[i];
+  if (slot) {
+    const key = slot._defKey || `__tab_${i}__`;
+    multiscaleOverrides.delete(key);
+  }
   DEFENDER_SLOTS[i] = null;
   if (activeDefenderSlot === i) {
     // Find next filled slot or go to 0
@@ -2736,6 +2833,97 @@ function updateChips() {
     const icon = p.loaded ? '✓' : p.failed ? '✗' : '…';
     return `<span class="chip ${cls}">${icon} ${p.speciesRaw}</span>`;
   }).join('');
+}
+
+// ── Counter Pool ──────────────────────────────────────────────────────────────
+let COUNTER_POOL_DB = []; // separate meta for recommendations
+
+async function loadCounterPool() {
+  const text = document.getElementById('counterPoolInput').value.trim();
+  const spinner = document.getElementById('counterPoolSpinner');
+  const status  = document.getElementById('counterPoolStatus');
+  const chips   = document.getElementById('counterPoolChips');
+  if (!text) { status.textContent = 'Paste sets first.'; return; }
+
+  COUNTER_POOL_DB = [];
+  chips.innerHTML = '';
+  spinner.classList.add('active');
+  status.textContent = 'Loading…';
+
+  const blocks = splitPaste(text);
+  for (const block of blocks) {
+    try {
+      const p = parseSinglePaste(block);
+      COUNTER_POOL_DB.push({ ...p, loaded: false, failed: false, types: [], baseStats: {}, resolvedMoves: [], allMoves: [] });
+    } catch(e) {
+      COUNTER_POOL_DB.push({ speciesRaw: block.split('\n')[0].substring(0,24), loaded: false, failed: true, error: e.message, types: [], baseStats: {}, resolvedMoves: [], moves: [], evs: {}, ivs: {}, nature: 'hardy' });
+    }
+  }
+  _updateCounterPoolChips();
+
+  await Promise.all(COUNTER_POOL_DB.map(async (pokemon) => {
+    if (pokemon.failed) return;
+    try {
+      const slug = toSlug(pokemon.speciesRaw);
+      const { baseStats, types, spriteUrl, weight } = await fetchPokemonData(slug);
+      pokemon.baseStats = baseStats; pokemon.types = types;
+      pokemon.spriteUrl = spriteUrl || null; pokemon.weight = weight || null;
+      const nat = NATURES[pokemon.nature] || {};
+      const nm = s => nat[s] || 1;
+      pokemon.computedHp  = calcHP  (baseStats.hp  || 0, pokemon.evs.hp  || 0, pokemon.ivs.hp  ?? 31, pokemon.level);
+      pokemon.computedAtk = calcStat(baseStats.atk || 0, pokemon.evs.atk || 0, pokemon.ivs.atk ?? 31, pokemon.level, nm('atk'));
+      pokemon.computedDef = calcStat(baseStats.def || 0, pokemon.evs.def || 0, pokemon.ivs.def ?? 31, pokemon.level, nm('def'));
+      pokemon.computedSpa = calcStat(baseStats.spa || 0, pokemon.evs.spa || 0, pokemon.ivs.spa ?? 31, pokemon.level, nm('spa'));
+      pokemon.computedSpd = calcStat(baseStats.spd || 0, pokemon.evs.spd || 0, pokemon.ivs.spd ?? 31, pokemon.level, nm('spd'));
+      pokemon.computedSpe = calcStat(baseStats.spe || 0, pokemon.evs.spe || 0, pokemon.ivs.spe ?? 31, pokemon.level, nm('spe'));
+      const moveResults = await Promise.all(pokemon.moves.map((m, i) =>
+        fetchMoveData(m).then(r => r ? { ...r, pasteIndex: i } : { name: m, power: 0, type: 'normal', cat: 'status', isSpread: false, pasteIndex: i })
+      ));
+      pokemon.allMoves = moveResults;
+      pokemon.resolvedMoves = moveResults.filter(m => m && m.power > 0);
+      pokemon.loaded = true;
+    } catch(e) { pokemon.failed = true; pokemon.error = e.message; }
+    _updateCounterPoolChips();
+  }));
+
+  spinner.classList.remove('active');
+  const ok = COUNTER_POOL_DB.filter(p => p.loaded).length;
+  const fail = COUNTER_POOL_DB.filter(p => p.failed).length;
+  status.textContent = `${ok} loaded${fail ? `, ${fail} failed` : ''}.`;
+  if (_threatRecsOpen) renderThreatRecs();
+}
+
+function _updateCounterPoolChips() {
+  const chips = document.getElementById('counterPoolChips');
+  if (!chips) return;
+  chips.innerHTML = COUNTER_POOL_DB.map(p => {
+    const cls = p.failed ? 'chip-fail' : p.loaded ? 'chip-ok-loaded' : 'chip-loading';
+    return `<span class="meta-chip ${cls}">${p.speciesRaw}</span>`;
+  }).join('');
+}
+
+function clearCounterPool() {
+  COUNTER_POOL_DB = [];
+  document.getElementById('counterPoolInput').value = '';
+  document.getElementById('counterPoolStatus').textContent = '';
+  document.getElementById('counterPoolChips').innerHTML = '';
+  if (_threatRecsOpen) renderThreatRecs();
+}
+
+function onCounterPoolMetaSelect() {
+  const sel = document.getElementById('counterPoolMetaSelect');
+  if (!sel.value) return;
+  const metas = getSavedMetas();
+  const entry = metas[sel.value];
+  if (entry) document.getElementById('counterPoolInput').value =
+    typeof entry === 'string' ? entry : (entry.data || '');
+}
+
+function _getCounterCandidates(threatNames) {
+  // Use counter pool if loaded, otherwise fall back to main meta
+  const pool = COUNTER_POOL_DB.filter(p => p.loaded);
+  const source = pool.length ? pool : META_DB.filter(p => p.loaded);
+  return source.filter(p => !threatNames.has(p.speciesRaw));
 }
 
 async function loadMeta() {
@@ -3063,8 +3251,19 @@ function getDefenderAbilityDmgMul(defenderAbility, moveType, defenderKey) {
   if (ab === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) return 0.5;
   if (ab === 'fluffy' && moveType === 'fire') return 2;
   if (ab === 'dryskin' && moveType === 'fire') return 1.25;
-  if ((ab === 'multiscale' || ab === 'shadowshield') && !multiscaleOverrides.has(defenderKey)) return 0.5;
-  if (ab === 'levitate' && moveType === 'ground') return 0;
+  if ((ab === 'multiscale' || ab === 'shadowshield') && multiscaleOverrides.has(defenderKey)) return 0.5;
+  if (ab === 'levitate'      && moveType === 'ground')   return 0;
+  if (ab === 'lightningrod'  && moveType === 'electric') return 0;
+  if (ab === 'voltabsorb'    && moveType === 'electric') return 0;
+  if (ab === 'motordrive'    && moveType === 'electric') return 0;
+  if (ab === 'flashfire'     && moveType === 'fire')     return 0;
+  if (ab === 'waterabsorb'   && moveType === 'water')    return 0;
+  if (ab === 'dryskin'       && moveType === 'water')    return 0;
+  if (ab === 'stormdrain'    && moveType === 'water')    return 0;
+  if (ab === 'sapsipper'     && moveType === 'grass')    return 0;
+  if (ab === 'eartheater'    && moveType === 'ground')   return 0;
+  if (ab === 'windrider'     && moveType === 'flying')   return 0;
+  if (ab === 'wellbakedbody' && moveType === 'fire')     return 0;
   return 1;
 }
 
@@ -3153,6 +3352,7 @@ async function calculate() {
         const defMoveResults = await Promise.all((defender.moves||[]).map((m, i) => fetchMoveData(m).then(r => r ? { ...r, pasteIndex: i } : { name: m, power: 0, type: 'normal', cat: 'status', isSpread: false, pasteIndex: i })));
         defender.allMoves      = defMoveResults;
         defender.resolvedMoves = defMoveResults.filter(m => m && m.power > 0);
+        defender._defKey = `__tab_${slotIdx}__`;
         const results = computeResults(loadedMeta, defender);
         defender._rawText = blocksToLoad[bi];
         defender._lastResults = results;
@@ -3198,6 +3398,9 @@ async function calculate() {
   // Save to tab
   let slotIdx = DEFENDER_SLOTS.findIndex(s => !s);
   if (slotIdx === -1) slotIdx = activeDefenderSlot; // overwrite current
+  defender._defKey = `__tab_${slotIdx}__`;
+  defender._rawText = defText;
+  defender._lastResults = lastResults;
   DEFENDER_SLOTS[slotIdx] = defender;
   activeDefenderSlot = slotIdx;
   renderDefenderTabs();
@@ -3325,7 +3528,21 @@ function computeResults(loadedMeta, defender) {
       }
 
       // Levitate: ground immunity (unless Mold Breaker)
-      if (!moldBreaker && defAb === 'levitate' && effectiveMoveType === 'ground') continue;
+      const _abImm = defAb ? defAb.toLowerCase().replace(/[\s-]/g,'') : '';
+      if (!moldBreaker) {
+        if (_abImm === 'levitate'     && effectiveMoveType === 'ground')   continue;
+        if (_abImm === 'lightningrod' && effectiveMoveType === 'electric') continue;
+        if (_abImm === 'voltabsorb'   && effectiveMoveType === 'electric') continue;
+        if (_abImm === 'motordrive'   && effectiveMoveType === 'electric') continue;
+        if (_abImm === 'flashfire'    && effectiveMoveType === 'fire')     continue;
+        if (_abImm === 'waterabsorb'  && effectiveMoveType === 'water')    continue;
+        if (_abImm === 'dryskin'      && effectiveMoveType === 'water')    continue;
+        if (_abImm === 'stormdrain'   && effectiveMoveType === 'water')    continue;
+        if (_abImm === 'sapsipper'    && effectiveMoveType === 'grass')    continue;
+        if (_abImm === 'eartheater'   && effectiveMoveType === 'ground')   continue;
+        if (_abImm === 'windrider'    && effectiveMoveType === 'flying')   continue;
+        if (_abImm === 'wellbakedbody'&& effectiveMoveType === 'fire')     continue;
+      }
 
       // Recalculate STAB and atk boosts using effective type
       const abMeff = getAbilityMods(attacker.ability, effectiveMoveType, attacker.types, move.name);
@@ -3382,8 +3599,8 @@ function computeResults(loadedMeta, defender) {
       }
       const effectivePower  = movePower * abilityPowerMul * itemPowerMul;
 
-      const dmg = damageFormula(50, effectivePower, atkStat, defStat, eff, isStab)
-                  * (moldBreaker ? 1 : getDefenderAbilityDmgMul(defender.ability, effectiveMoveType, defender.speciesRaw));
+      let dmg = damageFormula(50, effectivePower, atkStat, defStat, eff, isStab)
+                  * (moldBreaker ? 1 : getDefenderAbilityDmgMul(defender.ability, effectiveMoveType, defender._defKey || defender.speciesRaw));
       const pct = dmg / defender.stats.hp * 100;
 
       // ── Build activeMods list for display ──
@@ -3415,6 +3632,13 @@ function computeResults(loadedMeta, defender) {
       if (isPsyshockLike) activeMods.push('Psyshock (Def)');
       if (isFreezeDry && defender.types.includes('water')) activeMods.push('Freeze-Dry vs Water');
       if (isWeatherBall)  activeMods.push('Weather Ball');
+
+      // Flower Trick always crits (×1.5 to final damage)
+      const isFlowerTrick = mn === 'flower trick';
+      if (isFlowerTrick) {
+        dmg *= 1.5;
+        activeMods.push('Critical Hit');
+      }
 
       // Triple Axel: escalating power 20/40/60 — total 120, avg 40 per hit
       const isTripleAxel = mn === 'triple axel' || mn === 'triple-axel';
@@ -3528,8 +3752,10 @@ function computeResults(loadedMeta, defender) {
         const defW2 = attacker.weight || pokemonCache[toSlug(attacker.speciesRaw)]?.weight || null;
         atkMovePower = heavySlamBP(atkW2, defW2);
       }
-      const dmg      = damageFormula(defender.level, atkMovePower * pwrMul, atkStat, defStat, eff, isStab)
+      let dmg      = damageFormula(defender.level, atkMovePower * pwrMul, atkStat, defStat, eff, isStab)
                        * getDefenderAbilityDmgMul(attacker.ability, effectiveMoveType, attacker.speciesRaw);
+      const isFlowerTrick2 = mn === 'flower trick';
+      if (isFlowerTrick2) dmg *= 1.5;
       const pct      = dmg / attacker.computedHp * 100;
 
       const isTripleAxel2 = mn === 'triple axel' || mn === 'triple-axel';
@@ -3555,6 +3781,7 @@ function computeResults(loadedMeta, defender) {
       if (defItForMove.powerMul > 1) defMods2.push(defender.item);
       const perMoveItemMul2 = getItemPerMoveMul(defender.item, effectiveMoveType, eff);
       if (perMoveItemMul2 > 1) defMods2.push(defender.item);
+      if (isFlowerTrick2) defMods2.push('Critical Hit');
       defMoveBreakdown.push({
         move, effectiveMoveType, isSpread: move.isSpread, isWeatherBall: mn === 'weather ball',
         dmg: mhDmg2, pct: mhDmg2 / attacker.computedHp * 100, eff, stab: isStab > 1,
@@ -3669,6 +3896,9 @@ function renderResults() {
         if (newEff === 0) { m.adjustedPct = 0; m.adjustedDmg = 0; return; }
         const wbPower       = 100;  // doubles in weather
         const weatherBoost  = applyWeatherModifier(newType, weather); // e.g. 1.5 for water in rain
+        // Type-boost item for the new Weather Ball type (e.g. Mystic Water in rain)
+        const wbItemMods = getItemMods(r.attacker.item, newType, m.move.cat);
+        const wbItemMul  = wbItemMods.powerMul * wbItemMods.atkMul;
         // Use stored atkStat/defStat/isStab if available, otherwise fall back to ratio method
         let wbDmg;
         if (m.atkStat && m.defStat) {
@@ -3677,11 +3907,16 @@ function renderResults() {
           const wbStab = atkTypes.includes(newType) ? (m.isStab > 1.5 ? 2 : 1.5) : (m.isStab||1);
           wbDmg = damageFormula(50, wbPower, m.atkStat, m.defStat, newEff, wbStab);
           wbDmg *= weatherBoost;
-          wbDmg *= getDefenderAbilityDmgMul(r.defender ? r.defender.ability : '', newType, r.defender ? r.defender.speciesRaw : '');
+          wbDmg *= wbItemMul;
+          wbDmg *= getDefenderAbilityDmgMul(r.defender ? r.defender.ability : '', newType, r.defender ? (r.defender._defKey || r.defender.speciesRaw) : '');
         } else {
           // Fallback ratio: m.dmg was 50BP normal-type, correct for 100BP + newType eff + weather
           const origEff = m.eff > 0 ? m.eff : 1;
-          wbDmg = m.dmg * (wbPower / 50) * (newEff / origEff) * weatherBoost;
+          wbDmg = m.dmg * (wbPower / 50) * (newEff / origEff) * weatherBoost * wbItemMul;
+        }
+        // Add item to activeMods if it's boosting (and not already listed)
+        if (wbItemMul > 1 && r.attacker.item && !m.activeMods.includes(r.attacker.item)) {
+          m.activeMods = [...m.activeMods, r.attacker.item];
         }
         adjustedDmg = wbDmg;
         moveType = newType;
@@ -3754,15 +3989,22 @@ function renderResults() {
         const newEff  = typeEff(newType, r.attacker.types || []);
         if (newEff === 0) { m.adjustedPct = 0; m.adjustedDmg = 0; return; }
         const weatherBoost2 = applyWeatherModifier(newType, weather);
+        // Type-boost item for the new Weather Ball type on the defender (tab pokemon)
+        const wbItemMods2 = getItemMods(r.defender ? r.defender.item : null, newType, m.move.cat);
+        const wbItemMul2  = wbItemMods2.powerMul * wbItemMods2.atkMul;
         let wbDmg2;
         if (m.atkStat && m.defStat) {
           const defTypes = r.defender ? r.defender.types : [];
           const wbStab2 = defTypes.includes(newType) ? 1.5 : (m.isStab||1);
           wbDmg2 = damageFormula(50, 100, m.atkStat, m.defStat, newEff, wbStab2);
           wbDmg2 *= weatherBoost2;
+          wbDmg2 *= wbItemMul2;
         } else {
           const origEff = m.eff > 0 ? m.eff : 1;
-          wbDmg2 = m.dmg * (100 / 50) * (newEff / origEff) * weatherBoost2;
+          wbDmg2 = m.dmg * (100 / 50) * (newEff / origEff) * weatherBoost2 * wbItemMul2;
+        }
+        if (wbItemMul2 > 1 && r.defender && r.defender.item && !m.activeMods.includes(r.defender.item)) {
+          m.activeMods = [...(m.activeMods || []), r.defender.item];
         }
         adjustedDmg = wbDmg2;
         moveType2 = newType;
@@ -4200,13 +4442,13 @@ function renderResults() {
     const _atkAbNorm = (r.attacker.ability || '').toLowerCase().replace(/[\s-]/g,'');
     const _hasMultiscale = _atkAbNorm === 'multiscale' || _atkAbNorm === 'shadowshield';
     const _multiscaleKey = r.attacker.speciesRaw;
-    const _multiscaleOff = _hasMultiscale && multiscaleOverrides.has(_multiscaleKey);
+    const _multiscaleOn = _hasMultiscale && multiscaleOverrides.has(_multiscaleKey);
     const multiscaleHtml = _hasMultiscale ? (() => {
-      const style = _multiscaleOff
-        ? 'color:var(--text3);border-color:var(--border2);'
-        : 'color:var(--green);border-color:var(--green);background:rgba(93,202,165,0.1);';
+      const style = _multiscaleOn
+        ? 'color:var(--green);border-color:var(--green);background:rgba(93,202,165,0.1);'
+        : 'color:var(--text3);border-color:var(--border2);';
       const safeKey = _multiscaleKey.replace(/'/g,"\\'");
-      return `<div style="padding:2px 0 4px;"><button onclick="toggleMultiscale(event,'${safeKey}')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;background:transparent;${style}" title="Toggle Multiscale — ×0.5 at full HP">Multiscale${_multiscaleOff ? ' off' : ' ✓'}</button></div>`;
+      return `<div style="padding:2px 0 4px;"><button onclick="toggleMultiscale(event,'${safeKey}')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;background:transparent;${style}" title="Toggle Multiscale — ×0.5 at full HP">Multiscale${_multiscaleOn ? ' ✓' : ' off'}</button></div>`;
     })() : '';
 
     // Ability + item left-column for breakdown
@@ -4817,6 +5059,22 @@ async function toggleDefenderMega(e, slotIdx, megaSlug) {
   renderResults();
 }
 
+function toggleTabMultiscale(e, slotIdx) {
+  e.stopPropagation();
+  const slot = DEFENDER_SLOTS[slotIdx];
+  if (!slot) return;
+  const key = slot._defKey || `__tab_${slotIdx}__`;
+  if (multiscaleOverrides.has(key)) multiscaleOverrides.delete(key);
+  else                               multiscaleOverrides.add(key);
+  // Recompute this slot's results with the new multiscale state
+  const loadedMeta = META_DB.filter(p => p.loaded);
+  const results = computeResults(loadedMeta, slot);
+  slot._lastResults = results;
+  if (slotIdx === activeDefenderSlot) lastResults = results;
+  renderDefenderTabs();
+  renderResults();
+}
+
 function toggleMultiscale(e, defenderKey) {
   e.stopPropagation();
   if (multiscaleOverrides.has(defenderKey)) multiscaleOverrides.delete(defenderKey);
@@ -5277,17 +5535,21 @@ function putSavedMetas(metas) {
 }
 
 function refreshSavedMetaDropdown(selectValue) {
-  const sel = document.getElementById('savedMetaSelect');
-  if (!sel) return;
   const metas = getSavedMetas();
   const names = Object.keys(metas).sort((a, b) => {
     const ta = metas[a]?.savedAt || 0;
     const tb = metas[b]?.savedAt || 0;
-    return tb - ta; // most recent first
+    return tb - ta;
   });
-  sel.innerHTML = '<option value="">— saved metas —</option>' +
+  const optionsHtml = '<option value="">— saved metas —</option>' +
     names.map(n => `<option value="${n.replace(/"/g,'&quot;')}">${n}</option>`).join('');
-  if (selectValue) sel.value = selectValue;
+
+  const sel = document.getElementById('savedMetaSelect');
+  if (sel) { sel.innerHTML = optionsHtml; if (selectValue) sel.value = selectValue; }
+
+  // Also populate the counter pool dropdown with the same saved metas
+  const sel2 = document.getElementById('counterPoolMetaSelect');
+  if (sel2) sel2.innerHTML = optionsHtml;
 }
 
 function saveCurrentMeta() {
@@ -5607,6 +5869,7 @@ async function onSavedTeamSelect() {
       if (_teamLoadGen !== myGen) { if (teamSpinner) teamSpinner.classList.remove('active'); return; }
       defender.allMoves      = defMoveResults;
       defender.resolvedMoves = defMoveResults.filter(m => m && m.power > 0);
+      defender._defKey = `__tab_${i}__`;
       const results = computeResults(loadedMeta, defender);
       defender._rawText     = rawText;
       defender._lastResults = results;
@@ -6914,11 +7177,14 @@ function toggleThreatPanel() {
     btn.style.background  = '';
     btn.style.borderColor = '';
     btn.style.color       = '';
+    _threatRecsCount = 3;
+    _threatRecsNoMega = false;
   }
 }
 
 function closeThreatPanel() {
   _threatPanelOpen = false;
+  _threatRecsCount = 3; // reset back to 3 on close
   const panel = document.getElementById('threatPanel');
   const btn   = document.getElementById('threatToggleBtn');
   panel.classList.remove('visible');
@@ -6934,11 +7200,215 @@ function setThreatMode(mode) {
     if (b) b.classList.toggle('active', m === mode);
   });
   renderThreatPanel();
+  if (_threatRecsOpen) renderThreatRecs();
 }
 
 // Compute per-meta-pokemon aggregate scores vs all filled defender slots
 // Uses raw damage from computeResults + weather multiplier only — unaffected by
 // UI mode (attacking/defending), active tab, max stats, scarf overrides etc.
+let _threatRecsOpen = false;
+let _threatRecsCount = 3;
+let _threatRecsNoMega = false; // how many recs to show
+
+function toggleThreatRecs() {
+  _threatRecsOpen = !_threatRecsOpen;
+  const btn = document.getElementById('threatRecsBtn');
+  if (btn) {
+    btn.style.background  = _threatRecsOpen ? 'rgba(124,106,247,0.15)' : 'transparent';
+    btn.style.borderColor = _threatRecsOpen ? 'var(--accent)' : 'var(--border2)';
+    btn.style.color       = _threatRecsOpen ? 'var(--accent2)' : 'var(--text3)';
+  }
+  const panel = document.getElementById('threatRecsPanel');
+  if (!panel) return;
+  if (_threatRecsOpen) { panel.style.display = 'block'; renderThreatRecs(); }
+  else                 { panel.style.display = 'none'; }
+}
+
+function computeCounterScore(candidate, threats) {
+  const trickRoom = document.getElementById('speedCondition')?.value === 'trickroom';
+  const weights = [4, 3, 2, 1];
+  let totalScore = 0;
+  const matchups = [];
+
+  threats.forEach((threat, rank) => {
+    const w = weights[rank] || 1;
+
+    // Build a pseudo-defender from the threat attacker to run computeResults
+    // Only use primary moves (before divider) for damage evaluation
+    const threatDivIdx = threat.attacker.dividerIndex ?? 4;
+    const threatPrimaryMoves = (threat.attacker.resolvedMoves || []).filter(m => (m.pasteIndex ?? 99) < threatDivIdx);
+    const threatAsDefender = {
+      speciesRaw: threat.attacker.speciesRaw,
+      types:      threat.attacker.types || [],
+      ability:    threat.attacker.ability || '',
+      item:       threat.attacker.item || '',
+      level:      threat.attacker.level || 50,
+      nature:     threat.attacker.nature || 'hardy',
+      evs:        threat.attacker.evs || {},
+      ivs:        threat.attacker.ivs || {},
+      baseStats:  threat.attacker.baseStats || {},
+      stats:      {
+        hp:  threat.attacker.computedHp  || 100,
+        def: threat.attacker.computedDef || 80,
+        spd: threat.attacker.computedSpd || 80,
+        spe: threat.attacker.computedSpe || 80,
+        atk: threat.attacker.computedAtk || 80,
+        spa: threat.attacker.computedSpa || 80,
+      },
+      moves:        threat.attacker.moves || [],
+      resolvedMoves: threatPrimaryMoves,
+      dividerIndex: threatDivIdx,
+      weight:       threat.attacker.weight || null,
+    };
+
+    // Candidate as attacker: only use primary moves
+    const candDivIdx = candidate.dividerIndex ?? 4;
+    const candPrimary = (candidate.resolvedMoves || []).filter(m => (m.pasteIndex ?? 99) < candDivIdx);
+    const candidateForAtk = { ...candidate, resolvedMoves: candPrimary, dividerIndex: candDivIdx };
+
+    // Run actual damage calc: candidate attacking the threat (primary moves only)
+    const results = computeResults([candidateForAtk], threatAsDefender);
+    const row = results[0];
+    const dmgPct = row ? (row.pct || 0) : 0;
+
+    // Damage threat deals back: use threat's score data which has avgDefPct
+    // Damage threat deals to candidate: run actual calc (threat primary moves as attacker, candidate as defender)
+    const threatForTaken = { ...threat.attacker, resolvedMoves: threatPrimaryMoves, dividerIndex: threatDivIdx };
+    const candidateAsDefender = {
+      speciesRaw: candidate.speciesRaw,
+      types:      candidate.types || [],
+      ability:    candidate.ability || '',
+      item:       candidate.item || '',
+      level:      candidate.level || 50,
+      nature:     candidate.nature || 'hardy',
+      evs:        candidate.evs || {},
+      ivs:        candidate.ivs || {},
+      baseStats:  candidate.baseStats || {},
+      stats: {
+        hp:  candidate.computedHp  || 100,
+        def: candidate.computedDef || 80,
+        spd: candidate.computedSpd || 80,
+        spe: candidate.computedSpe || 80,
+        atk: candidate.computedAtk || 80,
+        spa: candidate.computedSpa || 80,
+      },
+      moves: candidate.moves || [],
+      resolvedMoves: candidate.resolvedMoves || [],
+      dividerIndex: candidate.dividerIndex ?? 4,
+      weight: candidate.weight || null,
+    };
+    const takenResults = computeResults([threatForTaken], candidateAsDefender);
+    const takenRow = takenResults[0];
+    const takenPct = takenRow ? (takenRow.pct || 0) : 0;
+
+    // Outspeed bonus
+    const candSpe   = effectiveSpe(candidate);
+    const threatSpe = effectiveSpe(threat.attacker);
+    const outspeeds = trickRoom ? candSpe < threatSpe : candSpe > threatSpe;
+    const speedBonus = outspeeds ? 20 : 0;
+
+    const offScore    = Math.min(dmgPct + speedBonus, 150);
+    const defScore    = Math.max(0, 100 - takenPct);
+    const matchupScore = offScore * 0.6 + defScore * 0.4;
+
+    const chipClass = matchupScore >= 80 ? 'chip-great' : matchupScore >= 50 ? 'chip-good' : 'chip-ok';
+    const chipLabel = threat.attacker.speciesRaw.split(/[\s-]/)[0];
+    const dmgLabel  = dmgPct >= 100 ? 'OHKO' : dmgPct > 0 ? `${dmgPct.toFixed(0)}%` : '?%';
+    const spdLabel  = outspeeds ? '⚡' : '🐢';
+    matchups.push({ name: chipLabel, chipClass, dmgLabel, spdLabel, outspeeds, takenPct, matchupScore });
+
+    totalScore += matchupScore * w;
+  });
+
+  return { candidate, totalScore, matchups };
+}
+
+function renderThreatRecs() {
+  const panel = document.getElementById('threatRecsPanel');
+  if (!panel) return;
+
+  const scores = computeThreatScores();
+  if (!scores.length) {
+    panel.innerHTML = '<div style="color:var(--text3);font-size:12px;">No threat data — calculate damage first.</div>';
+    return;
+  }
+
+  // Get top threats (same sort as threat panel)
+  const sorted = [...scores].sort((a, b) => {
+    if (_threatMode === 'offensive')  return b.offensiveScore  - a.offensiveScore;
+    if (_threatMode === 'defensive')  return b.defensiveScore  - a.defensiveScore;
+    return b.overallScore - a.overallScore;
+  });
+  const threats = sorted.slice(0, 4);
+  const threatNames = new Set(threats.map(t => t.attacker.speciesRaw));
+
+  // Score every meta pokemon NOT in the top threats — use counter pool if loaded
+  let candidates = _getCounterCandidates(threatNames);
+  if (_threatRecsNoMega) {
+    candidates = candidates.filter(p => {
+      const slug = toSlug(p.speciesRaw);
+      return !slug.includes('-mega') && !slug.includes('-eternal') && !slug.includes('-ultra');
+    });
+  }
+  if (!candidates.length) {
+    panel.innerHTML = '<div style="color:var(--text3);font-size:12px;">Not enough meta pokemon to generate recommendations.</div>';
+    return;
+  }
+
+  const counterScores = candidates
+    .map(c => computeCounterScore(c, threats))
+    .sort((a, b) => b.totalScore - a.totalScore);
+
+  const shown = counterScores.slice(0, _threatRecsCount);
+  const hasMore = counterScores.length > _threatRecsCount;
+
+  const modeLabel = _threatMode === 'offensive' ? 'offensive threats' : _threatMode === 'defensive' ? 'defensive threats' : 'overall threats';
+  const noMegaStyle = _threatRecsNoMega
+    ? 'color:var(--accent2);border-color:var(--accent);background:rgba(124,106,247,0.12);'
+    : 'color:var(--text3);border-color:var(--border2);';
+  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+    <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;">💡 Recommended counters vs ${modeLabel}</div>
+    <button onclick="_threatRecsNoMega=!_threatRecsNoMega;_threatRecsCount=3;renderThreatRecs();" style="font-size:10px;padding:2px 8px;border:0.5px solid;border-radius:var(--radius-sm);background:transparent;cursor:pointer;${noMegaStyle}" title="Toggle mega pokemon visibility">No Mega</button>
+  </div>`;
+
+  shown.forEach(({ candidate, totalScore, matchups }) => {
+    const spriteUrl = getSpriteUrl(candidate.speciesRaw);
+    const itemStr   = candidate.item ? ` @ ${candidate.item}` : '';
+    const typeStr   = (candidate.types || []).join('/');
+    const chips = matchups.map(m =>
+      `<div class="rec-matchup-chip ${m.chipClass}" title="${m.name}: deals ${m.dmgLabel} | ${m.outspeeds ? 'outspeeds' : 'slower'} | takes ~${m.takenPct.toFixed(0)}%">${m.spdLabel} ${m.name}: ${m.dmgLabel}</div>`
+    ).join('');
+
+    html += `<div class="rec-card">
+      <img class="rec-sprite" src="${spriteUrl}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'">
+      <div class="rec-info">
+        <div class="rec-name">${candidate.speciesRaw}${itemStr}</div>
+        <div class="rec-sub">${typeStr}${candidate.ability ? ' · ' + candidate.ability : ''}</div>
+        <div class="rec-matchups">${chips}</div>
+      </div>
+      <button class="rec-add-btn" onclick="addMetaAsDefender(event,'${candidate.speciesRaw.replace(/'/g,"\\'")}')">+ Tab</button>
+    </div>`;
+  });
+
+  if (hasMore) {
+    html += `<button onclick="_threatRecsCount+=3;renderThreatRecs();" style="width:100%;margin-top:4px;padding:6px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;">Load ${Math.min(3, counterScores.length - _threatRecsCount)} more…</button>`;
+  } else if (counterScores.length > 3) {
+    html += `<div style="font-size:10px;color:var(--text3);text-align:center;margin-top:4px;">All ${counterScores.length} options shown</div>`;
+  }
+
+  panel.innerHTML = html;
+}
+
+async function addMetaAsDefender(e, speciesRaw) {
+  e.stopPropagation();
+  const btn = e.currentTarget;
+  btn.disabled = true; btn.textContent = '…';
+  // Reuse addAttackerAsDefender logic — find a fake resultIndex by looking up in META_DB
+  const idx = META_DB.findIndex(p => p.speciesRaw === speciesRaw);
+  if (idx >= 0) await addAttackerAsDefender(e, speciesRaw, String(idx));
+  btn.disabled = false; btn.textContent = '+ Tab';
+}
+
 function toggleThreatViewMode() {
   _threatViewMode = _threatViewMode === 'team' ? 'tab' : 'team';
   const btn = document.getElementById('threatViewModeBtn');

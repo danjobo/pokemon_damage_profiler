@@ -11,6 +11,22 @@ _
 - Coaching
 - Rock Slide 
 
+Garchomp @ Choice Scarf, White Herb, Soft Sand, Sitrus Berry, Haban Berry  
+Ability: Rough Skin  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Adamant Nature  
+- Earthquake  
+- Rock Slide  
+- Dragon Claw
+- Protect
+_  
+- Stomping Tantrum  
+- Iron Head
+- Poison Jab
+- Stone Edge
+- Swords Dance
+
 Incineroar @ Sitrus Berry, Chople Berry, Shuca Berry  
 Ability: Intimidate  
 Level: 50  
@@ -28,23 +44,7 @@ _
 - Close Combat
 - Helping Hand  
 
-Garchomp @ Choice Scarf, White Herb, Soft Sand, Sitrus Berry, Haban Berry  
-Ability: Rough Skin  
-Level: 50  
-EVs: 2 HP / 32 Atk / 32 Spe  
-Jolly Nature  
-- Earthquake  
-- Rock Slide  
-- Dragon Claw
-- Protect
-_  
-- Stomping Tantrum  
-- Iron Head
-- Poison Jab
-- Stone Edge
-- Swords Dance
-
-Kingambit @ Black Glasses, Chople Berry  
+Kingambit @ Chople Berry, Black Glasses  
 Ability: Defiant  
 Level: 50  
 EVs: 32 HP / 32 Atk / 2 SpD  
@@ -56,20 +56,6 @@ Adamant Nature
 _ 
 - Low Kick
 - Swords Dance
-
-Sinistcha @ Sitrus Berry, Leftovers   
-Ability: Hospitality  
-Level: 50  
-EVs: 32 HP / 14 Def / 20 SpD  
-Bold Nature  
-- Matcha Gotcha  
-- Rage Powder
-- Trick Room
-- Life Dew
-_
-- Protect  
-- Strenth Sap
-- Shadow Ball
 
 Basculegion (M) @ Choice Scarf, Mystic Water  
 Ability: Adaptability  
@@ -85,6 +71,20 @@ _
 - Liquidation  
 - Psychic Fangs   
 
+Sinistcha @ Sitrus Berry, Leftovers   
+Ability: Hospitality  
+Level: 50  
+EVs: 32 HP / 14 Def / 20 SpD  
+Bold Nature  
+- Matcha Gotcha  
+- Rage Powder
+- Trick Room
+- Life Dew
+_
+- Protect  
+- Strenth Sap
+- Shadow Ball
+
 Aerodactyl @ Focus Sash, Aerodactylite  
 Ability: Unnerve  
 Level: 50  
@@ -97,7 +97,7 @@ Jolly Nature
 _
 - Wide Guard  
 
-Charizard-Mega-Y @ Charizardite Y  
+Charizard-Mega-Y @ Charizardite Y, Charizardite X 
 Ability: Drought, Blaze  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
@@ -108,44 +108,28 @@ Modest Nature
 - Weather Ball
 _  
 - Air Slash
-- Overheat
 - Flare Blitz
 - Dragon Claw
 - Dragon Dance
+- Overheat
 - Dragon Pulse  
 
-Rotom-Wash @ Sitrus Berry, Leftovers, Choice Scarf
-Ability: Levitate  
+Milotic @ Leftovers, Sitrus Berry  
+Ability: Competitive  
 Level: 50  
-EVs: 2 HP / 32 SpA / 32 Spe  
+EVs: 32 HP / 21 Def / 10 SpA / 1 SpD / 2 Spe  
 Modest Nature  
-- Hydro Pump  
-- Thunderbolt  
-- Volt Switch  
-- Will-O-Wisp
+- Scald  
 - Protect
+- Icy Wind  
+- Recover
 _
-- Electroweb
-- Trick
-- Discharge
+- Ice Beam
+- Muddy Water  
+- Life Dew  
+- Coil
+- Hypnosis
 - Helping Hand
-
-Whimsicott @ Focus Sash
-Ability: Prankster  
-Level: 50  
-EVs: 2 HP / 32 SpA / 32 Spe  
-Timid Nature
-- Tailwind  
-- Moonblast
-- Encore
-- Protect
-_
-- Sunny Day
-- Taunt
-- Helping Hand
-- Fake Tears
-- Endeavor  
-- Dazzling Gleam   
 
 Pelipper @ Focus Sash, Sitrus Berry
 Ability: Drizzle  
@@ -160,40 +144,25 @@ Modest Nature
 _  
 - Muddy Water  
 - U-turn  
-- Icy Wind
 - Ice Beam
+- Icy Wind
 - Hydro Pump
 
-Floette-Mega (F) @ Floettite  
-Ability: Fairy Aura, Flower Veil  
+Rotom-Wash @ Sitrus Berry, Leftovers, Choice Scarf
+Ability: Levitate  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
+- Hydro Pump  
+- Thunderbolt  
+- Will-O-Wisp
+- Volt Switch  
 - Protect
-- Dazzling Gleam  
-- Moonblast
-- Calm Mind
 _
-- Light of Ruin
-- Draining Kiss  
-- Psychic  
-
-Tyranitar-Mega @ Tyranitarite, Chople Berry, Choice Scarf, Focus Sash  
-Ability: Sand Stream, Sand Stream  
-Level: 50  
-EVs: 2 HP / 32 Atk / 32 Spe  
-Adamant Nature  
-- Rock Slide 
-- Protect 
-- Knock Off  
-- Low Kick
-_  
-- Ice Punch  
-- Crunch
-- Dragon Dance
-- Earthquake
-- Stone Edge
-- High Horsepower
+- Electroweb
+- Trick
+- Discharge
+- Helping Hand
 
 Farigiraf @ Sitrus Berry, Colbur Berry, Mental Herb, Leftovers  
 Ability: Armor Tail   
@@ -212,6 +181,23 @@ _
 - Rain Dance
 - Ally Switch
 
+Tyranitar-Mega @ Tyranitarite, Chople Berry, Choice Scarf, Focus Sash  
+Ability: Sand Stream, Sand Stream  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Adamant Nature  
+- Rock Slide 
+- Protect 
+- Knock Off  
+- Low Kick
+_  
+- Ice Punch  
+- Crunch
+- Dragon Dance
+- Earthquake
+- Stone Edge
+- High Horsepower
+
 Archaludon @ Leftovers, Sitrus Berry, Chople Berry, White Herb
 Ability: Stamina  
 Level: 50  
@@ -228,39 +214,53 @@ _
 - Snarl
 - Steel Beam
 
-Milotic @ Leftovers, Sitrus Berry  
-Ability: Competitive  
+Whimsicott @ Focus Sash, Mental Herb
+Ability: Prankster  
 Level: 50  
-EVs: 32 HP / 21 Def / 10 SpA / 1 SpD / 2 Spe  
-Modest Nature  
-- Scald  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Timid Nature
+- Tailwind  
+- Moonblast
+- Encore
 - Protect
-- Icy Wind  
-- Ice Beam
-- Recover
 _
-- Life Dew  
-- Muddy Water  
-- Hypnosis
-- Coil
+- Sunny Day
+- Taunt
 - Helping Hand
+- Fake Tears
+- Endeavor  
+- Dazzling Gleam   
 
-Dragonite-Mega @ Dragoninite, Lum Berry  
-Ability: Multiscale, Multiscale  
+Floette-Mega (F) @ Floettite  
+Ability: Fairy Aura, Flower Veil  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
 - Protect
-- Hurricane  
-- Draco Meteor  
-- Extreme Speed
+- Dazzling Gleam  
+- Moonblast
+- Calm Mind
 _
-- Tailwind
-- Dragon Pulse
-- Thunder  
-- Ice Beam  
-- Scale Shot
-- Thunderbolt
+- Light of Ruin
+- Draining Kiss  
+- Psychic  
+
+Venusaur @ Focus Sash, Venusaurite, Leftovers  
+Ability: Chlorophyll  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Modest Nature  
+- Sludge Bomb  
+- Protect
+- Sleep Powder
+- Earth Power 
+_ 
+- Giga Drain
+- Energy Ball 
+- Leaf Storm
+- Solar Beam
+- Leech Seed
+- Weather Ball  
 
 Froslass-Mega (F) @ Froslassite  
 Ability: Snow Warning, Cursed Body  
@@ -276,22 +276,35 @@ _
 - Nasty Plot 
 - Thunderbolt   
 
-Venusaur @ Focus Sash, Venusaurite, Leftovers  
-Ability: Chlorophyll  
+Dragonite-Mega @ Dragoninite, Lum Berry  
+Ability: Multiscale, Multiscale  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
-- Sludge Bomb  
 - Protect
-- Sleep Powder
-- Earth Power 
-- Energy Ball 
-_ 
-- Giga Drain
-- Leaf Storm
-- Solar Beam
-- Leech Seed
+- Hurricane  
+- Draco Meteor  
+- Extreme Speed
+_
+- Tailwind
+- Dragon Pulse
+- Thunder  
+- Ice Beam  
+- Thunderbolt
+- Dragon Claw
+
+Meganium-Mega @ Meganiumite  
+Ability: Mega Sol, Overgrow  
+Level: 50  
+EVs: 32 HP / 32 SpA / 2 Spe  
+Modest Nature  
+- Solar Beam  
+- Dazzling Gleam  
 - Weather Ball  
+- Protect
+_
+- Synthesis
+- Earth Power  
 
 Talonflame @ Sharp Beak, Focus Sash, White Herb, Leftovers  
 Ability: Gale Wings  
@@ -308,20 +321,7 @@ _
 - Will-O-Wisp
 - Quick Guard  
 - Upper Hand 
-- Rain Dance 
-
-Meganium-Mega @ Meganiumite  
-Ability: Mega Sol, Overgrow  
-Level: 50  
-EVs: 32 HP / 32 SpA / 2 Spe  
-Modest Nature  
-- Solar Beam  
-- Dazzling Gleam  
-- Weather Ball  
-- Protect
-_
-- Synthesis
-- Earth Power  
+- Taunt
 
 Corviknight @ Leftovers, Sitrus Berry, Occa Berry  
 Ability: Mirror Armor  
@@ -329,42 +329,14 @@ Level: 50
 EVs: 32 HP / 32 Def / 2 SpD  
 Impish Nature  
 - Brave Bird  
-- Body Press 
 - Tailwind
 - Roost
+- Body Press 
 - Iron Head
 _
 - Iron Defense
 - Bulk Up
 - Protect  
-
-Delphox-Mega @ Delphoxite  
-Ability: Levitate, Blaze  
-Level: 50  
-EVs: 2 HP / 32 SpA / 32 Spe  
-Timid Nature  
-- Heat Wave  
-- Protect
-- Psychic
-- Encore
-- Substitute
-_  
-
-
-Gengar-Mega @ Gengarite, Focus Sash  
-Ability: Shadow Tag  
-Level: 50  
-EVs: 2 HP / 32 SpA / 32 Spe  
-Timid Nature  
-- Shadow Ball  
-- Protect
-- Sludge Bomb
-- Perish Song
-_  
-- Icy Wind
-- Substitute
-- Disable
-- Sludge Wave  
 
 Gardevoir-Mega @ Gardevoirite, Choice Scarf  
 Ability: Pixilate, Trace  
@@ -381,21 +353,6 @@ _
 - Calm Mind
 - Dazzling Gleam
 
-Maushold @ Chople Berry, Focus Sash, Sitrus Berry  
-Ability: Friend Guard  
-Level: 50  
-EVs: 2 HP / 32 Atk / 32 Spe  
-Adamant Nature  
-- Follow Me
-- Protect
-- Super Fang
-- Taunt
-_
-- Encore
-- Helping Hand
-- Feint
-- Population Bomb    
-
 Aegislash-Blade @ Spell Tag, Leftovers, Focus Sash  
 Ability: Stance Change  
 Level: 50  
@@ -410,6 +367,49 @@ _
 - Wide Guard
 - Shadow Ball
 
+Gengar-Mega @ Gengarite, Focus Sash  
+Ability: Shadow Tag  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Timid Nature  
+- Shadow Ball  
+- Protect
+- Sludge Bomb
+- Perish Song
+_  
+- Icy Wind
+- Disable
+- Substitute
+- Sludge Wave  
+
+Torkoal @ Charcoal, Quick Claw  
+Ability: Drought
+Level: 50  
+EVs: 32 HP / 32 SpA / 2 SpD  
+Quiet Nature  
+- Eruption 
+- Protect 
+- Heat Wave  
+- Earth Power  
+- Weather Ball
+_
+- Solar Beam  
+
+Maushold @ Chople Berry, Focus Sash, Sitrus Berry  
+Ability: Friend Guard  
+Level: 50  
+EVs: 32 HP / 1 Def / 1 SpD / 32 Spe  
+Jolly Nature  
+- Follow Me
+- Protect
+- Super Fang
+- Taunt
+- Encore
+_
+- Helping Hand
+- Population Bomb    
+- Feint
+
 Excadrill @ Focus Sash, Excadrillite, Choice Scarf  
 Ability: Sand Rush  
 Level: 50  
@@ -422,18 +422,17 @@ Adamant Nature
 - High Horsepower
 _  
 
-Torkoal @ Charcoal, Quick Claw  
-Ability: White Smoke  
+Delphox-Mega @ Delphoxite  
+Ability: Levitate, Blaze  
 Level: 50  
-EVs: 32 HP / 32 SpA / 2 SpD  
-Quiet Nature  
-- Eruption 
-- Protect 
+EVs: 2 HP / 32 SpA / 32 Spe  
+Timid Nature  
 - Heat Wave  
-- Earth Power  
-- Weather Ball
-_
-- Solar Beam  
+- Protect
+- Psychic
+- Encore
+- Substitute
+_  
 
 Primarina @ Leftovers, Mystic Water, Sitrus Berry  
 Ability: Liquid Voice  
@@ -455,22 +454,22 @@ Modest Nature
 - Hyper Voice  
 - Protect
 - Quick Attack
-- Detect
-- Calm Mind  
-- Hyper Beam
 _  
-- Shadow Ball
-- Helping Hand
+- Detect
+- Hyper Beam
+- Calm Mind  
 - Mystical Fire  
+- Moonblast
+- Helping Hand
 
 Blastoise-Mega @ Blastoisinite, Leftovers, Mystic Water  
 Ability: Mega Launcher, Rain Dish  
 Level: 50  
-EVs: 2 HP / 32 SpA / 32 Spe  
+EVs: 32 HP / 2 Def / 32 SpA
 Modest Nature  
 - Water Spout 
-- Protect 
 - Dark Pulse  
+- Protect 
 - Aura Sphere
 - Fake Out
 _
@@ -505,60 +504,6 @@ _
 - Low Kick
 - Protect  
 
-Kommo-o @ Leftovers, Dragon Fang, Sitrus Berry, Haban Berry  
-Ability: Soundproof  
-Level: 50  
-EVs: 2 HP / 32 SpA / 32 Spe  
-Modest Nature  
-- Protect
-- Clanging Scales  
-- Aura Sphere
-- Clangorous Soul
-_  
-
-Glimmora-Mega @ Glimmoranite, Focus Sash  
-Ability: Adaptability, Toxic Debris  
-Level: 50  
-EVs: 2 HP / 32 SpA / 32 Spe  
-Timid Nature  
-- Power Gem  
-- Spiky Shield  
-- Earth Power  
-- Sludge Bomb  
-_
-- Sludge Wave
-
-Dragapult @ Focus Sash, Dragon Fang, Lum Berry, Choice Scarf, Colbur Berry  
-Ability: Clear Body   
-Level: 50  
-EVs: 2 HP / 32 Atk / 32 Spe  
-Jolly Nature  
-- Dragon Darts  
-- Phantom Force 
-- Protect
-- Will-O-Wisp 
-- Psychic Fangs
-- Shadow Ball
-- Draco Meteor
-_  
-- U-turn  
-- Sucker Punch
-
-Politoed @ Sitrus Berry, Leftovers, Mystic Water  
-Ability: Drizzle  
-Level: 50  
-EVs: 32 HP / 32 Def / 2 SpD  
-Calm Nature  
-- Protect
-- Weather Ball  
-- Icy Wind
-- Perish Song  
-- Muddy Water
-_
-- Helping Hand  
-- Ice Beam  
-- Encore
-
 Sableye @ Roseli Berry, Sitrus Berry, Focus Sash, Mental Herb  
 Ability: Prankster  
 Level: 50  
@@ -574,18 +519,61 @@ _
 - Quash
 - Light Screen  
 
-Typhlosion-Hisui @ Choice Scarf, Charcoal  
-Ability: Blaze  
+Kommo-o @ Leftovers, Dragon Fang, Sitrus Berry, Haban Berry  
+Ability: Soundproof  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
-- Eruption  
-- Shadow Ball  
-- Heat Wave  
-- Overheat  
-_
-- Infernal Parade
 - Protect
+- Clanging Scales  
+- Aura Sphere
+- Clangorous Soul
+_  
+
+Scovillain-Mega @ Scovillainite  
+Ability: Spicy Spray, Moody  
+Level: 50  
+EVs: 32 HP / 19 Def / 15 SpD  
+Calm Nature  
+- Rage Powder
+- Protect
+- Leech Seed
+- Overheat  
+- Flamethrower  
+_
+- Giga Drain  
+- Leaf Storm  
+
+Dragapult @ Focus Sash, Dragon Fang, Lum Berry, Choice Scarf, Colbur Berry  
+Ability: Clear Body   
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+- Dragon Darts  
+- Phantom Force 
+- Protect
+- Will-O-Wisp 
+- Psychic Fangs
+- Draco Meteor
+- Shadow Ball
+_  
+- U-turn  
+- Sucker Punch
+
+Politoed @ Sitrus Berry, Leftovers, Mystic Water  
+Ability: Drizzle  
+Level: 50  
+EVs: 32 HP / 2 Def / 32 SpA  
+Modest Nature  
+- Protect
+- Weather Ball  
+- Icy Wind
+- Perish Song  
+- Muddy Water
+_
+- Ice Beam  
+- Helping Hand  
+- Encore
 
 Ninetales-Alola @ Focus Sash, Never-Melt Ice, Choice Scarf 
 Ability: Snow Warning  
@@ -602,6 +590,31 @@ _
 - Icy Wind  
 - Dazzling Gleam
 
+Typhlosion-Hisui @ Choice Scarf, Charcoal  
+Ability: Frisk  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Modest Nature  
+- Eruption  
+- Shadow Ball  
+- Heat Wave  
+- Overheat  
+_
+- Infernal Parade
+- Protect
+
+Glimmora-Mega @ Glimmoranite, Focus Sash  
+Ability: Adaptability, Toxic Debris  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Timid Nature  
+- Power Gem  
+- Spiky Shield  
+- Earth Power  
+- Sludge Bomb  
+_
+- Sludge Wave
+
 Gyarados-Mega @ Gyaradosite, Sitrus Berry, Leftovers, Lum Berry  
 Ability: Mold Breaker, Intimidate  
 Level: 50  
@@ -611,11 +624,54 @@ Adamant Nature
 - Protect
 - Dragon Dance
 - Crunch 
-- Thunder Wave
 _ 
 - Ice Fang  
+- Thunder Wave
 - Taunt
 - Earthquake  
+
+Rotom-Heat @ Choice Scarf, Sitrus Berry, Leftovers  
+Ability: Levitate  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Modest Nature  
+- Overheat  
+- Thunderbolt  
+- Volt Switch  
+- Electroweb
+_
+- Protect
+- Will-O-Wisp
+- Trick
+
+Zoroark-Hisui @ Focus Sash, Choice Scarf, Silk Scarf  
+Ability: Illusion  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Timid Nature  
+- Hyper Voice  
+- Bitter Malice  
+- Icy Wind  
+- Shadow Ball  
+- Protect
+_
+- Psychic
+
+Hydreigon @ Choice Scarf, Focus Sash, Sitrus Berry, Chople Berry, Black Glasses  
+Ability: Levitate  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Modest Nature  
+- Dark Pulse  
+- Draco Meteor 
+- Protect 
+- Snarl  
+- Earth Power
+- Heat Wave
+_  
+- Tailwind
+- Flamethrower
+- Flash Cannon
 
 Golurk-Mega @ Golurkite  
 Ability: Unseen Fist, Iron Fist  
@@ -628,8 +684,36 @@ Brave Nature
 - Ice Punch
 _  
 - Drain Punch  
+- Thunder Punch
+- Earthquake
+- Rock Slide
 
-Clefable @ Sitrus Berry, Leftovers, Clefablite
+Aggron-Mega @ Aggronite  
+Ability: Filter, Sturdy  
+Level: 50  
+EVs: 32 HP / 2 Def / 32 SpD  
+Careful Nature  
+- Body Press  
+- Heavy Slam  
+- Protect
+- Iron Defense
+_
+
+Meowscarada @ Choice Scarf, Focus Sash  
+Ability: Protean  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Adamant Nature  
+- Flower Trick 
+- Triple Axel  
+- Knock Off  
+- U-turn  
+- Protect
+_
+- Sucker Punch
+- Low Kick
+
+Clefable @ Sitrus Berry, Leftovers, Clefablite  
 Ability: Unaware  
 Level: 50  
 EVs: 32 HP / 32 Def / 2 SpD  
@@ -641,40 +725,27 @@ Bold Nature
 _
 - Life Dew  
 
-Hydreigon @ Choice Scarf, Focus Sash, Sitrus Berry, Chople Berry, Black Glasses
-Ability: Levitate  
+Volcarona @ Sitrus Berry, Leftovers, Charti Berry, Focus Sash  
+Ability: Flame Body  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
-- Dark Pulse  
-- Draco Meteor 
-- Protect 
-- Earth Power
-_  
-- Snarl  
-- Tailwind
-- Heat Wave
-- Flamethrower
-
-Rotom-Heat @ Choice Scarf, Sitrus Berry, Leftovers  
-Ability: Levitate  
-Level: 50  
-EVs: 2 HP / 32 SpA / 32 Spe  
-Modest Nature  
-- Overheat  
-- Thunderbolt  
-- Volt Switch  
 - Protect
-- Electroweb
-- Will-O-Wisp
+- Heat Wave  
+- Rage Powder
+- Quiver Dance
 _
-- Trick
+- Giga Drain  
+- Fiery Dance
+- Tailwind
+- Bug Buzz  
+- Struggle Bug  
 
 Starmie-Mega @ Starminite  
 Ability: Huge Power, Natural Cure  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
-Jolly Nature  
+Adamant Nature  
 - Liquidation  
 - Protect
 - Aqua Jet  
@@ -698,86 +769,31 @@ _
 - Close Combat
 - Wild Charge  
 
-Scovillain-Mega @ Scovillainite  
-Ability: Spicy Spray, Moody  
-Level: 50  
-EVs: 32 HP / 10 Def / 24 SpD  
-Bold Nature  
-- Rage Powder
-- Protect
-- Flamethrower  
-- Leech Seed
-- Overheat  
-_
-- Giga Drain  
-- Leaf Storm  
-
-Zoroark-Hisui @ Focus Sash, Choice Scarf, Silk Scarf  
-Ability: Illusion  
-Level: 50  
-EVs: 2 HP / 32 SpA / 32 Spe  
-Timid Nature  
-- Hyper Voice  
-- Bitter Malice  
-- Icy Wind  
-- Protect
-- Shadow Ball  
-_
-- Psychic
-
-Aggron-Mega @ Aggronite  
-Ability: Filter, Sturdy  
-Level: 50  
-EVs: 32 HP / 2 Def / 32 SpD  
-Careful Nature  
-- Body Press  
-- Heavy Slam  
-- Protect
-- Iron Defense
-_
-
-Volcarona @ Sitrus Berry, Leftovers, Charti Berry, Focus Sash  
-Ability: Flame Body  
-Level: 50  
-EVs: 2 HP / 32 SpA / 32 Spe  
-Modest Nature  
-- Protect
-- Heat Wave  
-- Rage Powder
-- Quiver Dance
-_
-- Tailwind
-- Giga Drain  
-- Fiery Dance
-- Struggle Bug  
-- Bug Buzz  
-
-Meowscarada @ Choice Scarf, Focus Sash, Miracle Seed  
-Ability: Protean  
+Tsareena (F) @ Sitrus Berry, Choice Scarf, Focus Sash, Occa Berry  
+Ability: Queenly Majesty  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
 Adamant Nature  
-- Flower Trick 
 - Triple Axel  
-- Knock Off  
+- Trop Kick  
+- Protect
+- Low Kick
+_  
+- Power Whip
 - U-turn  
-_
-- Protect
-- Sucker Punch
+- High Jump Kick
 
-Drampa-Mega @ Drampanite  
-Ability: Berserk, Cloud Nine  
+Oranguru @ Mental Herb, Sitrus Berry, Colbur Berry, Leftovers  
+Ability: Inner Focus  
 Level: 50  
-EVs: 32 HP / 2 Def / 32 SpA  
-Quiet Nature  
-- Hyper Voice  
+EVs: 32 HP / 32 Def / 2 SpD  
+Relaxed Nature  
+- Instruct
+- Trick Room
+- Psychic 
 - Protect
-- Draco Meteor  
-- Earth Power  
 _
-- Dragon Pulse
-- Thunderbolt
-- Calm Mind  
+- Encore 
 
 Crabominable-Mega @ Crabominite  
 Ability: Iron Fist, Hyper Cutter  
@@ -792,18 +808,33 @@ _
 - Thunder Punch  
 - Close Combat
 
-Palafin-Hero @ Mystic Water, CHoice Scarf  
-Ability: Zero to Hero  
+Mimikyu @ Mental Herb, Shadow Tag, White Herb, Sitrus Berry, Lum Berry  
+Ability: Disguise  
 Level: 50  
-EVs: 32 HP / 32 Atk / 2 Spe  
+EVs: 32 HP / 32 Atk / 2 Def  
 Adamant Nature  
-- Jet Punch  
-- Wave Crash 
-- Flip Turn
-- Protect 
-- Close Combat  
+- Play Rough  
+- Shadow Sneak  
+- Trick Room
+- Shadow Claw
 _
-- Ice Punch  
+- Protect  
+- Swords Dance
+
+Drampa-Mega @ Drampanite  
+Ability: Berserk, Cloud Nine  
+Level: 50  
+EVs: 32 HP / 2 Def / 32 SpA  
+Quiet Nature  
+- Hyper Voice  
+- Protect
+- Draco Meteor  
+- Earth Power  
+- Dragon Pulse
+- Thunderbolt
+_
+- Calm Mind  
+- Flamethrower
 
 Lucario-Mega @ Lucarionite, Focus Sash, Choice Scarf  
 Ability: Adaptability, Inner Focus  
@@ -819,17 +850,19 @@ _
 - Flash Cannon
 - Detect
 
-Oranguru @ Mental Herb, Sitrus Berry, Colbur Berry, Leftovers  
-Ability: Inner Focus  
+Gallade-Mega (M) @ Galladite, Black Belt, Focus Sash, Choice Scarf, White Herb  
+Ability: Inner Focus, Sharpness  
 Level: 50  
-EVs: 32 HP / 32 Def / 2 SpD  
-Relaxed Nature  
+EVs: 32 HP / 32 Atk / 2 Def  
+Adamant Nature  
+- Sacred Sword  
+- Psycho Cut  
+- Protect  
 - Trick Room
-= Instruct
-- Psychic 
-- Protect
 _
-- Encore 
+- Leaf Blade
+- Wide Guard
+- Night Slash
 
 Hatterene (F) @ Fairy Feather, Focus Sash, Sitrus Berry, Leftovers  
 Ability: Magic Bounce  
@@ -843,86 +876,33 @@ Quiet Nature
 _
 - Expanding Force
 
-Mimikyu @ Mental Herb, Shadow Tag, White Herb, Sitrus Berry, Lum Berry  
-Ability: Disguise  
-Level: 50  
-EVs: 32 HP / 32 Atk / 2 Def  
-Adamant Nature  
-- Play Rough  
-- Trick Room
-- Shadow Sneak  
-- Shadow Claw
-_
-- Swords Dance
-- Protect  
-
-Gallade-Mega (M) @ Galladite, Black Belt, Focus Sash, Choice Scarf, White Herb  
-Ability: Inner Focus, Sharpness  
-Level: 50  
-EVs: 32 HP / 32 Atk / 2 Def  
-Adamant Nature  
-- Sacred Sword  
-- Psycho Cut  
-- Protect  
-- Trick Room
-- Wide Guard
-_
-- Leaf Blade
-- Night Slash
-
 Basculegion-F (F) @ Choice Scarf, Mystic Water, Focus Sash  
 Ability: Adaptability  
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Modest Nature  
-- Shadow Ball  
 - Last Respects 
+- Shadow Ball  
 - Aqua Jet
+- Muddy Water
 - Wave Crash
 - Flip Turn 
-- Muddy Water
 - Protect
 _
 - Ice Beam  
 
-Orthworm @ Sitrus Berry, Leftovers  
-Ability: Earth Eater  
+Palafin-Hero @ Mystic Water, Choice Scarf  
+Ability: Zero to Hero  
 Level: 50  
-EVs: 32 HP / 5 Def / 29 SpD  
-Impish Nature  
-- Body Press  
-- Shed Tail
-- Heavy Slam
-- Iron Defense
-_
-- Protect  
-
-Tsareena (F) @ Sitrus Berry, Choice Scarf, Focus Sash, Occa Berry  
-Ability: Queenly Majesty  
-Level: 50  
-EVs: 2 HP / 32 Atk / 32 Spe  
+EVs: 32 HP / 32 Atk / 2 Spe  
 Adamant Nature  
-- Triple Axel  
-- Trop Kick  
-- Protect
-- Low Kick
-_  
-- U-turn  
-- Power Whip
-- High Jump Kick
-
-Rotom-Frost @ Choice Scarf, Never-Melt Ice  
-Ability: Levitate  
-Level: 50  
-EVs: 2 HP / 32 SpA / 32 Spe  
-Modest Nature  
-- Blizzard  
-- Thunderbolt  
-- Volt Switch  
-- Electroweb
-- Protect
+- Jet Punch  
+- Wave Crash 
+- Flip Turn
+- Protect 
+- Close Combat  
 _
-- Helping Hand  
+- Ice Punch  
 
 Tauros-Paldea-Aqua (M) @ White Herb, Mystic Water, Sitrus Berry  
 Ability: Intimidate  
@@ -935,45 +915,6 @@ Jolly Nature
 - Wave Crash
 _  
 - Raging Bull  
-
-Empoleon @ Leftovers, Sitrus Berry, Chople Berry, Mystic Water  
-Ability: Competitive  
-Level: 50  
-EVs: 32 HP / 19 SpA / 15 Spe  
-Modest Nature  
-- Flash Cannon 
-- Protect 
-- Ice Beam  
-- Hydro Pump  
-- Water Pulse
-_
-- Roar
-- Surf  
-
-Mamoswine @ Never-Melt Ice, Focus Sash, Choice Scarf  
-Ability: Oblivious  
-Level: 50  
-EVs: 2 HP / 32 Atk / 32 Spe  
-Adamant Nature  
-- Ice Shard  
-- Icicle Crash  
-- Protect
-- High Horsepower  
-- Earthquake
-_
-- Rock Slide  
-
-Arcanine @ Sitrus Berry, Leftovers, Shuca Berry  
-Ability: Intimidate  
-Level: 50  
-EVs: 32 HP / 32 Atk / 2 Spe  
-Adamant Nature  
-- Flare Blitz  
-- Protect
-- Extreme Speed
-- Will-O-Wisp  
-- Snarl  
-_
 
 Lopunny-Mega @ Lopunnite  
 Ability: Scrappy, Limber  
@@ -988,6 +929,45 @@ _
 - U-turn  
 - Encore
 
+Rotom-Frost @ Choice Scarf, Never-Melt Ice  
+Ability: Levitate  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Modest Nature  
+- Blizzard  
+- Thunderbolt  
+- Volt Switch  
+- Electroweb
+_
+- Protect
+- Helping Hand  
+
+Orthworm @ Sitrus Berry, Leftovers  
+Ability: Earth Eater  
+Level: 50  
+EVs: 32 HP / 5 Def / 29 SpD  
+Impish Nature  
+- Body Press  
+- Shed Tail
+- Heavy Slam
+- Iron Defense
+_
+- Protect  
+
+Empoleon @ Leftovers, Sitrus Berry, Chople Berry, Mystic Water  
+Ability: Competitive  
+Level: 50  
+EVs: 32 HP / 19 SpA / 15 Spe  
+Modest Nature  
+- Flash Cannon 
+- Protect 
+- Ice Beam  
+- Hydro Pump  
+_
+- Water Pulse
+- Surf  
+- Roar
+
 Greninja-Mega @ Greninjite, Focus Sash, Choice Scarf 
 Ability: Protean, Protean  
 Level: 50  
@@ -997,67 +977,26 @@ Timid Nature
 - Ice Beam  
 - Protect
 - Hydro Pump
-_  
 - Water Shuriken  
 - Sludge Wave
+- Blizzard
+- Extrasensory
+_  
 
-Goodra-Hisui @ Leftovers, Sitrus Berry  
-Ability: Shell Armor  
-Level: 50  
-EVs: 32 HP / 32 Def / 2 SpD  
-Bold Nature  
-- Body Press  
-- Protect
-- Shelter
-- Flash Cannon  
-_
-- Heavy Slam  
-- Thunderbolt  
-- Draco Meteor
-- Life Dew
-
-Conkeldurr @ Black Belt, White Herb, Sitrus Berry, Leftovers  
-Ability: Iron Fist  
-Level: 50  
-EVs: 32 HP / 32 Atk / 2 SpD  
-Brave Nature  
-- Drain Punch  
-- Mach Punch  
-- Ice Punch  
-- Protect
-- Thunder Punch
-_
-- Knock Off
-- Wide Guard  
-
-Raichu @ Focus Sash, Magnet, Shuca Berry  
-Ability: Lightning Rod  
-Level: 50  
-EVs: 2 HP / 32 SpA / 32 Spe  
-Timid Nature  
-- Fake Out
-- Volt Switch
-- Nuzzle  
-- Thunderbolt  
-- Protect
-_
-- Encore
-- Electroweb
-- Thunder  
-
-Weavile @ Focus Sash, White Herb, King's Rock  
-Ability: Pickpocket  
+Mamoswine @ Never-Melt Ice, Focus Sash, Choice Scarf  
+Ability: Oblivious  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
-Jolly Nature  
-- Fake Out
-- Knock Off  
-- Triple Axel
-- Protect  
-- Low Kick  
+Adamant Nature  
+- Ice Shard  
+- Icicle Crash  
+- Protect
+- Earthquake
+- High Horsepower  
 _
+- Rock Slide  
 
-Tinkaton (F) @ Sitrus Berry, Metal Coat, Chuca Berry, Occa Berry, Leftovers  
+Tinkaton (F) @ Sitrus Berry, Metal Coat, Shuca Berry, Occa Berry, Leftovers  
 Ability: Own Tempo  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
@@ -1068,31 +1007,22 @@ Adamant Nature
 - Protect
 _  
 
-Snorlax @ Leftovers, Sitrus Berry, Chople Berry, Silk Scarf  
-Ability: Thick Fat  
-Level: 50  
-EVs: 32 HP / 32 Def / 2 SpD  
-Brave Nature  
-- Protect
-- Body Slam
-- Belly Drum  
-- High Horsepower  
-- Self-Destruct  
-_
-
-Meowstic (M) @ Mental Herb, Focus Sash, Sitrus Berry, Meowsticite  
+Meowstic (M) @ Focus Sash, Mental Herb, Sitrus Berry, Meowsticite  
 Ability: Prankster  
-EVs: 32 HP / 32 Def / 2 SpD  
-Bold Nature  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Timid Nature  
 Level: 50  
-- Fake Out
 - Psychic Terrain
+- Fake Out
 - Expanding Force  
 - Psychic  
-_
 - Rain Dance
 - Reflect
 - Light Screen
+- Trick Room
+_
+- Thunder Wave
+- Helping Hand
 
 Feraligatr-Mega @ Feraligite  
 Ability: Dragonize, Sheer Force  
@@ -1106,29 +1036,86 @@ Adamant Nature
 - Dragon Dance  
 _
 
-Camerupt-Mega @ Cameruptite  
-Ability: Sheer Force, Solid Rock  
-Level: 50  
-EVs: 32 HP / 2 Def / 32 SpA  
-Quiet Nature  
-- Earth Power
-- Protect  
-- Heat Wave  
-- Eruption
-_  
-- Ancient Power  
-
-Skarmory-Mega @ Skarmorite, Leftovers  
-Ability: Stalwart, Sturdy  
+Weavile @ Focus Sash, White Herb, King's Rock  
+Ability: Pickpocket  
 Level: 50  
 EVs: 2 HP / 32 Atk / 32 Spe  
 Jolly Nature  
-- Iron Head  
-- Protect
-- Brave Bird  
-- Tailwind
+- Fake Out
+- Knock Off  
+- Triple Axel
+- Protect  
+- Low Kick 
+- Ice Shard 
 _
+
+Arcanine @ Sitrus Berry, Leftovers, Shuca Berry  
+Ability: Intimidate  
+Level: 50  
+EVs: 32 HP / 32 Atk / 2 Spe  
+Adamant Nature  
+- Flare Blitz  
+- Protect
+- Extreme Speed
+- Will-O-Wisp  
+- Snarl  
+_
+
+Snorlax @ Leftovers, Sitrus Berry, Chople Berry, Silk Scarf  
+Ability: Thick Fat  
+Level: 50  
+EVs: 32 HP / 32 Def / 2 SpD  
+Brave Nature  
+- Protect
+- Body Slam
+- Belly Drum  
+- High Horsepower  
+- Self-Destruct  
+_
+
+Goodra-Hisui @ Leftovers, Sitrus Berry  
+Ability: Shell Armor  
+Level: 50  
+EVs: 32 HP / 32 Def / 2 SpD  
+Bold Nature  
 - Body Press  
+- Shelter
+- Protect
+- Flash Cannon  
+_
+- Life Dew
+- Thunderbolt  
+- Draco Meteor
+- Heavy Slam  
+
+Raichu @ Focus Sash, Magnet, Shuca Berry  
+Ability: Lightning Rod  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Timid Nature  
+- Fake Out
+- Volt Switch
+- Thunderbolt  
+- Protect
+- Nuzzle  
+_
+- Encore
+- Electroweb
+- Thunder  
+
+Conkeldurr @ Black Belt, White Herb, Sitrus Berry, Leftovers  
+Ability: Iron Fist  
+Level: 50  
+EVs: 32 HP / 32 Atk / 2 SpD  
+Brave Nature  
+- Drain Punch  
+- Mach Punch  
+- Ice Punch  
+- Protect
+- Thunder Punch
+_
+- Wide Guard  
+- Knock Off
 
 Chandelure-Mega @ Chandelurite, Focus Sash, Choice Scarf  
 Ability: Infiltrator, Flash Fire  
@@ -1141,6 +1128,43 @@ Modest Nature
 - Trick Room
 - Energy Ball  
 _
+- Flamethrower
+
+Camerupt-Mega @ Cameruptite  
+Ability: Sheer Force, Solid Rock  
+Level: 50  
+EVs: 32 HP / 2 Def / 32 SpA  
+Quiet Nature  
+- Earth Power
+- Protect  
+- Heat Wave  
+- Eruption
+_  
+- Ancient Power  
+
+Ceruledge @ Focus Sash, Colbur Berry, Charcoal  
+Ability: Flash Fire  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Adamant Nature  
+- Bitter Blade  
+- Shadow Sneak  
+- Protect
+- Poltergeist
+- Swords Dance
+_  
+- Close Combat  
+
+Araquanid @ Mystic Water, Leftovers, Sitrus Berry  
+Ability: Water Bubble  
+Level: 50  
+EVs: 32 HP / 32 Atk / 2 Def  
+Brave Nature  
+- Liquidation 
+- Wide Guard
+- Protect 
+- Leech Life
+_  
 
 Azumarill @ Sitrus Berry, Mystic Water  
 Ability: Huge Power  
@@ -1155,17 +1179,6 @@ _
 - Liquidation  
 - Superpower  
 
-Araquanid @ Mystic Water, Leftovers, Sitrus Berry  
-Ability: Water Bubble  
-Level: 50  
-EVs: 32 HP / 32 Atk / 2 Def  
-Brave Nature  
-- Liquidation 
-- Wide Guard
-- Protect 
-- Leech Life
-_  
-
 Armarouge @ Focus Sash, Sitrus Berry, Twisted Spoon, Charcoal, White Herb  
 Ability: Flash Fire  
 Level: 50  
@@ -1173,12 +1186,12 @@ EVs: 32 HP / 32 SpA / 2 SpD
 Modest Nature  
 - Armor Cannon 
 - Protect 
-- Psychic  
 - Expanding Force
+- Psychic  
 - Wide Guard
 - Trick Room
-- Heat Wave
 _  
+- Heat Wave
 - Aura Sphere  
 
 Kleavor @ Choice Scarf, Focus Sash, White Herb, Hard Stone  
@@ -1190,16 +1203,28 @@ Adamant Nature
 - X-Scissor  
 - Close Combat
 - Protect  
+- Night Slash
 - U-turn 
 _
-- Night Slash
 - Tailwind 
 
-Slowking-Galar @ Leftovers, Colbur Berry, Sitrus Berry, Mental Herb  
+Skarmory-Mega @ Skarmorite, Leftovers  
+Ability: Stalwart, Sturdy  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+- Iron Head  
+- Protect
+- Brave Bird  
+- Tailwind
+_
+- Body Press  
+
+Slowking-Galar @ Sitrus Berry, Leftovers, Colbur Berry, Mental Herb  
 Ability: Regenerator  
 Level: 50  
-EVs: 32 HP / 10 Def / 24 SpD  
-Relaxed Nature  
+EVs: 32 HP / 2 Def / 32 SpA  
+Quiet Nature  
 - Trick Room
 - Sludge Bomb  
 - Psychic  
@@ -1212,44 +1237,31 @@ Ability: Trace, Inner Focus
 Level: 50  
 EVs: 2 HP / 32 SpA / 32 Spe  
 Timid Nature  
-- Psychic  
 - Protect
+- Psychic  
 - Expanding Force
-- Speed Swap  
 - Dazzling Gleam  
 - Focus Blast
+- Speed Swap  
 _
+- Shadow Ball  
 - Light Screen
 - Reflect
-- Shadow Ball  
 
-Ceruledge @ Focus Sash, Colbur Berry, Charcoal  
-Ability: Flash Fire  
+Heliolisk @ Choice Scarf, Focus Sash, Magnet, Sitrus Berry  
+Ability: Dry Skin  
 Level: 50  
-EVs: 2 HP / 32 Atk / 32 Spe  
-Adamant Nature  
-- Bitter Blade  
-- Shadow Sneak  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Timid Nature  
+- Thunderbolt  
 - Protect
-- Poltergeist
+- Volt Switch
+- Hyper Voice  
+- Shed Tail
+- Electroweb
 _  
-- Close Combat  
-- Swords Dance
-
-Hawlucha-Mega @ Hawluchanite, White Herb 
-Ability: No Guard, Mold Breaker 
-Level: 50  
-EVs: 2 HP / 32 Atk / 32 Spe  
-Jolly Nature  
-- Brave Bird  
-- Entrainment
-- Protect
-- Close Combat  
-- High Jump Kick
-_  
-- Stone Edge  
-- Detect
-- Dual Wingbeat
+- Thunder
+- Weather Ball  
 
 Manectric-Mega @ Manectite  
 Ability: Intimidate, Lightning Rod  
@@ -1265,19 +1277,20 @@ _
 - Thunder
 - Flamethrower
 
-Slowbro-Mega @ Slowbronite, Leftovers  
-Ability: Shell Armor, Regenerator  
+Hawlucha-Mega @ Hawluchanite, White Herb 
+Ability: No Guard, Mold Breaker 
 Level: 50  
-EVs: 32 HP / 2 Def / 32 SpD  
-Quiet Nature  
-- Trick Room
-- Scald  
-- Psychic  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+- Entrainment
+- Brave Bird  
 - Protect
-- Body Press
-- Slack Off
+- Close Combat  
+- High Jump Kick
 _  
-- Ice Beam  
+- Stone Edge  
+- Dual Wingbeat
+- Detect
 
 Abomasnow-Mega @ Abomasite, Focus Sash  
 Ability: Snow Warning, Snow Warning  
@@ -1288,52 +1301,23 @@ Quiet Nature
 - Protect
 - Giga Drain
 - Aurora Veil
-_  
 - Energy Ball  
+_  
 - Earth Power  
 - Ice Shard
 
-Heliolisk @ Choice Scarf, Focus Sash, Magnet, Sitrus Berry  
-Ability: Dry Skin  
+Bellibolt @ Magnet, Leftovers, Sitrus Berry  
+Ability: Electromorphosis  
 Level: 50  
-EVs: 2 HP / 32 SpA / 32 Spe  
-Timid Nature  
-- Thunderbolt  
-- Protect
-- Hyper Voice  
-- Volt Switch
-- Electroweb
-- Shed Tail
-_  
-- Weather Ball  
-
-Ampharos-Mega @ Ampharosite, Leftovers  
-Ability: Mold Breaker, Static  
-Level: 50  
-EVs: 32 HP / 2 Def / 32 SpA  
+EVs: 32 HP / 32 SpA / 2 SpD  
 Quiet Nature  
-- Dragon Pulse  
+- Parabolic Charge  
 - Protect  
 - Thunderbolt  
-- Dazzling Gleam
+- Soak
 _
-- Parabolic Charge
-- Power Gem
+- Muddy Water
 - Volt Switch
-
-Klefki @ Mental Herb, Sitrus Berry, Leftovers 
-Ability: Prankster  
-Level: 50  
-EVs: 32 HP / 32 Def / 2 SpD  
-Bold Nature  
-- Light Screen  
-- Reflect  
-- Dazzling Gleam  
-- Thunder Wave
-- Rain Dance
-- Trick Room
-_
-- Foul Play
 
 Espathra @ Focus Sash, Sitrus Berry, Leftovers  
 Ability: Speed Boost  
@@ -1349,18 +1333,74 @@ _
 - Hypnosis
 - Psychic Terrain
 
-Chesnaught-Mega @ Chesnaughtite, Leftovers  
-Ability: Bulletproof, Bulletproof  
+Samurott-Hisui @ Black Glasses, Choice Scarf, Focus Sash, Scope Lens  
+Ability: Sharpness  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Adamant Nature  
+- Sacred Sword  
+- Ceaseless Edge  
+- Sucker Punch  
+- Protect
+- Aqua Cutter
+_
+- Razor Shell
+- Night Slash
+
+Ampharos-Mega @ Ampharosite, Leftovers  
+Ability: Mold Breaker, Static  
+Level: 50  
+EVs: 32 HP / 2 Def / 32 SpA  
+Quiet Nature  
+- Dragon Pulse  
+- Protect  
+- Thunderbolt  
+- Dazzling Gleam
+_
+- Parabolic Charge
+- Power Gem
+- Volt Switch
+
+Slowbro-Mega @ Slowbronite, Leftovers  
+Ability: Shell Armor, Regenerator  
+Level: 50  
+EVs: 32 HP / 2 Def / 32 SpD  
+Quiet Nature  
+- Trick Room
+- Scald  
+- Psychic  
+- Protect
+- Body Press
+- Slack Off
+_  
+- Ice Beam  
+
+Vanilluxe @ Choice Scarf, Never-Melt Ice, Focus Sash  
+Ability: Snow Warning  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Timid Nature  
+- Blizzard  
+- Freeze-Dry  
+- Icy Wind  
+- Aurora Veil
+_
+- Protect
+- Sheer Cold
+
+Klefki @ Mental Herb, Sitrus Berry, Leftovers 
+Ability: Prankster  
 Level: 50  
 EVs: 32 HP / 32 Def / 2 SpD  
-Impish Nature
-- Spiky Shield  
-- Body Press  
-- Wood Hammer 
-- Wide Guard
-- Iron Defense
+Bold Nature  
+- Light Screen  
+- Reflect  
+- Dazzling Gleam  
+- Thunder Wave
+- Rain Dance
+- Trick Room
 _
-- Leech Seed 
+- Foul Play
 
 Jolteon @ Focus Sash, Magnet, Focus Sash  
 Ability: Volt Absorb  
@@ -1375,17 +1415,3 @@ Timid Nature
 - Fake Tears
 _
 - Thunder
-
-Altaria-Mega @ Altarianite, Lum Bery, Leftovers  
-Ability: Pixilate, Cloud Nine  
-Level: 50  
-EVs: 32 HP / 32 SpD / 2 Spe  
-Modest Nature  
-- Protect
-- Hyper Voice  
-- Tailwind
-- Roost
-_
-- Draco Meteor  
-- Perish Song
-
