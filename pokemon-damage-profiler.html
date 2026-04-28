@@ -1804,8 +1804,9 @@ function typeEff(moveType, defTypes) {
 }
 
 // Like typeEff but also applies ability immunities (Levitate → ground immune)
-function typeEffWithAbility(moveType, defTypes, defAbility) {
+function typeEffWithAbility(moveType, defTypes, defAbility, atkAbility) {
   const ab = (defAbility || '').toLowerCase().replace(/[\s-]/g, '');
+  const atkAb = (atkAbility || '').toLowerCase().replace(/[\s-]/g, '');
   // Ability-based immunities
   if (ab === 'levitate'      && moveType === 'ground')    return 0;
   if (ab === 'lightningrod'  && moveType === 'electric')  return 0;
@@ -3507,6 +3508,11 @@ function computeResults(loadedMeta, defender) {
       const defAb = (defender.ability||'').toLowerCase().replace(/[\s-]/g,'');
       const atkAb = (attacker.ability||'').toLowerCase().replace(/[\s-]/g,'');
       const moldBreaker = atkAb === 'moldbreaker' || atkAb === 'turboblaze' || atkAb === 'teravolt' || atkAb === 'piercingdrill';
+      const scrappy = atkAb === 'scrappy';
+      // Scrappy: attacker's normal/fighting moves hit ghost types
+      if (scrappy && eff === 0 && defender.types.includes('ghost') && (effectiveMoveType === 'normal' || effectiveMoveType === 'fighting')) {
+        eff = 1;
+      }
       if (!moldBreaker && defAb === 'bulletproof') {
         const ballBombMoves = ['acid spray','aura sphere','barrage','beak blast','bullet seed',
           'cannon','egg bomb','electro ball','energy ball','fire blast','focus blast',
@@ -3713,6 +3719,11 @@ function computeResults(loadedMeta, defender) {
         eff = nonWaterEff * waterFactor;
       } else {
         eff = typeEff(effectiveMoveType, attacker.types);
+      }
+      // Scrappy: tab pokemon's normal/fighting moves hit ghost-type meta mons
+      const _tabScrappy = (defender.ability||'').toLowerCase().replace(/[\s-]/g,'') === 'scrappy';
+      if (eff === 0 && _tabScrappy && attacker.types.includes('ghost') && (effectiveMoveType === 'normal' || effectiveMoveType === 'fighting')) {
+        eff = 1;
       }
       if (eff === 0) continue;
 
