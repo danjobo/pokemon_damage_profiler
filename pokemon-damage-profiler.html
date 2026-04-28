@@ -5612,7 +5612,76 @@ function refreshSavedTeamDropdown(selectValue) {
   if (selectValue) sel.value = selectValue;
 }
 
-// ── Google Drive Integration ──────────────────────────────────────────────────
+// ── Shared textarea keyboard shortcuts ───────────────────────────────────────
+function textareaKeyHandler(e) {
+  const ta = e.target;
+  if (!ta || ta.tagName !== 'TEXTAREA') return;
+
+  const isAltUp   = e.altKey && e.key === 'ArrowUp';
+  const isAltDown = e.altKey && e.key === 'ArrowDown';
+  const isCtrlX   = (e.ctrlKey || e.metaKey) && e.key === 'x';
+
+  if (!isAltUp && !isAltDown && !isCtrlX) return;
+
+  const val   = ta.value;
+  const pos   = ta.selectionStart;
+  const selEnd = ta.selectionEnd;
+
+  // Split into lines, find which line index the cursor is on
+  const lines = val.split('\n');
+  let charCount = 0, lineIdx = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const next = charCount + lines[i].length + 1; // +1 for \n
+    if (pos <= charCount + lines[i].length || i === lines.length - 1) { lineIdx = i; break; }
+    charCount = next;
+  }
+  // charCount = start of current line in the string
+  const lineCharStart = lines.slice(0, lineIdx).reduce((s, l) => s + l.length + 1, 0);
+
+  // Ctrl+X with no selection: cut entire current line
+  if (isCtrlX && pos === selEnd) {
+    e.preventDefault();
+    const lineText = lines[lineIdx];
+    navigator.clipboard.writeText(lineText).catch(() => {});
+    lines.splice(lineIdx, 1);
+    ta.value = lines.join('\n');
+    const newPos = Math.min(lineCharStart, ta.value.length);
+    ta.setSelectionRange(newPos, newPos);
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    return;
+  }
+
+  // Alt+Up: swap with line above
+  if (isAltUp && lineIdx > 0) {
+    e.preventDefault();
+    const cursorOffset = pos - lineCharStart;
+    [lines[lineIdx - 1], lines[lineIdx]] = [lines[lineIdx], lines[lineIdx - 1]];
+    ta.value = lines.join('\n');
+    // New line start = start of (lineIdx-1) in new array
+    const newLineStart = lines.slice(0, lineIdx - 1).reduce((s, l) => s + l.length + 1, 0);
+    const newPos = newLineStart + Math.min(cursorOffset, lines[lineIdx - 1].length);
+    ta.setSelectionRange(newPos, newPos);
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    return;
+  }
+
+  // Alt+Down: swap with line below
+  if (isAltDown && lineIdx < lines.length - 1) {
+    e.preventDefault();
+    const cursorOffset = pos - lineCharStart;
+    [lines[lineIdx], lines[lineIdx + 1]] = [lines[lineIdx + 1], lines[lineIdx]];
+    ta.value = lines.join('\n');
+    // New line start = start of (lineIdx+1) in new array
+    const newLineStart = lines.slice(0, lineIdx + 1).reduce((s, l) => s + l.length + 1, 0);
+    const newPos = newLineStart + Math.min(cursorOffset, lines[lineIdx + 1].length);
+    ta.setSelectionRange(newPos, newPos);
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    return;
+  }
+}
+
+// Attach via event delegation — catches static and dynamic textareas
+document.addEventListener('keydown', textareaKeyHandler, true);
 const DRIVE_CLIENT_ID = '352257766580-3ntfo6ga148ovb9rtbpq08otv5dqh615.apps.googleusercontent.com';
 const DRIVE_API_KEY   = 'AIzaSyDaMeZNB9DcLVrJQYTstTAIhYTmaMl3VRk';
 const DRIVE_SCOPES    = 'https://www.googleapis.com/auth/drive.file';
