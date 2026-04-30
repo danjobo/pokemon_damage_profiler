@@ -1,8 +1,9 @@
 ## Feature Request
 
 
+- the scarf button is not recognizing my basculegion being scarfed and updating it's speed in the result listing properly
 
-- [??] would it be a sacrifice to add some sort of autosaving for the google drive syncing?
+-  maybe remove the auto saving popup window with that I have to click ok on that pops up every time
 
 
 

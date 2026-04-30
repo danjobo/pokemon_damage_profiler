@@ -41,7 +41,34 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── Threat recommendations ─────────────────────────────────────────────── */
+  /* ── Type Synergy Panel ──────────────────────────────────────────────────── */
+  .syn-pair {
+    border: 0.5px solid var(--border2); border-radius: var(--radius);
+    background: var(--bg3); margin-bottom: 8px; overflow: hidden;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .syn-pair:hover { background: rgba(255,255,255,0.04); }
+  .syn-pair-header {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+  }
+  .syn-pair-sprites { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+  .syn-pair-sprite  { width: 48px; height: 48px; image-rendering: pixelated; object-fit: contain; }
+  .syn-pair-score   { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .syn-score-bar-wrap { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; margin-top: 2px; }
+  .syn-score-bar    { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .syn-pair-detail  { padding: 0 12px 12px; border-top: 0.5px solid var(--border2); display: none; }
+  .syn-pair-detail.open { display: block; }
+  .syn-type-grid    { display: grid; gap: 3px; margin-top: 10px; }
+  .syn-type-col     { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .syn-type-label   { font-size: 7px; color: var(--text3); text-align: center; line-height: 1; white-space: nowrap; }
+  .syn-pip { width: 18px; height: 18px; border-radius: 3px; border: 0.5px solid var(--border2); flex-shrink: 0; }
+  .syn-pip.p-4x   { background: var(--red);    box-shadow: 0 0 4px rgba(226,75,74,0.6); }
+  .syn-pip.p-2x   { background: var(--orange); }
+  .syn-pip.p-1x   { background: var(--bg3);    border-color: var(--text3); }
+  .syn-pip.p-half { background: var(--green);  opacity: 0.7; }
+  .syn-pip.p-qtr  { background: #4a9eff;       opacity: 0.85; }
+  .syn-pip.p-imm  { background: #111;          border-color: var(--border2); }
+  .syn-row-label  { font-size: 9px; color: var(--text2); white-space: nowrap; width: 80px; flex-shrink: 0; padding-top: 2px; }
   .rec-card {
     display: flex; align-items: center; gap: 10px;
     background: var(--bg3); border: 0.5px solid var(--border);
@@ -1707,6 +1734,7 @@ Impish Nature
         <button id="historyToggleBtn" onclick="toggleHistoryView()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="View match history for the current team">📋 Match log</button>
         <button id="notebookToggleBtn" onclick="toggleNotebookView()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Notes for the current team">📓 Notebook</button>
         <button id="threatToggleBtn" onclick="toggleThreatPanel()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Show a meta analysis of the loaded meta against your team">🎯 Meta analysis</button>
+        <button id="synergyToggleBtn" onclick="toggleSynergyPanel()" style="padding:5px 12px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Show type synergy pairs in the loaded meta">🔗 Type synergies</button>
       </div>
 
       <!-- Right: Copy to Clipboard | Pin tabs -->
@@ -1744,6 +1772,18 @@ Impish Nature
         <div style="color:var(--text3);font-size:12px;padding:16px 0;">Load a meta and your team to see threat analysis.</div>
       </div>
       <div id="threatRecsPanel" style="display:none;margin-top:14px;border-top:0.5px solid var(--border2);padding-top:12px;"></div>
+    </div>
+
+    <!-- SYNERGY PANEL -->
+    <div id="synergyPanel" style="display:none;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1rem;animation:matchSlideIn 0.18s ease;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-size:14px;font-weight:600;color:var(--text);">🔗 Type Synergy Pairs</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button id="synSourceBtn" onclick="toggleSynergySource()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;" title="Switch between meta and your tabs">📋 Meta</button>
+          <button onclick="closeSynergyPanel()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;">Close</button>
+        </div>
+      </div>
+      <div id="synergyList"></div>
     </div>
 
 
@@ -4255,7 +4295,18 @@ function renderResults() {
     // Pre-compute speed comparison for row icon (also used in breakdown speedHtml)
     const _speedCond = document.getElementById('speedCondition')?.value || 'none';
     const _speStageVal = Number(document.getElementById('speStage')?.value || 0);
-    let _atkSpe = effectiveSpe(r.attacker); // includes scarf + weather ability
+    // Compute speed respecting scarf override + weather ability
+    {
+      const _baseSpe = r.attacker.stats?.spe || r.attacker.computedSpe || 0;
+      const _ab = (r.attacker.ability||'').toLowerCase().replace(/[\s-]/g,'');
+      const _weather = document.getElementById('weatherMode')?.value || 'none';
+      let _rawSpe = _baseSpe;
+      if ((_ab === 'sandrush' && _weather === 'sand') || (_ab === 'swiftswim' && _weather === 'rain') ||
+          (_ab === 'chlorophyll' && _weather === 'sun') || (_ab === 'slushrush' && _weather === 'snow')) {
+        _rawSpe = Math.floor(_rawSpe * 2);
+      }
+      var _atkSpe = atkScarfActive ? Math.floor(_rawSpe * 1.5) : _rawSpe;
+    }
     if (_speStageVal !== 0) _atkSpe = Math.floor(_atkSpe * stageMultiplier(_speStageVal));
     let _defSpe = r.defender ? effectiveSpe(r.defender) : 0;
     if (_speedCond === 'tailwind-atk') _atkSpe *= 2;
@@ -4348,8 +4399,15 @@ function renderResults() {
         if (maxSpe > atkSpeRaw) atkSpeRaw = maxSpe;
       }
       const speStageVal = Number(document.getElementById('speStage')?.value || 0);
-      // Use effectiveSpe for weather ability boosts, but respect maxInvest override
-      let atkSpeEff = maxInvest ? (atkScarfActive ? Math.floor(atkSpeRaw * 1.5) : atkSpeRaw) : effectiveSpe(r.attacker);
+      // Use override-aware speed (weather + scarf override + maxInvest)
+      const _ab2 = (r.attacker.ability||'').toLowerCase().replace(/[\s-]/g,'');
+      const _wx2 = document.getElementById('weatherMode')?.value || 'none';
+      let atkSpeEff = maxInvest ? atkSpeRaw : (r.attacker.stats?.spe || r.attacker.computedSpe || 0);
+      if ((_ab2==='sandrush'&&_wx2==='sand')||(_ab2==='swiftswim'&&_wx2==='rain')||
+          (_ab2==='chlorophyll'&&_wx2==='sun')||(_ab2==='slushrush'&&_wx2==='snow')) {
+        atkSpeEff = Math.floor(atkSpeEff * 2);
+      }
+      if (atkScarfActive) atkSpeEff = Math.floor(atkSpeEff * 1.5);
       if (speStageVal !== 0) atkSpeEff = Math.floor(atkSpeEff * stageMultiplier(speStageVal));
       let defSpeEff = effectiveSpe(r.defender);
       // Tailwind doubles speed; Trick Room reverses comparison
@@ -5744,7 +5802,7 @@ async function _driveFindFile() {
   return data.files && data.files.length ? data.files[0].id : null;
 }
 
-async function _driveSaveExec() {
+async function _driveSaveExec(silent = false) {
   const content = _driveGetData();
   const blob = new Blob([content], { type: 'application/json' });
   const existing = await _driveFindFile();
@@ -5770,8 +5828,10 @@ async function _driveSaveExec() {
     headers: { Authorization: 'Bearer ' + _driveAccessToken, 'Content-Type': 'application/json' },
     body: blob
   });
-  if (resp.ok) alert('Saved to Google Drive successfully!');
-  else alert('Drive save failed: ' + (await resp.text()));
+  if (!silent) {
+    if (resp.ok) alert('Saved to Google Drive successfully!');
+    else alert('Drive save failed: ' + (await resp.text()));
+  }
 }
 
 async function _driveLoadExec() {
@@ -5799,6 +5859,7 @@ async function _driveLoadExec() {
   merge(WINRATE_KEY,       data.winrates     || {});
   merge(NOTEBOOK_KEY,      data.notebooks    || {});
   refreshSavedTeamDropdown('');
+  refreshSavedMetaDropdown('');
   alert(`Loaded ${count} team(s) from Google Drive!`);
 }
 
@@ -5807,7 +5868,7 @@ function _driveAutoSave() {
   // Only auto-save if already authenticated (don't prompt for auth)
   if (!_driveAccessToken) return;
   clearTimeout(_driveAutoSaveTimer);
-  _driveAutoSaveTimer = setTimeout(() => { _driveSaveExec(); }, 3000);
+  _driveAutoSaveTimer = setTimeout(() => { _driveSaveExec(true); }, 3000);
 }
 function driveSave() { _driveEnsureAuth('save'); }
 function driveLoad() { _driveEnsureAuth('load'); }
@@ -6065,25 +6126,30 @@ let _matchMyTeam     = [];   // [{speciesRaw, spriteUrl, computedSpe, types, res
 let _matchOppTeam    = [];   // same
 
 function getSpriteUrl(name) {
-  // Strip tab-pin suffix before lookup
   const cleanName = name.replace(/\s*★$/, '').trim();
-  // Check if the META_DB entry has a spriteUrl directly (tab pins store it)
   const dbEntry = META_DB.find(p => p.speciesRaw === name);
   if (dbEntry?.spriteUrl) return dbEntry.spriteUrl;
   const slug = toSlug(cleanName);
-  // 1. Try exact match in pokemonCache (loaded meta mons)
   if (pokemonCache[slug]?.spriteUrl) return pokemonCache[slug].spriteUrl;
-  // 2. Try nonMetaCache (dummy pin mons)
   if (nonMetaCache[slug]?.spriteUrl) return nonMetaCache[slug].spriteUrl;
-  // 3. For mega/form slugs with no sprite, fall back to base-form sprite
+  // For mega/form slugs, fall back to base-form sprite
   const baseSlug = slug
     .replace(/-mega(-[xy])?$/, '')
     .replace(/-gmax$/, '')
     .replace(/-blade$|-shield$/, '')
     .replace(/-eternal$/, '');
-  if (baseSlug !== slug && pokemonCache[baseSlug]?.spriteUrl) return pokemonCache[baseSlug].spriteUrl;
-  if (baseSlug !== slug && nonMetaCache[baseSlug]?.spriteUrl) return nonMetaCache[baseSlug].spriteUrl;
-  return null;
+  if (baseSlug !== slug) {
+    // Check caches for base form
+    if (pokemonCache[baseSlug]?.spriteUrl) return pokemonCache[baseSlug].spriteUrl;
+    if (nonMetaCache[baseSlug]?.spriteUrl) return nonMetaCache[baseSlug].spriteUrl;
+    // Check META_DB for base form entry
+    const baseDbEntry = META_DB.find(p => toSlug(p.speciesRaw) === baseSlug);
+    if (baseDbEntry?.spriteUrl) return baseDbEntry.spriteUrl;
+    // Last resort: construct PokeAPI sprite URL directly for base form
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${baseSlug}.png`;
+  }
+  // For non-megas with no cache: construct PokeAPI sprite URL
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${slug}.png`;
 }
 
 function startMatch() {
@@ -7227,7 +7293,427 @@ let _threatPanelOpen = false;
 let _threatMode = 'overall'; // 'overall' | 'offensive' | 'defensive'
 let _threatViewMode = 'team'; // 'team' | 'tab'
 
+// ── Type Synergy Panel ────────────────────────────────────────────────────────
+let _synergyOpen = false;
+let _synergyCount = 3;
+let _synergyExpanded = new Set();
+let _synergySource = 'meta'; // 'meta' | 'tabs'
+
+function toggleSynergySource() {
+  _synergySource = _synergySource === 'meta' ? 'tabs' : 'meta';
+  _synergyCount = 3;
+  _synergyExpanded.clear();
+  const btn = document.getElementById('synSourceBtn');
+  if (btn) {
+    const isTabs = _synergySource === 'tabs';
+    btn.textContent = isTabs ? '🗂 Tabs' : '📋 Meta';
+    btn.style.color       = isTabs ? 'var(--accent2)' : 'var(--text3)';
+    btn.style.borderColor = isTabs ? 'var(--accent)'  : 'var(--border2)';
+    btn.style.background  = isTabs ? 'rgba(124,106,247,0.12)' : 'transparent';
+  }
+  renderSynergyPanel();
+}
+
+const ALL_TYPES_18 = ['normal','fire','water','electric','grass','ice','fighting',
+  'poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
+
+function toggleSynergyPanel() {
+  _synergyOpen = !_synergyOpen;
+  const panel = document.getElementById('synergyPanel');
+  const btn   = document.getElementById('synergyToggleBtn');
+  if (_synergyOpen) {
+    if (_threatPanelOpen) closeThreatPanel();
+    panel.style.display = 'block';
+    btn.style.background  = 'rgba(124,106,247,0.15)';
+    btn.style.borderColor = 'var(--accent)';
+    btn.style.color       = 'var(--accent2)';
+    _synergyCount = 3;
+    _synergyExpanded.clear();
+    renderSynergyPanel();
+  } else {
+    closeSynergyPanel();
+  }
+}
+
+function closeSynergyPanel() {
+  _synergyOpen = false;
+  _synergyCount = 3;
+  _synergyExpanded.clear();
+  _synergySource = 'meta';
+  _synergyPairs = [];
+  document.getElementById('synergyPanel').style.display = 'none';
+  const btn = document.getElementById('synergyToggleBtn');
+  btn.style.background = btn.style.borderColor = btn.style.color = '';
+  const srcBtn = document.getElementById('synSourceBtn');
+  if (srcBtn) { srcBtn.textContent = '📋 Meta'; srcBtn.style.color = 'var(--text3)'; srcBtn.style.borderColor = 'var(--border2)'; srcBtn.style.background = 'transparent'; }
+}
+
+// Get defensive type effectiveness for a pokemon (how much it takes from each type)
+function getDefProfile(pokemon) {
+  return ALL_TYPES_18.map(atkType =>
+    typeEffWithAbility(atkType, pokemon.types || [], pokemon.ability || '')
+  );
+}
+
+// Compute synergy score for a pair
+function computeSynergyScore(a, b, avgBulk, avgOff, cache) {
+  // Use precomputed cache if available (much faster for large metas)
+  const ca = cache?.get(a);
+  const cb = cache?.get(b);
+  const defA = ca ? ca.defProfile : ALL_TYPES_18.map(t => typeEffWithAbility(t, a.types||[], a.ability||''));
+  const defB = cb ? cb.defProfile : ALL_TYPES_18.map(t => typeEffWithAbility(t, b.types||[], b.ability||''));
+
+  const bulkOf = p => { const hp=p.stats?.hp||p.computedHp||100, def=p.stats?.def||p.computedDef||80, spd=p.stats?.spd||p.computedSpd||80; return hp*(def+spd)/2; };
+  const offOf  = p => Math.max(p.stats?.atk||p.computedAtk||80, p.stats?.spa||p.computedSpa||80);
+  const ab = avgBulk || 10000, ao = avgOff || 80;
+  const bulkA = ca ? ca.bulk : bulkOf(a)/ab;
+  const bulkB = cb ? cb.bulk : bulkOf(b)/ab;
+  const offA  = ca ? ca.off  : offOf(a)/ao;
+  const offB  = cb ? cb.off  : offOf(b)/ao;
+
+  const getPrimary = (p, c) => c ? c.movTypes : (() => {
+    const divIdx = p.dividerIndex ?? 4;
+    return (p.resolvedMoves||[]).filter(m=>(m.pasteIndex??99)<divIdx&&m.power>0).map(m=>getEffectiveMoveType(m,p.ability||''));
+  })();
+  const movesA = getPrimary(a, ca);
+  const movesB = getPrimary(b, cb);
+
+  let aWeaksCoveredByB = 0, aImmuneByB = 0, aWeakTotal = 0;
+  let bWeaksCoveredByA = 0, bImmuneByA = 0, bWeakTotal = 0;
+  let sharedWeaknesses = 0;
+  let aThreatsOnBWeaks = 0, bThreatsOnAWeaks = 0;
+  // Weighted threats: multiply by relative offense
+  let aWeightedThreats = 0, bWeightedThreats = 0;
+
+  ALL_TYPES_18.forEach((type, i) => {
+    const ea = defA[i], eb = defB[i];
+
+    if (ea > 1) { // A is weak to this type
+      aWeakTotal++;
+      if (eb === 0)    { aWeaksCoveredByB++; aImmuneByB++; }
+      else if (eb < 1) { aWeaksCoveredByB++; }
+      if (eb > 1) sharedWeaknesses++;
+      // Can B threaten the attacking pokemon with a SE move?
+      const bCanThreaten = movesB.some(mt => typeEff(mt, [type]) > 1);
+      if (bCanThreaten) {
+        bThreatsOnAWeaks++;
+        bWeightedThreats += offB; // weighted by B's relative offense
+      }
+    }
+
+    if (eb > 1) { // B is weak to this type
+      bWeakTotal++;
+      if (ea === 0)    { bWeaksCoveredByA++; bImmuneByA++; }
+      else if (ea < 1) { bWeaksCoveredByA++; }
+      const aCanThreaten = movesA.some(mt => typeEff(mt, [type]) > 1);
+      if (aCanThreaten) {
+        aThreatsOnBWeaks++;
+        aWeightedThreats += offA;
+      }
+    }
+  });
+
+  // Defensive coverage: immunity 1.5×, resist 1.0×, weighted by partner's bulk
+  // (A bulky B covering A's weaknesses is more reliable than a frail B)
+  const aCovRaw = aWeakTotal > 0 ? (aWeaksCoveredByB - aImmuneByB + aImmuneByB * 1.5) / aWeakTotal : 1;
+  const bCovRaw = bWeakTotal > 0 ? (bWeaksCoveredByA - bImmuneByA + bImmuneByA * 1.5) / bWeakTotal : 1;
+  // Scale coverage by covering partner's bulk (capped so it doesn't get too extreme)
+  const aCoverage = aCovRaw * Math.min(1.3, bulkB);
+  const bCoverage = bCovRaw * Math.min(1.3, bulkA);
+
+  // Offensive threat bonus: weighted by relative offense, scaled
+  const offThreatBonus = (aWeightedThreats + bWeightedThreats) * 12;
+
+  const synScore = (aCoverage + bCoverage) * 100 - sharedWeaknesses * 8 + offThreatBonus;
+
+  return {
+    synScore, aCoverage, bCoverage,
+    aWeaksCoveredByB, bWeaksCoveredByA, aWeakTotal, bWeakTotal,
+    aImmuneByB, bImmuneByA,
+    aThreatsOnBWeaks, bThreatsOnAWeaks,
+    sharedWeaknesses,
+    bulkA, bulkB, offA, offB
+  };
+}
+
+// Compute offensive coverage for a pair (primary moves only)
+function computeOffensiveCoverage(a, b) {
+  const getMovesTypes = p => {
+    const divIdx = p.dividerIndex ?? 4;
+    return (p.resolvedMoves || [])
+      .filter(m => (m.pasteIndex ?? 99) < divIdx && m.power > 0)
+      .map(m => getEffectiveMoveType(m, p.ability || ''));
+  };
+  const movesA = getMovesTypes(a);
+  const movesB = getMovesTypes(b);
+
+  // For each defending type combination... simplify: check vs pure single types
+  const results = { '4x': 0, '2x': 0, '1x': 0, '0.5x': 0, '0.25x': 0, '0x': 0 };
+  // Check every meta loaded pokemon's type combo
+  const metaMons = META_DB.filter(p => p.loaded && p.types?.length);
+  if (!metaMons.length) return results;
+
+  metaMons.forEach(defender => {
+    const bestEff = Math.max(
+      ...movesA.map(mt => typeEffWithAbility(mt, defender.types, defender.ability || '')),
+      ...movesB.map(mt => typeEffWithAbility(mt, defender.types, defender.ability || ''))
+    );
+    if (bestEff === 0)       results['0x']++;
+    else if (bestEff < 0.5)  results['0.25x']++;
+    else if (bestEff < 1)    results['0.5x']++;
+    else if (bestEff === 1)  results['1x']++;
+    else if (bestEff < 4)    results['2x']++;
+    else                     results['4x']++;
+  });
+  return results;
+}
+
+function renderSynergyPanel() {
+  const container = document.getElementById('synergyList');
+  if (!container) return;
+
+  const loaded = _synergySource === 'tabs'
+    ? DEFENDER_SLOTS.filter(Boolean).filter(s => s.types?.length)
+    : META_DB.filter(p => p.loaded && p.types?.length);
+
+  if (loaded.length < 2) {
+    const msg = _synergySource === 'tabs'
+      ? 'Load at least 2 Pokémon into your defender tabs to see synergy pairs.'
+      : 'Load a meta with at least 2 Pokémon to see synergy pairs.';
+    container.innerHTML = `<div style="color:var(--text3);font-size:12px;padding:12px 0;">${msg}</div>`;
+    return;
+  }
+
+  container.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px 0;">Calculating… <span id="synProgress"></span></div>';
+
+  (async () => {
+    try {
+      const prog = () => { const e = document.getElementById('synProgress'); return e; };
+
+      const allLoaded = META_DB.filter(m => m.loaded);
+      const bulkOf = p => { const hp = p.stats?.hp||p.computedHp||100, def = p.stats?.def||p.computedDef||80, spd = p.stats?.spd||p.computedSpd||80; return hp*(def+spd)/2; };
+      const offOf  = p => Math.max(p.stats?.atk||p.computedAtk||80, p.stats?.spa||p.computedSpa||80);
+      const avgBulk = allLoaded.length ? allLoaded.reduce((s,m)=>s+bulkOf(m),0)/allLoaded.length : 10000;
+      const avgOff  = allLoaded.length ? allLoaded.reduce((s,m)=>s+offOf(m),0)/allLoaded.length  : 80;
+
+      // Precompute per-pokemon data once
+      const cache = new Map();
+      for (const p of loaded) {
+        const divIdx = p.dividerIndex ?? 4;
+        const movTypes = (p.resolvedMoves || [])
+          .filter(m => (m.pasteIndex ?? 99) < divIdx && m.power > 0)
+          .map(m => getEffectiveMoveType(m, p.ability || ''));
+        const defProfile = ALL_TYPES_18.map(t => typeEffWithAbility(t, p.types || [], p.ability || ''));
+        cache.set(p, { movTypes, defProfile, bulk: bulkOf(p)/avgBulk, off: offOf(p)/avgOff });
+      }
+
+      const pairs = [];
+      const CHUNK = 50;
+      let k = 0;
+      for (let i = 0; i < loaded.length; i++) {
+        for (let j = i+1; j < loaded.length; j++) {
+          pairs.push({ a: loaded[i], b: loaded[j], ...computeSynergyScore(loaded[i], loaded[j], avgBulk, avgOff, cache) });
+          k++;
+          if (k % CHUNK === 0) {
+            const total = loaded.length*(loaded.length-1)/2;
+            const el = prog(); if (el) el.textContent = `${Math.round(k/total*100)}% (${k}/${total})`;
+            await new Promise(r => setTimeout(r, 0));
+            if (!_synergyOpen) return;
+          }
+        }
+      }
+
+      const el = prog(); if (el) el.textContent = 'Sorting…';
+      await new Promise(r => setTimeout(r, 0));
+      if (!_synergyOpen) return;
+
+      pairs.sort((x,y) => y.synScore - x.synScore);
+      _synergyPairs = pairs; // cache for lazy detail rendering
+      await new Promise(r => setTimeout(r, 0));
+      if (!_synergyOpen) return;
+
+      const shown = pairs.slice(0, _synergyCount);
+      let html = '';
+      shown.forEach((pair, i) => {
+        const pct2 = Math.max(0, Math.min(100, pair.synScore / 250 * 100));
+        const aFrac = `${pair.aWeaksCoveredByB}/${pair.aWeakTotal}`;
+        const bFrac = `${pair.bWeaksCoveredByA}/${pair.bWeakTotal}`;
+        const aPct  = pair.aWeakTotal > 0 ? `${(pair.aCoverage * 100).toFixed(0)}%` : '—';
+        const bPct  = pair.bWeakTotal > 0 ? `${(pair.bCoverage * 100).toFixed(0)}%` : '—';
+        const aLabel = `${aPct} (${aFrac})`;
+        const bLabel = `${bPct} (${bFrac})`;
+        const sharedLabel = pair.sharedWeaknesses > 0 ? ` <span style="color:var(--red);font-size:10px;">−${pair.sharedWeaknesses} shared</span>` : '';
+        const threatLabel = (pair.aThreatsOnBWeaks + pair.bThreatsOnAWeaks) > 0
+          ? `<span style="color:var(--yellow);font-size:10px;">⚔ ${pair.aThreatsOnBWeaks + pair.bThreatsOnAWeaks} threats</span>` : '';
+        const bulkALabel = pair.bulkA >= 1.2 ? '🛡 Bulky' : pair.bulkA <= 0.8 ? '💨 Frail' : '';
+        const bulkBLabel = pair.bulkB >= 1.2 ? '🛡 Bulky' : pair.bulkB <= 0.8 ? '💨 Frail' : '';
+        const offALabel  = pair.offA  >= 1.2 ? '⚔ Strong' : '';
+        const offBLabel  = pair.offB  >= 1.2 ? '⚔ Strong' : '';
+        const statBadgeA = [bulkALabel, offALabel].filter(Boolean).join(' ');
+        const statBadgeB = [bulkBLabel, offBLabel].filter(Boolean).join(' ');
+        const statLine = (statBadgeA || statBadgeB)
+          ? `<div style="font-size:9px;color:var(--text3);margin-top:1px;">${pair.a.speciesRaw.split(/[\s-]/)[0]}: ${statBadgeA||'avg'} &nbsp;|&nbsp; ${pair.b.speciesRaw.split(/[\s-]/)[0]}: ${statBadgeB||'avg'}</div>`
+          : '';
+        const isOpen = _synergyExpanded.has(i);
+
+        html += `<div class="syn-pair" id="synPair-${i}">
+          <div class="syn-pair-header" onclick="toggleSynergyPair(${i})">
+            <div class="syn-pair-sprites">
+              <button class="add-defender-btn" title="Add ${pair.a.speciesRaw} to defender tab" onclick="event.stopPropagation();addMetaAsDefender(event,'${pair.a.speciesRaw.replace(/'/g,"\'")}')">+</button>
+              <img class="syn-pair-sprite" src="${getSpriteUrl(pair.a.speciesRaw)}" onerror="this.style.display='none'">
+              <span style="font-size:14px;color:var(--text3);">+</span>
+              <img class="syn-pair-sprite" src="${getSpriteUrl(pair.b.speciesRaw)}" onerror="this.style.display='none'">
+              <button class="add-defender-btn" title="Add ${pair.b.speciesRaw} to defender tab" onclick="event.stopPropagation();addMetaAsDefender(event,'${pair.b.speciesRaw.replace(/'/g,"\'")}')">+</button>
+            </div>
+            <div class="syn-pair-score">
+              <div style="font-size:12px;color:var(--text);font-weight:500;">${pair.a.speciesRaw} + ${pair.b.speciesRaw}</div>
+              <div style="font-size:10px;color:var(--text3);">${pair.a.speciesRaw}: ${aLabel} covered &nbsp;|&nbsp; ${pair.b.speciesRaw}: ${bLabel} covered${sharedLabel}</div>
+              ${statLine}
+              <div class="syn-score-bar-wrap"><div class="syn-score-bar" style="width:${pct2}%"></div></div>
+            </div>
+            <span style="font-size:11px;color:var(--text3);flex-shrink:0;">${isOpen ? '▲' : '▼'}</span>
+          </div>
+          ${threatLabel ? `<div style="padding:3px 12px 5px;font-size:10px;pointer-events:none;">${threatLabel}</div>` : ''}
+          <div class="syn-pair-detail${isOpen ? ' open' : ''}" id="synDetail-${i}">
+            ${isOpen ? buildSynergyDetail(pair) : ''}
+          </div>
+        </div>`;
+      });
+
+      if (pairs.length > _synergyCount) {
+        html += `<button onclick="_synergyCount+=3;renderSynergyPanel();" style="width:100%;margin-top:4px;padding:6px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;">Show ${Math.min(3, pairs.length - _synergyCount)} more…</button>`;
+      }
+      container.innerHTML = html;
+
+    } catch(err) {
+      console.error('Synergy error:', err);
+      container.innerHTML = `<div style="color:var(--red);font-size:12px;padding:8px 0;">Error: ${err.message}</div>`;
+    }
+  })();
+}
+
+
+let _synergyPairs = []; // cached pair results for expand/collapse
+
+function toggleSynergyPair(i) {
+  if (_synergyExpanded.has(i)) {
+    _synergyExpanded.delete(i);
+  } else {
+    _synergyExpanded.add(i);
+  }
+  const detail = document.getElementById('synDetail-' + i);
+  const arrow  = detail?.previousElementSibling?.querySelector('span:last-child');
+  const isOpen = _synergyExpanded.has(i);
+  if (detail) {
+    detail.classList.toggle('open', isOpen);
+    // Lazy-render detail content directly without re-running the full calculation
+    if (isOpen && !detail.innerHTML.trim() && _synergyPairs[i]) {
+      detail.innerHTML = buildSynergyDetail(_synergyPairs[i]);
+    }
+  }
+  if (arrow) arrow.textContent = isOpen ? '▲' : '▼';
+}
+
+function buildSynergyDetail(pair) {
+  const defA = getDefProfile(pair.a);
+  const defB = getDefProfile(pair.b);
+
+  // Per-type threat: can B threaten (SE move) vs a pokemon weak to type i?
+  const getPrimaryMoveTypes2 = p => {
+    const divIdx = p.dividerIndex ?? 4;
+    return (p.resolvedMoves || []).filter(m => (m.pasteIndex ?? 99) < divIdx && m.power > 0)
+      .map(m => getEffectiveMoveType(m, p.ability || ''));
+  };
+  const movTypesA = getPrimaryMoveTypes2(pair.a);
+  const movTypesB = getPrimaryMoveTypes2(pair.b);
+  // For each of the 18 attack types, can A/B threaten a pokemon of that type?
+  const bThreatens = ALL_TYPES_18.map(t => movTypesB.some(mt => typeEff(mt, [t]) > 1));
+  const aThreatens = ALL_TYPES_18.map(t => movTypesA.some(mt => typeEff(mt, [t]) > 1));
+
+  // Build 18-column pip grid (2 rows)
+  const pipClass = eff => {
+    if (eff === 0)   return 'p-imm';
+    if (eff < 0.5)   return 'p-qtr';
+    if (eff < 1)     return 'p-half';
+    if (eff === 1)   return 'p-1x';
+    if (eff < 4)     return 'p-2x';
+    return 'p-4x';
+  };
+
+  const typeShort = t => t.slice(0, 3).toUpperCase();
+  const typeColor = t => TYPE_COLORS[t] || 'var(--text3)';
+
+  let grid = `<div style="overflow-x:auto;margin-top:8px;">
+    <div style="display:flex;gap:3px;min-width:max-content;align-items:flex-end;">
+      <div style="width:80px;flex-shrink:0;"></div>`;
+
+  // Column headers
+  ALL_TYPES_18.forEach(t => {
+    grid += `<div style="width:18px;text-align:center;font-size:7px;color:${typeColor(t)};white-space:nowrap;overflow:hidden;">${typeShort(t)}</div>`;
+  });
+  grid += '</div>';
+
+  // Row A
+  grid += `<div style="display:flex;gap:3px;margin-top:3px;min-width:max-content;align-items:center;">
+    <div class="syn-row-label" title="${pair.a.speciesRaw}">${pair.a.speciesRaw.split(/[\s-]/)[0]}</div>`;
+  defA.forEach((eff, i) => {
+    const isCovered  = eff > 1 && defB[i] < 1;
+    const isThreatened = eff > 1 && bThreatens[i];
+    const outline = isThreatened
+      ? 'outline:1.5px solid var(--yellow);outline-offset:1px;'
+      : isCovered ? 'outline:1.5px solid var(--green);outline-offset:1px;' : '';
+    const tipText = isThreatened ? `B threatens ${ALL_TYPES_18[i]} weakness` : isCovered ? `Covered by ${pair.b.speciesRaw.split(" ")[0]}` : '';
+    grid += `<div class="syn-pip ${pipClass(eff)}" style="${outline}" title="${tipText}"></div>`;
+  });
+  grid += '</div>';
+
+  // Row B
+  grid += `<div style="display:flex;gap:3px;margin-top:3px;min-width:max-content;align-items:center;">
+    <div class="syn-row-label" title="${pair.b.speciesRaw}">${pair.b.speciesRaw.split(/[\s-]/)[0]}</div>`;
+  defB.forEach((eff, i) => {
+    const isCovered  = eff > 1 && defA[i] < 1;
+    const isThreatened = eff > 1 && aThreatens[i];
+    const outline = isThreatened
+      ? 'outline:1.5px solid var(--yellow);outline-offset:1px;'
+      : isCovered ? 'outline:1.5px solid var(--green);outline-offset:1px;' : '';
+    const tipText = isThreatened ? `A threatens ${ALL_TYPES_18[i]} weakness` : isCovered ? `Covered by ${pair.a.speciesRaw.split(" ")[0]}` : '';
+    grid += `<div class="syn-pip ${pipClass(eff)}" style="${outline}" title="${tipText}"></div>`;
+  });
+  grid += '</div></div>';
+
+  // Pip legend
+  grid += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:10px;color:var(--text3);">
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--red);vertical-align:middle;"></span> 4×</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--orange);vertical-align:middle;"></span> 2×</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--bg3);border:0.5px solid var(--text3);vertical-align:middle;"></span> 1×</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--green);opacity:0.7;vertical-align:middle;"></span> ½×</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#4a9eff;opacity:0.85;vertical-align:middle;"></span> ¼×</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#111;border:0.5px solid var(--border2);vertical-align:middle;"></span> 0×</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;border:1.5px solid var(--yellow);vertical-align:middle;"></span> Weakness threatened by partner</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;border:1.5px solid var(--green);vertical-align:middle;"></span> Weakness covered by partner</span>
+  </div>`;
+
+  // Offensive coverage summary
+  const cov = computeOffensiveCoverage(pair.a, pair.b);
+  const total = Object.values(cov).reduce((s, v) => s + v, 0);
+  if (total > 0) {
+    grid += `<div style="margin-top:12px;border-top:0.5px solid var(--border2);padding-top:8px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);margin-bottom:6px;">Offensive coverage vs meta (primary moves)</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:11px;">`;
+    const labels = [['4×','var(--red)','4x'],['2×','var(--orange)','2x'],['1×','var(--text2)','1x'],['½×','var(--green)','0.5x'],['¼×','#4a9eff','0.25x'],['Immune','var(--text3)','0x']];
+    labels.forEach(([label, color, key]) => {
+      if (cov[key] > 0) {
+        grid += `<span style="color:${color};">${label}: <b style="color:var(--text);">${cov[key]}</b></span>`;
+      }
+    });
+    grid += `</div></div>`;
+  }
+
+  return grid;
+}
+
 function toggleThreatPanel() {
+  if (_synergyOpen) closeSynergyPanel();
   _threatPanelOpen = !_threatPanelOpen;
   const panel = document.getElementById('threatPanel');
   const btn   = document.getElementById('threatToggleBtn');
@@ -7471,7 +7957,7 @@ async function addMetaAsDefender(e, speciesRaw) {
   // Reuse addAttackerAsDefender logic — find a fake resultIndex by looking up in META_DB
   const idx = META_DB.findIndex(p => p.speciesRaw === speciesRaw);
   if (idx >= 0) await addAttackerAsDefender(e, speciesRaw, String(idx));
-  btn.disabled = false; btn.textContent = '+ Tab';
+  btn.disabled = false; btn.textContent = '+';
 }
 
 function toggleThreatViewMode() {
