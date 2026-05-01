@@ -5823,105 +5823,105 @@ function getDexNum(speciesRaw) {
 // PS sprite sheet icon indices for alternate forms/megas
 // Base forms use dex number directly; these are exceptions from battle-dex-data.js
 // Source: https://github.com/smogon/pokemon-showdown-client (battle-dex-data.ts iconIndex)
+// PS sprite sheet icon indices for alternate forms, megas, and Gigantamax
+// Positions verified from pokemonicons-sheet.png (row/col 1-based, 12 cols wide, 40x30px each)
+// Index formula: (85 + rel_row) * 12 + (rel_col - 1)
+// Megas/Gmax section: starts row 110 (index 1320), sequential
 const PS_ICON_OVERRIDES = {
-  // Rotom forms (base Rotom = 479)
-  'rotomheat':1104,'rotomwash':1105,'rotomfrost':1106,'rotomfan':1107,'rotommow':1108,
-  // Wormadam
-  'wormadamsandy':1109,'wormadamtrash':1110,
-  // Giratina
-  'giratinaorigin':1111,
-  // Shaymin
-  'shayminsky':1112,
-  // Arceus forms (use base 493 for all)
-  // Basculin
-  'basculinbluestriped':1113,
-  // Darmanitan
-  'darmanitanzen':1114,'darmanitangalarzen':1115,
-  // Meloetta
-  'meloettapirouette':1116,
-  // Tornadus/Thundurus/Landorus therian
-  'tornadustherian':1117,'thundurustherian':1118,'landorustherian':1119,
-  // Kyurem
-  'kyuremblack':1120,'kyuremwhite':1121,
-  // Keldeo
-  'keldeoresolute':1122,
-  // Meowstic female
-  'meowsticf':1123,
-  // Aegislash
-  'aegislashblade':1124,
-  // Pumpkaboo/Gourgeist sizes
-  'pumpkaboosmall':1125,'pumpkaboolarge':1126,'pumpkaboosuper':1127,
-  'gourgeistsmall':1128,'gourgeistlarge':1129,'gourgeistsuper':1130,
-  // Hoopa
-  'hoopaconfined':493+1,'hoopaunbound':1131, // hoopa confined = normal num
-  // Megas (section starts around 1132 in sheet)
-  'venusaurmega':1132,'charizardmegax':1133,'charizardmegay':1134,
-  'blastoisemega':1135,'beedrillmega':1136,'pidgeotmega':1137,
-  'slowbromega':1138,'gengarmega':1139,'kangaskhanmega':1140,
-  'pinsirmega':1141,'gyaradosmega':1142,'aerodactylmega':1143,
-  'mewtwomegax':1144,'mewtwomegay':1145,'ampharosmega':1146,
-  'steelixmega':1147,'scizormega':1148,'heracrossmega':1149,
-  'houndoommega':1150,'tyranitarmega':1151,'sceptilemega':1152,
-  'blazikenmega':1153,'swampertmega':1154,'gardevoirmega':1155,
-  'sableyemega':1156,'mawilemega':1157,'aggronmega':1158,
-  'medichamega':1159,'manectricmega':1160,'sharpedomega':1161,
-  'cameruptmega':1162,'altariamega':1163,'banettemega':1164,
-  'absolmega':1165,'glaliemega':1166,'salamencemega':1167,
-  'metagrossmega':1168,'latiasmega':1169,'latiosmega':1170,
-  'kyogreprimal':1171,'groudonprimal':1172,'rayquazamega':1173,
-  'lopunnymega':1174,'garchompmega':1175,'lucariomega':1176,
-  'abomasnowmega':1177,'gallademega':1178,'audinomega':1179,
-  'dianciemega':1180,
-  // Alolan forms
-  'raticatealola':1181,'ratichatealola':1182,
-  'pikachuoriginal':1183,'pikachuhoenn':1184,'pikachusinnoh':1185,
-  'pikachuunova':1186,'pikachukalos':1187,'pikachualola':1188,'pikachuworld':1189,
-  'exeggutorialola':1190,'marowakalola':1191,
-  'grimeralola':1192,'mukalola':1193,
-  'geodudealola':1194,'graveleralola':1195,'golemealola':1196,
-  'diglettalola':1197,'dugtrioalola':1198,
-  'meowsthgalar':1199, // skip some
-  // Galarian forms
-  'meowthgalar':1200,'ponytagalar':1201,'rapidashgalar':1202,
-  'farfetchdgalar':1203,'weezinggalar':1204,'mrmimegalar':1205,
-  'corsolagalar':1206,'zigzagoongalar':1207,'linoongegalar':1208,
-  'darumakagalar':1209,'darmanitangalar':1210,'yamaskgalar':1211,
-  'stunfiskgalar':1212,
-  // Hisuian forms
-  'growlithehisui':1213,'arcaninehisui':1214,
-  'voltorbhisui':1215,'electrodehisui':1216,
-  'typhlosionhisui':1217,'quilavahisui':1218,'cyndaquilhisui':1219,
-  'decidueyehisui':1220,'dartrixhisui':1221,'rowlethisui':1222,
-  'samurott hisui':1223,'dewotthisui':1224,'oshawitthisui':1225,
-  'samurotthisui':1223,
-  'lilliganthisui':1226,'zoruahisui':1227,'zoroarkhisui':1228,
-  'braviaryhisui':1229,'sliggoohisui':1230,'goodranhisui':1231,
-  'avalugghisui':1232,'bergmitehisui':1233,'sneaselhisui':1234,
-  'kleavorhisui':1235,'ursalunahisui':1236,
-  // Paldean forms
-  'wooperpaldea':1237,'corviknighttomac':1238,
-  'tauroscombat':1239,'taurosblaze':1240,'taurosaqua':1241,
+  // Rotom forms (rel row 5, cols 1-5): fan, frost, heat, mow, wash
+  'rotomfan':1080,'rotomfrost':1081,'rotomheat':1082,'rotommow':1083,'rotomwash':1084,
+  // Tornadus/Thundurus/Landorus therian (row 6, cols 7-9)
+  'tornadustherian':1098,'thundurustherian':1099,'landorustherian':1100,
+  // Floette-eternal (row 9, col 3)
+  'floetteeternal':1130,
+  // Aegislash-blade (row 10, col 9)
+  'aegislashblade':1148,
+  // Raichu-alola (row 11, col 2)
+  'raichualola':1153,
+  // Ninetales-alola (row 11, col 6)
+  'ninetalesalola':1157,
+  // Indeedee-F (row 17, col 1)
+  'indeedeef':1224,
+  // Zacian/Zamazenta crowned (row 17, cols 3-4)
+  'zaciancrowned':1226,'zamazentacrowned':1227,
+  // Galarian birds (row 17, cols 9-11)
+  'articunogalar':1232,'zapdosgalar':1233,'moltresgalar':1234,
+  // Slowking-galar (row 17, col 12)
+  'slowkinggalar':1235,
+  // Calyrex forms (row 18, cols 1-2)
+  'calyrexice':1236,'calyrexshadow':1237,
+  // Arcanine-hisui (row 18, col 4)
+  'arcaninehisui':1239,
+  // Typhlosion-hisui (row 18, col 7)
+  'typhlosionhisui':1242,
+  // Samurott-hisui (row 18, col 10)
+  'samurotthisui':1245,
+  // Tauros-paldea (row 19, cols 10-11): blaze, aqua
+  'taurospaldeablaze':1257,'taurospaldeaaqua':1258,
+  // Zoroark-hisui (row 19, col 1)
+  'zoroarkhisui':1248,
+  // Palafin-hero (row 19, col 2)
+  'palafinhero':1249,
+  // Goodra-hisui (row 19, col 4)
+  'goodrahisui':1251,
+  // Ursaluna-bloodmoon (row 20, col 1)
+  'ursalunabloodmoon':1260,
+  // Ogerpon forms (row 20, cols 2-4): hearthflame, wellspring, cornerstone
+  'ogerponhearthflame':1261,'ogerponwellspring':1262,'ogerponcornerstone':1263,
+  // Terapagos forms (row 20, cols 5-6)
+  'terapagosterastal':1264,'terapagosstellar':1265,
+  // ── Mega evolutions & Gigantamax (start index 1320) ──────────────────────
+  'venusaurmega':1320,'charizardmegax':1321,'charizardmegay':1322,'blastoisemega':1323,
+  'beedrillmega':1324,'pidgeotmega':1325,'alakazammega':1326,'slowbromega':1327,
+  'gengarmega':1328,'kangaskhanmega':1329,'pinsirmega':1330,'gyaradosmega':1331,
+  'aerodactylmega':1332,'mewtwomegax':1333,'mewtwomegay':1334,'ampharosmega':1335,
+  'steelixmega':1336,'scizormega':1337,'heracrossmega':1338,'houndoommega':1339,
+  'tyranitarmega':1340,'sceptilemega':1341,'blazikenmega':1342,'swampertmega':1343,
+  'gardevoirmega':1344,'sableyemega':1345,'mawilemega':1346,'aggronmega':1347,
+  'medichammega':1348,'manectricmega':1349,'sharpedomega':1350,'cameruptmega':1351,
+  'altariamega':1352,'banettemega':1353,'absolmega':1354,'glaliemega':1355,
+  'salamencemega':1356,'metagrossmega':1357,'latiasmega':1358,'latiosmega':1359,
+  'kyogreprimal':1360,'groudonprimal':1361,'rayquazamega':1362,'lopunnymega':1363,
+  'garchompmega':1364,'lucariomega':1365,'abomasnowmega':1366,'gallademega':1367,
+  'audinomega':1368,'dianciemega':1369,
+  'charizardgmax':1370,'butterfreegmax':1371,'pikachugmax':1372,'meowthgmax':1373,
+  'machampgmax':1374,'gengargmax':1375,'kinglergmax':1376,'laprasgmax':1377,
+  'eeveegmax':1378,'snorlaxgmax':1379,'garbodorgmax':1380,'melmetalgmax':1381,
+  'corviknightgmax':1382,'orbeetlegmax':1383,'drednawgmax':1384,'coalossalgmax':1385,
+  'appletungmax':1386,'flapplegmax':1387,'sandacondagmax':1388,
+  'toxtricityGmax':1389,'toxtricityamplifiedgmax':1389,'centiskorchgmax':1390,
+  'hatterenegmax':1391,'grimmsnarlgmax':1392,'alcremiegmax':1393,
+  'copperajahgmax':1394,'duraludongmax':1395,'eternatusgmax':1396,
+  'venusaurgmax':1397,'blastoisegmax':1398,'rillaboomgmax':1399,'cinderacegmax':1400,
+  'inteleongmax':1401,'urshifugmax':1402,'urshifurapidstrikegmax':1403,
+  'clefablemega':1404,'victreebellmega':1405,'starmiemega':1406,'dragonitemega':1407,
+  'meganiummega':1408,'feraligatrmega':1409,'skarmorymega':1410,'froslassmega':1411,
+  'emboarmega':1412,'excadrillmega':1413,'scolipedemega':1414,'scraftymega':1415,
+  'eelektrossmega':1416,'chandeluremega':1417,'chesnaughtmega':1418,'delphoxmega':1419,
+  'greninjamega':1420,'pyroarmega':1421,'floettemega':1422,'malamarmega':1423,
+  'barbaraclemega':1424,'dragalgemega':1425,'hawluchamega':1426,'zygardemega':1427,
+  'drampamega':1428,'falinksmega':1429,'raichumegax':1430,'raichumegay':1431,
+  'chimechomega':1432,'absolmegaz':1433,'staraptormega':1434,'garchompmegaz':1435,
+  'lucariomegaz':1436,'heatranmega':1437,'darkraimega':1438,'golurkmega':1439,
+  'meowsticfmega':1440,'crabominablemega':1441,'golisopodmega':1442,
+  'magearnamega':1443,'magearnaoriginalmega':1444,'zeraoramega':1445,
+  'scovillainmega':1446,'glimmoramega':1447,'tatsugiricurlymega':1448,
+  'tatsugiridroppymega':1449,'tatsugiristrechymega':1450,'baxcaliburmega':1451,
 };
-
 // Use BattlePokemonSprites.num for base forms, override for forms/megas
 function _buildPsIconMap() {
   const src = window.BattlePokemonSprites;
   const map = {};
   if (src) {
-    // Dump entries for our known problem pokemon
-    const debug = ['venusaurmega','tyranitarmega','aegislashblade','rotomheat','rotomwash','typhlosionhisui','scizormega'];
-    debug.forEach(k => console.log(`[ps-icon-data] ${k}:`, JSON.stringify(src[k])));
+    // Base forms: icon index == dex number
     for (const [key, entry] of Object.entries(src)) {
-      if (entry?.num !== undefined) {
-        const k = key.toLowerCase().replace(/[^a-z0-9]/g,'');
-        map[k] = entry.num;
-      }
+      if (entry?.num !== undefined) map[key] = entry.num;
     }
   }
-  // Apply overrides for forms/megas where icon index differs from dex number
+  // Apply verified overrides for forms/megas (icon index differs from dex number)
   Object.assign(map, PS_ICON_OVERRIDES);
   window._psIconMap = map;
-  console.log('[ps-data] icon map built:', Object.keys(map).length, 'entries, venusaurmega idx:', map['venusaurmega'], 'rotomheat:', map['rotomheat']);
+  console.log('[ps-data] icon map built:', Object.keys(map).length, 'entries, venusaurmega:', map['venusaurmega'], 'rotomheat:', map['rotomheat']);
   _onPokedexMiniLoaded();
   if (_teamPickerOpen) refreshTeamPickerDropdown(_teamPickerSelected);
 }
