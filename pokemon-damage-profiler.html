@@ -5824,12 +5824,17 @@ function getDexNum(speciesRaw) {
 (function loadPokedexMini() {
   const url = 'https://play.pokemonshowdown.com/data/pokedex-mini.js';
   fetch(url)
-    .then(r => r.ok ? r.text() : Promise.reject(r.status))
+    .then(r => {
+      console.log('[pokedex-mini] fetch status:', r.status, r.ok);
+      return r.ok ? r.text() : Promise.reject(r.status);
+    })
     .then(text => {
+      console.log('[pokedex-mini] text length:', text.length, 'first 80:', text.substring(0, 80));
       // Execute the script in global scope so BattlePokedexMini is set
       const s = document.createElement('script');
       s.textContent = text;
       document.head.appendChild(s);
+      console.log('[pokedex-mini] after inject, BattlePokedexMini:', typeof BattlePokedexMini, Object.keys(BattlePokedexMini || {}).length, 'entries');
       _onPokedexMiniLoaded();
       if (_teamPickerOpen) refreshTeamPickerDropdown(_teamPickerSelected);
     })
