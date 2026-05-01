@@ -5820,39 +5820,53 @@ function getDexNum(speciesRaw) {
   return 0;
 }
 
-// Load PS pokedex-mini.js dynamically
+// Load PS icon data — battle-dex-data.js has the iconIndex for forms/megas
 (function loadPokedexMini() {
-  const url = 'https://play.pokemonshowdown.com/data/pokedex-mini.js';
+  // Try battle-dex-data.js first (has iconIndex for all forms)
+  // Fall back to pokedex-mini.js (has num which we already use)
+  const url = 'https://play.pokemonshowdown.com/js/battle-dex-data.js';
   fetch(url)
     .then(r => r.ok ? r.text() : Promise.reject(r.status))
     .then(text => {
-      // File exports BattlePokemonSprites (not BattlePokedexMini as expected)
-      // Rewrite all exports.* assignments to window.*
+      // Rewrite all exports.* to window.*
       const patched = text.replace(/exports\.(\w+)\s*=/g, 'window.$1=');
       const s = document.createElement('script');
       s.textContent = patched;
       document.head.appendChild(s);
-      // BattlePokemonSprites maps pokemon name → {x, y, w, h, url, pixelated}
-      // BattlePokedexMini maps pokemon name → {num, icon}
-      // Check what got set
-      const src = window.BattlePokemonSprites || window.BattlePokedexMini;
-      const srcName = window.BattlePokemonSprites ? 'BattlePokemonSprites' : 'BattlePokedexMini';
+      // battle-dex-data.js sets BattlePokedex with {iconIndex} per pokemon
+      const src = window.BattlePokedex || window.BattlePokedexMini || window.BattlePokedexAltForms;
+      console.log('[ps-data] globals set:', Object.keys(window).filter(k => k.startsWith('Battle')));
       if (src) {
-        console.log('[pokedex-mini] loaded', srcName, 'with', Object.keys(src).length, 'entries');
-        console.log('[pokedex-mini] sample venusaurmega:', src['venusaurmega']);
-        console.log('[pokedex-mini] sample rotomheat:', src['rotomheat']);
-        window._psIconData = src;
-        window._psIconDataName = srcName;
-        _onPokedexMiniLoaded();
-        if (_teamPickerOpen) refreshTeamPickerDropdown(_teamPickerSelected);
-      } else {
-        console.warn('[pokedex-mini] no known Battle* export found');
+        const sample = src['venusaurmega'] || src['Venusaur-Mega'];
+        console.log('[ps-data] venusaurmega sample:', sample);
       }
+      // Extract icon index map from whatever was loaded
+      _buildPsIconMap();
+      if (_teamPickerOpen) refreshTeamPickerDropdown(_teamPickerSelected);
     })
-    .catch(err => console.warn('[pokedex-mini] fetch failed:', err));
+    .catch(err => {
+      console.warn('[ps-data] battle-dex-data failed:', err);
+    });
 })();
 
-// Once BattlePokedexMini loads, purge stale minimal cache entries
+// Build a slug→iconIndex map from whatever PS data was loaded
+function _buildPsIconMap() {
+  const src = window.BattlePokedex || window.BattlePokedexMini;
+  if (!src) return;
+  const map = {};
+  for (const [key, entry] of Object.entries(src)) {
+    if (!entry) continue;
+    // iconIndex is the sprite sheet index; fall back to num for base forms
+    const idx = entry.iconIndex !== undefined ? entry.iconIndex : entry.num;
+    if (idx !== undefined) map[key.toLowerCase().replace(/[^a-z0-9]/g,'')] = idx;
+  }
+  window._psIconMap = map;
+  console.log('[ps-data] icon map built with', Object.keys(map).length, 'entries');
+  console.log('[ps-data] venusaurmega:', map['venusaurmega'], 'rotomheat:', map['rotomheat']);
+  _onPokedexMiniLoaded();
+}
+
+// Once PS data loads, purge stale minimal cache entries
 // (old entries had only {dexNum} with no baseStats — now redundant and potentially wrong)
 function _onPokedexMiniLoaded() {
   if (typeof BattlePokedexMini === 'undefined') return;
@@ -5874,35 +5888,17 @@ function _onPokedexMiniLoaded() {
 // Re-render dropdown once BattlePokedexMini loads — triggered by loadPokedexMini() above
 
 function psIconHtml(speciesRaw, title) {
-  let idx = 0;
   const psKey = toSlug(speciesRaw).replace(/-/g, '');
-  const data = window._psIconData;
+  let idx = 0;
 
-  if (data) {
-    const entry = data[psKey];
-    if (entry) {
-      // BattlePokemonSprites: {x, y} pixel coords directly
-      // BattlePokedexMini: {num, icon} index-based
-      if (entry.x !== undefined && entry.y !== undefined) {
-        // Direct pixel coords — use them straight
-        const tip = (title || speciesRaw || '').replace(/"/g, '&quot;');
-        return `<span class="ps-icon" style="background-position:-${entry.x}px -${entry.y}px;" title="${tip}"></span>`;
-      }
-      idx = (entry.icon !== undefined) ? entry.icon : (entry.num || 0);
+  const map = window._psIconMap;
+  if (map) {
+    if (map[psKey] !== undefined) {
+      idx = map[psKey];
     } else {
-      // Try stripping form suffix to get base form
-      const baseKey = psKey.replace(/mega[xy]?$/, '').replace(/gmax$/, '')
-        .replace(/heat$|wash$|fan$|mow$|frost$/, '');
-      const base = baseKey !== psKey && data[baseKey];
-      if (base) {
-        if (base.x !== undefined) {
-          const tip = (title || speciesRaw || '').replace(/"/g, '&quot;');
-          return `<span class="ps-icon" style="background-position:-${base.x}px -${base.y}px;" title="${tip}"></span>`;
-        }
-        idx = (base.icon !== undefined) ? base.icon : (base.num || 0);
-      } else {
-        idx = getDexNum(speciesRaw);
-      }
+      // Try base form for fan-game megas not in PS data
+      const baseKey = psKey.replace(/mega[xy]?$/, '').replace(/gmax$/, '');
+      idx = (baseKey !== psKey && map[baseKey] !== undefined) ? map[baseKey] : getDexNum(speciesRaw);
     }
   } else {
     idx = getDexNum(speciesRaw);
@@ -6065,9 +6061,9 @@ async function refreshTeamPickerDropdown(selectValue) {
   // Fetch any missing dex numbers — skip species already in _psIconData
   const missing = [...allSpecies.keys()].filter(slug => {
     if (pokemonCache[slug]?.dexNum) return false;
-    if (window._psIconData) {
+    if (window._psIconMap) {
       const psKey = slug.replace(/-/g, '');
-      if (window._psIconData[psKey]) return false;
+      if (window._psIconMap[psKey] !== undefined) return false;
     }
     return true;
   });
