@@ -5820,38 +5820,26 @@ function getDexNum(speciesRaw) {
   return 0;
 }
 
-// Load PS pokedex-mini.js dynamically — works from both file:// and https://
+// Load PS pokedex-mini.js dynamically
 (function loadPokedexMini() {
   const url = 'https://play.pokemonshowdown.com/data/pokedex-mini.js';
   fetch(url)
     .then(r => r.ok ? r.text() : Promise.reject(r.status))
     .then(text => {
-      // pokedex-mini.js uses "exports.BattlePokedexMini = ..." (Node module style)
-      // Wrap it so exports is a local object we can capture
-      try {
-        const exports = {};
-        // eslint-disable-next-line no-new-func
-        new Function('exports', text)(exports);
-        if (exports.BattlePokedexMini) {
-          window.BattlePokedexMini = exports.BattlePokedexMini;
-        } else {
-          // Fallback: maybe it sets a global directly
-          const s = document.createElement('script');
-          s.textContent = 'var exports={};' + text;
-          document.head.appendChild(s);
-        }
-      } catch(e) {
-        console.warn('[pokedex-mini] eval error:', e);
-      }
+      // File uses "exports.BattlePokedexMini = ..." — rewrite to window assignment
+      const patched = text.replace(/exports\.BattlePokedexMini\s*=/, 'window.BattlePokedexMini=');
+      const s = document.createElement('script');
+      s.textContent = patched;
+      document.head.appendChild(s);
       if (typeof BattlePokedexMini !== 'undefined') {
         console.log('[pokedex-mini] loaded', Object.keys(BattlePokedexMini).length, 'entries');
         _onPokedexMiniLoaded();
         if (_teamPickerOpen) refreshTeamPickerDropdown(_teamPickerSelected);
       } else {
-        console.warn('[pokedex-mini] BattlePokedexMini still not defined after load');
+        console.warn('[pokedex-mini] still not defined — first 120:', text.substring(0,120));
       }
     })
-    .catch(err => console.warn('[pokedex-mini] failed to load:', err));
+    .catch(err => console.warn('[pokedex-mini] fetch failed:', err));
 })();
 
 // Once BattlePokedexMini loads, purge stale minimal cache entries
