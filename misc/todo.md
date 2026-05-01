@@ -1,12 +1,6 @@
 ## Feature Request
 
 
-- the scarf button is not recognizing my basculegion being scarfed and updating it's speed in the result listing properly
-
--  maybe remove the auto saving popup window with that I have to click ok on that pops up every time
-
-
-
 
 
 
@@ -32,6 +26,23 @@
 ---
 #### Completed
 
+- [XX] fix pin functionality
+- [XX] make pins of tabs also work
+- [XX] have type synergies have a cap of 1 mega only
+- [XX] in the type synergies weighing, just like we have immunities worth more, have 1/4 resistances be more than 1/2 but not as much as immunities. Also have covering for 4x weaknesses be worth more than 2x weaknesses.
+- [XX] have the results listing meta load on meta load, just have the listings show no damage.
+- [XX] in type synergies window, the "X threats" text in yellow is now back to turning into an expandable triangle
+- [XX] feraligatr-mega sprite still not loading right away in the type synergies window
+- [XX] have buttons in the synergies window to switch from pairs of two to three to four
+- [XX] for the type synergies window, add a mode where you can see synergies combinations with the pinned pokemon and the rest of the mons in the meta
+- [XX] in search bar, pressing enter just a pokemons name will tab the top result
+- [XX] in search bar, pressing ctrl+x with nothign selected will clear the bar
+- [XX] the keyword filter "hits:___" should not take into account extra moves, only main ones
+- [XX] the keyword filter "hits:___" is not working when I type in "hits:tyranitar-mega" when there are pokemon that can hit him super-effectively.
+- [XX] using multiple "hits:__" keyword filters seems to not be doing anything, when I would like it to select pokemon that can hit either type all of them
+- [XX] in the meta analysis tab, the offensive threats sorting method should heavily weigh towards hitting pokemon that they can outspeed. so if they hit 3 of your team for supereffective, but they're slower than all of them, that should be a major decrease in it's weight. but if it can outpseed all of the 3 it hits or 1 or 2, it should weigh that accordingly. with that being said, the speeds should be affected by the current field effects. so if I have no speed effects, it doesn't outspeed the mons it hits supereffectively, it should be weighed low, but if I have tailwind for the attackers or trick room up and it does outspeed, then it should auto update to take that into account.
+- [XX] the scarf button is not recognizing my basculegion being scarfed and updating it's speed in the result listing properly
+-  [XX] maybe remove the auto saving popup window with that I have to click ok on that pops up every time
 - [XX] fairy aura on tabbed pokemon attacking damage not showing in move breakdown text, not sure if it's applying to daamage
 - [XX] have abilities that boost speed in weather affects affect results listings speeds (setting sand with a sand rush excadrill will double it's speed. there's also chlorophyll, slush rush, swift swim)
 - [XX] I like the brighter gaussian blurred circle, but I don't like the border outline that was added to it
