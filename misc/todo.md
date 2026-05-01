@@ -1,6 +1,6 @@
 ## Feature Request
 
-
+- non-mega golurk default sprite not working in match screen, type synergies, match log, but maybe working in meta analysis? i got glimmora-mega to work
 
 
 

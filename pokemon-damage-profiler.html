@@ -580,10 +580,6 @@
   .card-collapsible.collapsed {
     cursor: pointer;
   }
-  .card-collapsible.collapsed:hover {
-    transform: scaleY(1.04);
-    transform-origin: top;
-  }
   .card-collapsible .card-body {
     cursor: default;
   }
@@ -1108,7 +1104,48 @@
   .wk-count.danger2 { color: var(--orange); }
   .wk-count.danger3 { color: var(--red); }
 
-  /* ── Meta Threat Analysis Panel ─────────────────────────────────────────── */
+  /* ── Pokémon Showdown icon sheet ─────────────────────────────────────────── */
+  .ps-icon {
+    display: inline-block;
+    width: 40px; height: 30px;
+    background-image: url('https://play.pokemonshowdown.com/sprites/pokemonicons-sheet.png?v21');
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+  }
+
+  /* ── Saved team custom dropdown ─────────────────────────────────────────── */
+  .team-picker-wrap { position: relative; flex: 1; min-width: 0; }
+  .team-picker-btn {
+    width: 100%; padding: 4px 8px; font-size: 12px;
+    border: 0.5px solid var(--border2); border-radius: var(--radius-sm);
+    background: var(--bg3); color: var(--text); cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    text-align: left; white-space: nowrap; overflow: hidden;
+  }
+  .team-picker-btn:hover { border-color: var(--accent); }
+  .team-picker-dropdown {
+    display: none; position: fixed;
+    background: var(--bg2); border: 0.5px solid var(--border2);
+    border-radius: var(--radius); z-index: 9999;
+    max-height: 340px; overflow-y: auto;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    min-width: 320px; width: 360px;
+  }
+  .team-picker-dropdown.open { display: block; }
+  .team-picker-item {
+    padding: 6px 10px; cursor: pointer; border-bottom: 0.5px solid var(--border);
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .team-picker-item:last-child { border-bottom: none; }
+  .team-picker-item:hover { background: var(--bg3); }
+  .team-picker-item.selected { background: rgba(124,106,247,0.1); }
+  .team-picker-name {
+    font-size: 12px; font-weight: 600; color: var(--text);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .team-picker-wr { font-size: 10px; color: #fff; }
+  .team-picker-icons { display: flex; align-items: center; gap: 0; overflow: hidden; }
   #threatPanel {
     display: none;
     background: var(--bg2);
@@ -1425,10 +1462,18 @@ Adamant Nature
 
       <!-- Saved teams row — always visible even when collapsed -->
       <div style="display:flex;align-items:center;gap:6px;margin:6px 0 4px;flex-wrap:wrap;">
-        <button class="btn-success" onclick="onSavedTeamSelect()" style="font-size:11px;padding:4px 10px;flex-shrink:0;">Load team</button>
-        <select id="savedTeamSelect" style="font-size:12px;padding:4px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;flex:1;min-width:0;">
+        <!-- Hidden native select kept for JS compatibility -->
+        <select id="savedTeamSelect" style="display:none;">
           <option value="">— saved teams —</option>
         </select>
+        <!-- Custom team picker with icon sheet -->
+        <div class="team-picker-wrap" id="teamPickerWrap">
+          <button class="team-picker-btn" id="teamPickerBtn" onclick="openTeamPicker(event)">
+            <span style="flex:1;color:var(--text3);">— saved teams —</span>
+            <span style="color:var(--text3);font-size:10px;flex-shrink:0;">▼</span>
+          </button>
+          <div class="team-picker-dropdown" id="teamPickerDropdown"></div>
+        </div>
         <button onclick="saveCurrentTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Save current defender tabs as a team">Save</button>
         <button onclick="renameSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Rename selected team">Rename</button>
         <button onclick="deleteSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--red);cursor:pointer;white-space:nowrap;" title="Delete selected team">Delete</button>
@@ -1960,7 +2005,8 @@ function _persistMoveCache() {
 }
 
 async function fetchPokemonData(slug) {
-  if (pokemonCache[slug]) return pokemonCache[slug];
+  if (pokemonCache[slug] && pokemonCache[slug].dexNum) return pokemonCache[slug];
+  // If cached but missing dexNum (old cache entry), fall through to re-fetch
   const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${slug}`);
   if (!res.ok) throw new Error(`PokéAPI returned ${res.status} for "${slug}". Try a different name.`);
   const data = await res.json();
@@ -1977,7 +2023,8 @@ async function fetchPokemonData(slug) {
   const types = data.types.map(t => t.type.name);
   const spriteUrl = data.sprites?.front_default || null;
   const weight = data.weight || null; // in hectograms (PokeAPI)
-  const result = { baseStats, types, spriteUrl, weight };
+  const dexNum = data.id || null;    // National Dex number — used for icon sheet
+  const result = { baseStats, types, spriteUrl, weight, dexNum };
   pokemonCache[slug] = result;
   _persistPokemonCache();
   return result;
@@ -5041,6 +5088,13 @@ function toggleFilterHint(e) {
 
 // Close filter hint when clicking anywhere outside it
 document.addEventListener('click', (e) => {
+  // Close team picker if clicking outside it
+  const wrap = document.getElementById('teamPickerWrap');
+  if (wrap && !wrap.contains(e.target) && _teamPickerOpen) {
+    _teamPickerOpen = false;
+    const dd = document.getElementById('teamPickerDropdown');
+    if (dd) dd.classList.remove('open');
+  }
   const h = document.getElementById('filterHint');
   const btn = document.getElementById('filterHintBtn');
   if (h && h.style.display === 'block' && !h.contains(e.target) && e.target !== btn) {
@@ -5751,6 +5805,243 @@ function putSavedTeams(teams) {
   _driveAutoSave();
 }
 
+// ── Pokémon Showdown icon sheet helpers ───────────────────────────────────────
+// Each cell is 40×30px, 12 columns wide.
+// For base Pokémon, iconIndex == National Dex number.
+function getDexNum(speciesRaw) {
+  const clean = (speciesRaw || '').replace(/\s*★$/, '').trim();
+  const slug  = toSlug(clean);
+  if (pokemonCache[slug]?.dexNum) return pokemonCache[slug].dexNum;
+  const baseSlug = slug
+    .replace(/-mega(-[xy])?$/, '').replace(/-gmax$/, '')
+    .replace(/-blade$|-shield$/, '').replace(/-eternal$/, '')
+    .replace(/-origin$/, '').replace(/-therian$/, '').replace(/-incarnate$/, '');
+  if (baseSlug !== slug && pokemonCache[baseSlug]?.dexNum) return pokemonCache[baseSlug].dexNum;
+  return 0;
+}
+
+// Load PS pokedex-mini.js dynamically — works from both file:// and https://
+(function loadPokedexMini() {
+  const url = 'https://play.pokemonshowdown.com/data/pokedex-mini.js';
+  fetch(url)
+    .then(r => r.ok ? r.text() : Promise.reject(r.status))
+    .then(text => {
+      // Execute the script in global scope so BattlePokedexMini is set
+      const s = document.createElement('script');
+      s.textContent = text;
+      document.head.appendChild(s);
+      _onPokedexMiniLoaded();
+      if (_teamPickerOpen) refreshTeamPickerDropdown(_teamPickerSelected);
+    })
+    .catch(err => console.warn('[pokedex-mini] failed to load:', err));
+})();
+
+// Once BattlePokedexMini loads, purge stale minimal cache entries
+// (old entries had only {dexNum} with no baseStats — now redundant and potentially wrong)
+function _onPokedexMiniLoaded() {
+  if (typeof BattlePokedexMini === 'undefined') return;
+  let changed = false;
+  for (const slug of Object.keys(pokemonCache)) {
+    const entry = pokemonCache[slug];
+    // Minimal entry = only has dexNum, no baseStats — safe to drop
+    if (entry && entry.dexNum && !entry.baseStats && Object.keys(entry).length <= 2) {
+      delete pokemonCache[slug];
+      changed = true;
+    }
+  }
+  if (changed) {
+    _persistPokemonCache();
+    // Re-render dropdown so new icon positions take effect
+    if (typeof refreshTeamPickerDropdown === 'function') refreshTeamPickerDropdown(_teamPickerSelected);
+  }
+}
+// Re-render dropdown once BattlePokedexMini loads — triggered by loadPokedexMini() above
+
+function psIconHtml(speciesRaw, title) {
+  let idx = 0;
+  if (typeof BattlePokedexMini !== 'undefined') {
+    const psKey = toSlug(speciesRaw).replace(/-/g, '');
+    const entry = BattlePokedexMini[psKey];
+    if (entry) {
+      idx = (entry.icon !== undefined && entry.icon !== null) ? entry.icon : (entry.num || 0);
+    } else {
+      const baseKey = psKey.replace(/mega[xy]?$/, '').replace(/gmax$/, '').replace(/heat$|wash$|fan$|mow$|frost$/, '');
+      const base = baseKey !== psKey && BattlePokedexMini[baseKey];
+      idx = base ? (base.icon !== undefined ? base.icon : base.num) : getDexNum(speciesRaw);
+      if (window._psIconDebug) console.log(`[psIcon] "${speciesRaw}" psKey="${psKey}" NOT in BattlePokedexMini, baseKey="${baseKey}", base=${!!base}, idx=${idx}`);
+    }
+    if (window._psIconDebug) console.log(`[psIcon] "${speciesRaw}" psKey="${psKey}" entry=${JSON.stringify(entry)} idx=${idx}`);
+  } else {
+    idx = getDexNum(speciesRaw);
+  }
+  const x   = (idx % 12) * 40;
+  const y   = Math.floor(idx / 12) * 30;
+  const tip = (title || speciesRaw || '').replace(/"/g, '&quot;');
+  return `<span class="ps-icon" style="background-position:-${x}px -${y}px;" title="${tip}"></span>`;
+}
+
+// ── Custom saved-team picker (native <select> can't show images) ──────────────
+let _teamPickerOpen = false;
+let _teamPickerSelected = '';
+
+function openTeamPicker(e) {
+  e && e.stopPropagation();
+  _teamPickerOpen = !_teamPickerOpen;
+  const dd  = document.getElementById('teamPickerDropdown');
+  const btn = document.getElementById('teamPickerBtn');
+  if (!dd) return;
+  if (_teamPickerOpen && btn) {
+    const rect = btn.getBoundingClientRect();
+    dd.style.top   = (rect.bottom + 4) + 'px';
+    dd.style.left  = rect.left + 'px';
+    dd.style.width = Math.max(320, rect.width) + 'px';
+    dd.classList.add('open');
+    // Refresh and fetch missing dex nums (async — icons fill in after fetch)
+    refreshTeamPickerDropdown(_teamPickerSelected);
+  } else {
+    _teamPickerOpen = false;
+    dd.classList.remove('open');
+  }
+}
+
+function selectTeamPickerItem(name) {
+  _teamPickerSelected = name;
+  _teamPickerOpen = false;
+  const dd = document.getElementById('teamPickerDropdown');
+  if (dd) dd.classList.remove('open');
+  const sel = document.getElementById('savedTeamSelect');
+  if (sel) sel.value = name;
+  refreshTeamPickerBtn();
+  onSavedTeamSelect();
+}
+
+function refreshTeamPickerBtn() {
+  const btn = document.getElementById('teamPickerBtn');
+  if (!btn) return;
+  const name = _teamPickerSelected;
+  btn.innerHTML = name
+    ? `<span style="flex:1;overflow:hidden;text-overflow:ellipsis;">${name}</span><span style="color:var(--text3);font-size:10px;flex-shrink:0;">▼</span>`
+    : `<span style="flex:1;color:var(--text3);">— saved teams —</span><span style="color:var(--text3);font-size:10px;flex-shrink:0;">▼</span>`;
+}
+
+function _parseSpeciesFromSlots(slots) {
+  return (slots || []).map(raw => {
+    if (!raw) return null;
+    const firstLine = raw.trim().split('\n')[0].trim();
+    const beforeAt = firstLine.split('@')[0].trim();
+    // Handle "Nickname (Species) (F/M)" or "Nickname (Species)" format
+    // Find last paren group, skip gender markers (M)/(F)
+    const parenMatches = [...beforeAt.matchAll(/\(([^)]+)\)/g)];
+    for (let i = parenMatches.length - 1; i >= 0; i--) {
+      const val = parenMatches[i][1].trim();
+      if (val === 'M' || val === 'F') continue; // skip gender tags
+      // This is the species
+      return val;
+    }
+    // No parens or all were gender tags — species is the whole thing
+    return beforeAt.replace(/\([MF]\)/g, '').trim() || null;
+  }).filter(Boolean);
+}
+
+// Fetch just the dex number for a species slug (lightweight — uses cache first)
+async function fetchDexNum(slug) {
+  if (pokemonCache[slug]?.dexNum) return pokemonCache[slug].dexNum;
+  try {
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${slug}`);
+    if (!res.ok) return 0;
+    const data = await res.json();
+    const num = data.id || 0;
+    if (pokemonCache[slug]) {
+      pokemonCache[slug].dexNum = num;
+    } else {
+      // Minimal cache entry so we don't re-fetch next time
+      pokemonCache[slug] = { dexNum: num };
+    }
+    _persistPokemonCache();
+    return num;
+  } catch { return 0; }
+}
+
+async function refreshTeamPickerDropdown(selectValue) {
+  refreshSavedTeamDropdown(selectValue);
+  if (selectValue !== undefined) _teamPickerSelected = selectValue || '';
+  refreshTeamPickerBtn();
+
+  const dd = document.getElementById('teamPickerDropdown');
+  if (!dd) return;
+  const teams = getSavedTeams();
+  const wr    = (typeof getWinrates === 'function') ? getWinrates() : {};
+  const names = Object.keys(teams).sort((a,b) => (teams[b]?.savedAt||0) - (teams[a]?.savedAt||0));
+
+  if (!names.length) {
+    dd.innerHTML = '<div style="padding:10px;font-size:12px;color:var(--text3);">No saved teams yet.</div>';
+    return;
+  }
+
+  // Collect all unique species slugs across all teams
+  const allSpecies = new Map(); // slug -> speciesRaw
+  for (const n of names) {
+    const entry = teams[n];
+    const slots = Array.isArray(entry) ? entry : (entry?.slots || []);
+    for (const raw of slots) {
+      if (!raw) continue;
+      const _fl = raw.trim().split('\n')[0].trim();
+      const _ba = _fl.split('@')[0].trim();
+      const _pms = [..._ba.matchAll(/\(([^)]+)\)/g)];
+      let name = _ba.replace(/\([MF]\)/g,'').trim();
+      for (let _pi = _pms.length-1; _pi >= 0; _pi--) {
+        const _pv = _pms[_pi][1].trim();
+        if (_pv === 'M' || _pv === 'F') continue;
+        name = _pv; break;
+      }
+      if (name) {
+        const clean = name.replace(/\s*★$/, '').trim();
+        const slug  = toSlug(clean);
+        const baseSlug = slug
+          .replace(/-mega(-[xy])?$/, '').replace(/-gmax$/, '')
+          .replace(/-blade$|-shield$/, '').replace(/-eternal$/, '')
+          .replace(/-origin$/, '').replace(/-therian$/, '').replace(/-incarnate$/, '');
+        allSpecies.set(baseSlug, name);
+      }
+    }
+  }
+
+  // Render immediately with whatever dex nums we have
+  const renderItems = () => {
+    dd.innerHTML = names.map(n => {
+      const score   = wr[n] || { wins:0, losses:0 };
+      const entry   = teams[n];
+      const slots   = Array.isArray(entry) ? entry : (entry?.slots || []);
+      const species = _parseSpeciesFromSlots(slots);
+      const icons   = species.slice(0,6).map(s => psIconHtml(s, s)).join('');
+      const isSel   = n === _teamPickerSelected;
+      const safeN   = n.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      return `<div class="team-picker-item${isSel?' selected':''}" onclick="selectTeamPickerItem('${safeN}')">
+        <div class="team-picker-name">
+          <span>${n}</span>
+          <span class="team-picker-wr">${score.wins}W–${score.losses}L</span>
+        </div>
+        <div class="team-picker-icons">${icons}</div>
+      </div>`;
+    }).join('');
+  };
+
+  renderItems();
+
+  // Fetch any missing dex numbers — skip species already in BattlePokedexMini
+  const missing = [...allSpecies.keys()].filter(slug => {
+    if (pokemonCache[slug]?.dexNum) return false;
+    // If BattlePokedexMini is loaded, we can get the icon index directly — no fetch needed
+    const psKey = slug.replace(/-/g, '');
+    if (typeof BattlePokedexMini !== 'undefined' && BattlePokedexMini[psKey]) return false;
+    return true;
+  });
+  if (missing.length) {
+    await Promise.all(missing.map(slug => fetchDexNum(slug).catch(() => {})));
+    renderItems(); // re-render with now-populated dex nums
+  }
+}
+
 function refreshSavedTeamDropdown(selectValue) {
   const sel = document.getElementById('savedTeamSelect');
   if (!sel) return;
@@ -5948,7 +6239,7 @@ async function _driveLoadExec() {
   merge(MATCH_HISTORY_KEY, data.matchHistory || {});
   merge(WINRATE_KEY,       data.winrates     || {});
   merge(NOTEBOOK_KEY,      data.notebooks    || {});
-  refreshSavedTeamDropdown('');
+  refreshTeamPickerDropdown('');
   refreshSavedMetaDropdown('');
   alert(`Loaded ${count} team(s) from Google Drive!`);
 }
@@ -6008,7 +6299,7 @@ function importAllData(event) {
       merge(NOTEBOOK_KEY,      data.notebooks    || {});
 
       // Refresh UI
-      refreshSavedTeamDropdown('');
+      refreshTeamPickerDropdown('');
       alert(`Import successful! ${count} team(s) imported.`);
     } catch (err) {
       alert('Failed to read file: ' + err.message);
@@ -6020,18 +6311,17 @@ function importAllData(event) {
 }
 
 function saveCurrentTeam() {
-  // Collect raw text from all filled defender slots
   const slots = DEFENDER_SLOTS.map(s => s ? (s._rawText || '') : null);
   const filled = slots.filter(Boolean);
   if (!filled.length) { alert('No defenders loaded to save.'); return; }
-  const sel      = document.getElementById('savedTeamSelect');
-  const existing = sel.value;
+  const existing = _teamPickerSelected;
   const name = prompt('Name this team:', existing || '');
   if (!name || !name.trim()) return;
   const teams = getSavedTeams();
   teams[name.trim()] = { slots, savedAt: Date.now() };
   putSavedTeams(teams);
-  refreshSavedTeamDropdown(name.trim());
+  _teamPickerSelected = name.trim();
+  refreshTeamPickerDropdown(name.trim());
 }
 
 let _teamLoadGen = 0;
@@ -6117,8 +6407,7 @@ async function onSavedTeamSelect() {
 }
 
 function renameSavedTeam() {
-  const sel  = document.getElementById('savedTeamSelect');
-  const name = sel.value;
+  const name = _teamPickerSelected;
   if (!name) { alert('Select a saved team first.'); return; }
   const newName = prompt('Rename to:', name);
   if (!newName || !newName.trim() || newName.trim() === name) return;
@@ -6126,18 +6415,19 @@ function renameSavedTeam() {
   teams[newName.trim()] = teams[name];
   delete teams[name];
   putSavedTeams(teams);
-  refreshSavedTeamDropdown(newName.trim());
+  _teamPickerSelected = newName.trim();
+  refreshTeamPickerDropdown(newName.trim());
 }
 
 function deleteSavedTeam() {
-  const sel  = document.getElementById('savedTeamSelect');
-  const name = sel.value;
+  const name = _teamPickerSelected;
   if (!name) { alert('Select a saved team first.'); return; }
   if (!confirm(`Delete team "${name}"?`)) return;
   const teams = getSavedTeams();
   delete teams[name];
   putSavedTeams(teams);
-  refreshSavedTeamDropdown('');
+  _teamPickerSelected = '';
+  refreshTeamPickerDropdown('');
 }
 
 // ── Collapsible cards ─────────────────────────────────────────────────────────
@@ -7270,11 +7560,11 @@ function adjustScore(side, delta) {
   putWinrates(wr);
   document.getElementById('wrWins').textContent   = wr[_currentTeamName].wins;
   document.getElementById('wrLosses').textContent = wr[_currentTeamName].losses;
-  refreshSavedTeamDropdown(_currentTeamName); // keep dropdown label in sync
+  refreshTeamPickerDropdown(_currentTeamName); // keep dropdown label in sync
 }
 
 // Re-populate team dropdown now that getWinrates is defined — shows correct W/L on load
-refreshSavedTeamDropdown(document.getElementById('savedTeamSelect')?.value || '');
+refreshTeamPickerDropdown(document.getElementById('savedTeamSelect')?.value || '');
 document.getElementById('resultsList').innerHTML = '<div class="error-msg" style="padding:24px 0;text-align:center;color:var(--text3);">Load a meta to see results.</div>';
 
 
@@ -7754,28 +8044,12 @@ function renderSynergyPanel() {
       };
 
       const n = _synergyGroupSize;
-      // In pinned mode: require exactly (n-1) members from pinnedPool (leave 1 slot for a new pokemon),
-      // capped at actual pinnedPool size. For pairs: at least 1 pinned (original behaviour).
-      const requiredPinnedCount = _synergyPinnedMode
-        ? Math.min(pinnedPool.length, n - 1)
-        : 0;
-
       const allCombos = [...combinations(loaded, n)].filter(combo => {
         // Mega constraint: at most 1 mega per combo
         const megaCount = combo.filter(isMega).length;
         if (megaCount > 1) return false;
         // Pinned mode filter
-        if (_synergyPinnedMode) {
-          const pinnedInCombo = combo.filter(p => pinnedKeys.has(p.speciesRaw));
-          if (pinnedInCombo.length !== requiredPinnedCount) return false;
-          // For trios/quads: the pinned members must actually be from pinnedPool (i.e. all required pinned are present)
-          // and there must be exactly 1 non-pinned member
-          if (n > 2) {
-            // Ensure every required pinned slot uses a distinct member from pinnedPool
-            const pinnedSpecies = new Set(pinnedPool.map(p => p.speciesRaw));
-            if (!pinnedInCombo.every(p => pinnedSpecies.has(p.speciesRaw))) return false;
-          }
-        }
+        if (_synergyPinnedMode && !combo.some(p => pinnedKeys.has(p.speciesRaw))) return false;
         return true;
       });
 
@@ -7905,8 +8179,10 @@ function buildSynergyListHTML(pairs) {
 let _synergyPairs = []; // cached pair results for expand/collapse
 
 function synergySprite(speciesRaw) {
-  // Use getSpriteUrl — strips ★ suffix, checks all caches, falls back to base form
-  return spriteImgHtmlCls(speciesRaw, 48, getSpriteUrl(speciesRaw), ' syn-pair-sprite-img');
+  // Reuse the exact same sprite logic as match window/log
+  const entry = META_DB.find(p => p.speciesRaw === speciesRaw) ||
+                COUNTER_POOL_DB.find(p => p.speciesRaw === speciesRaw);
+  return spriteImgHtmlCls(speciesRaw, 48, entry?.spriteUrl || null, ' syn-pair-sprite-img');
 }
 
 function toggleSynergyPair(i) {
