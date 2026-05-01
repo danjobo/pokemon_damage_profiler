@@ -5908,17 +5908,20 @@ function _buildPsIconMap() {
   const src = window.BattlePokemonSprites;
   const map = {};
   if (src) {
+    // Dump entries for our known problem pokemon
+    const debug = ['venusaurmega','tyranitarmega','aegislashblade','rotomheat','rotomwash','typhlosionhisui','scizormega'];
+    debug.forEach(k => console.log(`[ps-icon-data] ${k}:`, JSON.stringify(src[k])));
     for (const [key, entry] of Object.entries(src)) {
       if (entry?.num !== undefined) {
         const k = key.toLowerCase().replace(/[^a-z0-9]/g,'');
-        map[k] = entry.num; // base form: num == dex number == icon index
+        map[k] = entry.num;
       }
     }
   }
   // Apply overrides for forms/megas where icon index differs from dex number
   Object.assign(map, PS_ICON_OVERRIDES);
   window._psIconMap = map;
-  console.log('[ps-data] icon map built:', Object.keys(map).length, 'entries');
+  console.log('[ps-data] icon map built:', Object.keys(map).length, 'entries, venusaurmega idx:', map['venusaurmega'], 'rotomheat:', map['rotomheat']);
   _onPokedexMiniLoaded();
   if (_teamPickerOpen) refreshTeamPickerDropdown(_teamPickerSelected);
 }
