@@ -5820,56 +5820,130 @@ function getDexNum(speciesRaw) {
   return 0;
 }
 
-// Load PS icon data — battle-dex-data.js has the iconIndex for forms/megas
+// PS sprite sheet icon indices for alternate forms/megas
+// Base forms use dex number directly; these are exceptions from battle-dex-data.js
+// Source: https://github.com/smogon/pokemon-showdown-client (battle-dex-data.ts iconIndex)
+const PS_ICON_OVERRIDES = {
+  // Rotom forms (base Rotom = 479)
+  'rotomheat':1104,'rotomwash':1105,'rotomfrost':1106,'rotomfan':1107,'rotommow':1108,
+  // Wormadam
+  'wormadamsandy':1109,'wormadamtrash':1110,
+  // Giratina
+  'giratinaorigin':1111,
+  // Shaymin
+  'shayminsky':1112,
+  // Arceus forms (use base 493 for all)
+  // Basculin
+  'basculinbluestriped':1113,
+  // Darmanitan
+  'darmanitanzen':1114,'darmanitangalarzen':1115,
+  // Meloetta
+  'meloettapirouette':1116,
+  // Tornadus/Thundurus/Landorus therian
+  'tornadustherian':1117,'thundurustherian':1118,'landorustherian':1119,
+  // Kyurem
+  'kyuremblack':1120,'kyuremwhite':1121,
+  // Keldeo
+  'keldeoresolute':1122,
+  // Meowstic female
+  'meowsticf':1123,
+  // Aegislash
+  'aegislashblade':1124,
+  // Pumpkaboo/Gourgeist sizes
+  'pumpkaboosmall':1125,'pumpkaboolarge':1126,'pumpkaboosuper':1127,
+  'gourgeistsmall':1128,'gourgeistlarge':1129,'gourgeistsuper':1130,
+  // Hoopa
+  'hoopaconfined':493+1,'hoopaunbound':1131, // hoopa confined = normal num
+  // Megas (section starts around 1132 in sheet)
+  'venusaurmega':1132,'charizardmegax':1133,'charizardmegay':1134,
+  'blastoisemega':1135,'beedrillmega':1136,'pidgeotmega':1137,
+  'slowbromega':1138,'gengarmega':1139,'kangaskhanmega':1140,
+  'pinsirmega':1141,'gyaradosmega':1142,'aerodactylmega':1143,
+  'mewtwomegax':1144,'mewtwomegay':1145,'ampharosmega':1146,
+  'steelixmega':1147,'scizormega':1148,'heracrossmega':1149,
+  'houndoommega':1150,'tyranitarmega':1151,'sceptilemega':1152,
+  'blazikenmega':1153,'swampertmega':1154,'gardevoirmega':1155,
+  'sableyemega':1156,'mawilemega':1157,'aggronmega':1158,
+  'medichamega':1159,'manectricmega':1160,'sharpedomega':1161,
+  'cameruptmega':1162,'altariamega':1163,'banettemega':1164,
+  'absolmega':1165,'glaliemega':1166,'salamencemega':1167,
+  'metagrossmega':1168,'latiasmega':1169,'latiosmega':1170,
+  'kyogreprimal':1171,'groudonprimal':1172,'rayquazamega':1173,
+  'lopunnymega':1174,'garchompmega':1175,'lucariomega':1176,
+  'abomasnowmega':1177,'gallademega':1178,'audinomega':1179,
+  'dianciemega':1180,
+  // Alolan forms
+  'raticatealola':1181,'ratichatealola':1182,
+  'pikachuoriginal':1183,'pikachuhoenn':1184,'pikachusinnoh':1185,
+  'pikachuunova':1186,'pikachukalos':1187,'pikachualola':1188,'pikachuworld':1189,
+  'exeggutorialola':1190,'marowakalola':1191,
+  'grimeralola':1192,'mukalola':1193,
+  'geodudealola':1194,'graveleralola':1195,'golemealola':1196,
+  'diglettalola':1197,'dugtrioalola':1198,
+  'meowsthgalar':1199, // skip some
+  // Galarian forms
+  'meowthgalar':1200,'ponytagalar':1201,'rapidashgalar':1202,
+  'farfetchdgalar':1203,'weezinggalar':1204,'mrmimegalar':1205,
+  'corsolagalar':1206,'zigzagoongalar':1207,'linoongegalar':1208,
+  'darumakagalar':1209,'darmanitangalar':1210,'yamaskgalar':1211,
+  'stunfiskgalar':1212,
+  // Hisuian forms
+  'growlithehisui':1213,'arcaninehisui':1214,
+  'voltorbhisui':1215,'electrodehisui':1216,
+  'typhlosionhisui':1217,'quilavahisui':1218,'cyndaquilhisui':1219,
+  'decidueyehisui':1220,'dartrixhisui':1221,'rowlethisui':1222,
+  'samurott hisui':1223,'dewotthisui':1224,'oshawitthisui':1225,
+  'samurotthisui':1223,
+  'lilliganthisui':1226,'zoruahisui':1227,'zoroarkhisui':1228,
+  'braviaryhisui':1229,'sliggoohisui':1230,'goodranhisui':1231,
+  'avalugghisui':1232,'bergmitehisui':1233,'sneaselhisui':1234,
+  'kleavorhisui':1235,'ursalunahisui':1236,
+  // Paldean forms
+  'wooperpaldea':1237,'corviknighttomac':1238,
+  'tauroscombat':1239,'taurosblaze':1240,'taurosaqua':1241,
+};
+
+// Use BattlePokemonSprites.num for base forms, override for forms/megas
+function _buildPsIconMap() {
+  const src = window.BattlePokemonSprites;
+  const map = {};
+  if (src) {
+    for (const [key, entry] of Object.entries(src)) {
+      if (entry?.num !== undefined) {
+        const k = key.toLowerCase().replace(/[^a-z0-9]/g,'');
+        map[k] = entry.num; // base form: num == dex number == icon index
+      }
+    }
+  }
+  // Apply overrides for forms/megas where icon index differs from dex number
+  Object.assign(map, PS_ICON_OVERRIDES);
+  window._psIconMap = map;
+  console.log('[ps-data] icon map built:', Object.keys(map).length, 'entries');
+  _onPokedexMiniLoaded();
+  if (_teamPickerOpen) refreshTeamPickerDropdown(_teamPickerSelected);
+}
+
+// Load BattlePokemonSprites for base form num lookup (CORS-friendly via fetch+inject)
 (function loadPokedexMini() {
-  // Try battle-dex-data.js first (has iconIndex for all forms)
-  // Fall back to pokedex-mini.js (has num which we already use)
-  const url = 'https://play.pokemonshowdown.com/js/battle-dex-data.js';
+  const url = 'https://play.pokemonshowdown.com/data/pokedex-mini.js';
   fetch(url)
     .then(r => r.ok ? r.text() : Promise.reject(r.status))
     .then(text => {
-      // Rewrite all exports.* to window.*
       const patched = text.replace(/exports\.(\w+)\s*=/g, 'window.$1=');
       const s = document.createElement('script');
       s.textContent = patched;
       document.head.appendChild(s);
-      // battle-dex-data.js sets BattlePokedex with {iconIndex} per pokemon
-      const src = window.BattlePokedex || window.BattlePokedexMini || window.BattlePokedexAltForms;
-      console.log('[ps-data] globals set:', Object.keys(window).filter(k => k.startsWith('Battle')));
-      if (src) {
-        const sample = src['venusaurmega'] || src['Venusaur-Mega'];
-        console.log('[ps-data] venusaurmega sample:', sample);
-      }
-      // Extract icon index map from whatever was loaded
       _buildPsIconMap();
-      if (_teamPickerOpen) refreshTeamPickerDropdown(_teamPickerSelected);
     })
-    .catch(err => {
-      console.warn('[ps-data] battle-dex-data failed:', err);
+    .catch(() => {
+      // Even if fetch fails, apply overrides on top of dex-number fallback
+      window._psIconMap = { ...PS_ICON_OVERRIDES };
+      if (_teamPickerOpen) refreshTeamPickerDropdown(_teamPickerSelected);
     });
 })();
 
-// Build a slug→iconIndex map from whatever PS data was loaded
-function _buildPsIconMap() {
-  const src = window.BattlePokedex || window.BattlePokedexMini;
-  if (!src) return;
-  const map = {};
-  for (const [key, entry] of Object.entries(src)) {
-    if (!entry) continue;
-    // iconIndex is the sprite sheet index; fall back to num for base forms
-    const idx = entry.iconIndex !== undefined ? entry.iconIndex : entry.num;
-    if (idx !== undefined) map[key.toLowerCase().replace(/[^a-z0-9]/g,'')] = idx;
-  }
-  window._psIconMap = map;
-  console.log('[ps-data] icon map built with', Object.keys(map).length, 'entries');
-  console.log('[ps-data] venusaurmega:', map['venusaurmega'], 'rotomheat:', map['rotomheat']);
-  _onPokedexMiniLoaded();
-}
-
 // Once PS data loads, purge stale minimal cache entries
-// (old entries had only {dexNum} with no baseStats — now redundant and potentially wrong)
 function _onPokedexMiniLoaded() {
-  if (typeof BattlePokedexMini === 'undefined') return;
   let changed = false;
   for (const slug of Object.keys(pokemonCache)) {
     const entry = pokemonCache[slug];
@@ -5885,7 +5959,6 @@ function _onPokedexMiniLoaded() {
     if (typeof refreshTeamPickerDropdown === 'function') refreshTeamPickerDropdown(_teamPickerSelected);
   }
 }
-// Re-render dropdown once BattlePokedexMini loads — triggered by loadPokedexMini() above
 
 function psIconHtml(speciesRaw, title) {
   const psKey = toSlug(speciesRaw).replace(/-/g, '');
