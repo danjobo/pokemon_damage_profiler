@@ -1540,7 +1540,7 @@ Impish Nature
   <!-- CALCULATE BAR -->
   <div class="calc-bar">
     <div style="font-size:13px;color:var(--text2)" id="readyHint">Load a meta and paste a defender, then calculate.</div>
-    <button class="btn-primary" onclick="calculate()" id="calcBtn">Calculate damage</button>
+    <button class="btn-primary" onclick="calculate()" id="calcBtn">Add to tab(s)</button>
   </div>
 
   </div><!-- end wide-left -->
@@ -1978,7 +1978,10 @@ const SLUG_MAP = {
   'basculegion':'basculegion-male', 'basculegion-f':'basculegion-female',
   'basculegion (f)':'basculegion-female', 'basculegion (female)':'basculegion-female',
   'meowstic':'meowstic-male',
-  'tauros-paldea-aqua':'tauros-paldea-aqua-breed', 'mimikyu':'mimikyu-disguised'
+  'tauros-paldea-aqua':'tauros-paldea-aqua-breed',
+  'tauros-paldea-blaze':'tauros-paldea-blaze-breed',
+  'tauros-paldea-combat':'tauros-paldea-combat-breed',
+  'mimikyu':'mimikyu-disguised'
 };
 
 function toSlug(name) {
@@ -3448,7 +3451,7 @@ async function calculate() {
       renderEvPanel();
     }
     btn.disabled = false;
-    btn.textContent = 'Calculate damage';
+    btn.textContent = 'Add to tab(s)';
     return;
   }
 
@@ -3458,7 +3461,7 @@ async function calculate() {
     defender = await parseDefender(defText);
   } catch(e) {
     document.getElementById('defenderError').textContent = 'Error: ' + e.message;
-    btn.disabled = false; btn.textContent = 'Calculate damage';
+    btn.disabled = false; btn.textContent = 'Add to tab(s)';
     return;
   }
 
@@ -3480,7 +3483,7 @@ async function calculate() {
   showDefenderInfo(defender);
   document.getElementById('resultsSection').style.display = 'block';
   btn.disabled = false;
-  btn.textContent = 'Calculate damage';
+  btn.textContent = 'Add to tab(s)';
   renderEvPanel();
 }
 
@@ -3560,6 +3563,16 @@ function computeResults(loadedMeta, defender) {
       // but we store base type here; weather ball power doubling also done in renderResults)
       // For now mark it for renderResults
       const isWeatherBall = mn === 'weather ball';
+
+      // Raging Bull: type changes based on Tauros-Paldea form
+      const isRagingBull = mn === 'raging bull' || mn === 'ragingbull';
+      if (isRagingBull) {
+        const atkSlug = toSlug(attacker.speciesRaw);
+        if (atkSlug.includes('aqua'))   effectiveMoveType = 'water';
+        else if (atkSlug.includes('blaze'))  effectiveMoveType = 'fire';
+        else if (atkSlug.includes('combat') || atkSlug.includes('paldea')) effectiveMoveType = 'fighting';
+        // base normal stays normal
+      }
       // Weather Ball: resolve type immediately so ghost immunity etc work
       if (isWeatherBall && weather && weather !== 'none') {
         effectiveMoveType = weatherBallType(weather);
@@ -3795,6 +3808,15 @@ function computeResults(loadedMeta, defender) {
       const abM = getAbilityMods(defender.ability, move.type, defender.types, move.name);
       let effectiveMoveType = move.type;
       if (abM.typeOverride) effectiveMoveType = abM.typeOverride;
+
+      // Raging Bull: type changes based on the tab pokemon's form
+      const mnNorm = mn.replace(/[\s-]/g,'');
+      if (mnNorm === 'ragingbull') {
+        const slug = toSlug(defender.speciesRaw || '');
+        if (slug.includes('aqua'))        effectiveMoveType = 'water';
+        else if (slug.includes('blaze'))  effectiveMoveType = 'fire';
+        else if (slug.includes('combat') || slug.includes('paldea')) effectiveMoveType = 'fighting';
+      }
 
       const isFreezeDryDef = mn === 'freeze-dry' || mn.replace(/-/g,' ') === 'freeze dry';
       let eff;
@@ -4241,7 +4263,7 @@ function renderResults() {
           const tTypes2 = mp2 ? mp2.types : [q2];
           const tAb2 = mp2?.ability || '';
           return primaryMoves2.some(m => {
-            const mt2 = getEffectiveMoveType(m, r.attacker.ability||'');
+            const mt2 = getEffectiveMoveType(m, r.attacker.ability||'', r.attacker.speciesRaw);
             return typeEffWithAbility(mt2, tTypes2, tAb2) > 1;
           });
         });
@@ -4291,7 +4313,7 @@ function renderResults() {
           const divIdx = r.attacker.dividerIndex ?? 4;
           const primaryMoves = (r.attacker.resolvedMoves||[]).filter(m => (m.pasteIndex ?? 99) < divIdx);
           return primaryMoves.some(m => {
-            const mType = getEffectiveMoveType(m, r.attacker.ability||'');
+            const mType = getEffectiveMoveType(m, r.attacker.ability||'', r.attacker.speciesRaw);
             return typeEffWithAbility(mType, targetTypes, targetAbility) > 1;
           });
         }
@@ -4392,7 +4414,7 @@ function renderResults() {
           move: m, pct: null, adjustedPct: null, dmg: 0,
           eff: 1, stab: (r.attacker.types||[]).includes(m.type),
           activeMods: [], isSpread: m.isSpread || false,
-          effectiveMoveType: getEffectiveMoveType(m, r.attacker.ability||''),
+          effectiveMoveType: getEffectiveMoveType(m, r.attacker.ability||'', r.attacker.speciesRaw),
           pasteIndex: m.pasteIndex ?? 99, isStatus: m.cat === 'status' || !m.power,
         }))
       : breakdownSource;
@@ -4996,10 +5018,42 @@ function handleSearchKey(e) {
     return;
   }
 
-  // Enter: pin the top result
-  if (e.key === 'Enter' && bar && bar.value.trim()) {
+  // Ctrl+Enter: start a match
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault();
-    pinTopResult();
+    startMatch();
+    return;
+  }
+
+  // Shift+Enter: add top result to next open defender tab
+  if (e.shiftKey && e.key === 'Enter' && bar && bar.value.trim()) {
+    e.preventDefault();
+    const topRow = document.querySelector('#resultsList .result-row');
+    if (topRow) {
+      const addBtn = topRow.querySelector('.add-defender-btn');
+      if (addBtn) { addBtn.click(); return; }
+      // fallback: get species from name element
+      const nameEl = topRow.querySelector('.result-name');
+      if (nameEl) addMetaAsDefender(null, nameEl.textContent.trim());
+    }
+    return;
+  }
+
+  // Enter: toggle pin/unpin on top result matching current search
+  if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey && bar && bar.value.trim()) {
+    e.preventDefault();
+    const query = bar.value.trim().toLowerCase();
+    // Find first row whose name matches the search (skip pinned rows from other searches)
+    const rows = document.querySelectorAll('#resultsList .result-row');
+    let targetRow = null;
+    for (const row of rows) {
+      const name = row.querySelector('.result-name')?.textContent.trim().toLowerCase() || '';
+      if (name.includes(query)) { targetRow = row; break; }
+    }
+    // Fallback to first row if no name match (e.g. filter by type:)
+    if (!targetRow) targetRow = rows[0];
+    const pinBtn = targetRow?.querySelector('.pin-btn');
+    if (pinBtn) pinBtn.click();
     return;
   }
 
@@ -5857,7 +5911,9 @@ const PS_ICON_OVERRIDES = {
   // Samurott-hisui (row 18, col 10)
   'samurotthisui':1245,
   // Tauros-paldea (row 19, cols 10-11): blaze, aqua
-  'taurospaldeablaze':1257,'taurospaldeaaqua':1258,
+  'taurospaldeacombat':1256,'taurospaldeablaze':1257,'taurospaldeaaqua':1258,
+  'taurospaldea':1256, // base paldea form
+  'tauroscombat':1256,'taurosblaze':1257,'taurosaqua':1258, // short-form aliases
   // Zoroark-hisui (row 19, col 1)
   'zoroarkhisui':1248,
   // Palafin-hero (row 19, col 2)
@@ -5921,7 +5977,6 @@ function _buildPsIconMap() {
   // Apply verified overrides for forms/megas (icon index differs from dex number)
   Object.assign(map, PS_ICON_OVERRIDES);
   window._psIconMap = map;
-  console.log('[ps-data] icon map built:', Object.keys(map).length, 'entries, venusaurmega:', map['venusaurmega'], 'rotomheat:', map['rotomheat']);
   _onPokedexMiniLoaded();
   if (_teamPickerOpen) refreshTeamPickerDropdown(_teamPickerSelected);
 }
@@ -5964,7 +6019,19 @@ function _onPokedexMiniLoaded() {
 }
 
 function psIconHtml(speciesRaw, title) {
-  const psKey = toSlug(speciesRaw).replace(/-/g, '');
+  const plain = (speciesRaw||'').toLowerCase().trim()
+    .replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const psKey = plain
+    .replace(/-breed$/, '')
+    .replace(/-rider$/, '')
+    .replace(/-mask$/, '')
+    .replace(/-family-of-four$/, '')
+    .replace(/-single-strike$/, '')
+    .replace(/-normal$/, '')
+    .replace(/-male$/, '')
+    .replace(/-disguised$/, '')
+    .replace(/-female$/, 'f')
+    .replace(/-/g, '');
   let idx = 0;
 
   const map = window._psIconMap;
@@ -6691,9 +6758,16 @@ const SOUND_MOVES = new Set(['hypervoice','boomburst','disarmingvoice','echoedvo
   'bugbuzz','chatter','clangingscales','clangoroussoul','torchsong',
   'alluringvoice','psychicnoise']);
 
-function getEffectiveMoveType(move, ability) {
+function getEffectiveMoveType(move, ability, speciesRaw) {
   const ab = (ability||'').toLowerCase().replace(/[\s-]/g,'');
   const mn = move.name.toLowerCase().replace(/[\s-]/g,'');
+  // Raging Bull: type depends on Tauros-Paldea form
+  if (mn === 'ragingbull') {
+    const slug = toSlug(speciesRaw || '');
+    if (slug.includes('aqua'))   return 'water';
+    if (slug.includes('blaze'))  return 'fire';
+    if (slug.includes('combat') || slug.includes('paldea')) return 'fighting';
+  }
   // Liquid Voice: sound moves → water
   if (ab === 'liquidvoice' && SOUND_MOVES.has(mn)) return 'water';
   // Type-changing abilities for normal moves
@@ -6713,7 +6787,7 @@ function getMoveTypes(speciesRaw) {
     const divIdx = dividerIndex ?? 4;
     const primary = resolvedMoves.filter(m => (m.pasteIndex ?? 99) < divIdx);
     const moves = primary.length ? primary : resolvedMoves;
-    return [...new Set(moves.map(m => getEffectiveMoveType(m, ability)).filter(Boolean))];
+    return [...new Set(moves.map(m => getEffectiveMoveType(m, ability, speciesRaw)).filter(Boolean))];
   }
 
   if (teamEntry?.resolvedMoves?.length) {
@@ -7885,7 +7959,7 @@ function computeSynergyScore(a, b, avgBulk, avgOff, cache) {
 
   const getPrimary = (p, c) => c ? c.movTypes : (() => {
     const divIdx = p.dividerIndex ?? 4;
-    return (p.resolvedMoves||[]).filter(m=>(m.pasteIndex??99)<divIdx&&m.power>0).map(m=>getEffectiveMoveType(m,p.ability||''));
+    return (p.resolvedMoves||[]).filter(m=>(m.pasteIndex??99)<divIdx&&m.power>0).map(m=>getEffectiveMoveType(m,p.ability||'',p.speciesRaw));
   })();
   const movesA = getPrimary(a, ca);
   const movesB = getPrimary(b, cb);
@@ -7970,7 +8044,7 @@ function computeGroupSynergyScore(members, avgBulk, avgOff, cache) {
     return {
       p,
       defProfile: c ? c.defProfile : ALL_TYPES_18.map(t => typeEffWithAbility(t, p.types||[], p.ability||'')),
-      movTypes:   c ? c.movTypes   : (p.resolvedMoves||[]).filter(m=>(m.pasteIndex??99)<(p.dividerIndex??4)&&m.power>0).map(m=>getEffectiveMoveType(m,p.ability||'')),
+      movTypes:   c ? c.movTypes   : (p.resolvedMoves||[]).filter(m=>(m.pasteIndex??99)<(p.dividerIndex??4)&&m.power>0).map(m=>getEffectiveMoveType(m,p.ability||'',p.speciesRaw)),
       bulk: (c ? c.bulk : bulkOf(p)/ab),
       off:  (c ? c.off  : offOf(p)/ao),
     };
@@ -8048,7 +8122,7 @@ function computeOffensiveCoverage(a, b) {
     const divIdx = p.dividerIndex ?? 4;
     return (p.resolvedMoves || [])
       .filter(m => (m.pasteIndex ?? 99) < divIdx && m.power > 0)
-      .map(m => getEffectiveMoveType(m, p.ability || ''));
+      .map(m => getEffectiveMoveType(m, p.ability || '', p.speciesRaw));
   };
   const movesA = getMovesTypes(a);
   const movesB = getMovesTypes(b);
@@ -8120,7 +8194,7 @@ function renderSynergyPanel() {
         const divIdx = p.dividerIndex ?? 4;
         const movTypes = (p.resolvedMoves || [])
           .filter(m => (m.pasteIndex ?? 99) < divIdx && m.power > 0)
-          .map(m => getEffectiveMoveType(m, p.ability || ''));
+          .map(m => getEffectiveMoveType(m, p.ability || '', p.speciesRaw));
         const defProfile = ALL_TYPES_18.map(t => typeEffWithAbility(t, p.types || [], p.ability || ''));
         cache.set(p, { movTypes, defProfile, bulk: bulkOf(p)/avgBulk, off: offOf(p)/avgOff });
       }
@@ -8305,7 +8379,7 @@ function buildSynergyDetail(pair) {
   const getPrimMoves = p => {
     const divIdx = p.dividerIndex ?? 4;
     return (p.resolvedMoves || []).filter(m => (m.pasteIndex ?? 99) < divIdx && m.power > 0)
-      .map(m => getEffectiveMoveType(m, p.ability || ''));
+      .map(m => getEffectiveMoveType(m, p.ability || '', p.speciesRaw));
   };
 
   // Precompute per-member defense profiles and move types

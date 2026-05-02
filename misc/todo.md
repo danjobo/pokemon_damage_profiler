@@ -1,18 +1,9 @@
 ## Feature Request
 
-- ctrl+enter in search bar starts match
 
-- enter in search bar will pin top, but if you press it again, it will unpin the one you just pinned, essentially toggling between pinned and unpin everytime you press it
 
-- shift+enter adds the top to a tab
 
-- paldean tauros raging bull type change support
-
-- paldean tauros team dropdown sprite not showing
-
-- change "calculate damage" to "add to tab(s)"
-
-- [__] late drive save gives popup error
+- [??] late drive save gives popup error
 Drive save failed: {
     "error: {
         "code: 401,
@@ -33,7 +24,6 @@ Drive save failed: {
     }
 }
 
-- [__] non-mega golurk default sprite not working in match screen, type synergies, match log, but maybe working in meta analysis? i got glimmora-mega to work
 
 - metagame folders for different saved metas and teams
 
@@ -61,6 +51,13 @@ Drive save failed: {
 ---
 #### Completed
 
+- [XX] paldean tauros raging bull type change support
+- [XX] paldean tauros team dropdown sprite not showing
+- [XX] change "calculate damage" to "add to tab(s)"
+- [XX] non-mega golurk default sprite not working in match screen, type synergies, match log, but maybe working in meta analysis? i got glimmora-mega to work
+- [XX] ctrl+enter in search bar starts match
+- [XX] shift+enter adds the top to a tab
+- [XX] enter in search bar will pin top, but if you press it again, it will unpin the one you just pinned, essentially toggling between pinned and unpin everytime you press it
 - [XX] fix pin functionality
 - [XX] make pins of tabs also work
 - [XX] have type synergies have a cap of 1 mega only
