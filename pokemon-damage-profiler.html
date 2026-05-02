@@ -3969,6 +3969,11 @@ function computeResults(loadedMeta, defender) {
         const auraSource = (_tabAbNorm === 'fairyaura' || _tabAbNorm === 'darkaura') ? defender.ability : attacker.ability;
         defMods2.push(auraSource);
       }
+      // Ability power boost labels for the tab pokemon (defender here = the attacker in this mode)
+      if (abMeff.atkMul > 1)   defMods2.push(defender.ability);
+      if (abMeff.powerMul > 1) defMods2.push(defender.ability);
+      const perMoveMul2 = getAbilityMovePowerMul(defender.ability, move, eff);
+      if (perMoveMul2 > 1) defMods2.push(defender.ability);
       if (mhInfo2) {
         if (mhInfo2.variable) defMods2.push(`×${mhInfo2.min}–${mhInfo2.max} hits`);
         else                   defMods2.push(`×${mhInfo2.fixed} hits`);
