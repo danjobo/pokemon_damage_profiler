@@ -6112,7 +6112,9 @@ function _onPokedexMiniLoaded() {
 }
 
 function psIconHtml(speciesRaw, title) {
-  const plain = (speciesRaw||'').toLowerCase().trim()
+  // Strip ★ suffix from pinned pokemon names before building key
+  const rawClean = (speciesRaw||'').replace(/\s*★$/, '').trim();
+  const plain = rawClean.toLowerCase()
     .replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   const psKey = plain
     .replace(/-breed$/, '')
@@ -7282,7 +7284,8 @@ async function loadBaseSprite(imgId, baseSlug) {
 
 function spriteImgHtmlCls(speciesRaw, size, savedUrl, extraCls) {
   size = size || 38; savedUrl = savedUrl || null; extraCls = extraCls || '';
-  const slug = toSlug(speciesRaw);
+  const cleanRaw = (speciesRaw || '').replace(/\s*★$/, '').trim();
+  const slug = toSlug(cleanRaw);
   const baseSlug = slug === 'floette-mega' ? 'floette-eternal' : slug.replace(/-mega(-[xy])?$/,'').replace(/-gmax$/,'').replace(/-blade$|-shield$/,'').replace(/-eternal$/,'');
   const shortName = speciesRaw.split(/[\s-]/)[0].slice(0, 8);
   const isForm = baseSlug !== slug;
@@ -7307,7 +7310,8 @@ function spriteImgHtmlCls(speciesRaw, size, savedUrl, extraCls) {
 
 // Match window sprite: 52px, same PokeAPI-first fallback chain
 function matchWindowSpriteHtml(speciesRaw, spriteUrl) {
-  const slug = toSlug(speciesRaw);
+  const cleanRaw = (speciesRaw || '').replace(/\s*★$/, '').trim();
+  const slug = toSlug(cleanRaw);
   const baseSlug = slug === 'floette-mega' ? 'floette-eternal' : slug.replace(/-mega(-[xy])?$/,'').replace(/-gmax$/,'').replace(/-blade$|-shield$/,'').replace(/-eternal$/,'');
   const shortName = speciesRaw.split(/[\s-]/)[0].slice(0, 6);
   const isForm = baseSlug !== slug;
@@ -8345,13 +8349,20 @@ function renderSynergyPanel() {
       };
 
       const n = _synergyGroupSize;
+
+      // In pinned mode: each combo must contain as many pinned pokemon as possible
+      // but always at least 1 non-pinned pokemon (so there's always a meta suggestion)
+      // Max pins per combo = min(pinCount, n-1)
       const allCombos = [...combinations(loaded, n)].filter(combo => {
         // Mega constraint: at most 1 mega per combo
         const megaCount = combo.filter(isMega).length;
         if (megaCount > 1) return false;
-        // Pinned mode filter
-        if (_synergyPinnedMode && !combo.some(p => pinnedKeys.has(p.speciesRaw))) return false;
-        return true;
+        if (!_synergyPinnedMode) return true;
+        const pinnedInCombo = combo.filter(p => pinnedKeys.has(p.speciesRaw)).length;
+        const pinCount = pinnedPool.length;
+        const maxPinsPerCombo = Math.min(pinCount, n - 1); // always leave room for 1 meta mon
+        // Combo must contain exactly maxPinsPerCombo pinned pokemon
+        return pinnedInCombo === maxPinsPerCombo;
       });
 
       const pairs = [];
