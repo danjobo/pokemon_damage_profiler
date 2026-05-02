@@ -1496,7 +1496,7 @@ Impish Nature
 - Earthquake
 - Dragon Tail
 - Stealth Rock
-- Fire Blast"></textarea>
+- Fire Blast" oninput="onDefenderInputChange()"></textarea>
 
       <div id="defenderInfo" class="info-box" style="display:none!important;"></div>
       <div id="defenderError" class="error-msg"></div>
@@ -3391,6 +3391,76 @@ function applyPsychicTerrainPower(moveName, terrain) {
     return { powerMul: 1.5, spreadOverride: true };
   }
   return { powerMul: 1, spreadOverride: false };
+}
+
+let _defenderInputTimer = null;
+function onDefenderInputChange() {
+  const slot = DEFENDER_SLOTS[activeDefenderSlot];
+  if (!slot) return;
+  // Save raw text immediately so tab switches preserve edits
+  slot._rawText = document.getElementById('defenderInput')?.value || '';
+  clearTimeout(_defenderInputTimer);
+  _defenderInputTimer = setTimeout(() => {
+    const text = document.getElementById('defenderInput')?.value?.trim();
+    if (!text) return;
+    const loadedMeta = META_DB.filter(p => p.loaded);
+    if (!loadedMeta.length) return;
+    // Only update if still on the same slot
+    if (DEFENDER_SLOTS[activeDefenderSlot] !== slot) return;
+    try {
+      // Parse synchronously — just extract move names, EVs, nature etc.
+      const parsed = parseSinglePaste(text);
+      // Re-use already-fetched move data from cache (fast, no API calls)
+      const moveResults = parsed.moves.map((moveName, i) => {
+        const slug = moveName.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+        const cached = moveCache[slug];
+        if (cached) return { ...cached, pasteIndex: i };
+        // Move not in cache yet — keep old data if available, else mark as unknown
+        const old = (slot.allMoves || []).find(m =>
+          m.name?.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'') === slug
+        );
+        return old ? { ...old, pasteIndex: i }
+                   : { name: moveName, power: 0, type: 'normal', cat: 'status', isSpread: false, pasteIndex: i };
+      });
+      // Preserve existing species data (types, baseStats, spriteUrl) from the slot
+      const updated = {
+        ...slot,
+        ...parsed,
+        types:       slot.types,
+        baseStats:   slot.baseStats,
+        spriteUrl:   slot.spriteUrl,
+        weight:      slot.weight,
+        computedHp:  slot.computedHp,
+        computedAtk: slot.computedAtk,
+        computedDef: slot.computedDef,
+        computedSpa: slot.computedSpa,
+        computedSpd: slot.computedSpd,
+        computedSpe: slot.computedSpe,
+        allMoves:      moveResults,
+        resolvedMoves: moveResults.filter(m => m.power > 0),
+        _rawText:    text,
+        _lastResults: slot._lastResults,
+      };
+      // Recompute stats if EVs/nature changed
+      const nat = NATURES[updated.nature] || {};
+      const nm = s => nat[s] || 1;
+      const bs = updated.baseStats;
+      updated.computedHp  = calcHP  (bs.hp  ||0, updated.evs.hp  ||0, updated.ivs.hp  ??31, updated.level);
+      updated.computedAtk = calcStat(bs.atk ||0, updated.evs.atk ||0, updated.ivs.atk ??31, updated.level, nm('atk'));
+      updated.computedDef = calcStat(bs.def ||0, updated.evs.def ||0, updated.ivs.def ??31, updated.level, nm('def'));
+      updated.computedSpa = calcStat(bs.spa ||0, updated.evs.spa ||0, updated.ivs.spa ??31, updated.level, nm('spa'));
+      updated.computedSpd = calcStat(bs.spd ||0, updated.evs.spd ||0, updated.ivs.spd ??31, updated.level, nm('spd'));
+      updated.computedSpe = calcStat(bs.spe ||0, updated.evs.spe ||0, updated.ivs.spe ??31, updated.level, nm('spe'));
+
+      DEFENDER_SLOTS[activeDefenderSlot] = updated;
+      const newResults = computeResults(loadedMeta, updated);
+      updated._lastResults = newResults;
+      lastResults = newResults;
+      renderResults();
+      renderDefenderTabs();
+      renderEvPanel();
+    } catch(e) { /* silent — don't show parse errors mid-edit */ }
+  }, 500);
 }
 
 async function calculate() {
