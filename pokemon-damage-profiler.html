@@ -3974,6 +3974,15 @@ function computeResults(loadedMeta, defender) {
         mhDmg2 = mhInfo2 ? dmg * mhInfo2.avg : dmg;
       }
       const defMods2 = [];
+      const _tabAbNorm2 = (defender.ability||'').toLowerCase().replace(/[\s-]/g,'');
+
+      // STAB label (mirrors defending mode logic)
+      if (isStab > 1.5) defMods2.push(_tabAbNorm2 === 'adaptability' ? 'Adaptability' : 'STAB×2');
+      else if (isStab > 1) defMods2.push(_tabAbNorm2 === 'protean' || _tabAbNorm2 === 'libero' ? 'Protean STAB' : 'STAB');
+
+      // Type change from ability
+      if (abMeff.typeOverride && abMeff.typeOverride !== move.type) defMods2.push(`${defender.ability} (${move.type}→${effectiveMoveType})`);
+
       if (atkingAuraMul > 1) {
         const auraSource = (_tabAbNorm === 'fairyaura' || _tabAbNorm === 'darkaura') ? defender.ability : attacker.ability;
         defMods2.push(auraSource);
