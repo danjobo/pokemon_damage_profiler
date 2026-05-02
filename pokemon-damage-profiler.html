@@ -6383,6 +6383,7 @@ const DRIVE_FILENAME  = 'damage-profiler-saves.json';
 let _driveTokenClient = null;
 let _driveAccessToken = null;
 let _driveTokenExpiry = 0;
+let _driveConsentGranted = false; // true once user has granted consent this session
 let _drivePendingAction = null; // 'save' | 'load'
 
 function _driveTokenValid() {
@@ -6412,12 +6413,14 @@ function _driveEnsureAuth(action) {
         if (resp.error) { alert('Google sign-in failed: ' + resp.error); return; }
         _driveAccessToken = resp.access_token;
         _driveTokenExpiry = Date.now() + (resp.expires_in || 3600) * 1000;
+        _driveConsentGranted = true;
         _driveExecute(_drivePendingAction);
       },
     });
   }
-  // Silent refresh if we had a token before; full sign-in prompt otherwise
-  const prompt = _driveAccessToken ? '' : 'select_account';
+  // First auth: show full consent screen (including uncertified app warning)
+  // Refresh: silent if consent already granted this session
+  const prompt = _driveConsentGranted ? '' : 'consent';
   _driveTokenClient.requestAccessToken({ prompt });
 }
 
@@ -6478,7 +6481,7 @@ function _driveAutoSave() {
   _driveAutoSaveTimer = setTimeout(() => {
     if (_driveTokenValid()) {
       _driveSaveExec(true);
-    } else {
+    } else if (_driveConsentGranted) {
       _drivePendingAction = 'save';
       try { _driveTokenClient?.requestAccessToken({ prompt: '' }); } catch(e) {}
     }
