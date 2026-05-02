@@ -6429,6 +6429,41 @@ async function _driveExecute(action) {
   else if (action === 'load') await _driveLoadExec();
 }
 
+async function _driveLoadExec() {
+  const fileId = await _driveFindFile();
+  if (!fileId) { alert('No save file found on Google Drive.'); return; }
+  const resp = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+    { headers: { Authorization: 'Bearer ' + _driveAccessToken } }
+  );
+  if (resp.status === 401) {
+    _driveAccessToken = null; _driveTokenExpiry = 0;
+    _driveEnsureAuth('load'); return;
+  }
+  if (!resp.ok) { alert('Drive load failed: ' + (await resp.text())); return; }
+  try {
+    const data = await resp.json();
+    if (!data.savedTeams) { alert('Drive file doesn\'t look like a valid save.'); return; }
+    const count = Object.keys(data.savedTeams).length;
+    if (!confirm(`Sync ${count} team(s) from Drive? This will merge with your existing data (same name = overwritten).`)) return;
+    const merge = (key, incoming) => {
+      if (!incoming) return;
+      const existing = JSON.parse(localStorage.getItem(key) || '{}');
+      localStorage.setItem(key, JSON.stringify({ ...existing, ...incoming }));
+    };
+    merge(SAVED_TEAMS_KEY,   data.savedTeams);
+    merge(SAVED_METAS_KEY,   data.savedMetas);
+    merge(MATCH_HISTORY_KEY, data.matchHistory);
+    merge(WINRATE_KEY,       data.winrates);
+    merge(NOTEBOOK_KEY,      data.notebooks);
+    refreshTeamPickerDropdown('');
+    refreshSavedMetaDropdown('');
+    alert(`Loaded ${count} team(s) from Google Drive.`);
+  } catch(e) {
+    alert('Failed to parse Drive save: ' + e.message);
+  }
+}
+
 async function _driveFindFile() {
   const resp = await fetch(
     `https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FILENAME}'+and+trashed=false&spaces=drive&fields=files(id,name)`,
