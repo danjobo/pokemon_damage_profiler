@@ -1562,9 +1562,14 @@ Impish Nature
           <option value="hp">HP</option>
         </select>
         <button id="sortDirBtn" onclick="toggleSortDir()" title="Reverse sort order" style="padding:4px 8px;font-size:12px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;line-height:1;">↓</button>
+        <button onclick="clearDefenders()" style="padding:4px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;">Clear defenders</button>
       </div>
 
-      <div id="defenderTag" class="defender-tag"></div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button onclick="loadTabsIntoPins()" style="padding:3px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Pin the tab Pokémon as temporary meta listings using their exact stats/moves/items">📌 Pin tabs</button>
+        <button onclick="clearPins()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Clear all pinned Pokémon and collapse expanded rows">Clear pins</button>
+        <div id="defenderTag" class="defender-tag"></div>
+      </div>
     </div>
 
     
@@ -1702,7 +1707,6 @@ Impish Nature
         </select>
       </div>
 
-      <button id="maxRollBtn" onclick="toggleModeBtn('maxRollMode','maxRollBtn')" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;align-self:flex-end;" title="Show max damage rolls">Max rolls</button>
 
 
 
@@ -1752,10 +1756,7 @@ Impish Nature
         <div class="def-tab def-tab-empty" title="Slot 5" onclick="selectDefenderTab(4)" id="defTab-4">＋</div>
         <div class="def-tab def-tab-empty" title="Slot 6" onclick="selectDefenderTab(5)" id="defTab-5">＋</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;">
-        <button onclick="loadTabsIntoPins()" style="padding:3px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Pin the tab Pokémon as temporary meta listings using their exact stats/moves/items">📌 Pin tabs</button>
-        <button onclick="clearPins()" style="padding:3px 12px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Clear all pinned Pokémon and collapse expanded rows">Clear pins</button>
-      </div>
+      <button id="maxRollBtn" onclick="toggleModeBtn('maxRollMode','maxRollBtn')" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0;" title="Show max damage rolls">Max rolls</button>
     </div>
     </div><!-- end controls-sticky-wrap -->
 
@@ -2781,6 +2782,14 @@ function selectDefenderTab(i) {
       renderResults();
       updateWeaknessOverlay();
     }
+  } else {
+    // Empty tab — clear textarea and EV panel so user can paste a new pokemon
+    document.getElementById('defenderInput').value = '';
+    document.getElementById('defenderInfo').classList.remove('visible');
+    document.getElementById('defenderError').textContent = '';
+    lastResults = [];
+    renderResults();
+    renderEvPanel();
   }
   renderDefenderTabs();
   renderEvPanel();
