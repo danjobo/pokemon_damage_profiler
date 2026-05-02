@@ -5894,7 +5894,7 @@ const PS_ICON_OVERRIDES = {
   'copperajahgmax':1394,'duraludongmax':1395,'eternatusgmax':1396,
   'venusaurgmax':1397,'blastoisegmax':1398,'rillaboomgmax':1399,'cinderacegmax':1400,
   'inteleongmax':1401,'urshifugmax':1402,'urshifurapidstrikegmax':1403,
-  'clefablemega':1404,'victreebellmega':1405,'starmiemega':1406,'dragonitemega':1407,
+  'clefablemega':1404,'victreebelmega':1405,'starmiemega':1406,'dragonitemega':1407,
   'meganiummega':1408,'feraligatrmega':1409,'skarmorymega':1410,'froslassmega':1411,
   'emboarmega':1412,'excadrillmega':1413,'scolipedemega':1414,'scraftymega':1415,
   'eelektrossmega':1416,'chandeluremega':1417,'chesnaughtmega':1418,'delphoxmega':1419,
@@ -6245,7 +6245,12 @@ const DRIVE_SCOPES    = 'https://www.googleapis.com/auth/drive.file';
 const DRIVE_FILENAME  = 'damage-profiler-saves.json';
 let _driveTokenClient = null;
 let _driveAccessToken = null;
+let _driveTokenExpiry = 0;
 let _drivePendingAction = null; // 'save' | 'load'
+
+function _driveTokenValid() {
+  return !!_driveAccessToken && Date.now() < _driveTokenExpiry - 60000; // 1min safety buffer
+}
 
 function _driveGetData() {
   return JSON.stringify({
@@ -6261,7 +6266,7 @@ function _driveGetData() {
 
 function _driveEnsureAuth(action) {
   _drivePendingAction = action;
-  if (_driveAccessToken) { _driveExecute(action); return; }
+  if (_driveTokenValid()) { _driveExecute(action); return; }
   if (!_driveTokenClient) {
     _driveTokenClient = google.accounts.oauth2.initTokenClient({
       client_id: DRIVE_CLIENT_ID,
@@ -6269,11 +6274,14 @@ function _driveEnsureAuth(action) {
       callback: (resp) => {
         if (resp.error) { alert('Google sign-in failed: ' + resp.error); return; }
         _driveAccessToken = resp.access_token;
+        _driveTokenExpiry = Date.now() + (resp.expires_in || 3600) * 1000;
         _driveExecute(_drivePendingAction);
       },
     });
   }
-  _driveTokenClient.requestAccessToken({ prompt: 'consent' });
+  // Silent refresh if we had a token before; full sign-in prompt otherwise
+  const prompt = _driveAccessToken ? '' : 'select_account';
+  _driveTokenClient.requestAccessToken({ prompt });
 }
 
 async function _driveExecute(action) {
@@ -6291,16 +6299,15 @@ async function _driveFindFile() {
 }
 
 async function _driveSaveExec(silent = false) {
+  if (!_driveAccessToken) return;
   const content = _driveGetData();
   const blob = new Blob([content], { type: 'application/json' });
   const existing = await _driveFindFile();
-
   let url, method;
   if (existing) {
     url = `https://www.googleapis.com/upload/drive/v3/files/${existing}?uploadType=media`;
     method = 'PATCH';
   } else {
-    // Create with metadata first
     const meta = await fetch('https://www.googleapis.com/drive/v3/files', {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + _driveAccessToken, 'Content-Type': 'application/json' },
@@ -6310,53 +6317,35 @@ async function _driveSaveExec(silent = false) {
     url = `https://www.googleapis.com/upload/drive/v3/files/${metaData.id}?uploadType=media`;
     method = 'PATCH';
   }
-
   const resp = await fetch(url, {
     method,
     headers: { Authorization: 'Bearer ' + _driveAccessToken, 'Content-Type': 'application/json' },
     body: blob
   });
+  if (resp.status === 401) {
+    _driveAccessToken = null;
+    _driveTokenExpiry = 0;
+    if (!silent) _driveEnsureAuth('save');
+    return;
+  }
   if (!silent) {
     if (resp.ok) alert('Saved to Google Drive successfully!');
     else alert('Drive save failed: ' + (await resp.text()));
   }
 }
 
-async function _driveLoadExec() {
-  const fileId = await _driveFindFile();
-  if (!fileId) {
-    alert('No save file found in Google Drive. Save first from another device.');
-    return;
-  }
-  const resp = await fetch(
-    `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
-    { headers: { Authorization: 'Bearer ' + _driveAccessToken } }
-  );
-  if (!resp.ok) { alert('Drive load failed: ' + (await resp.text())); return; }
-  const data = await resp.json();
-  if (!data.version || !data.savedTeams) { alert('Invalid save file in Drive.'); return; }
-  const count = Object.keys(data.savedTeams).length;
-  if (!confirm(`Load ${count} team(s) from Google Drive? This will merge with your local data.`)) return;
-  const merge = (key, incoming) => {
-    const existing = JSON.parse(localStorage.getItem(key) || '{}');
-    localStorage.setItem(key, JSON.stringify({ ...existing, ...incoming }));
-  };
-  merge(SAVED_TEAMS_KEY,   data.savedTeams   || {});
-  merge(SAVED_METAS_KEY,   data.savedMetas   || {});
-  merge(MATCH_HISTORY_KEY, data.matchHistory || {});
-  merge(WINRATE_KEY,       data.winrates     || {});
-  merge(NOTEBOOK_KEY,      data.notebooks    || {});
-  refreshTeamPickerDropdown('');
-  refreshSavedMetaDropdown('');
-  alert(`Loaded ${count} team(s) from Google Drive!`);
-}
-
 let _driveAutoSaveTimer = null;
 function _driveAutoSave() {
-  // Only auto-save if already authenticated (don't prompt for auth)
   if (!_driveAccessToken) return;
   clearTimeout(_driveAutoSaveTimer);
-  _driveAutoSaveTimer = setTimeout(() => { _driveSaveExec(true); }, 3000);
+  _driveAutoSaveTimer = setTimeout(() => {
+    if (_driveTokenValid()) {
+      _driveSaveExec(true);
+    } else {
+      _drivePendingAction = 'save';
+      try { _driveTokenClient?.requestAccessToken({ prompt: '' }); } catch(e) {}
+    }
+  }, 3000);
 }
 function driveSave() { _driveEnsureAuth('save'); }
 function driveLoad() { _driveEnsureAuth('load'); }

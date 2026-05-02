@@ -1,6 +1,41 @@
 ## Feature Request
 
-- non-mega golurk default sprite not working in match screen, type synergies, match log, but maybe working in meta analysis? i got glimmora-mega to work
+- ctrl+enter in search bar starts match
+
+- enter in search bar will pin top, but if you press it again, it will unpin the one you just pinned, essentially toggling between pinned and unpin everytime you press it
+
+- shift+enter adds the top to a tab
+
+- paldean tauros raging bull type change support
+
+- paldean tauros team dropdown sprite not showing
+
+- change "calculate damage" to "add to tab(s)"
+
+- [__] late drive save gives popup error
+Drive save failed: {
+    "error: {
+        "code: 401,
+        "message": "Requiest had invalid authentication credentials.
+        Expected OAuth 2 access token, login cookie or other valid
+        authentication credential. See https://developers.google.com/
+        identity/sign-in/web/devconsole-project.",
+        "errors":[
+            {
+                "message": "Invalid Credentials",
+                "domain": "global",
+                "reason": "authError",
+                "location": "Authorization",
+                "locationType": "header"
+            }
+        ],
+        "status": "UNAUTHENTICATED"
+    }
+}
+
+- [__] non-mega golurk default sprite not working in match screen, type synergies, match log, but maybe working in meta analysis? i got glimmora-mega to work
+
+- metagame folders for different saved metas and teams
 
 
 
