@@ -6620,7 +6620,7 @@ async function _driveLoadExec() {
   if (!resp.ok) { alert('Drive load failed: ' + (await resp.text())); return; }
   try {
     const data = await resp.json();
-    if (!data.savedTeams) { alert('Drive file doesn\'t look like a valid save.'); return; }
+    if (!data.version || (!data.savedTeams && !data.teamsByFormat)) { alert('Drive file doesn\'t look like a valid save.'); return; }
     const merge = (key, incoming) => {
       if (!incoming || !Object.keys(incoming).length) return;
       const existing = JSON.parse(localStorage.getItem(key) || '{}');
