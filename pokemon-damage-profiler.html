@@ -1549,6 +1549,7 @@ Impish Nature
         
         <button onclick="clearDefenders()">Clear defenders</button>
         <button id="copyTeamBtn" onclick="copyTeamPaste()" title="Copy all tabs as a team paste" style="transition:background 0.15s,color 0.15s;">📋 Copy to Clipboard</button>
+        <button id="copy252Btn" onclick="copyTeamPaste252()" title="Copy team with EVs converted to 252 format" style="display:none;transition:background 0.15s,color 0.15s;">📋 Copy as 252</button>
       </div>
 
       <!-- EV / Nature editor — only shown when a slot is loaded -->
@@ -2945,6 +2946,48 @@ function clearDefenderSlot(e, i) {
   }
   renderDefenderTabs();
   renderEvPanel();
+}
+
+function copyTeamPaste252() {
+  const filled = DEFENDER_SLOTS.filter(Boolean);
+  if (!filled.length) return;
+
+  const blocks = filled.map(slot => {
+    let block = slot.speciesRaw;
+    if (slot.item) block += ` @ ${slot.item}`;
+    if (slot.ability) block += `\nAbility: ${slot.ability}`;
+    block += `\nLevel: ${slot.level || 50}`;
+    // Convert Champions EVs (0-32) to 252 format: multiply by 8, cap at 252
+    const evParts = Object.entries(slot.evs || {}).filter(([,v]) => v > 0)
+      .map(([k,v]) => {
+        const converted = Math.min(252, v * 8);
+        return `${converted} ${k.toUpperCase().replace('SPA','SpA').replace('SPD','SpD').replace('SPE','Spe').replace('ATK','Atk').replace('DEF','Def')}`;
+      });
+    if (evParts.length) block += `\nEVs: ${evParts.join(' / ')}`;
+    const natureName = (slot.nature || 'Hardy');
+    block += `\n${natureName.charAt(0).toUpperCase() + natureName.slice(1)} Nature`;
+    (slot.moves || []).slice(0, 4).forEach(mv => { block += `\n- ${mv}`; });
+    return block;
+  });
+
+  const paste = blocks.join('\n\n');
+  navigator.clipboard.writeText(paste).then(() => {
+    const btn = document.getElementById('copy252Btn');
+    if (!btn) return;
+    const prev = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = 'var(--green)';
+    setTimeout(() => {
+      btn.textContent = prev;
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 1800);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = paste; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+  });
 }
 
 function copyTeamPaste() {
@@ -8058,6 +8101,10 @@ function setFormat(fmtId) {
     btn.style.color = active ? 'var(--accent2)' : 'var(--text3)';
     btn.style.fontWeight = active ? '600' : '400';
   });
+  // Show "Copy as 252" button only in Champions format
+  const copy252Btn = document.getElementById('copy252Btn');
+  if (copy252Btn) copy252Btn.style.display = fmtId === 'champions' ? '' : 'none';
+
   // Show Dynamax button only for SwSh
   const dynamaxBtn = document.getElementById('dynamaxBtn');
   const dynamaxCb  = document.getElementById('dynamaxMode');

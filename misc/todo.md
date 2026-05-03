@@ -1,5 +1,27 @@
 ## Feature Request
 
+- orgepon-cornerstone sprite is tatsugiri?
+
+- no mega buttons in scarlet & violet
+
+- tera type support in scarlet & violet
+
+- band/specs boost button
+
+- life orb button
+
+- electric terrain boosts electric by 30%
+    - doubles rising voltage's base power
+
+- psychic terrain boosts psychic by 30%
+
+- misty terrain halves dragon type moves
+
+- grassy terrain boosts grass by 30%
+    - bulldoze, earthquake, magnitude halved
+
+- booster energy support?
+
 - print "Calcs document!"
 
 - sprites on the tabs
