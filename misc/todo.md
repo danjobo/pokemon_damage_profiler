@@ -1,7 +1,8 @@
 ## Feature Request
 
+- print "Calcs document!"
 
-
+- sprites on the tabs
 
 - [??] late drive save gives popup error
 Drive save failed: {

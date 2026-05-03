@@ -1375,11 +1375,54 @@
 
   <!-- <div class="two-col"> -->
 
+  <!-- GETTING STARTED CARD — shown first run only -->
+  <div id="gettingStartedCard" style="display:none;background:linear-gradient(135deg,rgba(124,106,247,0.12),rgba(124,106,247,0.04));border:1px solid rgba(124,106,247,0.3);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1rem;position:relative;animation:matchSlideIn 0.3s ease;">
+    <button onclick="dismissGettingStarted()" style="position:absolute;top:10px;right:12px;background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;" title="Dismiss">✕</button>
+    <div style="font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:10px;letter-spacing:0.02em;">👋 Welcome! Here's how to get started</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <div style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;margin-top:1px;">1</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text);">Load your meta</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">Paste Pokémon sets from Pikalytics or pokepast.es into the <b>Meta database</b> below, then click <b>Load meta</b>. This is the list of Pokémon your team will face.</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <div style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;margin-top:1px;">2</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text);">Add your Pokémon</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">Paste your Pokémon's set into the <b>Your team</b> box and click <b>Add to tab(s)</b>. Add up to 6 for your full team.</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <div style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;margin-top:1px;">3</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text);">See damage</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">The results panel shows how much damage each meta Pokémon deals to yours — and how much yours deals back. Click a result row to expand move details.</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:12px;padding-top:10px;border-top:0.5px solid rgba(124,106,247,0.2);font-size:10px;color:var(--text3);">
+      💡 Once you're comfortable, explore <b>Type Synergies</b> (🔗), <b>Match tracking</b>, and the <b>Meta threat analysis</b> in the results panel.
+    </div>
+  </div>
+
+  <!-- FORMAT SELECTOR -->
+  <div style="display:flex;align-items:center;gap:8px;padding:8px 0 4px;margin-bottom:4px;">
+    <span style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;">Format</span>
+    <div style="display:flex;gap:2px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden;">
+      <button id="fmtBtn-champions" onclick="setFormat('champions')" style="padding:4px 12px;font-size:12px;border:none;cursor:pointer;background:rgba(124,106,247,0.15);color:var(--accent2);">Champions</button>
+      <button id="fmtBtn-swsh" onclick="setFormat('swsh')" style="padding:4px 12px;font-size:12px;border:none;cursor:pointer;background:transparent;color:var(--text3);">Sword & Shield</button>
+      <button id="fmtBtn-oras" onclick="setFormat('oras')" style="padding:4px 12px;font-size:12px;border:none;cursor:pointer;background:transparent;color:var(--text3);">ORAS</button>
+    </div>
+    <span id="formatNote" style="font-size:10px;color:var(--text3);">EVs 0–32, max 66 total</span>
+  </div>
+
   <div class="wide-layout">
   <div class="wide-left">
   <!-- META DATABASE -->
     <div class="card card-collapsible" id="metaCard">
-      <div class="card-label" onclick="toggleCard('metaCard',event)" style="cursor:pointer;">Meta database — attackers <span class="card-collapse-hint">▼</span></div>
+      <div class="card-label" onclick="toggleCard('metaCard',event)" style="cursor:pointer;display:flex;align-items:center;gap:8px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--accent);font-size:9px;font-weight:700;color:white;flex-shrink:0;">1</span>Meta — attackers <span class="card-collapse-hint" style="margin-left:auto;">▼</span></div>
 
       <!-- Saved metas row — always visible even when collapsed -->
       <div style="display:flex;align-items:center;gap:6px;margin:6px 0 4px;flex-wrap:wrap;">
@@ -1539,7 +1582,7 @@ Impish Nature
 
   <!-- CALCULATE BAR -->
   <div class="calc-bar">
-    <div style="font-size:13px;color:var(--text2)" id="readyHint">Load a meta and paste a defender, then calculate.</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.4;" id="readyHint">Load a meta and paste a defender, then click <b>Add to tab(s)</b>.</div>
     <button class="btn-primary" onclick="calculate()" id="calcBtn">Add to tab(s)</button>
   </div>
 
@@ -1714,12 +1757,15 @@ Impish Nature
 
       <button id="maxStatsBtn" onclick="toggleModeBtn('maxStatsMode','maxStatsBtn')" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;align-self:flex-end;" title="Override Atk/SpA/Def/SpD/Spe to max investment">Max stats</button>
 
+      <button id="dynamaxBtn" onclick="toggleModeBtn('dynamaxMode','dynamaxBtn')" style="display:none;padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;align-self:flex-end;" title="Double the defender's HP (Dynamax)">Dynamax</button>
+
       <!-- Hidden checkboxes drive the logic -->
       <input type="checkbox" id="maxRollMode"  style="display:none" onchange="renderResults()">
       <input type="checkbox" id="attackingMode" style="display:none">
       <input type="checkbox" id="maxHpMode"    style="display:none" onchange="renderResults()">
       <input type="checkbox" id="maxStatsMode" style="display:none" onchange="renderResults()">
       <input type="checkbox" id="maxInvestMode" style="display:none">
+      <input type="checkbox" id="dynamaxMode"  style="display:none" onchange="recomputeAndRender()">
 
       <div class="control-group" style="flex:1;min-width:180px;position:relative;">
         <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">
@@ -1916,14 +1962,71 @@ function typeEffWithAbility(moveType, defTypes, defAbility, atkAbility) {
   return typeEff(moveType, defTypes);
 }
 
-// ─── Stat formulae ────────────────────────────────────────────────────────────
+// ─── Formats ──────────────────────────────────────────────────────────────────
+const FORMATS = {
+  champions: {
+    id: 'champions',
+    label: 'Champions',
+    evMax: 32,
+    evTotal: 66,
+    evStep: 1,
+    calcStat: (base, ev=0, iv=31, level=50, nature=1) => Math.floor((base+20+ev)*nature),
+    calcHP:   (base, ev=0, iv=31, level=50)            => base+75+ev,
+    convertEv: ev => ev, // EVs are already in Champions format
+    isSwShEv: evs => {
+      const total = Object.values(evs).reduce((s,v)=>s+(v||0),0);
+      return total > 66 || Object.values(evs).some(v => v > 32);
+    },
+    toFormatEv: ev => Math.min(32, Math.ceil(ev/8)),
+  },
+  swsh: {
+    id: 'swsh',
+    label: 'Sword & Shield',
+    evMax: 252,
+    evTotal: 508,
+    evStep: 1,  // snapping handled in JS
+    calcStat: (base, ev=0, iv=31, level=50, nature=1) =>
+      Math.floor((Math.floor((2*base+iv+Math.floor(ev/4))*level/100)+5)*nature),
+    calcHP: (base, ev=0, iv=31, level=50) =>
+      Math.floor((2*base+iv+Math.floor(ev/4))*level/100)+level+10,
+    convertEv: ev => ev,
+    isSwShEv: () => false,
+    toFormatEv: ev => ev,
+  },
+  oras: {
+    id: 'oras',
+    label: 'ORAS',
+    evMax: 252,
+    evTotal: 508,
+    evStep: 1,
+    calcStat: (base, ev=0, iv=31, level=50, nature=1) =>
+      Math.floor((Math.floor((2*base+iv+Math.floor(ev/4))*level/100)+5)*nature),
+    calcHP: (base, ev=0, iv=31, level=50) =>
+      Math.floor((2*base+iv+Math.floor(ev/4))*level/100)+level+10,
+    convertEv: ev => ev,
+    isSwShEv: () => false,
+    toFormatEv: ev => ev,
+  },
+};
+
+let _currentFormat = 'champions';
+function getFormat() { return FORMATS[_currentFormat] || FORMATS.champions; }
+
 function calcStat(base, ev=0, iv=31, level=50, nature=1) {
-//   return Math.floor((Math.floor((2*base+iv+Math.floor(ev/4))*level/100)+5)*nature);
-  return Math.floor((base+20+ev)*nature)  
+  return getFormat().calcStat(base, ev, iv, level, nature);
 }
 function calcHP(base, ev=0, iv=31, level=50) {
-//   return Math.floor((2*base+iv+Math.floor(ev/4))*level/100)+level+10;
-  return base+75+ev
+  return getFormat().calcHP(base, ev, iv, level);
+}
+
+// Convert EVs from a paste to current format if needed
+function normalizeEvs(evs) {
+  if (!evs || typeof evs !== 'object') return evs || {};
+  const fmt = getFormat();
+  if (!fmt.isSwShEv(evs)) return evs;
+  const result = {};
+  for (const [k, v] of Object.entries(evs)) result[k] = fmt.toFormatEv(v||0);
+  return result;
 }
 
 function statKey(s) {
@@ -1944,14 +2047,18 @@ const SLUG_MAP = {
   'iron boulder':'iron-boulder',   'iron crown':'iron-crown',
   'chi-yu':'chi-yu',               'ting-lu':'ting-lu',
   'chien-pao':'chien-pao',         'wo-chien':'wo-chien',
-  'calyrex-shadow':'calyrex-shadow-rider',
-  'calyrex shadow':'calyrex-shadow-rider',
-  'calyrex-ice':'calyrex-ice-rider',
-  'calyrex ice':'calyrex-ice-rider',
+  'calyrex-shadow':'calyrex-shadow',
+  'calyrex shadow':'calyrex-shadow',
+  'calyrex-ice':'calyrex-ice',
+  'calyrex ice':'calyrex-ice',
   'urshifu':'urshifu-single-strike',
+  'urshifu-gmax':'urshifu-single-strike-gmax',
   'urshifu (single strike)':'urshifu-single-strike',
   'urshifu (rapid strike)':'urshifu-rapid-strike',
   'urshifu-rapid':'urshifu-rapid-strike',
+  'thundurus':'thundurus-incarnate',
+  'tornadus':'tornadus-incarnate',
+  'landorus':'landorus-incarnate',
   'landorus-t':'landorus-therian',
   'landorus (therian)':'landorus-therian',
   'tornadus-t':'tornadus-therian',
@@ -2139,6 +2246,7 @@ function parseSinglePaste(text) {
       for (const p of line.replace('EVs:','').split('/')) {
         const em = p.trim().match(/(\d+)\s+(\w[\w\s]*)/);
         if (em) { const k=statKey(em[2].trim()); if(k) evs[k]=parseInt(em[1]); }
+
       }
       continue;
     }
@@ -2155,7 +2263,8 @@ function parseSinglePaste(text) {
   // If no _ divider found, threshold defaults to 4
   if (dividerIndex === null) dividerIndex = 4;
 
-  return { speciesRaw, item, allItems, ability, allAbilities, level, nature, evs, ivs, moves, dividerIndex };
+  const normalizedEvs = normalizeEvs(evs);
+  return { speciesRaw, item, allItems, ability, allAbilities, level, nature, evs: normalizedEvs, ivs, moves, dividerIndex };
 }
 
 function splitPaste(text) {
@@ -2165,6 +2274,7 @@ function splitPaste(text) {
 // ─── Meta state ───────────────────────────────────────────────────────────────
 let META_DB = [];
 let lastResults = [];
+let _threatPanelOpen = false;
 // Keys are speciesRaw strings — pins persist across tabs and search
 const pinnedKeys = new Set();
 // scarf overrides: key = speciesRaw → 'on'|'off' (overrides item-based detection)
@@ -2487,7 +2597,8 @@ function effectiveSpe(pokemon) {
 // ── EV / Nature editor panel ──────────────────────────────────────────────────
 const EV_STATS = ['hp','atk','def','spa','spd','spe'];
 const EV_LABELS = { hp:'HP', atk:'Atk', def:'Def', spa:'SpA', spd:'SpD', spe:'Spe' };
-const EV_MAX = 32;
+function EV_MAX() { return getFormat().evMax; }
+function EV_TOTAL() { return getFormat().evTotal; }
 // Map from [boosted_stat, dropped_stat] -> nature name
 const NATURE_BY_EFFECT = {};
 (function() {
@@ -2538,7 +2649,7 @@ function renderEvPanel() {
       <button onclick="onNatureStatBtn('${stat}','boost')" style="padding:0 5px;height:16px;font-size:10px;border-width:0.5px;border-style:solid;border-radius:3px;cursor:pointer;line-height:1;${plusStyle}" title="Set as boosted nature stat">+</button>
       <button onclick="onNatureStatBtn('${stat}','drop')"  style="padding:0 5px;height:16px;font-size:10px;border-width:0.5px;border-style:solid;border-radius:3px;cursor:pointer;line-height:1;${minusStyle}" title="Set as dropped nature stat">−</button>
       <span style="font-size:10px;color:var(--text3);width:26px;flex-shrink:0;">${EV_LABELS[stat]}</span>
-      <input type="range" min="0" max="${EV_MAX}" value="${ev}"
+      <input type="range" min="0" max="${EV_MAX()}" value="${ev}" step="${getFormat().evStep||1}" class="ev-slider"
         style="flex:1;accent-color:var(--accent);height:4px;cursor:pointer;"
         oninput="onEvSliderChange('${stat}', this.value, this)"
         id="evSlider_${stat}">
@@ -2556,15 +2667,22 @@ function _updateEvTotal() {
   const total = EV_STATS.reduce((s, k) => s + (slot.evs[k] || 0), 0);
   const el = document.getElementById('evTotalDisplay');
   if (el) {
-    const color = total > 66 ? 'var(--red)' : total === 66 ? 'var(--green)' : 'var(--text3)';
-    el.innerHTML = `<span style="color:${color};">${total} / 66 EVs</span>`;
+    const evTot = EV_TOTAL();
+    const color = total > evTot ? 'var(--red)' : total === evTot ? 'var(--green)' : 'var(--text3)';
+    el.innerHTML = `<span style="color:${color};">${total} / ${evTot} EVs</span>`;
   }
 }
 
 function onEvSliderChange(stat, rawVal, inputEl) {
   const slot = DEFENDER_SLOTS[activeDefenderSlot];
   if (!slot) return;
-  const val = Math.min(EV_MAX, Math.max(0, parseInt(rawVal) || 0));
+  let val = Math.min(EV_MAX(), Math.max(0, parseInt(rawVal) || 0));
+  // SwSh: snap to nearest valid breakpoint (0 or 4+8n up to 252)
+  if (_currentFormat !== 'champions' && val > 0) {
+    const bp = [0, ...Array.from({length:32}, (_,i) => 4+i*8)];
+    val = bp.reduce((best, b) => Math.abs(b-val) < Math.abs(best-val) ? b : best);
+    val = Math.min(EV_MAX(), val);
+  }
   inputEl.value = val;
   slot.evs[stat] = val;
   _applyEvChanges(slot, false); // lightweight — don't rebuild slider HTML
@@ -3106,6 +3224,8 @@ async function loadMeta() {
   renderResults();
   window.scrollTo({ top: savedScroll, behavior: 'instant' });
   collapseCard('metaCard');
+  // Dismiss getting started guide once meta is loaded
+  if (!localStorage.getItem('pokemonDamageProfiler_gettingStartedDismissed')) dismissGettingStarted();
 }
 
 // ─── Defender parse + API fetch ───────────────────────────────────────────────
@@ -4031,16 +4151,18 @@ function computeResults(loadedMeta, defender) {
 
     const pct    = best.move ? best.dmg / defender.stats.hp * 100 : 0;
     const defPct = defBest.move ? defBest.dmg / attacker.computedHp * 100 : 0;
+    const dynamax = document.getElementById('dynamaxMode')?.checked || false;
+    const defHpFinal = dynamax ? defender.stats.hp * 2 : defender.stats.hp;
 
     results.push({
       attacker, defender,
-      dmg: best.dmg, move: best.move, pct, eff: best.eff,
+      dmg: best.dmg, move: best.move, pct: best.move ? best.dmg / defHpFinal * 100 : 0, eff: best.eff,
       originalOrder: results.length + 1,
-      defenderHp: defender.stats.hp,
+      defenderHp: defHpFinal,
       moveBreakdown, defMoveBreakdown,
       defBestMove: defBest.move, defBestPct: defPct, defBestEff: defBest.eff,
-      dividerIndex: attacker.dividerIndex ?? 4,         // attacker's divider threshold
-      defDividerIndex: defender.dividerIndex ?? 4,       // defender's divider threshold
+      dividerIndex: attacker.dividerIndex ?? 4,
+      defDividerIndex: defender.dividerIndex ?? 4,
     });
   }
   return results;
@@ -4061,6 +4183,8 @@ function recomputeAndRender() {
   if (_threatPanelOpen) renderThreatPanel();
   if (_matchActive) renderMatchWindow();
 }
+
+let _skipBlankCheck = false;
 
 function _renderBlankMetaRows(loadedMeta) {
   // Build fake lastResults-shaped objects so renderResults renders them correctly
@@ -4083,7 +4207,6 @@ function _renderBlankMetaRows(loadedMeta) {
   _skipBlankCheck = false;
   lastResults = prev;
 }
-let _skipBlankCheck = false;
 
 function renderResults() {
   updateFieldStatus();
@@ -5859,16 +5982,17 @@ function clearDefenders() {
 }
 
 // ── Saved metas (persisted to localStorage) ───────────────────────────────────
-const SAVED_METAS_KEY = 'pokemonDamageProfiler_savedMetas';
+const _FORMAT_STORAGE_KEY = 'pokemonDamageProfiler_format';
+function SAVED_METAS_KEY() { return 'pokemonDamageProfiler_savedMetas_' + _currentFormat; }
 
 function getSavedMetas() {
   try {
-    return JSON.parse(localStorage.getItem(SAVED_METAS_KEY) || '{}');
+    return JSON.parse(localStorage.getItem(SAVED_METAS_KEY()) || '{}');
   } catch { return {}; }
 }
 
 function putSavedMetas(metas) {
-  try { localStorage.setItem(SAVED_METAS_KEY, JSON.stringify(metas)); } catch {}
+  try { localStorage.setItem(SAVED_METAS_KEY(), JSON.stringify(metas)); } catch {}
 }
 
 function refreshSavedMetaDropdown(selectValue) {
@@ -5942,13 +6066,13 @@ function deleteSavedMeta() {
 refreshSavedMetaDropdown('');
 
 // ── Saved teams (persisted to localStorage) ───────────────────────────────────
-const SAVED_TEAMS_KEY = 'pokemonDamageProfiler_savedTeams';
+function SAVED_TEAMS_KEY() { return 'pokemonDamageProfiler_savedTeams_' + _currentFormat; }
 
 function getSavedTeams() {
-  try { return JSON.parse(localStorage.getItem(SAVED_TEAMS_KEY) || '{}'); } catch { return {}; }
+  try { return JSON.parse(localStorage.getItem(SAVED_TEAMS_KEY()) || '{}'); } catch { return {}; }
 }
 function putSavedTeams(teams) {
-  try { localStorage.setItem(SAVED_TEAMS_KEY, JSON.stringify(teams)); } catch {}
+  try { localStorage.setItem(SAVED_TEAMS_KEY(), JSON.stringify(teams)); } catch {}
   _driveAutoSave();
 }
 
@@ -6419,8 +6543,9 @@ function _driveGetData() {
   return JSON.stringify({
     version: 1,
     exportedAt: new Date().toISOString(),
-    savedTeams:   JSON.parse(localStorage.getItem(SAVED_TEAMS_KEY)   || '{}'),
-    savedMetas:   JSON.parse(localStorage.getItem(SAVED_METAS_KEY)   || '{}'),
+    format: _currentFormat,
+    savedTeams:   JSON.parse(localStorage.getItem(SAVED_TEAMS_KEY())   || '{}'),
+    savedMetas:   JSON.parse(localStorage.getItem(SAVED_METAS_KEY())   || '{}'),
     matchHistory: JSON.parse(localStorage.getItem(MATCH_HISTORY_KEY) || '{}'),
     winrates:     JSON.parse(localStorage.getItem(WINRATE_KEY)       || '{}'),
     notebooks:    JSON.parse(localStorage.getItem(NOTEBOOK_KEY)      || '{}'),
@@ -6476,8 +6601,8 @@ async function _driveLoadExec() {
       const existing = JSON.parse(localStorage.getItem(key) || '{}');
       localStorage.setItem(key, JSON.stringify({ ...existing, ...incoming }));
     };
-    merge(SAVED_TEAMS_KEY,   data.savedTeams);
-    merge(SAVED_METAS_KEY,   data.savedMetas);
+    merge(SAVED_TEAMS_KEY(),   data.savedTeams);
+    merge(SAVED_METAS_KEY(),   data.savedMetas);
     merge(MATCH_HISTORY_KEY, data.matchHistory);
     merge(WINRATE_KEY,       data.winrates);
     merge(NOTEBOOK_KEY,      data.notebooks);
@@ -6554,8 +6679,9 @@ function exportAllData() {
   const data = {
     version: 1,
     exportedAt: new Date().toISOString(),
-    savedTeams:   JSON.parse(localStorage.getItem(SAVED_TEAMS_KEY)   || '{}'),
-    savedMetas:   JSON.parse(localStorage.getItem(SAVED_METAS_KEY)   || '{}'),
+    format: _currentFormat,
+    savedTeams:   JSON.parse(localStorage.getItem(SAVED_TEAMS_KEY())   || '{}'),
+    savedMetas:   JSON.parse(localStorage.getItem(SAVED_METAS_KEY())   || '{}'),
     matchHistory: JSON.parse(localStorage.getItem(MATCH_HISTORY_KEY) || '{}'),
     winrates:     JSON.parse(localStorage.getItem(WINRATE_KEY)       || '{}'),
     notebooks:    JSON.parse(localStorage.getItem(NOTEBOOK_KEY)      || '{}'),
@@ -6588,8 +6714,8 @@ function importAllData(event) {
         const existing = JSON.parse(localStorage.getItem(key) || '{}');
         localStorage.setItem(key, JSON.stringify({ ...existing, ...incoming }));
       };
-      merge(SAVED_TEAMS_KEY,   data.savedTeams   || {});
-      merge(SAVED_METAS_KEY,   data.savedMetas   || {});
+      merge(SAVED_TEAMS_KEY(),   data.savedTeams   || {});
+      merge(SAVED_METAS_KEY(),   data.savedMetas   || {});
       merge(MATCH_HISTORY_KEY, data.matchHistory || {});
       merge(WINRATE_KEY,       data.winrates     || {});
       merge(NOTEBOOK_KEY,      data.notebooks    || {});
@@ -7872,6 +7998,93 @@ function adjustScore(side, delta) {
 refreshTeamPickerDropdown(document.getElementById('savedTeamSelect')?.value || '');
 document.getElementById('resultsList').innerHTML = '<div class="error-msg" style="padding:24px 0;text-align:center;color:var(--text3);">Load a meta to see results.</div>';
 
+// ── Format switching ──────────────────────────────────────────────────────────
+function setFormat(fmtId) {
+  if (!FORMATS[fmtId]) return;
+  _currentFormat = fmtId;
+  localStorage.setItem(_FORMAT_STORAGE_KEY, fmtId);
+  // Update button styles
+  Object.keys(FORMATS).forEach(id => {
+    const btn = document.getElementById('fmtBtn-' + id);
+    if (!btn) return;
+    const active = id === fmtId;
+    btn.style.background = active ? 'rgba(124,106,247,0.15)' : 'transparent';
+    btn.style.color = active ? 'var(--accent2)' : 'var(--text3)';
+    btn.style.fontWeight = active ? '600' : '400';
+  });
+  // Show Dynamax button only for SwSh
+  const dynamaxBtn = document.getElementById('dynamaxBtn');
+  const dynamaxCb  = document.getElementById('dynamaxMode');
+  if (dynamaxBtn) dynamaxBtn.style.display = fmtId === 'swsh' ? '' : 'none';
+  if (dynamaxCb && fmtId !== 'swsh') { dynamaxCb.checked = false; _setModeBtnActive('dynamaxBtn', false); }
+
+  // Update EV note
+  const note = document.getElementById('formatNote');
+  if (note) note.textContent = fmtId === 'champions'
+    ? 'EVs 0–32, max 66 total'
+    : fmtId === 'swsh'
+    ? 'EVs 0–252, max 508 total · IVs apply · Dynamax available'
+    : 'EVs 0–252, max 508 total · IVs apply';
+  // Update EV slider maxes
+  const fmt = getFormat();
+  document.querySelectorAll('.ev-slider').forEach(s => { s.max = fmt.evMax; s.step = fmt.evStep || 1; });
+  // Clear loaded data — different formats are incompatible
+  META_DB = [];
+  COUNTER_POOL_DB = [];
+  for (let i = 0; i < 6; i++) DEFENDER_SLOTS[i] = null;
+  lastResults = [];
+  activeDefenderSlot = 0;
+  renderDefenderTabs();
+  renderEvPanel();
+  renderResults();
+  refreshSavedMetaDropdown('');
+  refreshSavedTeamDropdown('');
+  const chips = document.getElementById('metaChips');
+  if (chips) chips.innerHTML = '';
+  const status = document.getElementById('metaStatus');
+  if (status) status.textContent = '';
+  document.getElementById('defenderInput').value = '';
+}
+
+function initFormat() {
+  // Migrate old unformatted save data to champions format (first run after update)
+  const OLD_TEAMS_KEY = 'pokemonDamageProfiler_savedTeams';
+  const OLD_METAS_KEY = 'pokemonDamageProfiler_savedMetas';
+  const migrated = localStorage.getItem('pokemonDamageProfiler_formatMigrated');
+  if (!migrated) {
+    const oldTeams = localStorage.getItem(OLD_TEAMS_KEY);
+    const oldMetas = localStorage.getItem(OLD_METAS_KEY);
+    if (oldTeams && oldTeams !== '{}') {
+      localStorage.setItem('pokemonDamageProfiler_savedTeams_champions', oldTeams);
+    }
+    if (oldMetas && oldMetas !== '{}') {
+      localStorage.setItem('pokemonDamageProfiler_savedMetas_champions', oldMetas);
+    }
+    localStorage.setItem('pokemonDamageProfiler_formatMigrated', '1');
+  }
+  const saved = localStorage.getItem(_FORMAT_STORAGE_KEY) || 'champions';
+  _currentFormat = saved; // set before setFormat so storage keys are correct
+  setFormat(saved);
+}
+
+// ── Getting Started card ──────────────────────────────────────────────────────
+function dismissGettingStarted() {
+  localStorage.setItem('pokemonDamageProfiler_gettingStartedDismissed', '1');
+  const card = document.getElementById('gettingStartedCard');
+  if (card) {
+    card.style.transition = 'opacity 0.3s';
+    card.style.opacity = '0';
+    setTimeout(() => card.style.display = 'none', 300);
+  }
+}
+function initGettingStarted() {
+  const dismissed = localStorage.getItem('pokemonDamageProfiler_gettingStartedDismissed');
+  const card = document.getElementById('gettingStartedCard');
+  if (!dismissed && card) card.style.display = 'block';
+}
+initFormat();
+  initGettingStarted();
+
 
 // ── Toggle mode buttons ───────────────────────────────────────────────────────
 function toggleModeBtn(cbId, btnId) {
@@ -7975,7 +8188,6 @@ function updateFieldStatus() {
 })();
 
 // ── Meta Threat Analysis ──────────────────────────────────────────────────────
-let _threatPanelOpen = false;
 let _threatMode = 'overall'; // 'overall' | 'offensive' | 'defensive'
 let _threatViewMode = 'team'; // 'team' | 'tab'
 
