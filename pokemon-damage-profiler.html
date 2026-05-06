@@ -989,6 +989,12 @@
     line-height: 1;
     padding: 6px 10px;
   }
+  .def-tab .ps-icon {
+    width: 40px; height: 30px;
+    flex-shrink: 0;
+    margin: -2px 0;
+  }
+  }
   .def-tab-empty:hover { color: var(--text2); }
 
   /* ── Speed comparison ────────────────────────────────────────────────── */
@@ -2853,6 +2859,8 @@ function renderDefenderTabs() {
       const dots = slot.types.map(t =>
         `<div class="def-tab-dot" style="background:${TYPE_COLORS[t]||'#888'}"></div>`
       ).join('');
+      // PS icon sprite — same as team dropdown
+      const iconHtml = psIconHtml(slot.speciesRaw, slot.speciesRaw);
       // Mega button for this slot
       const defSlugForMega = toSlug(slot.speciesRaw);
       const defSpeciesNorm = defSlugForMega.replace(/[\s-]/g,'');
@@ -2873,17 +2881,20 @@ function renderDefenderTabs() {
         const st = isAct
           ? 'color:var(--accent2);border-color:var(--accent);background:rgba(124,106,247,0.15);'
           : 'color:var(--text3);border-color:var(--border2);opacity:0.6;';
-        return `<button onclick="toggleDefenderMega(event,${i},'${f.slug}')" style="padding:1px 4px;font-size:9px;border-radius:3px;border:0.5px solid;cursor:pointer;background:transparent;${st};flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.label}</button>`;
+        // Abbreviate label to first letter of each word: "Mega X" → "MX", "Blade" → "B"
+        const abbrev = f.label.split(/[\s-]/).map(w => w[0]?.toUpperCase() || '').join('');
+        return `<button onclick="toggleDefenderMega(event,${i},'${f.slug}')" title="${f.label}" style="padding:1px 4px;font-size:9px;border-radius:3px;border:0.5px solid;cursor:pointer;background:transparent;${st};flex-shrink:0;">${abbrev}</button>`;
       }).join('') : '';
-      const defMegaRow = defMegaForms ? `<div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end;">${defMegaBtns}</div>` : '';
+      const defMegaRow = defMegaForms ? `<div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center;">${defMegaBtns}</div>` : '';
 
       tab.innerHTML = `
         <span class="def-tab-close" onclick="clearDefenderSlot(event,${i})">✕</span>
+        ${iconHtml}
         <div class="def-tab-name" style="width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${slot.speciesRaw}</div>
-        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:3px;">
+        <div style="display:flex;align-items:center;justify-content:center;width:100%;gap:3px;">
           <div class="def-tab-types" style="margin-top:0;flex-shrink:0;">${dots}</div>
-          ${defMegaRow}
-        </div>`;
+        </div>
+        ${defMegaRow}`;
       tab.onclick = (e) => {
         if (e.target.classList.contains('def-tab-close')) return;
         if (e.target.tagName === 'BUTTON') return;

@@ -1,5 +1,16 @@
 ## Feature Request
 
+- [__] use the same code for the pokemon sprites in the saved teams dropdown to display those grid sprites onto the tabs themselves
+
+- [__]with that, make all buttons in the tab windows text show just the first letter of it "Mega > M, Shield > S, Blade > B..."
+
+- with match window open, highlight/unhighlight your tabs in yellow that are selected in the match window.
+
+
+- match screen floette-mega default to floette-eternal sprite
+
+- match screen/match log sprites now not loading the mega-golurk defaults to golurk and mega-floette defaults to mega-floette anymore
+
 - orgepon-cornerstone sprite is tatsugiri?
 
 - no mega buttons in scarlet & violet
@@ -22,9 +33,12 @@
 
 - booster energy support?
 
+- terapagos-terastal tera starstorm is single target
+
+- use grid sprites for the match log
+
 - print "Calcs document!"
 
-- sprites on the tabs
 
 - [??] late drive save gives popup error
 Drive save failed: {
