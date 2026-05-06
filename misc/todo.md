@@ -2,16 +2,16 @@
 
 
 
-
-
-
-- no mega buttons in scarlet & violet
-
 - tera type support in scarlet & violet
 
-- band/specs boost button
+- [__] band/specs boost button
+    - [__] button there, no worky
 
-- life orb button
+- [__] life orb button
+    - [__] button there, no worky
+
+- [__] booster energy support?
+    - [__] button there, but no visible function?
 
 - electric terrain boosts electric by 30%
     - doubles rising voltage's base power
@@ -23,13 +23,12 @@
 - grassy terrain boosts grass by 30%
     - bulldoze, earthquake, magnitude halved
 
-- booster energy support?
 
 - terapagos-terastal tera starstorm is single target
 
-- use grid sprites for the match log
-
 - print "Calcs document!"
+
+- use grid sprites for the match log
 
 
 
@@ -60,6 +59,7 @@
 ---
 #### Completed
 
+- [XX] no mega buttons in scarlet & violet
 - [XX] orgepon-cornerstone sprite is tatsugiri?
 - [XX] match screen floette-mega default to floette-eternal sprite
 - [XX] match screen/match log sprites now not loading the mega-scovillain defaults to scovillain and mega-hawlucha defaults to hawlucha anymore

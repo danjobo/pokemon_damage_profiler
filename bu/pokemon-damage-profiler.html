@@ -1453,7 +1453,6 @@
       <!-- Saved metas row — always visible even when collapsed -->
       <div style="display:flex;align-items:center;gap:6px;margin:6px 0 4px;flex-wrap:wrap;">
         <button class="btn-success" onclick="loadMeta()" style="font-size:11px;padding:4px 10px;flex-shrink:0;">Load meta</button>
-        <button id="smogonMetaBtn" onclick="loadSmogonMeta()" style="font-size:11px;padding:4px 10px;flex-shrink:0;border:0.5px solid var(--accent);background:rgba(124,106,247,0.12);color:var(--accent2);border-radius:var(--radius-sm);cursor:pointer;display:none;" title="Fetch top Pokémon from the current Champions VGC meta on Smogon">🌐 Load Smogon meta</button>
         <select id="savedMetaSelect" style="font-size:12px;padding:4px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;flex:1;min-width:0;" onchange="onSavedMetaSelect()">
           <option value="">— saved metas —</option>
         </select>
@@ -2323,9 +2322,6 @@ const pinnedKeys = new Set();
 const scarfOverrides = new Map();
 // type-boost item overrides: key = speciesRaw → 'on'|'off' (×1.2 to all damage)
 const typeBoostOverrides = new Map();
-const lifeOrbOverrides = new Map();   // 'on' = life orb boost active
-const choiceOverrides = new Map();    // 'on' = choice item boost active
-const boosterOverrides = new Map();   // 'on' = booster energy active
 // multiscale disabled: defender speciesRaw in this set → ignore multiscale
 const multiscaleOverrides = new Set();
 // defender mega overrides: slot index → mega slug (null = base form)
@@ -2900,7 +2896,7 @@ function renderDefenderTabs() {
           const match = defMegaForms.find(f => f.slug === defSlugForMega);
           return match ? match.slug : undefined;
         })());
-      const defMegaBtns = defMegaForms && _currentFormat !== 'scarletviolet' ? defMegaForms.map(f => {
+      const defMegaBtns = defMegaForms ? defMegaForms.map(f => {
         const isAct = defActiveMegaSlug === f.slug;
         const st = isAct
           ? 'color:var(--accent2);border-color:var(--accent);background:rgba(124,106,247,0.15);'
@@ -2909,7 +2905,7 @@ function renderDefenderTabs() {
         const abbrev = f.label.split(/[\s-]/).map(w => w[0]?.toUpperCase() || '').join('');
         return `<button onclick="toggleDefenderMega(event,${i},'${f.slug}')" title="${f.label}" style="padding:1px 4px;font-size:9px;border-radius:3px;border:0.5px solid;cursor:pointer;background:transparent;${st};flex-shrink:0;">${abbrev}</button>`;
       }).join('') : '';
-      const defMegaRow = defMegaBtns ? `<div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center;">${defMegaBtns}</div>` : '';
+      const defMegaRow = defMegaForms ? `<div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center;">${defMegaBtns}</div>` : '';
 
       tab.innerHTML = `
         <span class="def-tab-close" onclick="clearDefenderSlot(event,${i})">✕</span>
@@ -3234,152 +3230,6 @@ function _getCounterCandidates(threatNames) {
   const pool = COUNTER_POOL_DB.filter(p => p.loaded);
   const source = pool.length ? pool : META_DB.filter(p => p.loaded);
   return source.filter(p => !threatNames.has(p.speciesRaw));
-}
-
-// ─── Smogon chaos JSON → meta loader (Champions VGC) ─────────────────────────
-// Converts Smogon's chaos JSON format into PokéPaste-style blocks and populates
-// the meta textarea, then calls the normal loadMeta() pipeline.
-
-const SMOGON_FORMAT = 'gen9championsvgc2026regma';
-const SMOGON_CUTOFF = 0; // use 0-cutoff file (most Pokémon included)
-
-// Map Smogon nature IDs to display names (Smogon stores "adamant", we want "Adamant")
-function smogonNatureToDisplay(n) {
-  if (!n) return 'Hardy';
-  return n.charAt(0).toUpperCase() + n.slice(1).toLowerCase();
-}
-
-// Convert Smogon stat key → paste EV key
-const SMOGON_STAT_MAP = { hp:'HP', atk:'Atk', def:'Def', spa:'SpA', spd:'SpD', spe:'Spe' };
-
-// Pick the top N items from a Smogon frequency object (values are raw counts or weights)
-function topN(obj, n) {
-  if (!obj || typeof obj !== 'object') return [];
-  return Object.entries(obj)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, n)
-    .map(([k]) => k);
-}
-
-// Convert a Smogon chaos entry into a PokéPaste-style text block
-function smogonEntryToPaste(name, entry) {
-  // Best ability
-  const ability = topN(entry.Abilities, 1)[0] || '';
-
-  // Best item — skip 'nothing'
-  const itemRaw = topN(entry.Items, 3).find(i => i && i.toLowerCase() !== 'nothing') || '';
-  // Smogon item keys are already display names but may be IDs — capitalise words
-  const item = itemRaw.split(' ').map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
-
-  // Best nature
-  const nature = smogonNatureToDisplay(topN(entry.Spreads ? Object.fromEntries(
-    Object.entries(entry.Spreads).map(([k,v]) => [k.split(':')[0], v])
-  ) : {}, 1)[0] || 'Hardy');
-
-  // Best spread — Smogon stores as "Nature:HP/Atk/Def/SpA/SpD/Spe"
-  let evLine = '';
-  const spreads = entry.Spreads || {};
-  const topSpread = Object.entries(spreads).sort((a,b)=>b[1]-a[1])[0];
-  if (topSpread) {
-    const [spreadKey] = topSpread;
-    // Format: "Adamant:0/252/4/0/0/252"
-    const parts = spreadKey.split(':');
-    const evNums = (parts[1] || '0/0/0/0/0/0').split('/');
-    const statKeys = ['hp','atk','def','spa','spd','spe'];
-    const evParts = [];
-    statKeys.forEach((k, i) => {
-      const val = parseInt(evNums[i] || '0', 10);
-      if (val > 0) evParts.push(`${val} ${SMOGON_STAT_MAP[k]}`);
-    });
-    if (evParts.length) evLine = `EVs: ${evParts.join(' / ')}\n`;
-  }
-
-  // Top 4 moves — filter out 'nothing'
-  const moves = topN(entry.Moves, 6)
-    .filter(m => m && m.toLowerCase() !== 'nothing')
-    .slice(0, 4);
-
-  // Build the paste block
-  const itemStr = item ? ` @ ${item}` : '';
-  const movesStr = moves.map(m => `- ${m}`).join('\n');
-  return `${name}${itemStr}
-Ability: ${ability}
-Level: 50
-${evLine}${nature} Nature
-${movesStr}`.trim();
-}
-
-async function loadSmogonMeta() {
-  const btn = document.getElementById('smogonMetaBtn');
-  const status = document.getElementById('metaStatus');
-  const errEl = document.getElementById('metaError');
-  errEl.textContent = '';
-
-  // Try months from most recent backwards (up to 6 months back)
-  const now = new Date();
-  const candidates = [];
-  for (let i = 0; i < 6; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    candidates.push(`${y}-${m}`);
-  }
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Fetching…';
-  status.textContent = '';
-
-  let chaosData = null;
-  let usedMonth = '';
-
-  for (const month of candidates) {
-    const url = `https://www.smogon.com/stats/${month}/chaos/${SMOGON_FORMAT}-${SMOGON_CUTOFF}.json`;
-    try {
-      const resp = await fetch(url);
-      if (!resp.ok) continue;
-      chaosData = await resp.json();
-      usedMonth = month;
-      break;
-    } catch(e) {
-      continue;
-    }
-  }
-
-  btn.disabled = false;
-  btn.textContent = '🌐 Load Smogon meta';
-
-  if (!chaosData || !chaosData.data) {
-    errEl.textContent = 'Could not fetch Smogon stats. The format may not have stats published yet, or CORS may be blocking the request. Try again next month or paste sets manually.';
-    return;
-  }
-
-  // Sort by usage and take top 30
-  const entries = Object.entries(chaosData.data)
-    .filter(([name, entry]) => entry && entry['Raw count'] > 0)
-    .sort((a, b) => (b[1]['Raw count'] || 0) - (a[1]['Raw count'] || 0))
-    .slice(0, 30);
-
-  if (!entries.length) {
-    errEl.textContent = 'No Pokémon data found in the stats file.';
-    return;
-  }
-
-  const pasteBlocks = entries.map(([name, entry]) => smogonEntryToPaste(name, entry));
-  const pasteText = pasteBlocks.join('\n\n');
-
-  const textarea = document.getElementById('metaInput');
-  textarea.value = pasteText;
-  status.textContent = `Loaded top ${entries.length} Pokémon from Smogon stats (${usedMonth}). Click "Load meta" to apply.`;
-
-  // Auto-expand the meta card body if collapsed
-  const metaCard = document.getElementById('metaCard');
-  if (metaCard && metaCard.classList.contains('collapsed')) {
-    metaCard.classList.remove('collapsed');
-  }
-
-  // Auto-trigger loadMeta so user doesn't need an extra click
-  await loadMeta();
-  status.textContent = `✓ Loaded top ${entries.length} Pokémon from Smogon Champions VGC stats (${usedMonth}).`;
 }
 
 async function loadMeta() {
@@ -5059,58 +4909,6 @@ function renderResults() {
         </div>`;
     }
 
-    // ── Item / ability buttons (always shown when breakdown is open) ──────────
-    const _safeKeyOuter = r.attacker.speciesRaw.replace(/'/g,"\\'");
-
-    // Life Orb button
-    const loState2 = lifeOrbOverrides.get(r.attacker.speciesRaw);
-    const atkHasLO = hasLifeOrb(r.attacker.item);
-    const loOn = loState2 === 'on';
-    const loVisuallyOn = atkHasLO ? !loOn : loOn;
-    const loBtnStyle = loVisuallyOn
-      ? 'color:var(--red);border-color:var(--red);background:rgba(255,80,80,0.1)'
-      : 'color:var(--text3);border-color:var(--border2)';
-    const loBtnText = atkHasLO
-      ? (loOn ? '+LO ×1.3' : '−LO ×1.3 ✓')
-      : (loOn ? 'LO ×1.3 ✓' : '+LO ×1.3');
-
-    // Choice button
-    const chState2 = choiceOverrides.get(r.attacker.speciesRaw);
-    const atkHasCh = hasChoiceItem(r.attacker.item);
-    const chOn = chState2 === 'on';
-    const chVisuallyOn = atkHasCh ? !chOn : chOn;
-    const chBtnStyle = chVisuallyOn
-      ? 'color:var(--accent2);border-color:var(--accent);background:rgba(124,106,247,0.12)'
-      : 'color:var(--text3);border-color:var(--border2)';
-    const chItem = (r.attacker.item||'').toLowerCase().replace(/[\s-]/g,'');
-    const chLabel = chItem === 'choicespecs' ? 'Ch.Specs' : chItem === 'choiceband' ? 'Ch.Band' : 'Choice';
-    const chBtnText = atkHasCh
-      ? (chOn ? `+${chLabel} ×1.5` : `−${chLabel} ×1.5 ✓`)
-      : (chOn ? `${chLabel} ×1.5 ✓` : `+${chLabel} ×1.5`);
-
-    // Booster Energy button
-    const _atkAbilOuter = (r.attacker.ability||'').toLowerCase().replace(/[\s-]/g,'');
-    const atkHasProtoQuark = _atkAbilOuter === 'protosynthesis' || _atkAbilOuter === 'quarkdrive';
-    const boostState2 = boosterOverrides.get(r.attacker.speciesRaw);
-    const atkHasBoosterE = hasBoosterEnergy(r.attacker.item);
-    const boostOn = boostState2 === 'on';
-    const boostVisuallyOn = (atkHasBoosterE && atkHasProtoQuark) ? !boostOn : boostOn;
-    const boostBtnStyle = boostVisuallyOn
-      ? 'color:var(--yellow);border-color:var(--yellow);background:rgba(250,199,117,0.12)'
-      : 'color:var(--text3);border-color:var(--border2)';
-    const boostBtnText = (atkHasBoosterE && atkHasProtoQuark)
-      ? (boostOn ? '+Booster' : '−Booster ✓')
-      : (boostOn ? 'Booster ✓' : '+Booster');
-    const boosterBtnHtml = (atkHasProtoQuark || boostOn)
-      ? `<button onclick="toggleBooster(event,'${_safeKeyOuter}')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;background:transparent;${boostBtnStyle}" title="Toggle Booster Energy (Protosynthesis/Quark Drive)">${boostBtnText}</button>`
-      : '';
-
-    const itemBtnsHtml = `<div style="display:flex;gap:4px;flex-wrap:wrap;padding:3px 0 2px;">
-      <button onclick="toggleLifeOrb(event,'${_safeKeyOuter}')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;background:transparent;${loBtnStyle}" title="Toggle Life Orb ×1.3">${loBtnText}</button>
-      <button onclick="toggleChoice(event,'${_safeKeyOuter}')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;background:transparent;${chBtnStyle}" title="Toggle Choice Band/Specs ×1.5">${chBtnText}</button>
-      ${boosterBtnHtml}
-    </div>`;
-
     const modeLabel = attackingMode ? `<span style="font-size:10px;color:var(--accent2);margin-left:6px;">→ attacking</span>` : '';
     const maxInvestLabel = (maxInvest || maxHp) ? `<span style="font-size:10px;color:var(--yellow);margin-left:4px;">${[maxInvest?'max stats':'',maxHp?'max HP':''].filter(Boolean).join(' ')}</span>` : '';
 
@@ -5138,7 +4936,7 @@ function renderResults() {
         return match ? match.slug : undefined;
       })());
     let megaHtml = '';
-    if (megaForms && _currentFormat !== 'scarletviolet') {
+    if (megaForms) {
       const isAegi = megaKey.includes('aegislash');
       const btnLabel = isAegi ? 'Form:' : 'Mega:';
       const btns = megaForms.map(f => {
@@ -5217,7 +5015,6 @@ function renderResults() {
           <div class="breakdown-right-col">
           ${megaHtml}
           ${multiscaleHtml}
-          ${itemBtnsHtml}
           ${speedHtml}
           ${breakdownHtml || (noDefender ? '' : '<div class="move-breakdown-row">No damaging moves found.</div>')}
           </div>
@@ -5745,34 +5542,6 @@ function toggleScarf(e, key) {
 }
 
 // Returns true if the item is already a type-boosting ×1.2 item
-function hasLifeOrb(item) {
-  return item && item.toLowerCase().replace(/[\s-]/g,'') === 'lifeorb';
-}
-function hasChoiceItem(item) {
-  const it = (item||'').toLowerCase().replace(/[\s-]/g,'');
-  return it === 'choiceband' || it === 'choicespecs';
-}
-function hasBoosterEnergy(item) {
-  return item && item.toLowerCase().replace(/[\s-]/g,'') === 'boosterenergy';
-}
-function hasProtosynthesisOrQuarkDrive(ability) {
-  const ab = (ability||'').toLowerCase().replace(/[\s-]/g,'');
-  return ab === 'protosynthesis' || ab === 'quarkdrive';
-}
-function getBoosterMultiplier(attacker) {
-  // Find highest non-HP stat and return [statKey, multiplier]
-  const stats = {
-    atk: attacker.computedAtk || 0,
-    def: attacker.computedDef || 0,
-    spa: attacker.computedSpa || 0,
-    spd: attacker.computedSpd || 0,
-    spe: attacker.computedSpe || 0,
-  };
-  const highest = Object.entries(stats).reduce((a, b) => b[1] > a[1] ? b : a);
-  const mul = highest[0] === 'spe' ? 1.5 : 1.3;
-  return { stat: highest[0], mul };
-}
-
 function hasTypeBoostItem(item) {
   if (!item) return false;
   const it = item.toLowerCase().replace(/[\s-]/g,'');
@@ -5788,30 +5557,9 @@ function hasTypeBoostItem(item) {
 function toggleTypeBoost(e, key) {
   e.stopPropagation();
   const current = typeBoostOverrides.get(key);
-  if (current === 'on') typeBoostOverrides.delete(key);
+  if (current === 'on') typeBoostOverrides.delete(key); // toggle off
   else                  typeBoostOverrides.set(key, 'on');
   renderResults();
-}
-function toggleLifeOrb(e, key) {
-  e.stopPropagation();
-  const current = lifeOrbOverrides.get(key);
-  if (current === 'on') lifeOrbOverrides.delete(key);
-  else                  lifeOrbOverrides.set(key, 'on');
-  renderResults();
-}
-function toggleChoice(e, key) {
-  e.stopPropagation();
-  const current = choiceOverrides.get(key);
-  if (current === 'on') choiceOverrides.delete(key);
-  else                  choiceOverrides.set(key, 'on');
-  renderResults();
-}
-function toggleBooster(e, key) {
-  e.stopPropagation();
-  const current = boosterOverrides.get(key);
-  if (current === 'on') boosterOverrides.delete(key);
-  else                  boosterOverrides.set(key, 'on');
-  recomputeAndRender();
 }
 
 // ── Defender tab mega toggle ──────────────────────────────────────────────────
@@ -8418,10 +8166,6 @@ function setFormat(fmtId) {
   // Show "Copy as 252" button only in Champions format
   const copy252Btn = document.getElementById('copy252Btn');
   if (copy252Btn) copy252Btn.style.display = fmtId === 'champions' ? '' : 'none';
-
-  // Show "Load Smogon meta" button only in Champions format
-  const smogonMetaBtn = document.getElementById('smogonMetaBtn');
-  if (smogonMetaBtn) smogonMetaBtn.style.display = fmtId === 'champions' ? '' : 'none';
 
   // Show Dynamax button only for SwSh
   const dynamaxBtn = document.getElementById('dynamaxBtn');
