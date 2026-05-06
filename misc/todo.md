@@ -4,7 +4,6 @@
 
 
 
-- orgepon-cornerstone sprite is tatsugiri?
 
 - no mega buttons in scarlet & violet
 
@@ -61,6 +60,7 @@
 ---
 #### Completed
 
+- [XX] orgepon-cornerstone sprite is tatsugiri?
 - [XX] match screen floette-mega default to floette-eternal sprite
 - [XX] match screen/match log sprites now not loading the mega-scovillain defaults to scovillain and mega-hawlucha defaults to hawlucha anymore
 - [XX] with match window open, highlight/unhighlight your tabs in yellow that are selected in the match window.
