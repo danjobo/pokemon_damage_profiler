@@ -4572,7 +4572,7 @@ function renderResults() {
   const resultsLimit = parseInt(document.getElementById('resultsLimit')?.value || '0');
   // Apply Top N limit BEFORE sorting — restricts to first N by paste/usage order
   let sorted = resultsLimit > 0
-    ? [...(lastResults || [])].filter(r => r.originalOrder <= resultsLimit)
+    ? [...(lastResults || [])].filter(r => r.attacker?.speciesRaw?.endsWith(' ★') || r.originalOrder <= resultsLimit)
     : [...(lastResults || [])];
   // Helper to get a computed stat value from an attacker
   const getStat = (r, stat) => {
@@ -9537,12 +9537,14 @@ function getResultsLimit() {
 }
 
 // Returns loaded meta pokemon, optionally filtered to Top N by paste order
+// Pinned pokemon (★) are always included and don't count toward the limit
 function getLoadedMetaPool() {
   const all = META_DB.filter(p => p.loaded);
   const limit = getResultsLimit();
   if (!limit) return all;
-  // originalOrder is 1-based index in the paste
-  return all.filter((p, i) => i < limit);
+  const pinned = all.filter(p => p.speciesRaw?.endsWith(' ★'));
+  const nonPinned = all.filter(p => !p.speciesRaw?.endsWith(' ★'));
+  return [...pinned, ...nonPinned.slice(0, limit)];
 }
 
 function renderThreatPanel() {
