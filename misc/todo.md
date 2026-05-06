@@ -1,15 +1,8 @@
 ## Feature Request
 
-- [__] use the same code for the pokemon sprites in the saved teams dropdown to display those grid sprites onto the tabs themselves
-
-- [__]with that, make all buttons in the tab windows text show just the first letter of it "Mega > M, Shield > S, Blade > B..."
-
-- with match window open, highlight/unhighlight your tabs in yellow that are selected in the match window.
 
 
-- match screen floette-mega default to floette-eternal sprite
 
-- match screen/match log sprites now not loading the mega-golurk defaults to golurk and mega-floette defaults to mega-floette anymore
 
 - orgepon-cornerstone sprite is tatsugiri?
 
@@ -40,26 +33,6 @@
 - print "Calcs document!"
 
 
-- [??] late drive save gives popup error
-Drive save failed: {
-    "error: {
-        "code: 401,
-        "message": "Requiest had invalid authentication credentials.
-        Expected OAuth 2 access token, login cookie or other valid
-        authentication credential. See https://developers.google.com/
-        identity/sign-in/web/devconsole-project.",
-        "errors":[
-            {
-                "message": "Invalid Credentials",
-                "domain": "global",
-                "reason": "authError",
-                "location": "Authorization",
-                "locationType": "header"
-            }
-        ],
-        "status": "UNAUTHENTICATED"
-    }
-}
 
 
 - metagame folders for different saved metas and teams
@@ -88,6 +61,31 @@ Drive save failed: {
 ---
 #### Completed
 
+- [XX] match screen floette-mega default to floette-eternal sprite
+- [XX] match screen/match log sprites now not loading the mega-scovillain defaults to scovillain and mega-hawlucha defaults to hawlucha anymore
+- [XX] with match window open, highlight/unhighlight your tabs in yellow that are selected in the match window.
+- [XX] late drive save gives popup error
+Drive save failed: {
+    "error: {
+        "code: 401,
+        "message": "Requiest had invalid authentication credentials.
+        Expected OAuth 2 access token, login cookie or other valid
+        authentication credential. See https://developers.google.com/
+        identity/sign-in/web/devconsole-project.",
+        "errors":[
+            {
+                "message": "Invalid Credentials",
+                "domain": "global",
+                "reason": "authError",
+                "location": "Authorization",
+                "locationType": "header"
+            }
+        ],
+        "status": "UNAUTHENTICATED"
+    }
+}
+- [XX] use the same code for the pokemon sprites in the saved teams dropdown to display those grid sprites onto the tabs themselves
+- [XX] with that, make all buttons in the tab windows text show just the first letter of it "Mega > M, Shield > S, Blade > B..."
 - [XX] paldean tauros raging bull type change support
 - [XX] paldean tauros team dropdown sprite not showing
 - [XX] change "calculate damage" to "add to tab(s)"

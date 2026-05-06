@@ -926,7 +926,7 @@
   .def-tab {
     min-width: 0;
     max-width: none;
-    padding: 4px 6px;
+    padding: 5px 6px 2px 6px;
     border-radius: var(--radius-sm);
     border: 0.5px solid var(--border2);
     background: var(--bg3);
@@ -934,13 +934,13 @@
     font-size: 11px;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
-    text-align: center;
-    overflow: visible;
+    overflow: hidden;
     position: relative;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 2px;
+    align-items: stretch;
+    gap: 0;
+    min-height: 80px;
   }
   .def-tab:hover { background: #252535; }
   .def-tab.active {
@@ -958,41 +958,60 @@
   }
   .def-tab-name {
     font-weight: 500;
-    font-size: 11px;
+    font-size: 10px;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
   }
   .def-tab-types {
     display: flex;
     gap: 3px;
-    justify-content: center;
-    margin-top: 3px;
+    justify-content: flex-start;
+    margin-top: 2px;
   }
   .def-tab-dot {
     width: 6px; height: 6px;
     border-radius: 50%;
+    flex-shrink: 0;
   }
   .def-tab-close {
     position: absolute;
-    top: 3px; right: 5px;
-    font-size: 13px;
-    color: var(--text2);
+    top: 3px; left: 5px;
+    font-size: 11px;
+    color: var(--text3);
     cursor: pointer;
     line-height: 1;
     font-weight: 600;
+    z-index: 2;
   }
   .def-tab-close:hover { color: var(--red); }
+  .def-tab.match-highlighted {
+    border-color: #c8a000;
+    background: rgba(200,160,0,0.12);
+  }
+  .def-tab.match-highlighted.active {
+    border-color: #ffd700;
+    background: rgba(255,215,0,0.22);
+    color: #ffd700;
+  }
   .def-tab-empty {
     border-style: dashed;
     color: var(--text3);
     font-size: 18px;
     line-height: 1;
     padding: 6px 10px;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
   }
   .def-tab .ps-icon {
-    width: 40px; height: 30px;
+    width: 60px; height: 45px;
     flex-shrink: 0;
-    margin: -2px 0;
+    align-self: center;
+    margin-top: auto;
+    margin-bottom: 4px;
   }
   }
   .def-tab-empty:hover { color: var(--text2); }
@@ -2855,12 +2874,13 @@ function renderDefenderTabs() {
       tab.onclick = () => selectDefenderTab(i);
     } else {
       const isActive = i === activeDefenderSlot;
-      tab.className = `def-tab filled${isActive ? ' active' : ''}`;
+      const isMatchHighlighted = _matchActive && _matchHighlightQueue.my.includes(slot.speciesRaw);
+      tab.className = `def-tab filled${isActive ? ' active' : ''}${isMatchHighlighted ? ' match-highlighted' : ''}`;
       const dots = slot.types.map(t =>
         `<div class="def-tab-dot" style="background:${TYPE_COLORS[t]||'#888'}"></div>`
       ).join('');
-      // PS icon sprite — same as team dropdown
-      const iconHtml = psIconHtml(slot.speciesRaw, slot.speciesRaw);
+      // PS icon sprite — same as team dropdown, but 1.5× scaled
+      const iconHtml = psIconHtml(slot.speciesRaw, slot.speciesRaw, 1.5);
       // Mega button for this slot
       const defSlugForMega = toSlug(slot.speciesRaw);
       const defSpeciesNorm = defSlugForMega.replace(/[\s-]/g,'');
@@ -2889,12 +2909,16 @@ function renderDefenderTabs() {
 
       tab.innerHTML = `
         <span class="def-tab-close" onclick="clearDefenderSlot(event,${i})">✕</span>
-        ${iconHtml}
-        <div class="def-tab-name" style="width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${slot.speciesRaw}</div>
-        <div style="display:flex;align-items:center;justify-content:center;width:100%;gap:3px;">
-          <div class="def-tab-types" style="margin-top:0;flex-shrink:0;">${dots}</div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:2px;padding-left:14px;">
+          <div style="min-width:0;flex:1;">
+            <div class="def-tab-name">${slot.speciesRaw}</div>
+            <div class="def-tab-types">${dots}</div>
+          </div>
+          ${defMegaForms ? `<div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;">${defMegaBtns}</div>` : ''}
         </div>
-        ${defMegaRow}`;
+        <div style="display:flex;justify-content:center;align-items:flex-end;flex:1;overflow:hidden;">
+          ${iconHtml}
+        </div>`;
       tab.onclick = (e) => {
         if (e.target.classList.contains('def-tab-close')) return;
         if (e.target.tagName === 'BUTTON') return;
@@ -6307,7 +6331,7 @@ function _onPokedexMiniLoaded() {
   }
 }
 
-function psIconHtml(speciesRaw, title) {
+function psIconHtml(speciesRaw, title, scale) {
   // Strip ★ suffix from pinned pokemon names before building key
   const rawClean = (speciesRaw||'').replace(/\s*★$/, '').trim();
   const plain = rawClean.toLowerCase()
@@ -6338,10 +6362,12 @@ function psIconHtml(speciesRaw, title) {
     idx = getDexNum(speciesRaw);
   }
 
-  const x   = (idx % 12) * 40;
-  const y   = Math.floor(idx / 12) * 30;
+  const s   = scale || 1;
+  const x   = (idx % 12) * 40 * s;
+  const y   = Math.floor(idx / 12) * 30 * s;
   const tip = (title || speciesRaw || '').replace(/"/g, '&quot;');
-  return `<span class="ps-icon" style="background-position:-${x}px -${y}px;" title="${tip}"></span>`;
+  const bsStyle = s !== 1 ? `background-size:${Math.round(480*s)}px auto;` : '';
+  return `<span class="ps-icon" style="background-position:-${x}px -${y}px;${bsStyle}" title="${tip}"></span>`;
 }
 
 // ── Custom saved-team picker (native <select> can't show images) ──────────────
@@ -7255,10 +7281,18 @@ function toggleMatchHighlight(side, name) {
   if (idx !== -1) q.splice(idx, 1);
   else            q.push(name);
   renderMatchWindow();
+  renderDefenderTabs(); // sync tab highlight state
 }
 
-
-// Speed timeline for match window hover tips
+function cancelMatch() {
+  _matchActive = false;
+  _matchHighlightQueue = { my: [], opp: [] };
+  const win = document.getElementById('matchWindow');
+  if (win) win.style.display = 'none';
+  const btn = document.getElementById('startMatchBtn');
+  if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = ''; }
+  renderDefenderTabs(); // clear tab highlights
+}
 function buildMatchSpeedBar(p, opposingTeam) {
   const selfSpe = effectiveSpe(p);
   const oppSpeeds = opposingTeam.map(o => effectiveSpe(o));
@@ -7367,14 +7401,6 @@ function renderMatchWindow() {
       </div>
     </div>`;
   }
-}
-
-function cancelMatch() {
-  _matchActive = false;
-  const win = document.getElementById('matchWindow');
-  if (win) win.style.display = 'none';
-  const btn = document.getElementById('startMatchBtn');
-  if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = ''; }
 }
 
 function reportMatch(result) {
@@ -7500,12 +7526,21 @@ function spriteImgHtml(speciesRaw, size = 38, savedUrl = null) {
 }
 // Fetch base-form sprite on demand and inject into an img element
 async function loadBaseSprite(imgId, baseSlug) {
+  if (!document.getElementById(imgId)) return;
   try {
     const data = await fetchPokemonData(baseSlug);
-    const img = document.getElementById(imgId);
-    if (img && data.spriteUrl) { img.src = data.spriteUrl; img.style.display = ''; }
-    else if (img) { img.outerHTML = '<div style="' + img.dataset.chipStyle + '">' + img.dataset.shortName + '</div>'; }
-  } catch {}
+    const el = document.getElementById(imgId); // re-query after async — DOM may have changed
+    if (!el) return;
+    if (data?.spriteUrl) {
+      el.src = data.spriteUrl;
+      el.style.display = '';
+    } else {
+      el.outerHTML = '<div style="' + (el.dataset.chipStyle || 'display:inline-flex;width:38px;height:38px;align-items:center;justify-content:center;font-size:8px;color:var(--text3);') + '">' + (el.dataset.shortName || '?') + '</div>';
+    }
+  } catch(e) {
+    const el = document.getElementById(imgId);
+    if (el) el.outerHTML = '<div style="' + (el.dataset.chipStyle || 'display:inline-flex;width:38px;height:38px;align-items:center;justify-content:center;font-size:8px;color:var(--text3);') + '">' + (el.dataset.shortName || '?') + '</div>';
+  }
 }
 
 function spriteImgHtmlCls(speciesRaw, size, savedUrl, extraCls) {
@@ -7515,19 +7550,23 @@ function spriteImgHtmlCls(speciesRaw, size, savedUrl, extraCls) {
   const baseSlug = slug === 'floette-mega' ? 'floette-eternal' : slug.replace(/-mega(-[xy])?$/,'').replace(/-gmax$/,'').replace(/-blade$|-shield$/,'').replace(/-eternal$/,'');
   const shortName = speciesRaw.split(/[\s-]/)[0].slice(0, 8);
   const isForm = baseSlug !== slug;
-  // Use saved URL or cached URL; for megas try base form cache too
-  const src = savedUrl || pokemonCache[slug]?.spriteUrl || (isForm ? pokemonCache[baseSlug]?.spriteUrl : null);
+  // Own sprite URL takes priority; for forms, only use base cache if baseSlug matches exactly
+  const ownSrc = savedUrl || pokemonCache[slug]?.spriteUrl || null;
+  // Only use base cache when it's the right base (e.g. don't use 'floette' for 'floette-mega' which needs 'floette-eternal')
+  const baseSrc = isForm && pokemonCache[baseSlug]?.spriteUrl ? pokemonCache[baseSlug].spriteUrl : null;
+  const src = ownSrc || baseSrc;
   if (src) {
     return '<img class="match-sprite' + extraCls + '" src="' + src + '" style="width:' + size + 'px;height:' + size + 'px;image-rendering:pixelated;" alt="' + speciesRaw + '" title="' + speciesRaw + '">';
   }
   if (isForm) {
     // No cached sprite — fetch base form on demand
-    const id = 'sp-' + slug + '-' + Date.now() + Math.random().toString(36).slice(2,6);
+    const id = 'sp-' + slug.replace(/[^a-z0-9]/g,'') + '-' + Math.random().toString(36).slice(2,8);
     const chipStyle = 'display:inline-flex;width:' + size + 'px;height:' + size + 'px;align-items:center;justify-content:center;font-size:8px;color:var(--text3);';
     setTimeout(function(){ loadBaseSprite(id, baseSlug); }, 0);
     return '<img id="' + id + '" class="match-sprite' + extraCls + '" src="" style="width:' + size + 'px;height:' + size + 'px;image-rendering:pixelated;display:none;" data-chip-style="' + chipStyle + '" data-short-name="' + shortName + '" alt="' + speciesRaw + '" title="' + speciesRaw + '">';
   }
-  return '<div class="match-sprite-fallback' + extraCls + '" style="width:' + size + 'px;height:' + size + 'px;" title="' + speciesRaw + '">' + shortName + '</div>';
+  // Base form with no sprite — show text fallback immediately
+  return '<div class="match-sprite-fallback' + extraCls + '" style="width:' + size + 'px;height:' + size + 'px;display:inline-flex;align-items:center;justify-content:center;font-size:8px;color:var(--text3);" title="' + speciesRaw + '">' + shortName + '</div>';
 }
 
 
@@ -7541,12 +7580,14 @@ function matchWindowSpriteHtml(speciesRaw, spriteUrl) {
   const baseSlug = slug === 'floette-mega' ? 'floette-eternal' : slug.replace(/-mega(-[xy])?$/,'').replace(/-gmax$/,'').replace(/-blade$|-shield$/,'').replace(/-eternal$/,'');
   const shortName = speciesRaw.split(/[\s-]/)[0].slice(0, 6);
   const isForm = baseSlug !== slug;
-  const src = spriteUrl || pokemonCache[slug]?.spriteUrl || (isForm ? pokemonCache[baseSlug]?.spriteUrl : null);
+  const ownSrc = spriteUrl || pokemonCache[slug]?.spriteUrl || null;
+  const baseSrc = isForm && pokemonCache[baseSlug]?.spriteUrl ? pokemonCache[baseSlug].spriteUrl : null;
+  const src = ownSrc || baseSrc;
   if (src) {
     return '<img src="' + src + '" style="width:52px;height:52px;image-rendering:pixelated;object-fit:contain;" alt="' + speciesRaw + '" title="' + speciesRaw + '">';
   }
   if (isForm) {
-    const id = 'mw-' + slug + '-' + Date.now() + Math.random().toString(36).slice(2,6);
+    const id = 'mw-' + slug.replace(/[^a-z0-9]/g,'') + '-' + Math.random().toString(36).slice(2,8);
     const chipStyle = 'display:inline-flex;width:52px;height:52px;align-items:center;justify-content:center;font-size:8px;color:var(--text3);background:var(--bg3);border-radius:4px;';
     setTimeout(function(){ loadBaseSprite(id, baseSlug); }, 0);
     return '<img id="' + id + '" src="" style="width:52px;height:52px;image-rendering:pixelated;object-fit:contain;display:none;" data-chip-style="' + chipStyle + '" data-short-name="' + shortName + '" alt="' + speciesRaw + '" title="' + speciesRaw + '">';
@@ -7885,7 +7926,17 @@ function renderMatchHistory() {
 
     function makeHistorySprite(p, idx, side) {
       const name   = typeof p === 'string' ? p : p.name;
-      const sprite = typeof p === 'string' ? null : p.sprite;
+      const savedSprite = typeof p === 'string' ? null : p.sprite;
+      const slug = toSlug(name);
+      const baseSlug = slug === 'floette-mega' ? 'floette-eternal'
+        : slug.replace(/-mega(-[xy])?$/, '').replace(/-gmax$/, '')
+             .replace(/-blade$|-shield$/, '').replace(/-eternal$/, '');
+      const isForm = baseSlug !== slug;
+      // For forms: prefer live cache (corrected) over saved sprite (may be stale/wrong base form)
+      // For base pokemon: saved sprite is fine
+      const sprite = isForm
+        ? (pokemonCache[slug]?.spriteUrl || pokemonCache[baseSlug]?.spriteUrl || savedSprite || null)
+        : (savedSprite || pokemonCache[slug]?.spriteUrl || null);
       const arr    = side === 'myTeam' ? m.myTeam : m.opponent;
       const hasHl  = arr.some(q => typeof q !== 'string' && q.highlighted);
       const isHl   = typeof p !== 'string' && p.highlighted;
@@ -8188,6 +8239,32 @@ function initGettingStarted() {
 }
 initFormat();
   initGettingStarted();
+
+// Pre-fetch base sprites for fan-game megas in match history so they're in cache when log renders
+(async function prefetchFanGameMegaSprites() {
+  const history = getMatchHistory();
+  const toFetch = new Set();
+  Object.values(history).forEach(matches => {
+    matches.forEach(m => {
+      (m.myTeam || []).concat(m.opponent || []).forEach(p => {
+        const name = typeof p === 'string' ? p : p.name;
+        if (!name) return;
+        const slug = toSlug(name);
+        const baseSlug = slug === 'floette-mega' ? 'floette-eternal'
+          : slug.replace(/-mega(-[xy])?$/, '').replace(/-gmax$/, '')
+               .replace(/-blade$|-shield$/, '').replace(/-eternal$/, '');
+        if (baseSlug !== slug && !pokemonCache[baseSlug]?.spriteUrl) {
+          toFetch.add(baseSlug);
+        }
+      });
+    });
+  });
+  if (toFetch.size) {
+    await Promise.all([...toFetch].map(slug => fetchPokemonData(slug).catch(() => {})));
+    // Re-render history if it's currently open so old entries pick up the fresh sprites
+    if (_historyViewActive) renderMatchHistory();
+  }
+})();
 
 
 // ── Toggle mode buttons ───────────────────────────────────────────────────────
