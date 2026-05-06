@@ -3332,24 +3332,39 @@ async function loadSmogonMeta() {
   let chaosData = null;
   let usedMonth = '';
 
+  // Smogon blocks direct cross-origin requests, so we route through CORS proxies.
+  async function fetchViaProxy(targetUrl) {
+    const proxies = [
+      u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+      u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+    ];
+    for (const makeProxy of proxies) {
+      try {
+        const resp = await fetch(makeProxy(targetUrl), { signal: AbortSignal.timeout(8000) });
+        if (!resp.ok) continue;
+        const text = await resp.text();
+        try { return JSON.parse(text); } catch { continue; }
+      } catch { continue; }
+    }
+    return null;
+  }
+
   for (const month of candidates) {
     const url = `https://www.smogon.com/stats/${month}/chaos/${SMOGON_FORMAT}-${SMOGON_CUTOFF}.json`;
-    try {
-      const resp = await fetch(url);
-      if (!resp.ok) continue;
-      chaosData = await resp.json();
+    status.textContent = `Trying ${month}\u2026`;
+    const data = await fetchViaProxy(url);
+    if (data && data.data) {
+      chaosData = data;
       usedMonth = month;
       break;
-    } catch(e) {
-      continue;
     }
   }
 
   btn.disabled = false;
-  btn.textContent = '🌐 Load Smogon meta';
+  btn.textContent = '\ud83c\udf10 Load Smogon meta';
 
   if (!chaosData || !chaosData.data) {
-    errEl.textContent = 'Could not fetch Smogon stats. The format may not have stats published yet, or CORS may be blocking the request. Try again next month or paste sets manually.';
+    errEl.textContent = 'Could not fetch Smogon stats \u2014 CORS proxies may be rate-limited, or this format has no published stats yet. Try again in a moment, or paste sets manually from Pikalytics.';
     return;
   }
 
