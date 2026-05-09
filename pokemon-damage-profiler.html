@@ -1820,6 +1820,9 @@ Impish Nature
         <select id="terrainMode" onchange="recomputeAndRender()">
           <option value="none">None</option>
           <option value="psychic">Psychic Terrain</option>
+          <option value="electric">Electric Terrain</option>
+          <option value="grassy">Grassy Terrain</option>
+          <option value="misty">Misty Terrain</option>
           <option value="auroraveil">Aurora Veil</option>
           <option value="reflect">Reflect</option>
           <option value="lightscreen">Light Screen</option>
@@ -2203,8 +2206,14 @@ let pokemonCache = {};
 let moveCache    = {};
 try { pokemonCache = JSON.parse(localStorage.getItem(POKEMON_CACHE_KEY) || '{}'); } catch {}
 // Invalidate stale move cache entries that had wrong/missing power from PokeAPI
-const STALE_MOVES = ['icicle-spear', 'knock-off'];
-STALE_MOVES.forEach(slug => { if (!moveCache[slug]?.power) delete moveCache[slug]; });
+// Always clear these moves from cache so they re-fetch with our power overrides applied
+const STALE_MOVES = ['icicle-spear', 'knock-off', 'tera-blast', 'tera-starstorm'];
+STALE_MOVES.forEach(slug => { delete moveCache[slug]; });
+// Pre-fetch them immediately so they're ready before any pokemon loads
+STALE_MOVES.forEach(slug => {
+  const displayName = slug.split('-').map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+  fetchMoveData(displayName).catch(() => {});
+});
 try { moveCache    = JSON.parse(localStorage.getItem(MOVE_CACHE_KEY)    || '{}'); } catch {}
 
 function _persistPokemonCache() {
@@ -2245,9 +2254,28 @@ async function fetchMoveData(moveName) {
     .replace(/\s+/g,'-')
     .replace(/[^a-z0-9-]/g,'');
   if (moveCache[slug]) return moveCache[slug];
+
+  // Synthetic data for moves PokeAPI doesn't have yet
+  const FETCH_POWER_OVERRIDES = {
+    'icicle-spear':   { power: 25,  cat: 'physical', type: 'ice',    spread: false },
+    'knock-off':      { power: 65,  cat: 'physical', type: 'dark',   spread: false },
+    'tera-blast':     { power: 80,  cat: 'special',  type: 'normal', spread: false },
+    'tera-starstorm': { power: 120, cat: 'special',  type: 'normal', spread: false },
+  };
+
   try {
     const res = await fetch(`https://pokeapi.co/api/v2/move/${slug}`);
-    if (!res.ok) return null;
+    if (!res.ok) {
+      // If we have a synthetic override, use it even without API data
+      const _syn = FETCH_POWER_OVERRIDES[slug];
+      if (_syn) {
+        const result = { name: moveName, power: _syn.power, type: _syn.type, cat: _syn.cat, isSpread: _syn.spread, effect: '' };
+        moveCache[slug] = result;
+        _persistMoveCache();
+        return result;
+      }
+      return null;
+    }
     const data = await res.json();
     // Spread targets in doubles: all-opponents, all-other-pokemon, entire-field, all-pokemon
     const spreadTargets = new Set(['all-opponents','all-other-pokemon','entire-field','all-pokemon']);
@@ -2256,23 +2284,17 @@ async function fetchMoveData(moveName) {
       ? (effectEntry.short_effect || effectEntry.effect || '').replace(/\$effect_chance/g, data.effect_chance || '?')
       : '';
     // Variable-power moves: PokeAPI returns null power; assign sentinel value
-    // that will be overridden by the damage calc based on the actual formula
     const VARIABLE_POWER_MOVES = {
-      'heavy-slam': 80, 'heat-crash': 80,   // weight-based: 40-120
-      'grass-knot': 80, 'low-kick': 80,      // weight-based: 20-120
-      'gyro-ball': 80,                        // speed-based
-      'electro-ball': 80,                     // speed-based
-      'trump-card': 40,                       // PP-based
-      'return': 102, 'frustration': 1,        // friendship-based
-      'stored-power': 20, 'power-trip': 20,   // stat-stage based
-      'punishment': 60,                       // stat-stage based
+      'heavy-slam': 80, 'heat-crash': 80,
+      'grass-knot': 80, 'low-kick': 80,
+      'gyro-ball': 80,
+      'electro-ball': 80,
+      'trump-card': 40,
+      'return': 102, 'frustration': 1,
+      'stored-power': 20, 'power-trip': 20,
+      'punishment': 60,
     };
     const movePowerRaw = data.power != null ? data.power : (VARIABLE_POWER_MOVES[slug] || 0);
-    // Hard power overrides for moves PokeAPI gets wrong (e.g. icicle-spear returns 0 or null)
-    const FETCH_POWER_OVERRIDES = {
-      'icicle-spear': { power: 25, cat: 'physical' },
-      'knock-off':    { power: 65, cat: 'physical' },
-    };
     const _override = FETCH_POWER_OVERRIDES[slug];
     const finalPower = _override ? _override.power : movePowerRaw;
     const damageCls = data.damage_class?.name;
@@ -2281,7 +2303,7 @@ async function fetchMoveData(moveName) {
     const result = {
       name: moveName,
       power: finalPower,
-      type: data.type.name,
+      type: _override?.type || data.type.name,
       cat: finalCat,
       isSpread: spreadTargets.has(data.target.name),
       effect: effectDesc,
@@ -2315,6 +2337,7 @@ function parseSinglePaste(text) {
   let ivs = {hp:31,atk:31,def:31,spa:31,spd:31,spe:31};
   const moves = [];      // all move names including status (no divider sentinel)
   let dividerIndex = null; // paste index where _ divider was found
+  let teraType = null;
 
   for (const line of lines.slice(1)) {
     const trimmedLine = line.trim();
@@ -2345,7 +2368,7 @@ function parseSinglePaste(text) {
     }
     if (line.startsWith('Level:'))      { level=parseInt(line.replace('Level:','').trim())||50; continue; }
     if (line.match(/Nature$/))          { nature=line.replace(/\s*Nature$/,'').trim().toLowerCase(); continue; }
-    if (line.startsWith('Tera Type:'))  { continue; }
+    if (line.startsWith('Tera Type:'))  { const tt=line.replace('Tera Type:','').trim().toLowerCase(); if(tt && tt !== 'none') teraType=tt; continue; }
     if (line.startsWith('Happiness:'))  { continue; }
     if (line.startsWith('Shiny:'))      { continue; }
     if (line.startsWith('Dynamax Level:')) { continue; }
@@ -2372,7 +2395,7 @@ function parseSinglePaste(text) {
   if (dividerIndex === null) dividerIndex = 4;
 
   const normalizedEvs = normalizeEvs(evs);
-  return { speciesRaw, item, allItems, ability, allAbilities, level, nature, evs: normalizedEvs, ivs, moves, dividerIndex };
+  return { speciesRaw, item, allItems, ability, allAbilities, level, nature, evs: normalizedEvs, ivs, moves, dividerIndex, teraType };
 }
 
 function splitPaste(text) {
@@ -2392,6 +2415,8 @@ const typeBoostOverrides = new Map();
 const lifeOrbOverrides = new Map();   // 'on' = life orb boost active
 const choiceOverrides = new Map();    // 'on' = choice item boost active
 const boosterOverrides = new Map();   // 'on' = booster energy active
+const teraActive = new Set();           // speciesRaw keys where tera is active (results listings)
+const teraTabActive = new Set();        // slot indices where tab tera is active
 // multiscale disabled: defender speciesRaw in this set → ignore multiscale
 const multiscaleOverrides = new Set();
 // defender mega overrides: slot index → mega slug (null = base form)
@@ -2686,16 +2711,33 @@ const TYPE_COLORS = {
   psychic:'#ED93B1',ice:'#85B7EB',dragon:'#AFA9EC',dark:'#B4B2A9',
   fairy:'#ED93B1',fighting:'#F0997B',flying:'#85B7EB',poison:'#AFA9EC',
   ground:'#FAC775',rock:'#D3D1C7',bug:'#C0DD97',ghost:'#CECBF6',
-  steel:'#D3D1C7',normal:'#B4B2A9'
+  steel:'#D3D1C7',normal:'#B4B2A9',stellar:'#9DC9E8'
 };
 
 function effectiveSpe(pokemon) {
-  const spe = pokemon.stats ? pokemon.stats.spe : (pokemon.computedSpe || 0);
+  // Read base speed — prefer computedSpe (set by computeResults/load), fall back to stats.spe from paste
+  let spe = pokemon.computedSpe || pokemon.stats?.spe || 0;
   const item = (pokemon.item || '').toLowerCase().replace(/[\s-]/g,'');
   const ab   = (pokemon.ability || '').toLowerCase().replace(/[\s-]/g,'');
   const weather = document.getElementById('weatherMode')?.value || 'none';
+
+  // Booster Energy: only boost speed if it's the highest non-HP stat
+  // Compute from base stats so we never double-apply
+  const _boosterOn = boosterOverrides.get(pokemon.speciesRaw) === 'on';
+  const _hasProtoQuark = ab === 'protosynthesis' || ab === 'quarkdrive';
+  if (_boosterOn && _hasProtoQuark) {
+    const baseStats = {
+      atk: pokemon.computedAtk || pokemon.stats?.atk || 0,
+      def: pokemon.computedDef || pokemon.stats?.def || 0,
+      spa: pokemon.computedSpa || pokemon.stats?.spa || 0,
+      spd: pokemon.computedSpd || pokemon.stats?.spd || 0,
+      spe,
+    };
+    const highest = Object.entries(baseStats).reduce((a, b) => b[1] > a[1] ? b : a);
+    if (highest[0] === 'spe') spe = Math.floor(spe * 1.5);
+  }
+
   let result = item === 'choicescarf' ? Math.floor(spe * 1.5) : spe;
-  // Weather-based speed doubling abilities
   if ((ab === 'sandrush'    && weather === 'sand') ||
       (ab === 'swiftswim'   && weather === 'rain') ||
       (ab === 'chlorophyll' && weather === 'sun')  ||
@@ -2983,6 +3025,17 @@ function renderDefenderTabs() {
         ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${_tabItemSlug}.png" style="width:32px;height:32px;image-rendering:pixelated;position:absolute;bottom:0px;right:0px;z-index:2;" onerror="this.style.display='none'" title="${(slot.item||'').split(',')[0].trim()}">`
         : '';
 
+      // Tera button for tab (SV format only)
+      const _tabTeraType = slot.teraType || slot.types?.[0] || 'normal';
+      const _tabTeraOn = teraTabActive.has(String(i));
+      const _tabTeraColor = TYPE_COLORS[_tabTeraType] || '#888';
+      const _tabTeraStyle = _tabTeraOn
+        ? `color:#fff;border-color:${_tabTeraColor};background:${_tabTeraColor};`
+        : `color:${_tabTeraColor};border-color:${_tabTeraColor};background:transparent;opacity:0.75;`;
+      const _tabTeraBtn = _currentFormat === 'scarletviolet'
+        ? `<button onclick="toggleTabTera(event,${i})" style="padding:1px 6px;font-size:9px;border-radius:3px;border:0.5px solid;cursor:pointer;font-weight:600;${_tabTeraStyle}" title="Toggle Tera ${_tabTeraType}">Tera</button>`
+        : '';
+
       tab.innerHTML = `
         <span class="def-tab-close" onclick="clearDefenderSlot(event,${i})">✕</span>
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:2px;padding-left:14px;">
@@ -2990,7 +3043,10 @@ function renderDefenderTabs() {
             <div class="def-tab-name">${slot.speciesRaw}</div>
             <div class="def-tab-types">${dots}</div>
           </div>
-          ${defMegaForms ? `<div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;">${defMegaBtns}</div>` : ''}
+          <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;align-items:flex-end;">
+            ${_tabTeraBtn}
+            ${defMegaForms ? defMegaBtns : ''}
+          </div>
         </div>
         <div style="display:flex;justify-content:center;align-items:flex-end;flex:1;overflow:visible;position:relative;">
           ${iconHtml}
@@ -3733,13 +3789,36 @@ function applyTerrainScreenMul(moveCat, terrain) {
   return 1;
 }
 
-// Psychic Terrain: Expanding Force becomes spread + 1.5×; grounded targets are protected from priority
-function applyPsychicTerrainPower(moveName, terrain) {
-  if (terrain !== 'psychic') return { powerMul: 1, spreadOverride: false };
-  const mn = (moveName||'').toLowerCase();
-  if (mn.includes('expanding') || mn.includes('force')) {
-    return { powerMul: 1.5, spreadOverride: true };
+// Terrain move power multipliers
+function applyTerrainPower(moveName, moveType, terrain, attacker) {
+  if (!terrain || terrain === 'none') return { powerMul: 1, spreadOverride: false };
+  const mn = (moveName||'').toLowerCase().replace(/[\s-]/g,'');
+  const mt = (moveType||'').toLowerCase();
+
+  if (terrain === 'psychic') {
+    // Psychic Terrain: +30% to Psychic moves; Expanding Force becomes spread + 1.5×
+    if (mn === 'expandingforce') return { powerMul: 1.5, spreadOverride: true };
+    if (mt === 'psychic') return { powerMul: 1.3, spreadOverride: false };
   }
+
+  if (terrain === 'electric') {
+    // Electric Terrain: +30% to Electric moves; Rising Voltage doubles base power (×2)
+    if (mn === 'risingvoltage') return { powerMul: 2.0, spreadOverride: false };
+    if (mt === 'electric') return { powerMul: 1.3, spreadOverride: false };
+  }
+
+  if (terrain === 'grassy') {
+    // Grassy Terrain: +30% to Grass moves; Earthquake/Bulldoze/Magnitude halved
+    if (mn === 'earthquake' || mn === 'bulldoze' || mn === 'magnitude')
+      return { powerMul: 0.5, spreadOverride: false };
+    if (mt === 'grass') return { powerMul: 1.3, spreadOverride: false };
+  }
+
+  if (terrain === 'misty') {
+    // Misty Terrain: Dragon moves halved
+    if (mt === 'dragon') return { powerMul: 0.5, spreadOverride: false };
+  }
+
   return { powerMul: 1, spreadOverride: false };
 }
 
@@ -3809,6 +3888,37 @@ function onDefenderInputChange() {
       renderResults();
       renderDefenderTabs();
       renderEvPanel();
+
+      // Async: fetch any moves not yet in cache, then re-update
+      const missingMoves = parsed.moves.filter(moveName => {
+        const slug = moveName.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+        return !moveCache[slug];
+      });
+      if (missingMoves.length) {
+        const _slotIdx = activeDefenderSlot;
+        const _rawTextAtDispatch = text;
+        Promise.all(missingMoves.map(m => fetchMoveData(m))).then(() => {
+          // Only re-update if the raw text hasn't changed (user stopped typing)
+          const currentSlot = DEFENDER_SLOTS[_slotIdx];
+          if (!currentSlot || currentSlot._rawText !== _rawTextAtDispatch) return;
+          const refreshed = parsed.moves.map((moveName, i) => {
+            const slug = moveName.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+            const cached = moveCache[slug];
+            return cached ? { ...cached, pasteIndex: i }
+              : { name: moveName, power: 0, type: 'normal', cat: 'status', isSpread: false, pasteIndex: i };
+          });
+          currentSlot.allMoves = refreshed;
+          currentSlot.resolvedMoves = refreshed.filter(m => m.power > 0);
+          const loadedMeta = META_DB.filter(p => p.loaded);
+          const refreshedResults = computeResults(loadedMeta, currentSlot);
+          currentSlot._lastResults = refreshedResults;
+          if (_slotIdx === activeDefenderSlot) {
+            lastResults = refreshedResults;
+            renderResults();
+            renderDefenderTabs();
+          }
+        });
+      }
     } catch(e) { /* silent — don't show parse errors mid-edit */ }
   }, 500);
 }
@@ -3976,8 +4086,34 @@ function computeResults(loadedMeta, defender) {
     attacker.computedSpa  = calcStat(attacker.baseStats.spa, attacker.evs.spa||0, attacker.ivs.spa||31, 50, nat.spa||1);
     attacker.computedDef  = calcStat(attacker.baseStats.def, attacker.evs.def||0, attacker.ivs.def||31, 50, nat.def||1);
     attacker.computedSpd  = calcStat(attacker.baseStats.spd, attacker.evs.spd||0, attacker.ivs.spd||31, 50, nat.spd||1);
-    attacker.computedHp   = calcHP(attacker.baseStats.hp,   attacker.evs.hp||0,  attacker.ivs.hp||31,  50);
+    attacker.computedHp   = calcHP(attacker.baseStats.hp,    attacker.evs.hp||0,  attacker.ivs.hp||31,  50);
     attacker.computedSpe  = calcStat(attacker.baseStats.spe, attacker.evs.spe||0, attacker.ivs.spe||31, 50, nat.spe||1);
+
+    // Booster Energy: compute boosted stats separately — do NOT mutate computedAtk/Spa/etc.
+    // so they remain clean base values for display and future recomputes.
+    // We apply the boost inline when selecting atkStat/defStat below.
+    const _atkAbilSlug = (attacker.ability||'').toLowerCase().replace(/[\s-]/g,'');
+    const _hasProtoQuark = _atkAbilSlug === 'protosynthesis' || _atkAbilSlug === 'quarkdrive';
+    const _boosterActive = boosterOverrides.get(attacker.speciesRaw) === 'on' && _hasProtoQuark;
+    // Find which stat gets boosted and its multiplier
+    let _boostStat = null, _boostMul = 1;
+    if (_boosterActive) {
+      const _baseVals = {
+        atk: attacker.computedAtk, def: attacker.computedDef,
+        spa: attacker.computedSpa, spd: attacker.computedSpd, spe: attacker.computedSpe,
+      };
+      const _highest = Object.entries(_baseVals).reduce((a, b) => b[1] > a[1] ? b : a);
+      _boostStat = _highest[0];
+      _boostMul = _boostStat === 'spe' ? 1.5 : 1.3;
+    }
+
+    // Tera: compute effective types and STAB for this attacker
+    const _teraOn = teraActive.has(attacker.speciesRaw);
+    const _teraType = _teraOn ? (attacker.teraType || attacker.types?.[0] || 'normal') : null;
+    const _originalTypes = attacker.types || [];
+    // Stellar tera: no defensive change — keeps original types
+    // Other tera: defensive type becomes [teraType]
+    const _effectiveTypes = (_teraOn && _teraType && _teraType !== 'stellar') ? [_teraType] : _originalTypes;
 
     for (const move of attacker.resolvedMoves) {
       const mn = move.name.toLowerCase();
@@ -3993,6 +4129,31 @@ function computeResults(loadedMeta, defender) {
 
       // Knock Off: 1.5x base power (always assume target has item)
       const isKnockOff = mn === 'knock-off' || mn.replace(/[\s-]/g,'') === 'knockoff';
+
+      // Tera Blast: type/category/power change when terastallized
+      const isTeraBlast = mn === 'tera blast' || mn === 'terablast';
+      let teraBlastStellarNeutral = false;
+      if (isTeraBlast && _teraOn && _teraType) {
+        if (_teraType === 'stellar') {
+          effectiveMoveType = 'stellar';
+          teraBlastStellarNeutral = true;
+        } else {
+          effectiveMoveType = _teraType;
+        }
+      }
+
+      // Tera Starstorm: single-target Normal when not tera'd, spread Stellar when tera'd
+      const isTeraStarstorm = mn === 'tera starstorm' || mn === 'terastarstorm';
+      let teraStarstormStellarNeutral = false;
+      if (isTeraStarstorm) {
+        if (_teraOn) {
+          // Tera'd: becomes Stellar type spread move, neutral to everything
+          effectiveMoveType = 'stellar';
+          teraStarstormStellarNeutral = true;
+          // isSpread handled via spreadOverride below
+        }
+        // Not tera'd: stays Normal single-target (no change needed, PokeAPI may mark it spread)
+      }
 
       // Raging Bull: type changes based on Tauros-Paldea form
       const isRagingBull = mn === 'raging bull' || mn === 'ragingbull';
@@ -4029,7 +4190,13 @@ function computeResults(loadedMeta, defender) {
         const waterFactor = defender.types.includes('water') ? 2 : 1;
         eff = nonWaterEff * waterFactor;
       } else {
-        eff = typeEff(effectiveMoveType, defender.types);
+        // Tab pokemon defensive typing — apply tera if active
+        const _tabSlotIdx = DEFENDER_SLOTS.indexOf(defender);
+        const _tabTeraOn = _tabSlotIdx >= 0 && teraTabActive.has(String(_tabSlotIdx));
+        const _tabTeraType = _tabTeraOn ? (defender.teraType || defender.types?.[0] || 'normal') : null;
+        // Stellar keeps original defensive types
+        const _tabDefTypes = (_tabTeraOn && _tabTeraType && _tabTeraType !== 'stellar') ? [_tabTeraType] : (defender.types || []);
+        eff = typeEff(effectiveMoveType, _tabDefTypes);
       }
       if (eff === 0) continue;
 
@@ -4068,9 +4235,24 @@ function computeResults(loadedMeta, defender) {
         if (_abImm === 'wellbakedbody'&& effectiveMoveType === 'fire')     continue;
       }
 
-      // Recalculate STAB and atk boosts using effective type
+      // Recalculate STAB with tera adjustments
       const abMeff = getAbilityMods(attacker.ability, effectiveMoveType, attacker.types, move.name);
-      const isStab = abMeff.stabBonus;
+      let isStab = abMeff.stabBonus; // base STAB from original types + ability
+      if (_teraOn && _teraType) {
+        if (_teraType === 'stellar') {
+          // Stellar tera: original type moves → ×2, all other moves → ×1.2
+          // Tera Starstorm and Tera Blast are stellar-native moves — always get ×2
+          if (isTeraStarstorm || isTeraBlast || _originalTypes.includes(effectiveMoveType)) {
+            isStab = 2.0;
+          } else {
+            isStab = Math.max(isStab, 1.2);
+          }
+        } else if (effectiveMoveType === _teraType) {
+          // Move matches tera type: upgrade to 2× if was original STAB, otherwise 1.5×
+          isStab = _originalTypes.includes(_teraType) ? 2.0 : Math.max(isStab, 1.5);
+        }
+        // Original type STAB is preserved as-is for non-matching moves
+      }
 
       // Item mods (use effective type for type-boosting items)
       const itemModsForMove = getItemMods(attacker.item, effectiveMoveType, move.cat);
@@ -4083,18 +4265,29 @@ function computeResults(loadedMeta, defender) {
       const isPsyshockLike = mn === 'psyshock' || mn === 'psystrike' || mn === 'secret sword';
 
       let rawAtk, rawDef;
+      // Tera Blast: uses highest of Atk vs SpA to determine category
+      const _teraBlastPhysical = isTeraBlast && _teraOn && attacker.computedAtk > attacker.computedSpa;
+      const _teraBlastCat = isTeraBlast && _teraOn
+        ? (_teraBlastPhysical ? 'physical' : 'special')
+        : move.cat;
+
       if (isBodyPress) {
-        rawAtk = attacker.computedDef; // uses user's Defense
+        rawAtk = attacker.computedDef;
         rawDef = defender.stats.def;
       } else if (isFoulPlay) {
-        rawAtk = defender.stats.atk;  // uses target's Attack
+        rawAtk = defender.stats.atk;
         rawDef = defender.stats.def;
       } else if (isPsyshockLike) {
         rawAtk = attacker.computedSpa;
-        rawDef = defender.stats.def;  // uses target's Defense (not SpD)
+        rawDef = defender.stats.def;
       } else {
-        rawAtk = move.cat === 'physical' ? attacker.computedAtk : attacker.computedSpa;
-        rawDef = move.cat === 'physical' ? defender.stats.def : defender.stats.spd;
+        rawAtk = _teraBlastCat === 'physical' ? attacker.computedAtk : attacker.computedSpa;
+        rawDef = _teraBlastCat === 'physical' ? defender.stats.def : defender.stats.spd;
+      }
+      // Apply booster energy inline (never mutates computedAtk/Spa)
+      if (_boosterActive) {
+        if (_boostStat === 'atk' && _teraBlastCat === 'physical') rawAtk = Math.floor(rawAtk * _boostMul);
+        else if (_boostStat === 'spa' && _teraBlastCat === 'special') rawAtk = Math.floor(rawAtk * _boostMul);
       }
 
       // Apply defender's aura as a power multiplier if attacker doesn't already have it
@@ -4107,8 +4300,8 @@ function computeResults(loadedMeta, defender) {
       const abilityAtkMul = abMeff.atkMul * itemModsForMove.atkMul;
       const atkStat = rawAtk * abilityAtkMul;
 
-      // Defender stat with Ruin ability debuff
-      const ruinMul = getDefenderRuinDebuff(attacker.ability, move.cat);
+      // Defender stat with Ruin ability debuff (use tera blast category if applicable)
+      const ruinMul = getDefenderRuinDebuff(attacker.ability, _teraBlastCat);
       const defStat = rawDef * ruinMul;
 
       // Power modifiers:
@@ -4127,16 +4320,22 @@ function computeResults(loadedMeta, defender) {
       // Heavy Slam / Heat Crash: variable BP based on attacker vs defender weight ratio
       let movePower = move.power;
       if (isKnockOff) movePower = Math.floor(movePower * 1.5);
+      // Tera Blast stellar: base power 100
+      if (isTeraBlast && _teraType === 'stellar') movePower = 100;
       if (mn === 'heavy slam' || mn === 'heat crash') {
         const atkW = attacker.weight;
         const defW = defender.weight || pokemonCache[toSlug(defender.speciesRaw)]?.weight || null;
         movePower = heavySlamBP(atkW, defW);
       }
-      const effectivePower  = movePower * abilityPowerMul * itemPowerMul * _sandForceMul;
+      const effectivePower = movePower * abilityPowerMul * itemPowerMul * _sandForceMul;
+      // Stellar Tera Blast / Tera Starstorm when tera'd: always neutral (eff = 1)
+      const _isStellarNeutral = teraBlastStellarNeutral || teraStarstormStellarNeutral;
+      const _finalEff = _isStellarNeutral ? 1 : eff;
+      // Tera Starstorm when tera'd: becomes spread (×0.75 applied via isSpread flag)
+      const _isTeraStarstormSpread = isTeraStarstorm && _teraOn;
 
-      const dmg = damageFormula(50, effectivePower, atkStat, defStat, eff, isStab)
-                  * (moldBreaker ? 1 : getDefenderAbilityDmgMul(defender.ability, effectiveMoveType, defender.speciesRaw));
-      const pct = dmg / (dynamaxActive ? defender.stats.hp * 2 : defender.stats.hp) * 100;
+      const dmg = damageFormula(50, effectivePower, atkStat, defStat, _finalEff, isStab)
+                  * (moldBreaker ? 1 : getDefenderAbilityDmgMul(defender.ability, effectiveMoveType, defender.speciesRaw));      const pct = dmg / (dynamaxActive ? defender.stats.hp * 2 : defender.stats.hp) * 100;
 
       // ── Build activeMods list for display ──
       const activeMods = [];
@@ -4199,8 +4398,11 @@ function computeResults(loadedMeta, defender) {
       const uniqueMods = [...new Set(activeMods)].filter(Boolean);
 
       moveBreakdown.push({
-        move, effectiveMoveType, isSpread: move.isSpread, isWeatherBall,
-        dmg: mhDmg, pct: mhDmg / (dynamaxActive ? defender.stats.hp * 2 : defender.stats.hp) * 100, eff, stab: isStab > 1,
+        move, effectiveMoveType,
+        // Tera Starstorm: spread when tera'd, single-target when not
+        isSpread: isTeraStarstorm ? _isTeraStarstormSpread : move.isSpread,
+        isWeatherBall,
+        dmg: mhDmg, pct: mhDmg / (dynamaxActive ? defender.stats.hp * 2 : defender.stats.hp) * 100, eff: _finalEff, stab: isStab > 1,
         activeMods: uniqueMods, atkStat, defStat, isStab, itemModsForMove,
         pasteIndex: move.pasteIndex ?? 99,
         mhMin: mhInfo ? mhInfo.min : null,
@@ -4234,6 +4436,23 @@ function computeResults(loadedMeta, defender) {
 
     // ── Defender attacking back at this meta Pokémon ──────────────────────────
     const defNat = NATURES[defender.nature] || {};
+    // Pre-compute booster energy multiplier for defender (tab pokemon)
+    const _defAbilSlug = (defender.ability||'').toLowerCase().replace(/[\s-]/g,'');
+    const _defHasProtoQuark = _defAbilSlug === 'protosynthesis' || _defAbilSlug === 'quarkdrive';
+    let _defBoosterStat = null, _defBoosterMul = 1;
+    if (boosterOverrides.get(defender.speciesRaw) === 'on' && _defHasProtoQuark) {
+      // Compute base stats to find highest
+      const _defStatsTemp = {
+        atk: calcStat(defender.baseStats.atk, defender.evs.atk||0, defender.ivs.atk||31, defender.level, defNat.atk||1),
+        def: calcStat(defender.baseStats.def, defender.evs.def||0, defender.ivs.def||31, defender.level, defNat.def||1),
+        spa: calcStat(defender.baseStats.spa, defender.evs.spa||0, defender.ivs.spa||31, defender.level, defNat.spa||1),
+        spd: calcStat(defender.baseStats.spd, defender.evs.spd||0, defender.ivs.spd||31, defender.level, defNat.spd||1),
+        spe: calcStat(defender.baseStats.spe, defender.evs.spe||0, defender.ivs.spe||31, defender.level, defNat.spe||1),
+      };
+      const _highest = Object.entries(_defStatsTemp).reduce((a, b) => b[1] > a[1] ? b : a);
+      _defBoosterStat = _highest[0];
+      _defBoosterMul = _defBoosterStat === 'spe' ? 1.5 : 1.3;
+    }
     let defBest = { dmg: 0, move: null, eff: 1 };
     const defMoveBreakdown = [];
 
@@ -4252,6 +4471,30 @@ function computeResults(loadedMeta, defender) {
         else if (slug.includes('combat') || slug.includes('paldea')) effectiveMoveType = 'fighting';
       }
 
+      // Tera Blast: type/category/power change when tab pokemon is terastallized
+      const _tabSlotIdxDef = DEFENDER_SLOTS.indexOf(defender);
+      const _tabTeraOnDef = _tabSlotIdxDef >= 0 && teraTabActive.has(String(_tabSlotIdxDef));
+      const _tabTeraTypeDef = _tabTeraOnDef ? (defender.teraType || defender.types?.[0] || 'normal') : null;
+
+      const _defIsTeraBlast = mn === 'tera blast' || mn === 'terablast';
+      let _defTeraBlastStellarNeutral = false;
+      if (_defIsTeraBlast && _tabTeraOnDef && _tabTeraTypeDef) {
+        if (_tabTeraTypeDef === 'stellar') {
+          effectiveMoveType = 'stellar';
+          _defTeraBlastStellarNeutral = true;
+        } else {
+          effectiveMoveType = _tabTeraTypeDef;
+        }
+      }
+
+      // Tera Starstorm: single-target when not tera'd, spread+Stellar when tera'd
+      const _defIsTeraStarstorm = mn === 'tera starstorm' || mn === 'terastarstorm';
+      let _defTeraStarstormStellarNeutral = false;
+      if (_defIsTeraStarstorm && _tabTeraOnDef) {
+        effectiveMoveType = 'stellar';
+        _defTeraStarstormStellarNeutral = true;
+      }
+
       const isFreezeDryDef = mn === 'freeze-dry' || mn.replace(/-/g,' ') === 'freeze dry';
       let eff;
       if (isFreezeDryDef) {
@@ -4260,17 +4503,28 @@ function computeResults(loadedMeta, defender) {
         const waterFactor = attacker.types.includes('water') ? 2 : 1;
         eff = nonWaterEff * waterFactor;
       } else {
-        eff = typeEff(effectiveMoveType, attacker.types);
+        // Meta attacker's defensive types — apply tera if active
+        eff = typeEff(effectiveMoveType, _effectiveTypes);
       }
       // Scrappy: tab pokemon's normal/fighting moves hit ghost-type meta mons
       const _tabScrappy = (defender.ability||'').toLowerCase().replace(/[\s-]/g,'') === 'scrappy';
-      if (eff === 0 && _tabScrappy && attacker.types.includes('ghost') && (effectiveMoveType === 'normal' || effectiveMoveType === 'fighting')) {
+      if (eff === 0 && _tabScrappy && _effectiveTypes.includes('ghost') && (effectiveMoveType === 'normal' || effectiveMoveType === 'fighting')) {
         eff = 1;
       }
       if (eff === 0) continue;
 
-      const abMeff       = getAbilityMods(defender.ability, effectiveMoveType, defender.types, move.name);
-      const isStab       = abMeff.stabBonus;
+      // Tab pokemon STAB — apply tera if tab tera is active
+      const abMeff = getAbilityMods(defender.ability, effectiveMoveType, defender.types, move.name);
+      let isStab = abMeff.stabBonus;
+      if (_tabTeraOnDef && _tabTeraTypeDef) {
+        if (_tabTeraTypeDef === 'stellar') {
+          // Stellar-native moves (Tera Blast/Starstorm) always get ×2; original types get ×2; others ×1.2
+          if (_defIsTeraBlast || _defIsTeraStarstorm || (defender.types || []).includes(effectiveMoveType)) isStab = 2.0;
+          else isStab = Math.max(isStab, 1.2);
+        } else if (effectiveMoveType === _tabTeraTypeDef) {
+          isStab = (defender.types || []).includes(_tabTeraTypeDef) ? 2.0 : Math.max(isStab, 1.5);
+        }
+      }
       const defItForMove = getItemMods(defender.item, effectiveMoveType, move.cat);
 
       const isPsyshockLike = mn === 'psyshock' || mn === 'psystrike' || mn === 'secret sword';
@@ -4278,16 +4532,25 @@ function computeResults(loadedMeta, defender) {
       const isFoulPlay     = mn === 'foul play';
 
       let rawAtk, rawDef;
-      const defAtk = calcStat(defender.baseStats.atk, defender.evs.atk||0, defender.ivs.atk||31, defender.level, defNat.atk||1);
-      const defSpa = calcStat(defender.baseStats.spa, defender.evs.spa||0, defender.ivs.spa||31, defender.level, defNat.spa||1);
+      let defAtk = calcStat(defender.baseStats.atk, defender.evs.atk||0, defender.ivs.atk||31, defender.level, defNat.atk||1);
+      let defSpa = calcStat(defender.baseStats.spa, defender.evs.spa||0, defender.ivs.spa||31, defender.level, defNat.spa||1);
       const defDef = calcStat(defender.baseStats.def, defender.evs.def||0, defender.ivs.def||31, defender.level, defNat.def||1);
+      // Apply booster energy to the relevant stat
+      if (_defBoosterStat === 'atk') defAtk = Math.floor(defAtk * _defBoosterMul);
+      else if (_defBoosterStat === 'spa') defSpa = Math.floor(defSpa * _defBoosterMul);
+
+      // Tera Blast: physical/special based on defender's Atk vs SpA
+      const _defTeraBlastPhys = _defIsTeraBlast && _tabTeraOnDef && defAtk > defSpa;
+      const _defTeraBlastCat = _defIsTeraBlast && _tabTeraOnDef
+        ? (_defTeraBlastPhys ? 'physical' : 'special')
+        : move.cat;
 
       if (isBodyPress)    { rawAtk = defDef;  rawDef = attacker.computedDef; }
       else if (isFoulPlay){ rawAtk = attacker.computedAtk; rawDef = attacker.computedDef; }
       else if (isPsyshockLike){ rawAtk = defSpa; rawDef = attacker.computedDef; }
       else {
-        rawAtk = move.cat === 'physical' ? defAtk : defSpa;
-        rawDef = move.cat === 'physical' ? attacker.computedDef : attacker.computedSpd;
+        rawAtk = _defTeraBlastCat === 'physical' ? defAtk : defSpa;
+        rawDef = _defTeraBlastCat === 'physical' ? attacker.computedDef : attacker.computedSpd;
       }
 
       // Fairy/Dark Aura from attacker (meta pokemon) also boosts defender's moves of that type
@@ -4309,15 +4572,22 @@ function computeResults(loadedMeta, defender) {
       const _tabSandForceMul = (_tabSandForce && weather === 'sand' && ['ground','rock','steel'].includes(effectiveMoveType)) ? 1.3 : 1;
       // Heavy Slam / Heat Crash: variable BP — defender's pokemon (tab) is the attacker here
       let atkMovePower = move.power;
-      // Knock Off: 1.5x base power (always assume target has item)
+      // Knock Off: 1.5x base power
       if (mn === 'knock off' || mn === 'knock-off') atkMovePower = Math.floor(atkMovePower * 1.5);
+      // Tera Blast stellar: base power 100
+      if (_defIsTeraBlast && _tabTeraTypeDef === 'stellar') atkMovePower = 100;
       if (mn === 'heavy slam' || mn === 'heat crash') {
         const atkW2 = defender.weight || null;
         const defW2 = attacker.weight || pokemonCache[toSlug(attacker.speciesRaw)]?.weight || null;
         atkMovePower = heavySlamBP(atkW2, defW2);
       }
-      const dmg      = damageFormula(defender.level, atkMovePower * pwrMul * _tabSandForceMul, atkStat, defStat, eff, isStab)
-                       * getDefenderAbilityDmgMul(attacker.ability, effectiveMoveType, attacker.speciesRaw);
+      // Stellar neutral: eff = 1 for Tera Blast/Starstorm stellar
+      const _defFinalEff = (_defTeraBlastStellarNeutral || _defTeraStarstormStellarNeutral) ? 1 : eff;
+      // Tera Starstorm when tera'd: spread move
+      const _defIsStarstormSpread = _defIsTeraStarstorm && _tabTeraOnDef;
+
+      const dmg = damageFormula(defender.level, atkMovePower * pwrMul * _tabSandForceMul, atkStat, defStat, _defFinalEff, isStab)
+                  * getDefenderAbilityDmgMul(attacker.ability, effectiveMoveType, attacker.speciesRaw);
       const pct      = dmg / attacker.computedHp * 100;
 
       const isTripleAxel2 = mn === 'triple axel' || mn === 'triple-axel';
@@ -4362,8 +4632,10 @@ function computeResults(loadedMeta, defender) {
       const perMoveItemMul2 = getItemPerMoveMul(defender.item, effectiveMoveType, eff);
       if (perMoveItemMul2 > 1) defMods2.push(defender.item);
       defMoveBreakdown.push({
-        move, effectiveMoveType, isSpread: move.isSpread, isWeatherBall: mn === 'weather ball',
-        dmg: mhDmg2, pct: mhDmg2 / attacker.computedHp * 100, eff, stab: isStab > 1,
+        move, effectiveMoveType,
+        isSpread: _defIsTeraStarstorm ? _defIsStarstormSpread : move.isSpread,
+        isWeatherBall: mn === 'weather ball',
+        dmg: mhDmg2, pct: mhDmg2 / attacker.computedHp * 100, eff: _defFinalEff, stab: isStab > 1,
         activeMods: defMods2, atkStat, defStat, isStab, pasteIndex: move.pasteIndex ?? 99,
         mhMin: mhInfo2 ? mhInfo2.min : null,
         mhMax: mhInfo2 ? mhInfo2.max : null,
@@ -4409,17 +4681,22 @@ function computeResults(loadedMeta, defender) {
 }
 
 function recomputeAndRender() {
-  // Field condition changed — recompute cached results for all slots then render
   const loadedMeta = META_DB.filter(p => p.loaded);
+  let anySlot = false;
   for (let i = 0; i < DEFENDER_SLOTS.length; i++) {
     const slot = DEFENDER_SLOTS[i];
     if (slot) {
+      anySlot = true;
       slot._lastResults = computeResults(loadedMeta, slot);
       if (i === activeDefenderSlot) lastResults = slot._lastResults;
     }
   }
-  renderResults();
-  // Re-render threat panel and match window if active
+  // If no defender tabs loaded, still recompute blank meta rows so stat displays update
+  if (!anySlot && loadedMeta.length) {
+    _renderBlankMetaRows(loadedMeta);
+  } else {
+    renderResults();
+  }
   if (_threatPanelOpen) renderThreatPanel();
   if (_matchActive) renderMatchWindow();
 }
@@ -4427,18 +4704,31 @@ function recomputeAndRender() {
 let _skipBlankCheck = false;
 
 function _renderBlankMetaRows(loadedMeta) {
-  // Build fake lastResults-shaped objects so renderResults renders them correctly
+  // Recompute attacker stats (including booster) so display reflects current toggle state
+  const weather = document.getElementById('weatherMode')?.value || 'none';
+  loadedMeta.forEach((p, idx) => {
+    const nat = NATURES[p.nature] || {};
+    const nm = s => nat[s] || 1;
+    p.computedAtk = calcStat(p.baseStats.atk||0, p.evs.atk||0, p.ivs.atk??31, 50, nm('atk'));
+    p.computedSpa = calcStat(p.baseStats.spa||0, p.evs.spa||0, p.ivs.spa??31, 50, nm('spa'));
+    p.computedDef = calcStat(p.baseStats.def||0, p.evs.def||0, p.ivs.def??31, 50, nm('def'));
+    p.computedSpd = calcStat(p.baseStats.spd||0, p.evs.spd||0, p.ivs.spd??31, 50, nm('spd'));
+    p.computedSpe = calcStat(p.baseStats.spe||0, p.evs.spe||0, p.ivs.spe??31, 50, nm('spe'));
+    p.computedHp  = calcHP(p.baseStats.hp||0,    p.evs.hp||0,  p.ivs.hp??31,  50);
+    p.originalOrder = idx + 1;
+  });
   const fakeResults = loadedMeta.map((p, idx) => ({
-    attacker:      p,
-    defender:      null,
-    defenderHp:    1,
-    pct:           0,
-    displayPct:    0,
-    displayMove:   null,
-    displayEff:    1,
-    originalOrder: idx,
-    dividerIndex:  p.dividerIndex ?? 4,
+    attacker:     p,
+    defender:     null,
+    defenderHp:   1,
+    pct:          0,
+    displayPct:   0,
+    displayMove:  null,
+    displayEff:   1,
+    originalOrder: idx + 1,
+    dividerIndex: p.dividerIndex ?? 4,
     moveBreakdown: [],
+    defMoveBreakdown: [],
   }));
   const prev = lastResults;
   lastResults = fakeResults;
@@ -4551,8 +4841,8 @@ function renderResults() {
       // Terrain/screen defense
       adjustedDmg *= applyTerrainScreenMul(m.move.cat, terrainMode);
 
-      // Psychic Terrain: Expanding Force ×1.5 and spread
-      const terrainBoost = applyPsychicTerrainPower(m.move.name, terrainMode);
+      // Terrain power boosts (Electric/Grassy/Misty/Psychic)
+      const terrainBoost = applyTerrainPower(m.move.name, moveType, terrainMode);
       adjustedDmg *= terrainBoost.powerMul;
       const isEffectivelySpread = m.isSpread || terrainBoost.spreadOverride;
 
@@ -4567,8 +4857,32 @@ function renderResults() {
       const atkHasTypeBoostItem = hasTypeBoostItem(r.attacker.item);
       const typeBoostActive = tbState === 'on';
       if (typeBoostActive) {
-        if (atkHasTypeBoostItem) adjustedDmg /= 1.2; // remove the already-applied boost
-        else                     adjustedDmg *= 1.2; // add boost for item-less pokemon
+        if (atkHasTypeBoostItem) adjustedDmg /= 1.2;
+        else                     adjustedDmg *= 1.2;
+      }
+
+      // Life Orb boost (×1.3)
+      const loState = lifeOrbOverrides.get(r.attacker.speciesRaw);
+      const atkHasLO2 = hasLifeOrb(r.attacker.item);
+      if (loState === 'on') {
+        if (atkHasLO2) adjustedDmg /= 1.3; // remove already-applied
+        else           adjustedDmg *= 1.3;
+      }
+
+      // Choice Band/Specs boost (×1.5)
+      const chState = choiceOverrides.get(r.attacker.speciesRaw);
+      const atkHasCh2 = hasChoiceItem(r.attacker.item);
+      if (chState === 'on') {
+        const chItemSlug = (r.attacker.item||'').toLowerCase().replace(/[\s-]/g,'');
+        const isSpecs = chItemSlug === 'choicespecs';
+        const isBand  = chItemSlug === 'choiceband';
+        const moveIsSpecial = m.move.cat === 'special';
+        if (atkHasCh2) {
+          // Remove boost only if category matches
+          if ((isSpecs && moveIsSpecial) || (isBand && !moveIsSpecial)) adjustedDmg /= 1.5;
+        } else {
+          adjustedDmg *= 1.5;
+        }
       }
 
       if (maxRollMode) adjustedDmg /= 0.85;
@@ -4627,10 +4941,35 @@ function renderResults() {
         if (r.attacker.types && r.attacker.types.includes('ice')) adjustedDmg /= 1.5;
       }
       adjustedDmg *= applyTerrainScreenMul(m.move.cat, terrainMode);
-      const terrainBoost = applyPsychicTerrainPower(m.move.name, terrainMode);
+      const terrainBoost = applyTerrainPower(m.move.name, moveType2, terrainMode);
       adjustedDmg *= terrainBoost.powerMul;
       const isEffSpread = m.isSpread || terrainBoost.spreadOverride;
       if (isEffSpread) adjustedDmg *= 0.75;
+
+      // Life Orb boost (tab pokemon attacking meta) — tab pokemon is r.defender
+      const _defSpeciesKey = r.defender?.speciesRaw || '';
+      const _loStateAtk = lifeOrbOverrides.get(_defSpeciesKey);
+      const _defHasLO = hasLifeOrb(r.defender?.item);
+      if (_loStateAtk === 'on') {
+        if (_defHasLO) adjustedDmg /= 1.3;
+        else           adjustedDmg *= 1.3;
+      }
+
+      // Choice boost (tab pokemon attacking meta)
+      const _chStateAtk = choiceOverrides.get(_defSpeciesKey);
+      const _defHasCh = hasChoiceItem(r.defender?.item);
+      if (_chStateAtk === 'on') {
+        const _chItemSlug = (r.defender?.item||'').toLowerCase().replace(/[\s-]/g,'');
+        const _isSpecs = _chItemSlug === 'choicespecs';
+        const _isBand  = _chItemSlug === 'choiceband';
+        const _moveIsSpec = m.move.cat === 'special';
+        if (_defHasCh) {
+          if ((_isSpecs && _moveIsSpec) || (_isBand && !_moveIsSpec)) adjustedDmg /= 1.5;
+        } else {
+          adjustedDmg *= 1.5;
+        }
+      }
+
       if (maxRollMode) adjustedDmg /= 0.85;
       // maxStats in attacking mode: scale meta pokemon's defensive stat (they're being hit)
       if (maxInvest && m.defStat && r.attacker.baseStats) {
@@ -4893,18 +5232,9 @@ function renderResults() {
     // Pre-compute speed comparison for row icon (also used in breakdown speedHtml)
     const _speedCond = document.getElementById('speedCondition')?.value || 'none';
     const _speStageVal = Number(document.getElementById('speStage')?.value || 0);
-    // Compute speed respecting scarf override + weather ability
-    {
-      const _baseSpe = r.attacker.stats?.spe || r.attacker.computedSpe || 0;
-      const _ab = (r.attacker.ability||'').toLowerCase().replace(/[\s-]/g,'');
-      const _weather = document.getElementById('weatherMode')?.value || 'none';
-      let _rawSpe = _baseSpe;
-      if ((_ab === 'sandrush' && _weather === 'sand') || (_ab === 'swiftswim' && _weather === 'rain') ||
-          (_ab === 'chlorophyll' && _weather === 'sun') || (_ab === 'slushrush' && _weather === 'snow')) {
-        _rawSpe = Math.floor(_rawSpe * 2);
-      }
-      var _atkSpe = atkScarfActive ? Math.floor(_rawSpe * 1.5) : _rawSpe;
-    }
+    // effectiveSpe handles booster, scarf, weather abilities, so use it for both sides
+    var _atkSpe = effectiveSpe(r.attacker);
+    if (atkScarfActive) _atkSpe = Math.floor(_atkSpe * 1.5);
     if (_speStageVal !== 0) _atkSpe = Math.floor(_atkSpe * stageMultiplier(_speStageVal));
     let _defSpe = r.defender ? effectiveSpe(r.defender) : 0;
     if (_speedCond === 'tailwind-atk') _atkSpe *= 2;
@@ -4994,19 +5324,12 @@ function renderResults() {
     let speedHtml = '';
     if (r.defender) {
       const speedCond = document.getElementById('speedCondition')?.value || 'none';
-      let atkSpeRaw = r.attacker.computedSpe || calcStat(r.attacker.baseStats.spe||0, r.attacker.evs.spe||0, 31, 50, 1);
-      if (maxInvest && r.attacker.baseStats.spe) {
-        const maxSpe = calcStat(r.attacker.baseStats.spe, 32, 31, 50, 1.1);
-        if (maxSpe > atkSpeRaw) atkSpeRaw = maxSpe;
-      }
       const speStageVal = Number(document.getElementById('speStage')?.value || 0);
-      // Use override-aware speed (weather + scarf override + maxInvest)
-      const _ab2 = (r.attacker.ability||'').toLowerCase().replace(/[\s-]/g,'');
-      const _wx2 = document.getElementById('weatherMode')?.value || 'none';
-      let atkSpeEff = maxInvest ? atkSpeRaw : (r.attacker.stats?.spe || r.attacker.computedSpe || 0);
-      if ((_ab2==='sandrush'&&_wx2==='sand')||(_ab2==='swiftswim'&&_wx2==='rain')||
-          (_ab2==='chlorophyll'&&_wx2==='sun')||(_ab2==='slushrush'&&_wx2==='snow')) {
-        atkSpeEff = Math.floor(atkSpeEff * 2);
+      // Use effectiveSpe for both sides — handles booster, scarf, weather abilities consistently
+      let atkSpeEff = effectiveSpe(r.attacker);
+      if (maxInvest && r.attacker.baseStats?.spe) {
+        const maxSpe = calcStat(r.attacker.baseStats.spe, 32, 31, 50, 1.1);
+        if (maxSpe > atkSpeEff) atkSpeEff = maxSpe;
       }
       if (atkScarfActive) atkSpeEff = Math.floor(atkSpeEff * 1.5);
       if (speStageVal !== 0) atkSpeEff = Math.floor(atkSpeEff * stageMultiplier(speStageVal));
@@ -5088,19 +5411,20 @@ function renderResults() {
       ? (chOn ? `+${chLabel} ×1.5` : `−${chLabel} ×1.5 ✓`)
       : (chOn ? `${chLabel} ×1.5 ✓` : `+${chLabel} ×1.5`);
 
-    // Booster Energy button
+    // Booster Energy: auto-set override when item+ability detected on first render
     const _atkAbilOuter = (r.attacker.ability||'').toLowerCase().replace(/[\s-]/g,'');
     const atkHasProtoQuark = _atkAbilOuter === 'protosynthesis' || _atkAbilOuter === 'quarkdrive';
-    const boostState2 = boosterOverrides.get(r.attacker.speciesRaw);
     const atkHasBoosterE = hasBoosterEnergy(r.attacker.item);
-    const boostOn = boostState2 === 'on';
-    const boostVisuallyOn = (atkHasBoosterE && atkHasProtoQuark) ? !boostOn : boostOn;
-    const boostBtnStyle = boostVisuallyOn
+    const boostAutoDetected = atkHasBoosterE && atkHasProtoQuark;
+    // Auto-set on first encounter only (not if explicitly turned off)
+    if (boostAutoDetected && !boosterOverrides.has(r.attacker.speciesRaw)) {
+      boosterOverrides.set(r.attacker.speciesRaw, 'on');
+    }
+    const boostOn = boosterOverrides.get(r.attacker.speciesRaw) === 'on';
+    const boostBtnStyle = boostOn
       ? 'color:var(--yellow);border-color:var(--yellow);background:rgba(250,199,117,0.12)'
       : 'color:var(--text3);border-color:var(--border2)';
-    const boostBtnText = (atkHasBoosterE && atkHasProtoQuark)
-      ? (boostOn ? '+Booster' : '−Booster ✓')
-      : (boostOn ? 'Booster ✓' : '+Booster');
+    const boostBtnText = boostOn ? 'Booster ✓' : '+Booster';
     const boosterBtnHtml = (atkHasProtoQuark || boostOn)
       ? `<button onclick="toggleBooster(event,'${_safeKeyOuter}')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;background:transparent;${boostBtnStyle}" title="Toggle Booster Energy (Protosynthesis/Quark Drive)">${boostBtnText}</button>`
       : '';
@@ -5149,6 +5473,19 @@ function renderResults() {
         return `<button onclick="toggleMegaForm(event,'${r.attacker.speciesRaw.replace(/'/g,"\\'")}','${f.slug}')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;background:transparent;${style}">${f.label}</button>`;
       }).join('');
       megaHtml = `<div style="display:flex;align-items:center;gap:5px;padding:4px 0 2px;flex-wrap:wrap;"><span style="font-size:10px;color:var(--text3);">${btnLabel}</span>${btns}</div>`;
+    }
+
+    // Tera button — SV format only
+    let teraHtml = '';
+    if (_currentFormat === 'scarletviolet') {
+      const _teraType = r.attacker.teraType || r.attacker.types?.[0] || 'normal';
+      const _teraIsOn = teraActive.has(r.attacker.speciesRaw);
+      const _teraColor = TYPE_COLORS[_teraType] || '#888';
+      const _teraStyle = _teraIsOn
+        ? `color:#fff;border-color:${_teraColor};background:${_teraColor};`
+        : `color:${_teraColor};border-color:${_teraColor};background:transparent;opacity:0.7;`;
+      const _safeSpecies = r.attacker.speciesRaw.replace(/'/g,"\\'");
+      teraHtml = `<div style="display:flex;align-items:center;gap:5px;padding:2px 0;"><span style="font-size:10px;color:var(--text3);">Tera:</span><button onclick="toggleTera(event,'${_safeSpecies}')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;font-weight:600;${_teraStyle}" title="Toggle Terastallization (${_teraType})">${_teraType.charAt(0).toUpperCase()+_teraType.slice(1)}</button></div>`;
     }
 
     // Multiscale/Shadow Shield toggle — attacker (meta mon) has ability
@@ -5208,7 +5545,13 @@ function renderResults() {
               ${mode === 'damage' ? `<span style="color:var(--text3);font-size:11px;margin-left:6px;">${pasteOrderLabel}</span>` : ''}
               ${modeLabel}${maxInvestLabel}
             </div>
-            <div class="type-badges">${typeBadges}</div>
+            <div class="type-badges">${typeBadges}${_currentFormat === 'scarletviolet' ? (() => {
+              const _rt = r.attacker.teraType || r.attacker.types?.[0] || 'normal';
+              const _rTeraOn = teraActive.has(r.attacker.speciesRaw);
+              const _rc = TYPE_COLORS[_rt] || '#888';
+              const _rs = r.attacker.speciesRaw.replace(/'/g,"\\'");
+              return `<button onclick="toggleTera(event,'${_rs}')" style="margin-left:4px;padding:0px 5px;font-size:9px;border-radius:3px;border:0.5px solid ${_rc};cursor:pointer;font-weight:600;vertical-align:middle;${_rTeraOn ? `color:#fff;background:${_rc};` : `color:${_rc};background:transparent;opacity:0.8;`}" title="Tera ${_rt}">◇ ${_rt.charAt(0).toUpperCase()+_rt.slice(1)}</button>`;
+            })() : ''}</div>
           </div>
           <div style="font-size:13px;flex-shrink:0;width:20px;text-align:center;opacity:0.7;" title="${tie ? 'Speed tie' : atkWins ? 'You are outsped' : 'You outrun this'}">${rowSpeIcon}</div>
           <div class="bar-wrap"><div class="bar ${barCls}" style="width:${barW}%"></div></div>
@@ -5543,14 +5886,15 @@ function handleSearchKey(e) {
     return;
   }
 
-  // Shift+Enter: add top result to next open defender tab
+  // Shift+Enter: add top non-pinned result to next open defender tab
   if (e.shiftKey && e.key === 'Enter' && bar && bar.value.trim()) {
     e.preventDefault();
-    const topRow = document.querySelector('#resultsList .result-row');
+    const allRows = [...document.querySelectorAll('#resultsList .result-item')];
+    const topItem = allRows.find(item => !item.classList.contains('is-pinned'));
+    const topRow = topItem?.querySelector('.result-row');
     if (topRow) {
       const addBtn = topRow.querySelector('.add-defender-btn');
       if (addBtn) { addBtn.click(); return; }
-      // fallback: get species from name element
       const nameEl = topRow.querySelector('.result-name');
       if (nameEl) addMetaAsDefender(null, nameEl.textContent.trim());
     }
@@ -5694,6 +6038,7 @@ async function addAttackerAsDefender(e, speciesRaw, resultIndex) {
   paste += `\nLevel: ${attacker.level || 50}`;
   if (evStr) paste += `\nEVs: ${evStr}`;
   paste += `\n${(attacker.nature||'Hardy').charAt(0).toUpperCase() + (attacker.nature||'hardy').slice(1)} Nature`;
+  if (attacker.teraType) paste += `\nTera Type: ${attacker.teraType.charAt(0).toUpperCase() + attacker.teraType.slice(1)}`;
   (attacker.moves||[]).forEach(mv => { paste += `\n- ${mv}`; });
 
   // Parse and load as defender
@@ -5710,6 +6055,8 @@ async function addAttackerAsDefender(e, speciesRaw, resultIndex) {
   ));
   defender.allMoves      = defMoveResults;
   defender.resolvedMoves = defMoveResults.filter(m => m && m.power > 0);
+  // Preserve tera type from the meta listing
+  if (!defender.teraType && attacker.teraType) defender.teraType = attacker.teraType;
 
   const results = computeResults(loadedMeta, defender);
   defender._rawText     = paste;
@@ -5809,10 +6156,24 @@ function toggleChoice(e, key) {
   else                  choiceOverrides.set(key, 'on');
   renderResults();
 }
+function toggleTera(e, key) {
+  e.stopPropagation();
+  if (teraActive.has(key)) teraActive.delete(key);
+  else teraActive.add(key);
+  recomputeAndRender();
+}
+function toggleTabTera(e, slotIdx) {
+  e.stopPropagation();
+  const k = String(slotIdx);
+  if (teraTabActive.has(k)) teraTabActive.delete(k);
+  else teraTabActive.add(k);
+  recomputeAndRender();
+  renderDefenderTabs();
+}
 function toggleBooster(e, key) {
   e.stopPropagation();
   const current = boosterOverrides.get(key);
-  if (current === 'on') boosterOverrides.delete(key);
+  if (current === 'on') boosterOverrides.set(key, 'off');
   else                  boosterOverrides.set(key, 'on');
   recomputeAndRender();
 }

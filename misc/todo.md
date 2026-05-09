@@ -4,6 +4,7 @@
 
 - [??] collapse headers in text edit window in notes?
 
+- import meta json button
 
 
 
@@ -11,7 +12,6 @@
 
 - right click match window pokemon switches from attacking to defending graphic?
 
-- import meta json button
 
 
 - temp ev/nature slider in move breakdown
@@ -28,29 +28,10 @@
 
 
 
-- tera type support in scarlet & violet
-
-- [__] band/specs boost button
-    - [__] button there, no worky
-
-- [__] life orb button
-    - [__] button there, no worky
-
-- [__] booster energy support?
-    - [__] button there, but no visible function?
-
-- electric terrain boosts electric by 30%
-    - doubles rising voltage's base power
-
-- psychic terrain boosts psychic by 30%
-
-- misty terrain halves dragon type moves
-
-- grassy terrain boosts grass by 30%
-    - bulldoze, earthquake, magnitude halved
 
 
-- terapagos-terastal tera starstorm is single target
+
+
 
 - print "Calcs document!"
 
@@ -85,6 +66,20 @@
 ---
 #### Completed
 
+- [XX] terapagos-terastal tera starstorm is single target
+- [XX] tera type support in scarlet & violet
+- [XX] electric terrain boosts electric by 30%
+    - [XX] doubles rising voltage's base power
+- [XX] psychic terrain boosts psychic by 30%
+- [XX] misty terrain halves dragon type moves
+- [XX] grassy terrain boosts grass by 30%
+    - [XX] bulldoze, earthquake, magnitude halved
+- [XX] band/specs boost button
+    - [XX] button there, no worky
+- [XX] life orb button
+    - [XX] button there, no worky
+- [XX] booster energy support?
+    - [XX] button there, but no visible function?
 - [XX] item icon on bottom right of tab sprite
 - [XX] abilities getting chopped together in paste from json "Sandforce" instead of "Sand Force"
 - [XX] items as well "Charizarditey" vs "Charizardite Y"
