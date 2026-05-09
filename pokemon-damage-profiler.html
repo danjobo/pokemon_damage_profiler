@@ -8806,8 +8806,11 @@ function renderMatchHistory() {
 
   // All replays mode: gather matches with URLs from all teams in this format
   if (_historyShowAllReplays) {
+    // Only show teams that exist in the current format's saved teams
+    const formatTeams = new Set(Object.keys(getSavedTeams()));
     const allMatches = [];
     Object.entries(history).forEach(([teamName, teamMatches]) => {
+      if (!formatTeams.has(teamName)) return; // skip teams not in this format
       (teamMatches || []).forEach(m => {
         allMatches.push({ ...m, _teamName: teamName });
       });
@@ -8914,7 +8917,10 @@ function renderMatchHistory() {
       ? `<button onclick="window.open('${replayUrl.replace(/'/g,"\\'")}','_blank')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid var(--accent);background:rgba(124,106,247,0.1);color:var(--accent2);cursor:pointer;white-space:nowrap;">🎬 Replay</button>`
       : '';
     const teamLabel = _historyShowAllReplays && m._teamName
-      ? `<div style="font-size:9px;color:var(--text3);text-align:center;margin-top:2px;">${m._teamName}</div>`
+      ? `<div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:2px;">
+          <span style="font-size:9px;color:var(--text3);">${m._teamName}</span>
+          <button onclick="selectTeamPickerItem('${m._teamName.replace(/'/g,"\\'")}');event.stopPropagation();" style="padding:0px 4px;font-size:8px;border-radius:3px;border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;line-height:1.4;">Load</button>
+        </div>`
       : '';
     const safeTeamName = (m._teamName || _currentTeamName).replace(/'/g,"\\'");
     html += `<div class="match-entry match-entry-resp ${rowCls}">
