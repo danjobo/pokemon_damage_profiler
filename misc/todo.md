@@ -1,5 +1,31 @@
 ## Feature Request
 
+- move clear defenders to right side, clear pins to right side, pin tabs to right side of tabs, and max rolls to left side
+
+- [??] collapse headers in text edit window in notes?
+
+
+
+
+- show total match history somehow (per format)
+
+- right click match window pokemon switches from attacking to defending graphic?
+
+- import meta json button
+
+
+- temp ev/nature slider in move breakdown
+
+- split and connect the max HP/max stats buttons into one like a pill
+
+- grid icons on results listings below the paste #
+
+- if there's a link in a match log notes tab, add it as a button on the match listing below the load button as replay that will open the link in a new tab
+
+- flesh out EV window in team paste with move text boxes that have suggestive autocomplete same as the search bar but with legal moves for that pokemon
+
+
+
 
 
 - tera type support in scarlet & violet
@@ -59,6 +85,19 @@
 ---
 #### Completed
 
+- [XX] item icon on bottom right of tab sprite
+- [XX] abilities getting chopped together in paste from json "Sandforce" instead of "Sand Force"
+- [XX] items as well "Charizarditey" vs "Charizardite Y"
+- [XX] sand force should buff damage in sandstorm
+- [XX] icicle spear not being recognized??
+- [XX] toggle show md preview in text edit window in notes?
+- [XX] have highlighed enemy pokemon in match window also highlight the pinned results listings they correspond to yellow kinda like how the tabs highlight yellow
+- [XX] KNOCK OFF DAMAGE ISN'T INCREASING IF THEY HAVE AN ITEM!!!
+- [XX] notes link recognition and compatibility
+- [XX] notes text editor ctrl+b and ctrl+i bolds and italicizes current section or current word playhead is on.
+- [XX] ev checkmarck green tag on saved teams with full evs
+- [XX] sacred sword not being powered up by sharpness
+- [XX] Have default text window size be like 3x as long if there's already a bunch of text inside it
 - [XX] no mega buttons in scarlet & violet
 - [XX] orgepon-cornerstone sprite is tatsugiri?
 - [XX] match screen floette-mega default to floette-eternal sprite
