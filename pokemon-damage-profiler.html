@@ -8141,6 +8141,7 @@ function replayMatch(matchId) {
 // ── Match History ─────────────────────────────────────────────────────────────
 const MATCH_HISTORY_KEY = 'pokemonDamageProfiler_matchHistory';
 let _historyViewActive = false;
+let _historyShowAllReplays = false;
 
 function getMatchHistory() {
   try { return JSON.parse(localStorage.getItem(MATCH_HISTORY_KEY) || '{}'); } catch { return {}; }
@@ -8785,6 +8786,12 @@ function toggleHistoryView() {
   else renderResults();
 }
 
+function extractNoteUrl(noteText) {
+  if (!noteText) return null;
+  const m = noteText.match(/https?:\/\/[^\s\)\]"']+/);
+  return m ? m[0] : null;
+}
+
 function renderMatchHistory() {
   const container = document.getElementById('resultsList');
   if (!container) return;
@@ -8796,6 +8803,18 @@ function renderMatchHistory() {
 
   const history = getMatchHistory();
   let matches = history[_currentTeamName] || [];
+
+  // All replays mode: gather matches with URLs from all teams in this format
+  if (_historyShowAllReplays) {
+    const allMatches = [];
+    Object.entries(history).forEach(([teamName, teamMatches]) => {
+      (teamMatches || []).forEach(m => {
+        allMatches.push({ ...m, _teamName: teamName });
+      });
+    });
+    allMatches.sort((a, b) => b.id - a.id);
+    matches = allMatches;
+  }
 
   // Filter by search bar — comma-separated Pokémon names matched against opponent team
   const searchRaw = (document.getElementById('searchBar')?.value || '').trim();
@@ -8810,16 +8829,34 @@ function renderMatchHistory() {
   }
 
   if (!matches.length) {
-    const emptyMsg = searchRaw
-      ? `<div style="color:var(--text3);font-size:13px;padding:20px 0;">No matches found containing <b style="color:var(--text2)">${searchRaw}</b>.</div>`
-      : `<div style="color:var(--text3);font-size:13px;padding:20px 0;">No matches recorded yet for <b style="color:var(--text2)">${_currentTeamName}</b>.<br><span style="font-size:11px;">Pin the opponent's Pokémon in the results list, then press Win or Loss to record a match.</span></div>`;
-    container.innerHTML = emptyMsg;
+    const wins2 = 0, losses2 = 0;
+    const allReplaysStyle2 = _historyShowAllReplays
+      ? 'color:var(--accent2);border-color:var(--accent);background:rgba(124,106,247,0.12);'
+      : 'color:var(--text3);border-color:var(--border2);background:transparent;';
+    const emptyMsg = _historyShowAllReplays
+      ? 'No matches recorded yet across any team.'
+      : (searchRaw
+          ? `No matches found containing <b style="color:var(--text2)">${searchRaw}</b>.`
+          : `No matches recorded yet for <b style="color:var(--text2)">${_currentTeamName}</b>.<br><span style="font-size:11px;">Pin the opponent's Pokémon in the results list, then press Win or Loss to record a match.</span>`);
+    container.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <span style="font-size:12px;color:var(--text2);font-weight:600;flex:1;">${_historyShowAllReplays ? 'All Teams — <span style="color:var(--green)">0W</span> · <span style="color:var(--red)">0L</span> <span style="color:var(--text3);font-weight:400;">(0 matches)</span>' : _currentTeamName}</span>
+      <button onclick="_historyShowAllReplays=!_historyShowAllReplays;renderMatchHistory();" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;white-space:nowrap;${allReplaysStyle2}" title="Toggle between current team and all replays">📋 All Teams</button>
+    </div><div style="color:var(--text3);font-size:13px;padding:20px 0;">${emptyMsg}</div>`;
     return;
   }
 
   const wins   = matches.filter(m => m.result === 'win').length;
   const losses = matches.filter(m => m.result === 'loss').length;
-  let html = `<div style="font-size:12px;color:var(--text2);margin-bottom:10px;font-weight:600;">${_currentTeamName} — <span style="color:var(--green)">${wins}W</span> <span style="color:var(--text3)">·</span> <span style="color:var(--red)">${losses}L</span> <span style="color:var(--text3);font-weight:400;">(${matches.length} match${matches.length!==1?'es':''})</span></div>`;
+  const allReplaysStyle = _historyShowAllReplays
+    ? 'color:var(--accent2);border-color:var(--accent);background:rgba(124,106,247,0.12);'
+    : 'color:var(--text3);border-color:var(--border2);background:transparent;';
+  const headerLabel = _historyShowAllReplays
+    ? `All Teams — <span style="color:var(--green)">${wins}W</span> <span style="color:var(--text3)">·</span> <span style="color:var(--red)">${losses}L</span> <span style="color:var(--text3);font-weight:400;">(${matches.length} match${matches.length!==1?'es':''})</span>`
+    : `${_currentTeamName} — <span style="color:var(--green)">${wins}W</span> <span style="color:var(--text3)">·</span> <span style="color:var(--red)">${losses}L</span> <span style="color:var(--text3);font-weight:400;">(${matches.length} match${matches.length!==1?'es':''})</span>`;
+  let html = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+    <span style="font-size:12px;color:var(--text2);font-weight:600;flex:1;">${headerLabel}</span>
+    <button onclick="_historyShowAllReplays=!_historyShowAllReplays;renderMatchHistory();" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;white-space:nowrap;${allReplaysStyle}" title="Toggle between current team and all replays">📋 All Teams</button>
+  </div>`;
 
   for (const m of matches) {
     const isWin = m.result === 'win';
@@ -8867,27 +8904,39 @@ function renderMatchHistory() {
     const mySprites  = m.myTeam.map((p, i)   => makeHistorySprite(p, i, 'myTeam')).join('');
     const oppSprites = m.opponent.map((p, i)  => makeHistorySprite(p, i, 'opponent')).join('');
 
-    // Layout: [date stacked] [my sprites] [WIN/LOSS badge + replay] [opp sprites] [✕]
+    // Layout: [date stacked] [my sprites] [WIN/LOSS badge + load + replay] [opp sprites] [✕]
     const noteText  = m.note || '';
     const noteTitle = noteText || 'Click to add note';
     const noteAttr  = noteTitle.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
     const noteActive = noteText ? 'color:var(--accent2);border-color:var(--accent);' : 'color:var(--text3);border-color:var(--border2);';
+    const replayUrl = extractNoteUrl(noteText);
+    const replayBtn = replayUrl
+      ? `<button onclick="window.open('${replayUrl.replace(/'/g,"\\'")}','_blank')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid var(--accent);background:rgba(124,106,247,0.1);color:var(--accent2);cursor:pointer;white-space:nowrap;">🎬 Replay</button>`
+      : '';
+    const teamLabel = _historyShowAllReplays && m._teamName
+      ? `<div style="font-size:9px;color:var(--text3);text-align:center;margin-top:2px;">${m._teamName}</div>`
+      : '';
+    const safeTeamName = (m._teamName || _currentTeamName).replace(/'/g,"\\'");
     html += `<div class="match-entry match-entry-resp ${rowCls}">
       <div class="match-date">
         <span class="match-date-day">${datePart}</span>
         <span class="match-date-time">${timePart}</span>
-        <button onclick="openMatchNote(event,'${_currentTeamName.replace(/'/g,"\\'")}',${m.id})"
+        <button onclick="openMatchNote(event,'${safeTeamName}',${m.id})"
           data-note="${noteAttr}"
           style="margin-top:4px;padding:1px 4px;font-size:11px;border-radius:3px;border:0.5px solid;background:transparent;cursor:pointer;${noteActive}line-height:1;">📝</button>
       </div>
-      <div class="match-sprites">${mySprites}</div>
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="match-sprites">${mySprites}</div>
+        ${teamLabel}
+      </div>
       <div class="me-mid">
         ${badge}
         <button onclick="replayMatch(${m.id})" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;">▶ Load</button>
+        ${replayBtn}
       </div>
       <div class="match-sprites">${oppSprites}</div>
-      <button class="match-delete-btn match-delete-side" onclick="deleteMatch('${_currentTeamName.replace(/'/g,"\\'")}',${m.id})" title="Delete this match">✕</button>
-      <button class="match-delete-btn match-delete-inline" onclick="deleteMatch('${_currentTeamName.replace(/'/g,"\\'")}',${m.id})" title="Delete this match">✕</button>
+      <button class="match-delete-btn match-delete-side" onclick="deleteMatch('${safeTeamName}',${m.id})" title="Delete this match">✕</button>
+      <button class="match-delete-btn match-delete-inline" onclick="deleteMatch('${safeTeamName}',${m.id})" title="Delete this match">✕</button>
     </div>`;
   }
 
