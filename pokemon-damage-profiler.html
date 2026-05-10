@@ -1681,12 +1681,9 @@ Impish Nature
           <option value="50">Top 50</option>
           <option value="100">Top 100</option>
         </select>
-        <button onclick="clearDefenders()" style="padding:4px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;">Clear defenders</button>
       </div>
 
       <div style="display:flex;align-items:center;gap:6px;">
-        <button onclick="loadTabsIntoPins()" style="padding:3px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Pin the tab Pokémon as temporary meta listings using their exact stats/moves/items">📌 Pin tabs</button>
-        <button onclick="clearPins()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Clear all pinned Pokémon and collapse expanded rows">Clear pins</button>
         <div id="defenderTag" class="defender-tag"></div>
       </div>
     </div>
@@ -1872,7 +1869,10 @@ Impish Nature
     </div><!-- end fieldStatusBar -->
     <!-- Defender tabs row — sticks with control bar -->
     <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg2);border:0.5px solid var(--border);border-top:none;margin-bottom:10px;">
-      <button id="attackingModeBtn" onclick="onAttackingModeToggle()" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0;" title="Toggle between defending (incoming damage) and attacking (outgoing damage)">Defending</button>
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+        <button id="maxRollBtn" onclick="toggleModeBtn('maxRollMode','maxRollBtn')" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Show max damage rolls">Max rolls</button>
+        <button id="attackingModeBtn" onclick="onAttackingModeToggle()" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Toggle between defending (incoming damage) and attacking (outgoing damage)">Defending</button>
+      </div>
       <div class="defender-tabs-row" id="defenderTabsRow" style="flex:1;margin-bottom:0;">
         <div class="def-tab def-tab-empty" title="Slot 1" onclick="selectDefenderTab(0)" id="defTab-0">＋</div>
         <div class="def-tab def-tab-empty" title="Slot 2" onclick="selectDefenderTab(1)" id="defTab-1">＋</div>
@@ -1881,7 +1881,11 @@ Impish Nature
         <div class="def-tab def-tab-empty" title="Slot 5" onclick="selectDefenderTab(4)" id="defTab-4">＋</div>
         <div class="def-tab def-tab-empty" title="Slot 6" onclick="selectDefenderTab(5)" id="defTab-5">＋</div>
       </div>
-      <button id="maxRollBtn" onclick="toggleModeBtn('maxRollMode','maxRollBtn')" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0;" title="Show max damage rolls">Max rolls</button>
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+        <button onclick="loadTabsIntoPins()" style="padding:3px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Pin the tab Pokémon as temporary meta listings using their exact stats/moves/items">📌 Pin tabs</button>
+        <button onclick="clearPins()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Clear all pinned Pokémon and collapse expanded rows">Clear pins</button>
+        <button onclick="clearDefenders()" style="padding:3px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;">Clear defenders</button>
+      </div>
     </div>
     </div><!-- end controls-sticky-wrap -->
 
@@ -5752,6 +5756,7 @@ async function loadTabsIntoPins() {
       computedHp:    calcHP  (slot.baseStats.hp,  slot.evs.hp ||0, slot.ivs.hp ??31, slot.level),
       loaded:        true,
       failed:        false,
+      teraType:      slot.teraType || null,
       _isTabPin:     true,  // marker: remove from META_DB when unpinned
     };
 

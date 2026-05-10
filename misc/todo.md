@@ -1,6 +1,5 @@
 ## Feature Request
 
-- move clear defenders to right side, clear pins to right side, pin tabs to right side of tabs, and max rolls to left side
 
 - [??] collapse headers in text edit window in notes?
 
@@ -8,7 +7,6 @@
 
 
 
-- show total match history somehow (per format)
 
 - right click match window pokemon switches from attacking to defending graphic?
 
@@ -20,7 +18,6 @@
 
 - grid icons on results listings below the paste #
 
-- if there's a link in a match log notes tab, add it as a button on the match listing below the load button as replay that will open the link in a new tab
 
 - flesh out EV window in team paste with move text boxes that have suggestive autocomplete same as the search bar but with legal moves for that pokemon
 
@@ -66,6 +63,9 @@
 ---
 #### Completed
 
+- [XX] if there's a link in a match log notes tab, add it as a button on the match listing below the load button as replay that will open the link in a new tab
+- [XX] move clear defenders to right side, clear pins to right side, pin tabs to right side of tabs, and max rolls to left side
+- [XX] show total match history somehow (per format)
 - [XX] terapagos-terastal tera starstorm is single target
 - [XX] tera type support in scarlet & violet
 - [XX] electric terrain boosts electric by 30%
