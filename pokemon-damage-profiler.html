@@ -3505,6 +3505,8 @@ function importJsonMeta(input) {
         if (slug === 'bulkup') return 'Bulk Up';
         if (slug === 'bugbite') return 'Bug Bite';
         if (slug === 'bugbuzz') return 'Bug Buzz';
+        if (slug === 'behemothblade') return 'Behemoth Blade';
+        if (slug === 'behemothbash') return 'Behemoth Bash';
         // Check single-word entries in WORD_SPLITS
         if (slug in WORD_SPLITS) return WORD_SPLITS[slug].trim();
         // Try to split by finding known prefixes
@@ -3630,7 +3632,17 @@ function importJsonMeta(input) {
 
       const pastes = [];
       for (let [name, entry] of Object.entries(data)) {
-        // Terapagos: always import as Terapagos-Terastal with Tera Shell ability
+        // Zacian/Zamazenta: replace Iron Head with their signature form moves
+        if (name.toLowerCase().includes('zacian') && name.toLowerCase().includes('crowned')) {
+          const moves = { ...entry.Moves };
+          if ('ironhead' in moves) { moves['behemothblade'] = moves['ironhead']; delete moves['ironhead']; }
+          entry = { ...entry, Moves: moves };
+        }
+        if (name.toLowerCase().includes('zamazenta') && name.toLowerCase().includes('crowned')) {
+          const moves = { ...entry.Moves };
+          if ('ironhead' in moves) { moves['behemothbash'] = moves['ironhead']; delete moves['ironhead']; }
+          entry = { ...entry, Moves: moves };
+        }
         if (name.toLowerCase() === 'terapagos') {
           name = 'Terapagos-Terastal';
           entry = { ...entry, Abilities: { 'terashell': (Object.values(entry.Abilities||{})[0] || 1) } };
