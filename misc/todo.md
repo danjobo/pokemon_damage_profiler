@@ -63,6 +63,8 @@
 ---
 #### Completed
 
+- [XX] ivy cudgel fix, not just tera, but it's based on form
+- [XX] Tera Shell support
 - [XX] if there's a link in a match log notes tab, add it as a button on the match listing below the load button as replay that will open the link in a new tab
 - [XX] move clear defenders to right side, clear pins to right side, pin tabs to right side of tabs, and max rolls to left side
 - [XX] show total match history somehow (per format)

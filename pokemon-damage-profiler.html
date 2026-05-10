@@ -1496,6 +1496,8 @@
       <div style="display:flex;align-items:center;gap:6px;margin:6px 0 4px;flex-wrap:wrap;">
         <button class="btn-success" onclick="loadMeta()" style="font-size:11px;padding:4px 10px;flex-shrink:0;">Load meta</button>
         <button id="smogonMetaBtn" onclick="loadSmogonMeta()" style="font-size:11px;padding:4px 10px;flex-shrink:0;border:0.5px solid var(--accent);background:rgba(124,106,247,0.12);color:var(--accent2);border-radius:var(--radius-sm);cursor:pointer;display:none;" title="Load all 270 Pokémon from the embedded Champions VGC meta (Apr 2026, Smogon)">🌐 Load Champions meta</button>
+        <button onclick="document.getElementById('jsonMetaFileInput').click()" style="font-size:11px;padding:4px 10px;flex-shrink:0;border:0.5px solid var(--border2);background:transparent;color:var(--text2);border-radius:var(--radius-sm);cursor:pointer;" title="Import a Smogon usage JSON file and convert it to a meta paste">📂 Import JSON</button>
+        <input type="file" id="jsonMetaFileInput" accept=".json" style="display:none;" onchange="importJsonMeta(this)">
         <select id="savedMetaSelect" style="font-size:12px;padding:4px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;flex:1;min-width:0;" onchange="onSavedMetaSelect()">
           <option value="">— saved metas —</option>
         </select>
@@ -2165,13 +2167,28 @@ const SLUG_MAP = {
   'rotom-wash':'rotom-wash',       'rotom-heat':'rotom-heat',
   'rotom-fan':'rotom-fan',         'rotom-frost':'rotom-frost',
   'rotom-mow':'rotom-mow',
+  'indeedee':'indeedee-male',
   'indeedee-f':'indeedee-female',  'indeedee-m':'indeedee-male',
   'indeedee (f)':'indeedee-female','indeedee (m)':'indeedee-male',
-  'ogerpon':'ogerpon-teal-mask',
   'ogerpon-hearthflame':'ogerpon-hearthflame-mask',
   'ogerpon-wellspring':'ogerpon-wellspring-mask',
   'ogerpon-cornerstone':'ogerpon-cornerstone-mask',
-  'terapagos':'terapagos-normal',
+  'terapagos':'terapagos-terastal',
+  'terapagos-terastal':'terapagos-terastal',
+  'terapagos-stellar':'terapagos-stellar',
+  'tatsugiri':'tatsugiri-curly',
+  'necrozma-dusk-mane':'necrozma-dusk',
+  'necrozma-dawn-wings':'necrozma-dawn',
+  'toxtricity':'toxtricity-amped',
+  'enamorus':'enamorus-incarnate',
+  'giratina':'giratina-altered',
+  'dudunsparce':'dudunsparce-two-segment',
+  'eiscue':'eiscue-ice',
+  'minior':'minior-red-meteor',
+  'oricorio':'oricorio-baile',
+  'squawkabilly':'squawkabilly-green-plumage',
+  'basculin':'basculin-red-striped',
+  'pyroar':'pyroar-male',
   'palafin':'palafin-hero',
   'annihilape':'annihilape',
   'great tusk':'great-tusk',       'scream tail':'scream-tail',
@@ -2590,6 +2607,8 @@ const ABILITY_DESC = {
   'Speed Boost':    'Speed +1 each turn',
   'Intimidate':     'Lowers opponent Attack on entry',
   'Multiscale':     '×0.5 damage at full HP',
+  'Tera Shell':     '×0.5 damage at full HP',
+  'Shadow Shield':  '×0.5 damage at full HP',
   'Filter':         '×0.75 super-effective damage received',
   'Magic Bounce':   'Reflects status moves',
   'Levitate':       'Immune to Ground moves',
@@ -3394,6 +3413,310 @@ ${evLine}${entry.n || 'Hardy'} Nature
 ${movesStr}`.trim();
 }
 
+function importJsonMeta(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = ''; // reset so same file can be re-imported
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const raw = JSON.parse(e.target.result);
+      // Support both raw Smogon chaos JSON { data: { Name: { Moves, Items, Spreads, Abilities, ... } } }
+      // and plain { Name: { ... } } format
+      const data = raw.data || raw;
+
+      const MOVE_MIN = 0.035;
+      const DIVIDER_THRESHOLD = 0.08;
+      const ITEM_MIN = 0.10;
+
+      // Comprehensive move slug → display name lookup
+      // First build from CHAMPIONS_META_DATA, then fall back to word-splitting
+      const slugToDisplay = {};
+      try {
+        for (const cmdEntry of Object.values(CHAMPIONS_META_DATA)) {
+          for (const mv of (cmdEntry.m || [])) {
+            if (mv === '_') continue;
+            const slug = mv.toLowerCase().replace(/[\s\-']/g,'');
+            slugToDisplay[slug] = mv;
+          }
+        }
+      } catch(e) {}
+
+      // Word boundary table for common compound move words
+      const WORD_SPLITS = {
+        'fake':'Fake ','parting':'Parting ','flare':'Flare ','darkest':'Darkest ',
+        'throat':'Throat ','helping':'Helping ','follow':'Follow ','rage':'Rage ',
+        'wide':'Wide ','trick':'Trick ','tail':'Tail ','volt':'Volt ',
+        'thunder':'Thunder ','will':'Will-','knock':'Knock ','icy':'Icy ',
+        'heal':'Heal ','life':'Life ','perish':'Perish ','aqua':'Aqua ',
+        'jet':'Jet ','wave':'Wave ','flip':'Flip ','dire':'Dire ',
+        'drain':'Drain ','mach':'Mach ','ice':'Ice ','shell':'Shell ',
+        'spiky':'Spiky ','power':'Power ','shadow':'Shadow ','body':'Body ',
+        'heavy':'Heavy ','iron':'Iron ','stone':'Stone ','zen':'Zen ',
+        'psycho':'Psycho ','sacred':'Sacred ','shed':'Shed ','clanging':'Clanging ',
+        'aura':'Aura ','focus':'Focus ','electro':'Electro ','dual':'Dual ',
+        'gunk':'Gunk ','poison':'Poison ','leaf':'Leaf ','triple':'Triple ',
+        'trop':'Trop ','low':'Low ','nasty':'Nasty ','swords':'Swords ',
+        'dragon':'Dragon ','close':'Close ','sucker':'Sucker ','high':'High ',
+        'earth':'Earth ','sludge':'Sludge ','dark':'Dark ','draco':'Draco ',
+        'rock':'Rock ','bullet':'Bullet ','extreme':'Extreme ','bug':'Bug ',
+        'play':'Play ','nasty':'Nasty ','calm':'Calm ','bulk':'Bulk ',
+        'quiver':'Quiver ','dragon':'Dragon ','shell':'Shell ','agility':'Agility',
+        'matcha':'Matcha ','kowtow':'Kowtow ','strength':'Strength ',
+        'raging':'Raging ','first':'First ','flower':'Flower ','tera':'Tera ',
+        'ceaseless':'Ceaseless ','aqua':'Aqua ','armor':'Armor ','aura':'Aura ',
+        'salt':'Salt ','scale':'Scale ','scorching':'Scorching ','seed':'Seed ',
+        'bleakwind':'Bleakwind ','chilly':'Chilly ','torch':'Torch ','spicy':'Spicy ',
+        'spirit':'Spirit ','sticky':'Sticky ','stored':'Stored ','string':'String ',
+        'sunny':'Sunny ','vacuum':'Vacuum ','water':'Water ','dazzling':'Dazzling ',
+        'expanding':'Expanding ','rising':'Rising ','fickle':'Fickle ',
+        'lash':'Lash ','mortal':'Mortal ','population':'Population ',
+        'gigaton':'Gigaton ','grav':'Grav ','lumina':'Lumina ',
+        'mystical':'Mystical ','night':'Night ','psychic':'Psychic ',
+        'psyshield':'Psyshield ','rain':'Rain ','razor':'Razor ',
+        'acrobatics':'Acrobatics','avalanche':'Avalanche','coaching':'Coaching',
+        'decorate':'Decorate','discharge':'Discharge','endeavor':'Endeavor',
+        'entrainment':'Entrainment','eruption':'Eruption','explosion':'Explosion',
+        'extrasensory':'Extrasensory','gravity':'Gravity','guillotine':'Guillotine',
+        'hurricane':'Hurricane','hypnosis':'Hypnosis','infestation':'Infestation',
+        'instruct':'Instruct','liquidation':'Liquidation','megahorn':'Megahorn',
+        'moonblast':'Moonblast','moonlight':'Moonlight','outrage':'Outrage',
+        'overheat':'Overheat','poltergeist':'Poltergeist','protect':'Protect',
+        'psychic':'Psychic','recover':'Recover','sandstorm':'Sandstorm',
+        'substitute':'Substitute','superpower':'Superpower','synthesis':'Synthesis',
+        'tailwind':'Tailwind','thunder':'Thunder','thunderbolt':'Thunderbolt',
+        'transform':'Transform','waterfall':'Waterfall','venoshock':'Venoshock',
+      };
+
+      function slugToName(slug) {
+        if (!slug) return '';
+        if (slug in slugToDisplay) return slugToDisplay[slug];
+        // Special cases
+        if (slug === 'uturn') return 'U-turn';
+        if (slug === 'willowisp') return 'Will-O-Wisp';
+        if (slug === 'kingsshield') return "King's Shield";
+        if (slug === 'softboiled') return 'Soft-Boiled';
+        if (slug === 'xscissor') return 'X-Scissor';
+        if (slug === 'batonpass') return 'Baton Pass';
+        if (slug === 'poweruppunch') return 'Power-Up Punch';
+        if (slug === 'ivycudgel') return 'Ivy Cudgel';
+        if (slug === 'tropkick') return 'Trop Kick';
+        if (slug === 'lowkick') return 'Low Kick';
+        if (slug === 'bulkup') return 'Bulk Up';
+        if (slug === 'bugbite') return 'Bug Bite';
+        if (slug === 'bugbuzz') return 'Bug Buzz';
+        // Check single-word entries in WORD_SPLITS
+        if (slug in WORD_SPLITS) return WORD_SPLITS[slug].trim();
+        // Try to split by finding known prefixes
+        for (const [prefix, display] of Object.entries(WORD_SPLITS)) {
+          if (slug.startsWith(prefix) && slug.length > prefix.length) {
+            const rest = slug.slice(prefix.length);
+            const restDisplay = slugToName(rest) || (rest.charAt(0).toUpperCase() + rest.slice(1));
+            return display.trim() + ' ' + restDisplay;
+          }
+        }
+        // Final fallback: capitalize first letter
+        return slug.charAt(0).toUpperCase() + slug.slice(1);
+      }
+      function itemName(slug) {
+        // Check Champions meta data first
+        for (const entry of Object.values(CHAMPIONS_META_DATA)) {
+          for (const part of (entry.i || '').split(',')) {
+            const p = part.trim();
+            if (p.toLowerCase().replace(/[\s\-']/g,'') === slug) return p;
+          }
+        }
+        // Common item slug → display name table
+        const ITEM_MAP = {
+          'assaultvest':'Assault Vest','choicescarf':'Choice Scarf','choiceband':'Choice Band',
+          'choicespecs':'Choice Specs','lifeorb':'Life Orb','focussash':'Focus Sash',
+          'rockyhelmet':'Rocky Helmet','eviolite':'Eviolite','leftovers':'Leftovers',
+          'sitrusberry':'Sitrus Berry','lumberry':'Lum Berry','mentalherb':'Mental Herb',
+          'covertcloak':'Covert Cloak','clearamulet':'Clear Amulet','boosterenergy':'Booster Energy',
+          'electricseed':'Electric Seed','mistyseed':'Misty Seed','grassyseed':'Grassy Seed',
+          'psychicseed':'Psychic Seed','whiteherb':'White Herb','powerherb':'Power Herb',
+          'rustedsword':'Rusted Sword','rustedshield':'Rusted Shield','safetygoggles':'Safety Goggles',
+          'throatspray':'Throat Spray','blunderpolicy':'Blunder Policy','shellbell':'Shell Bell',
+          'toxicorb':'Toxic Orb','flameorb':'Flame Orb','wikiberry':'Wiki Berry',
+          'aguavberry':'Aguav Berry','iapapaberry':'Iapapa Berry','magoberry':'Mago Berry',
+          'figyberry':'Figy Berry','occaberry':'Occa Berry','passhoberry':'Passho Berry',
+          'wacanberry':'Wacan Berry','rindoberry':'Rindo Berry','yacheberry':'Yache Berry',
+          'chopleberry':'Chople Berry','kebiaberry':'Kebia Berry','shucaberry':'Shuca Berry',
+          'cobaberry':'Coba Berry','payapaberry':'Payapa Berry','tangaberry':'Tanga Berry',
+          'chartiberry':'Charti Berry','kasibberry':'Kasib Berry','habanberry':'Haban Berry',
+          'colburberry':'Colbur Berry','babiriberry':'Babiri Berry','chilanberry':'Chilan Berry',
+          'roseliberry':'Roseli Berry','keeberry':'Kee Berry','marangaberry':'Maranga Berry',
+          'powerknee':'Power Knee','poweranklet':'Power Anklet','powerbelt':'Power Belt',
+          'powerbracer':'Power Bracer','powerweight':'Power Weight','powerband':'Power Band',
+          'heavydutyboots':'Heavy-Duty Boots','mirrorherb':'Mirror Herb','loadeddice':'Loaded Dice',
+          'adrenalineorb':'Adrenaline Orb','roomservice':'Room Service','utilityumbrella':'Utility Umbrella',
+          'mysticwater':'Mystic Water','charcoal':'Charcoal','miracleseed':'Miracle Seed',
+          'magnet':'Magnet','nevermeltice':'Never-Melt Ice','blackbelt':'Black Belt',
+          'poisonbarb':'Poison Barb','softsand':'Soft Sand','sharpbeak':'Sharp Beak',
+          'twistedspoon':'Twisted Spoon','silverpowder':'Silver Powder','hardstone':'Hard Stone',
+          'spelltag':'Spell Tag','dragonfang':'Dragon Fang','blackglasses':'Black Glasses',
+          'metalcoat':'Metal Coat','silkscarf':'Silk Scarf','fairyfeather':'Fairy Feather',
+          'scopelens':'Scope Lens','widepowder':'Wide Lens','zoomlens':'Zoom Lens',
+          'quickclaw':'Quick Claw','kingsrock':'Kings Rock','razorfang':'Razor Fang',
+          'lightclay':'Light Clay','terrainextender':'Terrain Extender','heatrock':'Heat Rock',
+          'damprock':'Damp Rock','smoothrock':'Smooth Rock','icyrock':'Icy Rock',
+        };
+        if (slug in ITEM_MAP) return ITEM_MAP[slug];
+        // Fallback: title-case words (handles most items)
+        return slug.replace(/\b\w/g, c => c.toUpperCase());
+      }
+
+      function abilityName(slug) {
+        // Check Champions meta data
+        for (const entry of Object.values(CHAMPIONS_META_DATA)) {
+          const a = (entry.a || '').toLowerCase().replace(/[\s\-]/g,'');
+          if (a === slug) return entry.a;
+        }
+        // Common ability slug → display name
+        const ABILITY_MAP = {
+          'hadronengine':'Hadron Engine','orichalcumpulse':'Orichalcum Pulse','terashell':'Tera Shell','terashift':'Tera Shift',
+          'protosynthesis':'Protosynthesis','quarkdrive':'Quark Drive',
+          'intimidate':'Intimidate','drizzle':'Drizzle','drought':'Drought',
+          'sandstream':'Sand Stream','snowwarning':'Snow Warning','cloudnine':'Cloud Nine',
+          'airlock':'Air Lock','speedboost':'Speed Boost','magicguard':'Magic Guard',
+          'magicbounce':'Magic Bounce','wonderguard':'Wonder Guard','unaware':'Unaware',
+          'trace':'Trace','download':'Download','adaptability':'Adaptability',
+          'toughclaws':'Tough Claws','ironfist':'Iron Fist','sheerforce':'Sheer Force',
+          'reckless':'Reckless','technician':'Technician','skilllink':'Skill Link',
+          'hustle':'Hustle','guts':'Guts','moxie':'Moxie','defiant':'Defiant',
+          'competitive':'Competitive','contrary':'Contrary','simple':'Simple',
+          'moody':'Moody','serenegrace':'Serene Grace','compoundeyes':'Compound Eyes',
+          'noguard':'No Guard','swiftswim':'Swift Swim','chlorophyll':'Chlorophyll',
+          'slushrush':'Slush Rush','sandrush':'Sand Rush','surgesurfer':'Surge Surfer',
+          'steamengine':'Steam Engine','motordrive':'Motor Drive','voltabsorb':'Volt Absorb',
+          'lightningrod':'Lightning Rod','stormdrain':'Storm Drain','waterabsorb':'Water Absorb',
+          'flashfire':'Flash Fire','dryskin':'Dry Skin','eartheater':'Earth Eater',
+          'sapsipper':'Sap Sipper','levitate':'Levitate','battlearmor':'Battle Armor',
+          'shellarmor':'Shell Armor','solidrock':'Solid Rock','prismarmor':'Prism Armor',
+          'multiscale':'Multiscale','shadowshield':'Shadow Shield','fluffy':'Fluffy',
+          'furcoat':'Fur Coat','icescales':'Ice Scales','filter':'Filter',
+          'pixilate':'Pixilate','refrigerate':'Refrigerate','aerilate':'Aerilate',
+          'normalize':'Normalize','galvanize':'Galvanize','liquidvoice':'Liquid Voice',
+          'megalauncher':'Mega Launcher','strongjaw':'Strong Jaw','toughclaws':'Tough Claws',
+          'punkrock':'Punk Rock','transistor':'Transistor','dragonsmaw':'Dragon\'s Maw',
+          'steelworker':'Steelworker','rockypayload':'Rocky Payload','gorillatactics':'Gorilla Tactics',
+          'intrepidsword':'Intrepid Sword','dauntlessshield':'Dauntless Shield',
+          'asonegrim':'As One (Glastrier)','asonespectrier':'As One (Spectrier)',
+          'ballfetch':'Ball Fetch','hungerswitch':'Hunger Switch',
+          'goodasgold':'Good as Gold','purifyingsalt':'Purifying Salt',
+          'zerotohere':'Zero to Hero','armortail':'Armor Tail','terashell':'Tera Shell','terashift':'Tera Shift','toxicdebris':'Toxic Debris',
+          'myceliummight':'Mycelium Might','supremeoverlord':'Supreme Overlord',
+          'commander':'Commander','costar':'Costar','lingeringaroma':'Lingering Aroma',
+          'hospitality':'Hospitality','embodyaspect':'Embody Aspect',
+          'orichalcumpulse':'Orichalcum Pulse','windpower':'Wind Power',
+          'guarddog':'Guard Dog','electromorphosis':'Electromorphosis',
+          'blaze':'Blaze','torrent':'Torrent','overgrow':'Overgrow','swarm':'Swarm',
+          'prankster':'Prankster','regenerator':'Regenerator','naturalcure':'Natural Cure',
+          'healer':'Healer','gluttony':'Gluttony','harvest':'Harvest','pickup':'Pickup',
+          'stakeout':'Stakeout','neutralizinggas':'Neutralizing Gas',
+          'powerofalchemy':'Power of Alchemy','receiver':'Receiver',
+          'unburden':'Unburden','quickfeet':'Quick Feet','rattled':'Rattled',
+          'pressure':'Pressure','moldbreaker':'Mold Breaker','turboblaze':'Turboblaze',
+          'teravolt':'Teravolt','piercingdrill':'Piercing Drill',
+          'fullmetalbody':'Full Metal Body','shadowtag':'Shadow Tag',
+          'arenatrap':'Arena Trap','magnetpull':'Magnet Pull',
+          'illusion':'Illusion','imposter':'Imposter','disguise':'Disguise',
+          'iceface':'Ice Face','powerspot':'Power Spot','neuroforce':'Neuroforce',
+        };
+        if (slug in ABILITY_MAP) return ABILITY_MAP[slug];
+        // Fallback: title-case
+        return slug.replace(/\b\w/g, c => c.toUpperCase());
+      }
+
+      const pastes = [];
+      for (let [name, entry] of Object.entries(data)) {
+        // Terapagos: always import as Terapagos-Terastal with Tera Shell ability
+        if (name.toLowerCase() === 'terapagos') {
+          name = 'Terapagos-Terastal';
+          entry = { ...entry, Abilities: { 'terashell': (Object.values(entry.Abilities||{})[0] || 1) } };
+        }
+        const raw = entry['Raw count'] || 1;
+
+        // Best spread: pick most common nature + EVs
+        const spreads = Object.entries(entry.Spreads || {}).sort((a,b) => b[1]-a[1]);
+        let nature = 'Hardy', evs = {};
+        if (spreads.length) {
+          const [spreadStr] = spreads[0];
+          const parts = spreadStr.split(':');
+          nature = parts[0] || 'Hardy';
+          const evStr = parts[1] || '';
+          const statMap = { HP:'hp', Atk:'atk', Def:'def', SpA:'spa', SpD:'spd', Spe:'spe' };
+          evStr.split('/').forEach((v, i) => {
+            const key = Object.keys(statMap)[i];
+            if (key && parseInt(v) > 0) evs[statMap[key]] = parseInt(v);
+          });
+        }
+
+        // Best ability — normalize by sum
+        const abilities = Object.entries(entry.Abilities || {}).sort((a,b) => b[1]-a[1]);
+        const ability = abilities.length ? abilityName(abilities[0][0]) : '';
+
+        // Items: top item + others ≥10% — normalize by sum
+        const itemEntries = Object.entries(entry.Items || {}).sort((a,b) => b[1]-a[1]);
+        const itemSum = itemEntries.reduce((s,[,v]) => s + v, 0) || 1;
+        const topItems = itemEntries.filter(([,v]) => v/itemSum >= ITEM_MIN).map(([k]) => itemName(k));
+        if (!topItems.length && itemEntries.length) topItems.push(itemName(itemEntries[0][0]));
+        const itemStr = topItems.join(', ');
+
+        // Moves: normalize by sum of all move values (works for both raw counts and weighted scores)
+        const moveEntries = Object.entries(entry.Moves || {}).filter(([k]) => k);
+        const moveSum = moveEntries.reduce((s,[,v]) => s + v, 0) || 1;
+        const movePcts = moveEntries
+          .map(([k,v]) => [k, v / moveSum])
+          .filter(([,v]) => v >= MOVE_MIN)
+          .sort((a,b) => b[1]-a[1]);
+        const primary = movePcts.filter(([,v]) => v >= DIVIDER_THRESHOLD).map(([k]) => slugToName(k));
+        const secondary = movePcts.filter(([,v]) => v < DIVIDER_THRESHOLD).map(([k]) => slugToName(k));
+        const moves = primary.length && secondary.length
+          ? [...primary, '_', ...secondary]
+          : [...primary, ...secondary];
+
+        // Tera Type: most popular if available
+        const teraEntries = Object.entries(entry['Tera Types'] || {}).sort((a,b) => b[1]-a[1]);
+        const teraType = teraEntries.length ? teraEntries[0][0] : null;
+        const teraLine = teraType ? `Tera Type: ${teraType.charAt(0).toUpperCase() + teraType.slice(1)}\n` : '';
+
+        const evTotal = Object.values(evs).reduce((s,v)=>s+v, 0);
+        const evParts = Object.entries(evs)
+          .filter(([,v]) => v > 0)
+          .map(([k,v]) => {
+            const label = {hp:'HP',atk:'Atk',def:'Def',spa:'SpA',spd:'SpD',spe:'Spe'}[k] || k;
+            return `${v} ${label}`;
+          });
+        const evLine = evParts.length ? `EVs: ${evParts.join(' / ')}\n` : '';
+        const movesStr = moves.map(m => m === '_' ? '_' : `- ${m}`).join('\n');
+        const itemPart = itemStr ? ` @ ${itemStr}` : '';
+
+        pastes.push(`${name}${itemPart}
+Ability: ${ability}
+Level: 50
+${teraLine}${evLine}${nature} Nature
+${movesStr}`.trim());
+      }
+
+      if (!pastes.length) {
+        document.getElementById('metaError').textContent = 'No Pokémon found in JSON file.';
+        return;
+      }
+
+      // Count total moves across all pastes for debugging
+      const totalMoves = pastes.reduce((sum, p) => sum + (p.match(/^- /gm) || []).length, 0);
+      document.getElementById('metaInput').value = pastes.join('\n\n');
+      const metaCard = document.getElementById('metaCard');
+      if (metaCard && metaCard.classList.contains('collapsed')) metaCard.classList.remove('collapsed');
+      document.getElementById('metaStatus').textContent = `Imported ${pastes.length} Pokémon (${totalMoves} moves) from JSON — click Load meta to apply.`;
+    } catch(err) {
+      document.getElementById('metaError').textContent = `Failed to parse JSON: ${err.message}`;
+    }
+  };
+  reader.readAsText(file);
+}
+
 function loadSmogonMeta() {
   const status = document.getElementById('metaStatus');
   const errEl  = document.getElementById('metaError');
@@ -3740,7 +4063,7 @@ function getDefenderAbilityDmgMul(defenderAbility, moveType, defenderKey) {
   if (ab === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) return 0.5;
   if (ab === 'fluffy' && moveType === 'fire') return 2;
   if (ab === 'dryskin' && moveType === 'fire') return 1.25;
-  if ((ab === 'multiscale' || ab === 'shadowshield') && multiscaleOverrides.has(defenderKey)) return 0.5;
+  if ((ab === 'multiscale' || ab === 'shadowshield' || ab === 'terashell') && multiscaleOverrides.has(defenderKey)) return 0.5;
   if (ab === 'levitate'      && moveType === 'ground')   return 0;
   if (ab === 'lightningrod'  && moveType === 'electric') return 0;
   if (ab === 'voltabsorb'    && moveType === 'electric') return 0;
@@ -4146,10 +4469,14 @@ function computeResults(loadedMeta, defender) {
         }
       }
 
-      // Ivy Cudgel: type changes to tera type (fire/rock/water), stays grass otherwise
+      // Ivy Cudgel: type based on Ogerpon form (not tera)
       const isIvyCudgel = mn === 'ivy cudgel' || mn === 'ivycudgel';
-      if (isIvyCudgel && _teraOn && _teraType) {
-        if (['fire','rock','water'].includes(_teraType)) effectiveMoveType = _teraType;
+      if (isIvyCudgel) {
+        const atkSlugIvy = toSlug(attacker.speciesRaw || '');
+        if (atkSlugIvy.includes('wellspring'))    effectiveMoveType = 'water';
+        else if (atkSlugIvy.includes('cornerstone')) effectiveMoveType = 'rock';
+        else if (atkSlugIvy.includes('hearthflame')) effectiveMoveType = 'fire';
+        // else stays grass
       }
 
       // Tera Starstorm: single-target Normal when not tera'd, spread Stellar when tera'd
@@ -4488,10 +4815,13 @@ function computeResults(loadedMeta, defender) {
 
       const _defIsTeraBlast = mn === 'tera blast' || mn === 'terablast';
 
-      // Ivy Cudgel: type changes with tera type (fire/rock/water only)
+      // Ivy Cudgel: type based on Ogerpon form (not tera)
       const _defIsIvyCudgel = mn === 'ivy cudgel' || mn === 'ivycudgel';
-      if (_defIsIvyCudgel && _tabTeraOnDef && _tabTeraTypeDef) {
-        if (['fire','rock','water'].includes(_tabTeraTypeDef)) effectiveMoveType = _tabTeraTypeDef;
+      if (_defIsIvyCudgel) {
+        const defSlugIvy = toSlug(defender.speciesRaw || '');
+        if (defSlugIvy.includes('wellspring'))       effectiveMoveType = 'water';
+        else if (defSlugIvy.includes('cornerstone')) effectiveMoveType = 'rock';
+        else if (defSlugIvy.includes('hearthflame')) effectiveMoveType = 'fire';
       }
       let _defTeraBlastStellarNeutral = false;
       if (_defIsTeraBlast && _tabTeraOnDef && _tabTeraTypeDef) {
@@ -5508,7 +5838,7 @@ function renderResults() {
     // In attacking mode: halves damage they receive from user's moves
     // In defending mode: doesn't directly apply but show anyway for reference
     const _atkAbNorm = (r.attacker.ability || '').toLowerCase().replace(/[\s-]/g,'');
-    const _hasMultiscale = _atkAbNorm === 'multiscale' || _atkAbNorm === 'shadowshield';
+    const _hasMultiscale = _atkAbNorm === 'multiscale' || _atkAbNorm === 'shadowshield' || _atkAbNorm === 'terashell';
     const _multiscaleKey = r.attacker.speciesRaw;
     const _multiscaleOff = _hasMultiscale && multiscaleOverrides.has(_multiscaleKey);
     const multiscaleHtml = _hasMultiscale ? (() => {
@@ -6177,13 +6507,42 @@ function toggleTera(e, key) {
   e.stopPropagation();
   if (teraActive.has(key)) teraActive.delete(key);
   else teraActive.add(key);
+  // Terapagos: swap between Terastal and Stellar form in META_DB
+  const cleanKey = key.replace(/\s*★$/,'').toLowerCase();
+  if (cleanKey === 'terapagos-terastal' || cleanKey === 'terapagos-stellar') {
+    const isTeraOn = teraActive.has(key);
+    const entry = META_DB.find(p => p.speciesRaw === key);
+    if (entry) {
+      const isStellarTera = isTeraOn && (entry.teraType || entry.types?.[0]) === 'stellar';
+      if (isStellarTera) {
+        entry.speciesRaw = entry.speciesRaw.replace(/terastal/i,'Stellar').replace(/stellar/i,'Stellar');
+      } else {
+        entry.speciesRaw = entry.speciesRaw.replace(/stellar/i,'Terastal').replace(/terastal/i,'Terastal');
+      }
+      teraActive.delete(key);
+      teraActive.add(entry.speciesRaw);
+    }
+  }
   recomputeAndRender();
 }
 function toggleTabTera(e, slotIdx) {
   e.stopPropagation();
   const k = String(slotIdx);
-  if (teraTabActive.has(k)) teraTabActive.delete(k);
-  else teraTabActive.add(k);
+  const slot = DEFENDER_SLOTS[slotIdx];
+  if (teraTabActive.has(k)) {
+    teraTabActive.delete(k);
+    // Terapagos-Stellar → Terapagos-Terastal on undo
+    if (slot && toSlug(slot.speciesRaw) === 'terapagos-stellar') {
+      slot.speciesRaw = slot.speciesRaw.replace(/stellar/i, 'Terastal');
+    }
+  } else {
+    teraTabActive.add(k);
+    // Terapagos-Terastal → Terapagos-Stellar when tera stellar
+    if (slot && toSlug(slot.speciesRaw) === 'terapagos-terastal') {
+      const tt = slot.teraType || slot.types?.[0] || '';
+      if (tt === 'stellar') slot.speciesRaw = slot.speciesRaw.replace(/terastal/i, 'Stellar');
+    }
+  }
   recomputeAndRender();
   renderDefenderTabs();
 }
@@ -6830,47 +7189,87 @@ function getDexNum(speciesRaw) {
 const PS_ICON_OVERRIDES = {
   // Rotom forms (rel row 5, cols 1-5): fan, frost, heat, mow, wash
   'rotomfan':1080,'rotomfrost':1081,'rotomheat':1082,'rotommow':1083,'rotomwash':1084,
+  // Giratina-origin: right after rotom-wash
+  'giratinaorigin':1085,
   // Tornadus/Thundurus/Landorus therian (row 6, cols 7-9)
   'tornadustherian':1098,'thundurustherian':1099,'landorustherian':1100,
   // Floette-eternal (row 9, col 3)
   'floetteeternal':1130,
   // Aegislash-blade (row 10, col 9)
   'aegislashblade':1148,
-  // Raichu-alola (row 11, col 2)
+  // Raichu-alola (row 11, col 2) = 1153
   'raichualola':1153,
-  // Ninetales-alola (row 11, col 6)
+  // Sandslash-alola: 2 after raichu-alola
+  'sandslashalola':1155,
+  // Ninetales-alola (row 11, col 6) = 1157
   'ninetalesalola':1157,
+  // Dugtrio-alola: 2 after ninetales-alola
+  'dugtriocalola':1159,
+  // Persian-alola: 8 after raichu-alola
+  'persianalola':1161,
+  // Golem-alola: 3 before exeggutor-alola
+  'golemalola':1164,
+  // Muk-alola: 1 before exeggutor-alola
+  'mukalola':1166,
+  // Exeggutor-alola: 1 row down + 2 cols from raichu-alola = 1153+14=1167
+  'exeggutoralola':1167,
+  // Oricorio forms: one row down + 3 cols from ninetales-alola = 1157+15=1172
+  'oricoriopompom':1172,'oricoriopau':1173,'oricoriosensu':1174,
+  // Lycanroc-midnight: right after oricorio-sensu
+  'lycanrocmidnight':1175,
+  // Darmanitan-galar: two rows above articuno-galar (1232-24=1208)
+  'darmanitangalar':1208,
+  // Weezing-galar: two rows above zacian-crowned (1226-24=1202)
+  'weezinggalar':1202,
   // Indeedee-F (row 17, col 1)
   'indeedeef':1224,
   // Zacian/Zamazenta crowned (row 17, cols 3-4)
   'zaciancrowned':1226,'zamazentacrowned':1227,
   // Galarian birds (row 17, cols 9-11)
   'articunogalar':1232,'zapdosgalar':1233,'moltresgalar':1234,
-  // Slowking-galar (row 17, col 12)
-  'slowkinggalar':1235,
-  // Calyrex forms (row 18, cols 1-2)
+  // Slowbro-galar: 1 after moltres-galar; Slowking-galar: 1 after that
+  'slowbrogalar':1229,'slowkinggalar':1235,
+  // Calyrex forms
   'calyrexice':1236,'calyrexshadow':1237,
   // Arcanine-hisui (row 18, col 4)
   'arcaninehisui':1239,
-  // Typhlosion-hisui (row 18, col 7)
+  // Electrode-hisui: 2 after arcanine-hisui
+  'electrodehisui':1241,
+  // Typhlosion-hisui
   'typhlosionhisui':1242,
-  // Samurott-hisui (row 18, col 10)
+  // Qwilfish-hisui: 1 after typhlosion-hisui
+  'qwilfishhisui':1243,
+  // Samurott-hisui
   'samurotthisui':1245,
-  // Tauros-paldea (row 19, cols 10-11): blaze, aqua
+  // Lilligant-hisui: 1 after samurott-hisui
+  'lilligantnhisui':1246,
+  // Lycanroc-dusk: 1 back from old position = 1192
+  'lycanrocdusk':1192,
+  // Necrozma forms: shifted back 1 each
+  'necrozmaduskmane':1193,'necrozmadawnwings':1194,
+  // Enamorus-therian: original 1204 + 4 rows + 3 cols = 1204+51=1255
+  'enamorustherian':1306,
+  // Tauros-paldea
   'taurospaldeacombat':1256,'taurospaldeablaze':1257,'taurospaldeaaqua':1258,
-  'taurospaldea':1256, // base paldea form
-  'tauroscombat':1256,'taurosblaze':1257,'taurosaqua':1258, // short-form aliases
-  // Zoroark-hisui (row 19, col 1)
+  'taurospaldea':1256,
+  'tauroscombat':1256,'taurosblaze':1257,'taurosaqua':1258,
+  // Zoroark-hisui
   'zoroarkhisui':1248,
-  // Palafin-hero (row 19, col 2)
+  // Braviary-hisui: 1 after zoroark-hisui
+  'braviaryhisui':1249,
+  // Palafin-hero
   'palafinhero':1261,
-  // Goodra-hisui (row 19, col 4)
+  // Goodra-hisui
   'goodrahisui':1251,
-  // Ursaluna-bloodmoon (row 20, col 1)
+  // Avalugg-hisui: 1 after goodra-hisui
+  'avalugghisui':1252,
+  // Decidueye-hisui: 2 after goodra-hisui
+  'decidueyehisui':1253,
+  // Ursaluna-bloodmoon
   'ursalunabloodmoon':1272,
-  // Ogerpon forms (row 20, cols 2-4): hearthflame, wellspring, cornerstone
+  // Ogerpon forms
   'ogerponhearthflame':1274,'ogerponwellspring':1273,'ogerponcornerstone':1275,
-  // Terapagos forms (row 20, cols 5-6)
+  // Terapagos forms
   'terapagosterastal':1276,'terapagosstellar':1277,
   // ── Mega evolutions & Gigantamax (start index 1320) ──────────────────────
   'venusaurmega':1320,'charizardmegax':1321,'charizardmegay':1322,'blastoisemega':1323,
