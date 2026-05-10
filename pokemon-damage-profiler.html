@@ -4146,6 +4146,12 @@ function computeResults(loadedMeta, defender) {
         }
       }
 
+      // Ivy Cudgel: type changes to tera type (fire/rock/water), stays grass otherwise
+      const isIvyCudgel = mn === 'ivy cudgel' || mn === 'ivycudgel';
+      if (isIvyCudgel && _teraOn && _teraType) {
+        if (['fire','rock','water'].includes(_teraType)) effectiveMoveType = _teraType;
+      }
+
       // Tera Starstorm: single-target Normal when not tera'd, spread Stellar when tera'd
       const isTeraStarstorm = mn === 'tera starstorm' || mn === 'terastarstorm';
       let teraStarstormStellarNeutral = false;
@@ -4481,6 +4487,12 @@ function computeResults(loadedMeta, defender) {
       const _tabTeraTypeDef = _tabTeraOnDef ? (defender.teraType || defender.types?.[0] || 'normal') : null;
 
       const _defIsTeraBlast = mn === 'tera blast' || mn === 'terablast';
+
+      // Ivy Cudgel: type changes with tera type (fire/rock/water only)
+      const _defIsIvyCudgel = mn === 'ivy cudgel' || mn === 'ivycudgel';
+      if (_defIsIvyCudgel && _tabTeraOnDef && _tabTeraTypeDef) {
+        if (['fire','rock','water'].includes(_tabTeraTypeDef)) effectiveMoveType = _tabTeraTypeDef;
+      }
       let _defTeraBlastStellarNeutral = false;
       if (_defIsTeraBlast && _tabTeraOnDef && _tabTeraTypeDef) {
         if (_tabTeraTypeDef === 'stellar') {
@@ -7927,6 +7939,7 @@ function cancelMatch() {
   const btn = document.getElementById('startMatchBtn');
   if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = ''; }
   renderDefenderTabs(); // clear tab highlights
+  renderResults();      // clear pinned result highlights
 }
 function buildMatchSpeedBar(p, opposingTeam) {
   const selfSpe = effectiveSpe(p);
