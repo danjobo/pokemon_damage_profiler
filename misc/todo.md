@@ -1,9 +1,13 @@
 ## Feature Request
 
+- if I have a pinned terapagos-terastal, then I terastalize it, it becomes terapagos-stellar which removes it from the pinned pokemon, and also the current match window doesn't reflect it's form change (important to note, it was a starred pokemon, so I think it should also have a star on the end of the stellar form when it changes) also it loses its yellow highlight
+
+
+
+
 
 - [??] collapse headers in text edit window in notes?
 
-- import meta json button
 
 
 
@@ -12,11 +16,11 @@
 
 
 
+- palafin zero to hero form switcher
+
 - temp ev/nature slider in move breakdown
 
-- split and connect the max HP/max stats buttons into one like a pill
 
-- grid icons on results listings below the paste #
 
 
 - flesh out EV window in team paste with move text boxes that have suggestive autocomplete same as the search bar but with legal moves for that pokemon
@@ -36,8 +40,13 @@
 
 
 
+- pinning the tab of a pokemon with choice scarf seems to have the pinned version get a double buff of choice scarf for some reason
+
 
 - metagame folders for different saved metas and teams
+
+
+
 
 
 
@@ -63,6 +72,17 @@
 ---
 #### Completed
 
+- [XX] grid icons on results listings below the paste #
+- [XX] split and connect the max HP/max stats buttons into one like a pill
+- [XX] wicked blow and surging strikes are always critical hits too
+- [XX] min rolls button should be brighter, like white outline and text
+- [XX] light screen/reflect/aurora veil should be three buttons pilled together that can all be turned on
+- [XX] better way to handle failed icon sprite calls in tab window?
+- [XX] defending/attacking buttons should be blue and red
+- [XX] shadow shield support (multiscale) also change text of tera shell
+- [XX] signature moves in json imports not being imported right "Surgingstrikes", "Wickedblow", "Glaciallance", "Astralbarrage"
+- [XX] some abilities still too "Psychicsurge", "Grassysurge", "Friendguard", "Vessel of Ruin"
+- [XX] import meta json button
 - [XX] ivy cudgel fix, not just tera, but it's based on form
 - [XX] Tera Shell support
 - [XX] if there's a link in a match log notes tab, add it as a button on the match listing below the load button as replay that will open the link in a new tab

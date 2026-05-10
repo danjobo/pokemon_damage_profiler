@@ -763,11 +763,16 @@
   .result-row.expanded { background: rgba(124,106,247,0.08); }
 
   .result-rank {
-    width: 28px;
+    width: 44px;
     flex-shrink: 0;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text3);
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    position: relative;
   }
 
   .result-expand {
@@ -1804,6 +1809,16 @@ Impish Nature
         </select>
       </div>
 
+      <!-- Screen pill buttons -->
+      <div class="control-group">
+        <label>Screens</label>
+        <div style="display:flex;border:0.5px solid var(--border2);border-radius:20px;overflow:hidden;">
+          <button id="screenAVBtn" onclick="toggleScreenBtn('auroraveil','screenAVBtn')" style="padding:4px 8px;font-size:10px;border:none;border-right:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Aurora Veil (×0.667 all)">A. Veil</button>
+          <button id="screenRBtn" onclick="toggleScreenBtn('reflect','screenRBtn')" style="padding:4px 8px;font-size:10px;border:none;border-right:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Reflect (×0.5 physical)">Reflect</button>
+          <button id="screenLSBtn" onclick="toggleScreenBtn('lightscreen','screenLSBtn')" style="padding:4px 8px;font-size:10px;border:none;background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Light Screen (×0.5 special)">L. Screen</button>
+        </div>
+      </div>
+
       <div class="control-group">
         <label>Speed Condition</label>
         <select id="speedCondition" onchange="renderResults()">
@@ -1815,25 +1830,15 @@ Impish Nature
       </div>
 
       <div class="control-group">
-        <label>Terrain / Screen</label>
+        <label>Terrain</label>
         <select id="terrainMode" onchange="recomputeAndRender()">
           <option value="none">None</option>
           <option value="psychic">Psychic Terrain</option>
           <option value="electric">Electric Terrain</option>
           <option value="grassy">Grassy Terrain</option>
           <option value="misty">Misty Terrain</option>
-          <option value="auroraveil">Aurora Veil</option>
-          <option value="reflect">Reflect</option>
-          <option value="lightscreen">Light Screen</option>
         </select>
       </div>
-
-
-
-
-      <button id="maxHpBtn" onclick="toggleModeBtn('maxHpMode','maxHpBtn')" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;align-self:flex-end;" title="Override HP to max investment (32 EVs)">Max HP</button>
-
-      <button id="maxStatsBtn" onclick="toggleModeBtn('maxStatsMode','maxStatsBtn')" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;align-self:flex-end;" title="Override Atk/SpA/Def/SpD/Spe to max investment">Max stats</button>
 
       <button id="dynamaxBtn" onclick="toggleModeBtn('dynamaxMode','dynamaxBtn')" style="display:none;padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;align-self:flex-end;" title="Double the defender's HP (Dynamax)">Dynamax</button>
 
@@ -1845,7 +1850,10 @@ Impish Nature
       <input type="checkbox" id="maxInvestMode" style="display:none">
       <input type="checkbox" id="dynamaxMode"  style="display:none" onchange="recomputeAndRender()">
 
-      <div class="control-group" style="flex:1;min-width:180px;position:relative;">
+    </div><!-- end results-controls -->
+    <!-- Search bar on its own line -->
+    <div class="results-controls" style="flex-wrap:nowrap;">
+      <div class="control-group" style="width:100%;position:relative;margin-top:4px;">
         <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">
           <span style="font-size:11px;color:var(--text2);">Filter results</span>
           <button id="filterHintBtn" onclick="toggleFilterHint(event)" style="padding:1px 5px;font-size:10px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;line-height:1;flex-shrink:0;" title="Show filter syntax">?</button>
@@ -1872,8 +1880,12 @@ Impish Nature
     <!-- Defender tabs row — sticks with control bar -->
     <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg2);border:0.5px solid var(--border);border-top:none;margin-bottom:10px;">
       <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
-        <button id="maxRollBtn" onclick="toggleModeBtn('maxRollMode','maxRollBtn')" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Show max damage rolls">Max rolls</button>
-        <button id="attackingModeBtn" onclick="onAttackingModeToggle()" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Toggle between defending (incoming damage) and attacking (outgoing damage)">Defending</button>
+        <div style="display:flex;border:0.5px solid var(--border2);border-radius:20px;overflow:hidden;">
+          <button id="maxStatsBtn" onclick="toggleModeBtn('maxStatsMode','maxStatsBtn')" style="padding:4px 9px;font-size:11px;border:none;border-right:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Override Atk/SpA/Def/SpD/Spe to max investment">Max stats</button>
+          <button id="maxHpBtn" onclick="toggleModeBtn('maxHpMode','maxHpBtn')" style="padding:4px 9px;font-size:11px;border:none;background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Override HP to max investment">Max HP</button>
+        </div>
+        <button id="maxRollBtn" onclick="toggleModeBtn('maxRollMode','maxRollBtn')" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Show max/min damage rolls">Max rolls</button>
+        <button id="attackingModeBtn" onclick="onAttackingModeToggle()" style="padding:5px 10px;font-size:11px;border:0.5px solid #5b9bd5;border-radius:var(--radius-sm);background:rgba(91,155,213,0.12);color:#5b9bd5;cursor:pointer;white-space:nowrap;" title="Toggle between defending (incoming damage) and attacking (outgoing damage)">Defending</button>
       </div>
       <div class="defender-tabs-row" id="defenderTabsRow" style="flex:1;margin-bottom:0;">
         <div class="def-tab def-tab-empty" title="Slot 1" onclick="selectDefenderTab(0)" id="defTab-0">＋</div>
@@ -2429,6 +2441,21 @@ let lastResults = [];
 let _threatPanelOpen = false;
 // Keys are speciesRaw strings — pins persist across tabs and search
 const pinnedKeys = new Set();
+const activeScreens = new Set(); // 'auroraveil', 'reflect', 'lightscreen'
+
+function toggleScreenBtn(screen, btnId) {
+  if (activeScreens.has(screen)) activeScreens.delete(screen);
+  else activeScreens.add(screen);
+  const btn = document.getElementById(btnId);
+  if (btn) {
+    const on = activeScreens.has(screen);
+    btn.style.background = on ? 'rgba(100,160,255,0.18)' : 'transparent';
+    btn.style.color = on ? '#64a0ff' : 'var(--text3)';
+    btn.style.fontWeight = on ? '700' : '400';
+  }
+  recomputeAndRender();
+  updateFieldStatus();
+}
 // scarf overrides: key = speciesRaw → 'on'|'off' (overrides item-based detection)
 const scarfOverrides = new Map();
 // type-boost item overrides: key = speciesRaw → 'on'|'off' (×1.2 to all damage)
@@ -3045,7 +3072,7 @@ function renderDefenderTabs() {
       // Item icon for tab — 32×32, overlapping sprite bottom-right
       const _tabItemSlug = (slot.item || '').split(',')[0].trim().toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
       const _tabItemIcon = _tabItemSlug
-        ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${_tabItemSlug}.png" style="width:32px;height:32px;image-rendering:pixelated;position:absolute;bottom:0px;right:0px;z-index:2;" onerror="this.style.display='none'" title="${(slot.item||'').split(',')[0].trim()}">`
+        ? `<img src="https://www.serebii.net/itemdex/sprites/${_tabItemSlug}.png" style="width:32px;height:32px;image-rendering:pixelated;position:absolute;bottom:0px;right:0px;z-index:2;" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${_tabItemSlug}.png';this.onerror=function(){this.style.display='none'};" title="${(slot.item||'').split(',')[0].trim()}">`
         : '';
 
       // Tera button for tab (SV format only)
@@ -3059,6 +3086,16 @@ function renderDefenderTabs() {
         ? `<button onclick="toggleTabTera(event,${i})" style="padding:1px 6px;font-size:9px;border-radius:3px;border:0.5px solid;cursor:pointer;font-weight:600;${_tabTeraStyle}" title="Toggle Tera ${_tabTeraType}">Tera</button>`
         : '';
 
+      // Multiscale / Shadow Shield / Tera Shell button for tab
+      const _tabAbNormMS = (slot.ability||'').toLowerCase().replace(/[\s-]/g,'');
+      const _tabHasMS = _tabAbNormMS === 'multiscale' || _tabAbNormMS === 'shadowshield' || _tabAbNormMS === 'terashell';
+      const _tabMSLabel = _tabAbNormMS === 'shadowshield' ? 'Shadow Shield'
+        : _tabAbNormMS === 'terashell' ? 'Tera Shell' : 'Multiscale';
+      const _tabMSOff = _tabHasMS && multiscaleOverrides.has(slot.speciesRaw);
+      const _tabMSBtn = _tabHasMS
+        ? `<button onclick="toggleMultiscale(event,'${slot.speciesRaw.replace(/'/g,"\\'")}');event.stopPropagation();" style="padding:1px 5px;font-size:8px;border-radius:3px;border:0.5px solid;cursor:pointer;background:transparent;${_tabMSOff ? 'color:var(--text3);border-color:var(--border2);' : 'color:var(--green);border-color:var(--green);'}" title="Toggle ${_tabMSLabel}">${_tabMSOff ? `${_tabMSLabel} off` : `${_tabMSLabel} ✓`}</button>`
+        : '';
+
       tab.innerHTML = `
         <span class="def-tab-close" onclick="clearDefenderSlot(event,${i})">✕</span>
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:2px;padding-left:14px;">
@@ -3068,6 +3105,7 @@ function renderDefenderTabs() {
           </div>
           <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;align-items:flex-end;">
             ${_tabTeraBtn}
+            ${_tabMSBtn}
             ${defMegaForms ? defMegaBtns : ''}
           </div>
         </div>
@@ -3392,7 +3430,7 @@ function _getCounterCandidates(threatNames) {
 // Data: gen9championsvgc2026regma-0, April 2026
 // All 270 Pokémon that appeared in the format, sorted by usage.
 // Keys: n=nature, e=evs, a=ability, i=item, m=moves, u=usage count
-const CHAMPIONS_META_DATA = {"Incineroar":{"n":"Adamant","e":{"hp":32,"atk":32,"spe":2},"a":"Intimidate","i":"Sitrus Berry, Chople Berry","m":["Fake Out","Parting Shot","Flare Blitz","Darkest Lariat","Throat Chop","_","Protect"],"u":2363825},"Sneasler":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Unburden","i":"White Herb, Focus Sash","m":["Close Combat","Dire Claw","Fake Out","Protect","_","Coaching"],"u":2262250},"Sinistcha":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Hospitality","i":"Sitrus Berry, Leftovers","m":["Matcha Gotcha","Rage Powder","Trick Room","Life Dew","Protect","_","Shadow Ball","Strength Sap"],"u":1796680},"Garchomp":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Rough Skin","i":"Choice Scarf, White Herb, Soft Sand","m":["Earthquake","Dragon Claw","Rock Slide","Protect","Stomping Tantrum"],"u":1787384},"Kingambit":{"n":"Adamant","e":{"hp":32,"atk":32,"spd":2},"a":"Defiant","i":"Black Glasses, Chople Berry","m":["Sucker Punch","Kowtow Cleave","Protect","Iron Head","Low Kick","_","Swords Dance"],"u":1431112},"Basculegion":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Adaptability","i":"Choice Scarf, Mystic Water","m":["Last Respects","Wave Crash","Aqua Jet","Flip Turn","_","Protect"],"u":1370686},"Pelipper":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Drizzle","i":"Focus Sash, Sitrus Berry","m":["Hurricane","Tailwind","Weather Ball","Protect","Wide Guard"],"u":1005220},"Aerodactyl":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Unnerve","i":"Focus Sash","m":["Rock Slide","Tailwind","Dual Wingbeat","Protect","_","Wide Guard"],"u":941225},"Farigiraf":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Armor Tail","i":"Sitrus Berry, Mental Herb, Colbur Berry","m":["Trick Room","Hyper Voice","Psychic","Protect","Helping Hand","_","Twin Beam"],"u":920518},"Whimsicott":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Prankster","i":"Focus Sash, Mental Herb","m":["Tailwind","Moonblast","Encore","Protect","_","Sunny Day","Taunt"],"u":869297},"Rotom-Wash":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Choice Scarf, Sitrus Berry, Leftovers","m":["Hydro Pump","Thunderbolt","Volt Switch","Will-O-Wisp","Protect","Electroweb"],"u":846006},"Milotic":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Competitive","i":"Leftovers, Sitrus Berry","m":["Scald","Protect","Icy Wind","Recover","_","Ice Beam","Muddy Water","Coil","Hypnosis","Life Dew"],"u":844726},"Archaludon":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Stamina","i":"Leftovers","m":["Flash Cannon","Electro Shot","Protect","Draco Meteor","Dragon Pulse","_","Aura Sphere"],"u":831302},"Floette-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Fairy Aura","i":"Floettite","m":["Protect","Dazzling Gleam","Moonblast","Calm Mind","Light of Ruin","_","Draining Kiss"],"u":699330},"Charizard-Mega-Y":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Drought","i":"Charizardite Y","m":["Heat Wave","Protect","Solar Beam","Weather Ball","_","Air Slash"],"u":679725},"Froslass-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Snow Warning","i":"Froslassite","m":["Blizzard","Shadow Ball","Protect","Aurora Veil","_","Nasty Plot"],"u":485068},"Aegislash":{"n":"Adamant","e":{"hp":32,"atk":32,"spe":2},"a":"Stance Change","i":"Spell Tag, Leftovers","m":["King's Shield","Shadow Sneak","Poltergeist","Iron Head","_","Sacred Sword","Wide Guard","Shadow Ball","Flash Cannon"],"u":481558},"Gengar-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Shadow Tag","i":"Gengarite","m":["Protect","Shadow Ball","Sludge Bomb","Perish Song","_","Disable","Substitute"],"u":466340},"Meganium-Mega":{"n":"Modest","e":{"hp":32,"spa":32,"spe":2},"a":"Mega Sol","i":"Meganiumite","m":["Solar Beam","Weather Ball","Dazzling Gleam","Protect","_","Synthesis"],"u":462894},"Tyranitar-Mega":{"n":"Adamant","e":{"hp":32,"atk":32,"spd":2},"a":"Sand Stream","i":"Tyranitarite","m":["Rock Slide","Protect","Knock Off","Low Kick","_","Crunch","Dragon Dance"],"u":458428},"Maushold":{"n":"Jolly","e":{"hp":32,"def":2,"spe":32},"a":"Friendguard","i":"Chople Berry, Focus Sash, Sitrus Berry","m":["Follow Me","Protect","Super Fang","Taunt","Encore","_","Population Bomb","Helping Hand"],"u":435225},"Talonflame":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Gale Wings","i":"Nothing, Sharpbeak, Focus Sash","m":["Tailwind","Protect","Flare Blitz","Brave Bird","_","Acrobatics","Dual Wingbeat","Will-O-Wisp"],"u":419970},"Corviknight":{"n":"Impish","e":{"hp":32,"def":32,"spd":2},"a":"Mirror Armor","i":"Leftovers, Sitrus Berry","m":["Brave Bird","Tailwind","Roost","Body Press","Iron Head","_","Bulk Up","Iron Defense","Protect"],"u":397508},"Venusaur":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Chlorophyll","i":"Focus Sash, Leftovers","m":["Sludge Bomb","Sleep Powder","Protect","Energy Ball","_","Leaf Storm","Earth Power","Solar Beam","Giga Drain"],"u":369864},"Torkoal":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Drought","i":"Charcoal","m":["Eruption","Protect","Heat Wave","Earth Power","Weather Ball","_","Solar Beam"],"u":363021},"Sableye":{"n":"Careful","e":{"hp":32,"def":2,"spd":32},"a":"Prankster","i":"Roseli Berry, Mental Herb, Focus Sash, Sitrus Berry","m":["Encore","Fake Out","Disable","_","Foul Play","Will-O-Wisp","Quash","Rain Dance","Light Screen","Reflect","Protect"],"u":343844},"Delphox-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Delphoxite","m":["Protect","Heat Wave","Psychic","_","Encore","Substitute","Nasty Plot"],"u":341484},"Dragonite-Mega":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Multiscale","i":"Dragoninite","m":["Hurricane","Protect","Draco Meteor","Thunder","Dragon Pulse","_","Tailwind","Extreme Speed"],"u":333537},"Tyranitar":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Sand Stream","i":"Chople Berry, Choice Scarf, Focus Sash","m":["Rock Slide","Protect","Knock Off","Low Kick","_","Ice Punch","Crunch"],"u":322230},"Primarina":{"n":"Modest","e":{"hp":32,"def":2,"spa":32},"a":"Liquid Voice","i":"Leftovers, Mystic Water, Sitrus Berry","m":["Hyper Voice","Protect","Moonblast","Calm Mind"],"u":320671},"Excadrill":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Sand Rush","i":"Focus Sash","m":["Iron Head","Protect","Rock Slide","Earthquake","High Horsepower"],"u":307645},"Gardevoir-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Pixilate","i":"Gardevoirite","m":["Hyper Voice","Protect","Psychic","Trick Room","_","Psyshock","Calm Mind"],"u":281945},"Aerodactyl-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Tough Claws","i":"Aerodactylite","m":["Rock Slide","Dual Wingbeat","Protect","Tailwind"],"u":263338},"Scovillain-Mega":{"n":"Calm","e":{"hp":32,"def":19,"spd":15},"a":"Spicy Spray","i":"Scovillainite","m":["Protect","Rage Powder","Leech Seed","Overheat","Flamethrower","_","Giga Drain"],"u":253258},"Ninetales-Alola":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Snow Warning","i":"Focus Sash, Never-Melt Ice","m":["Blizzard","Aurora Veil","Protect","Moonblast","_","Freeze-Dry","Encore","Icy Wind","Dazzling Gleam"],"u":251051},"Kommo-o":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Soundproof","i":"Leftovers, Dragon Fang, Sitrus Berry","m":["Protect","Clanging Scales","Clangorous Soul","Aura Sphere"],"u":246925},"Dragapult":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Clear Body","i":"Focus Sash, Dragon Fang","m":["Dragon Darts","Protect","Phantom Force","_","Draco Meteor","Will-O-Wisp","Shadow Ball","Psychic Fangs","U-turn"],"u":236908},"Politoed":{"n":"Calm","e":{"hp":32,"def":2,"spd":32},"a":"Drizzle","i":"Leftovers, Sitrus Berry","m":["Protect","Weather Ball","Perish Song","Icy Wind","Encore","_","Helping Hand","Muddy Water","Ice Beam"],"u":231060},"Sylveon":{"n":"Modest","e":{"hp":32,"def":2,"spa":32},"a":"Pixilate","i":"Fairy Feather","m":["Hyper Voice","Protect","Quick Attack","_","Hyper Beam","Calm Mind","Mystical Fire","Detect","Moonblast"],"u":227918},"Blastoise-Mega":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Mega Launcher","i":"Blastoisinite","m":["Water Spout","Protect","Dark Pulse","Aura Sphere","Fake Out","_","Shell Smash","Water Pulse","Ice Beam"],"u":224344},"Scizor-Mega":{"n":"Adamant","e":{"hp":32,"atk":32,"spd":2},"a":"Technician","i":"Scizorite","m":["Bullet Punch","Protect","Swords Dance","Bug Bite","_","Close Combat","Dual Wingbeat"],"u":222781},"Kangaskhan-Mega":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Parental Bond","i":"Kangaskhanite","m":["Fake Out","Double-Edge","Sucker Punch","Drain Punch","_","Protect","Low Kick"],"u":221416},"Aggron-Mega":{"n":"Careful","e":{"hp":32,"def":2,"spd":32},"a":"Filter","i":"Aggronite","m":["Body Press","Heavy Slam","Iron Defense","Protect"],"u":194627},"Rotom-Heat":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Choice Scarf, Sitrus Berry, Leftovers","m":["Overheat","Volt Switch","Thunderbolt","Electroweb","Protect","_","Will-O-Wisp","Trick"],"u":193467},"Venusaur-Mega":{"n":"Modest","e":{"hp":32,"def":8,"spa":18,"spe":8},"a":"Thick Fat","i":"Venusaurite","m":["Sludge Bomb","Protect","Giga Drain","Earth Power","Leech Seed","_","Sleep Powder"],"u":191764},"Clefable":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Unaware","i":"Sitrus Berry, Leftovers","m":["Follow Me","Moonblast","Protect","Helping Hand","_","Life Dew"],"u":189342},"Starmie-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Huge Power","i":"Starminite","m":["Liquidation","Protect","Aqua Jet","Zen Headbutt","_","Psycho Cut","Ice Spinner","Skill Swap","Flip Turn","Self-Destruct"],"u":184229},"Palafin":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Zero to Hero","i":"Mystic Water, Choice Scarf","m":["Jet Punch","Wave Crash","Flip Turn","Protect","Close Combat","_","Ice Punch","Drain Punch"],"u":180219},"Crabominable-Mega":{"n":"Brave","e":{"hp":32,"atk":32,"spd":2},"a":"Iron Fist","i":"Crabominite","m":["Ice Hammer","Protect","Drain Punch","Mach Punch","_","Thunder Punch","Close Combat"],"u":175066},"Glimmora-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Adaptability","i":"Glimmoranite","m":["Power Gem","Spiky Shield","Sludge Bomb","Earth Power","_","Sludge Wave","Protect"],"u":166469},"Zoroark-Hisui":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Illusion","i":"Focus Sash, Choice Scarf, Silk Scarf","m":["Hyper Voice","Bitter Malice","Protect","Shadow Ball","Icy Wind","_","Psychic","Nasty Plot","Taunt"],"u":163802},"Hydreigon":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Choice Scarf, Focus Sash","m":["Draco Meteor","Dark Pulse","Protect","_","Earth Power","Snarl","Tailwind","Heat Wave"],"u":163705},"Arcanine-Hisui":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"Choice Scarf, Focus Sash","m":["Flare Blitz","Rock Slide","Extreme Speed","Protect","Head Smash","_","Close Combat"],"u":162330},"Typhlosion-Hisui":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Frisk","i":"Choice Scarf, Charcoal","m":["Eruption","Shadow Ball","Heat Wave","Overheat","_","Protect"],"u":157140},"Dragonite":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Multiscale","i":"Lum Berry, Dragon Fang","m":["Extreme Speed","Protect","Dragon Claw","Tailwind","_","Scale Shot","Low Kick"],"u":154196},"Golurk-Mega":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Unseen Fist","i":"Golurkite","m":["Protect","Poltergeist","Headlong Rush","Ice Punch","_","Drain Punch","Earthquake"],"u":150254},"Charizard-Mega-X":{"n":"Adamant","e":{"hp":14,"atk":21,"def":1,"spd":1,"spe":29},"a":"Tough Claws","i":"Charizardite X","m":["Flare Blitz","Protect","Dragon Claw","Dragon Dance"],"u":149787},"Tsareena":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Queenly Majesty","i":"Choice Scarf, Sitrus Berry, Miracle Seed","m":["Triple Axel","Trop Kick","Protect","Low Kick","_","Power Whip","U-turn","High Jump Kick","Knock Off","Zen Headbutt"],"u":141165},"Volcarona":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Flame Body","i":"Sitrus Berry, Leftovers, Charti Berry","m":["Protect","Heat Wave","Rage Powder","Quiver Dance","_","Bug Buzz","Giga Drain","Fiery Dance","Tailwind","Struggle Bug"],"u":139937},"Oranguru":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Inner Focus","i":"Mental Herb, Colbur Berry, Sitrus Berry","m":["Instruct","Trick Room","Protect","Psychic","_","Encore"],"u":139281},"Orthworm":{"n":"Impish","e":{"hp":32,"def":32,"spd":2},"a":"Earth Eater","i":"Sitrus Berry, Leftovers","m":["Shed Tail","Body Press","Heavy Slam","Iron Defense","Protect","_","Iron Head"],"u":137591},"Hatterene":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Magic Bounce","i":"Fairy Feather, Focus Sash, Leftovers","m":["Dazzling Gleam","Trick Room","Protect","Psychic","_","Expanding Force","Mystical Fire"],"u":135790},"Lucario-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Adaptability","i":"Lucarionite","m":["Protect","Close Combat","Bullet Punch","Meteor Mash","_","Aura Sphere","Flash Cannon","Detect","Vacuum Wave"],"u":135786},"Drampa-Mega":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Berserk","i":"Drampanite","m":["Hyper Voice","Protect","Earth Power","Calm Mind","Dragon Pulse","Draco Meteor"],"u":134646},"Tauros-Paldea-Aqua":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"White Herb, Mystic Water","m":["Close Combat","Aqua Jet","Protect","Wave Crash","_","Raging Bull"],"u":117166},"Meowstic":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Prankster","i":"Focus Sash, Mental Herb, Colbur Berry","m":["Psychic Terrain","Fake Out","Expanding Force","_","Gravity","Reflect","Protect","Light Screen","Psychic","Helping Hand","Thunder Wave","Trick Room","Rain Dance"],"u":114564},"Meowscarada":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Protean","i":"Choice Scarf, Focus Sash","m":["Flower Trick","Knock Off","Triple Axel","U-turn","Protect","_","Sucker Punch","Low Kick"],"u":114513},"Camerupt-Mega":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Sheer Force","i":"Cameruptite","m":["Earth Power","Protect","Heat Wave","Eruption","_","Ancient Power"],"u":110607},"Gyarados":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"Leftovers, Sitrus Berry, Wacan Berry, Lum Berry","m":["Waterfall","Protect","Thunder Wave","Taunt","_","Dragon Dance","Ice Fang"],"u":106448},"Gyarados-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Mold Breaker","i":"Gyaradosite","m":["Waterfall","Protect","Crunch","Dragon Dance","_","Earthquake"],"u":102075},"Feraligatr-Mega":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Dragonize","i":"Feraligite","m":["Protect","Liquidation","Double-Edge","Aqua Jet","Dragon Dance","_","Body Slam"],"u":100323},"Mimikyu":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Disguise","i":"Mental Herb, White Herb, Spell Tag","m":["Play Rough","Trick Room","Shadow Sneak","Shadow Claw","Protect","_","Swords Dance","Will-O-Wisp"],"u":98226},"Araquanid":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Water Bubble","i":"Mystic Water, Leftovers","m":["Liquidation","Wide Guard","Protect","Leech Life","_","Sticky Web","Lunge"],"u":97390},"Rotom-Frost":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Choice Scarf, Never-Melt Ice","m":["Blizzard","Thunderbolt","Volt Switch","Protect","Electroweb","_","Helping Hand"],"u":96714},"Empoleon":{"n":"Modest","e":{"hp":32,"spa":19,"spe":15},"a":"Competitive","i":"Leftovers, Chople Berry, Mystic Water","m":["Flash Cannon","Protect","Hydro Pump","Ice Beam","_","Surf","Water Pulse","Roar"],"u":96076},"Raichu":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Lightning Rod","i":"Focus Sash, Magnet, Shuca Berry","m":["Fake Out","Volt Switch","Nuzzle","Protect","_","Thunderbolt","Encore","Thunder","Electroweb","Endeavor"],"u":94720},"Lopunny-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Scrappy","i":"Lopunnite","m":["Fake Out","Close Combat","Protect","Triple Axel","_","Encore","U-turn"],"u":93587},"Tinkaton":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Mold Breaker","i":"Metal Coat, Shuca Berry, Sitrus Berry, Leftovers","m":["Gigaton Hammer","Fake Out","Play Rough","Protect","_","Encore"],"u":92389},"Mamoswine":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Oblivious","i":"Choice Scarf, Focus Sash, Never-Melt Ice","m":["Icicle Crash","Ice Shard","Protect","Earthquake","High Horsepower","Rock Slide"],"u":90509},"Heliolisk":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Dry Skin","i":"Choice Scarf, Focus Sash, Magnet, Sitrus Berry","m":["Thunderbolt","Volt Switch","Protect","Hyper Voice","_","Shed Tail","Electroweb","Weather Ball","Thunder"],"u":89553},"Greninja-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Protean","i":"Greninjite","m":["Dark Pulse","Protect","Ice Beam","_","Blizzard","Hydro Pump","Water Shuriken","Sludge Wave","Low Kick","Surf"],"u":89072},"Garchomp-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Sand Force","i":"Garchompite","m":["Earthquake","Protect","Dragon Claw","Rock Slide","_","Swords Dance","Stomping Tantrum"],"u":88185},"Espathra":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Speed Boost","i":"Focus Sash, Colbur Berry, Mental Herb, Leftovers","m":["Protect","Lumina Crash","Calm Mind","Baton Pass","_","Dazzling Gleam","Hypnosis","Psychic Terrain"],"u":79920},"Gallade":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Sharpness","i":"Black Belt, Choice Scarf, White Herb, Focus Sash, Scope Lens","m":["Sacred Sword","Psycho Cut","Protect","Trick Room","_","Wide Guard","Leaf Blade","Night Slash"],"u":78394},"Scizor":{"n":"Adamant","e":{"hp":32,"atk":32,"spd":2},"a":"Technician","i":"Metal Coat, Occa Berry","m":["Bullet Punch","Protect","Swords Dance","Bug Bite","_","Close Combat","U-turn","Dual Wingbeat"],"u":78027},"Chandelure-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Infiltrator","i":"Chandelurite","m":["Shadow Ball","Heat Wave","Protect","_","Energy Ball","Trick Room","Calm Mind"],"u":74472},"Weavile":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Pressure","i":"Focus Sash","m":["Fake Out","Knock Off","Triple Axel","Protect","_","Low Kick","Ice Shard","Ice Spinner"],"u":74338},"Conkeldurr":{"n":"Adamant","e":{"hp":32,"atk":32,"spd":2},"a":"Iron Fist","i":"Black Belt, White Herb, Leftovers","m":["Drain Punch","Mach Punch","Protect","Ice Punch","_","Knock Off","Thunder Punch","Close Combat","Wide Guard","Rock Slide"],"u":73929},"Arcanine":{"n":"Jolly","e":{"hp":32,"atk":1,"def":2,"spd":5,"spe":26},"a":"Intimidate","i":"Sitrus Berry, Leftovers","m":["Flare Blitz","Protect","Will-O-Wisp","Extreme Speed","Snarl","_","Close Combat"],"u":72279},"Hawlucha-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"No Guard","i":"Hawluchanite","m":["Entrainment","Protect","Brave Bird","Close Combat","High Jump Kick","_","Dual Wingbeat","Detect","Cross Chop"],"u":71604},"Snorlax":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Thick Fat","i":"Leftovers, Sitrus Berry, Chople Berry","m":["Protect","Body Slam","_","Belly Drum","Fissure","High Horsepower","Crunch","Curse","Yawn"],"u":71019},"Skarmory-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Stalwart","i":"Skarmorite","m":["Iron Head","Brave Bird","Protect","Swords Dance","Tailwind","_","Body Press","Drill Run"],"u":70613},"Manectric-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Intimidate","i":"Manectite","m":["Protect","Volt Switch","Snarl","Thunderbolt","_","Overheat","Thunder","Flamethrower","Discharge"],"u":70186},"Slowking-Galar":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Regenerator","i":"Leftovers, Colbur Berry, Sitrus Berry, Mental Herb","m":["Trick Room","Sludge Bomb","Chilly Reception","_","Protect","Psychic","Eerie Spell","Psychic Noise"],"u":66228},"Kangaskhan":{"n":"Adamant","e":{"hp":32,"atk":32,"spe":2},"a":"Scrappy","i":"Silk Scarf","m":["Fake Out","Last Resort","_","Double-Edge","Protect"],"u":66196},"Gardevoir":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Telepathy","i":"Choice Scarf","m":["Moonblast","Dazzling Gleam","Psychic","_","Icy Wind","Protect","Psyshock","Aura Sphere","Trick Room"],"u":66015},"Goodra-Hisui":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Sap Sipper","i":"Leftovers, Sitrus Berry","m":["Protect","Body Press","Shelter","Heavy Slam","_","Flash Cannon","Draco Meteor","Life Dew","Dragon Pulse"],"u":65632},"Ceruledge":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Flash Fire","i":"Colbur Berry, Focus Sash, Charcoal","m":["Bitter Blade","Protect","Shadow Sneak","Swords Dance","_","Poltergeist","Close Combat","Bulk Up"],"u":65472},"Alakazam-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Trace","i":"Alakazite","m":["Protect","Expanding Force","Dazzling Gleam","Focus Blast","Shadow Ball","_","Psychic","Nasty Plot"],"u":63684},"Azumarill":{"n":"Adamant","e":{"hp":32,"atk":32,"def":2},"a":"Huge Power","i":"Sitrus Berry, Mystic Water","m":["Aqua Jet","Play Rough","Belly Drum","Protect","_","Liquidation"],"u":62565},"Klefki":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Prankster","i":"Mental Herb, Leftovers, Sitrus Berry","m":["Light Screen","Thunder Wave","Reflect","Dazzling Gleam","Trick Room","_","Rain Dance","Foul Play","Protect","Sandstorm"],"u":60016},"Chesnaught-Mega":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Bulletproof","i":"Chesnaughtite","m":["Body Press","Spiky Shield","Wood Hammer","Iron Defense","Leech Seed","_","Drain Punch"],"u":59774},"Ampharos-Mega":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Mold Breaker","i":"Ampharosite","m":["Dragon Pulse","Protect","Thunderbolt","_","Dazzling Gleam","Volt Switch","Parabolic Charge","Thunder","Discharge"],"u":58302},"Alakazam":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Inner Focus","i":"Focus Sash, Colbur Berry","m":["Psychic","Speed Swap","Light Screen","Reflect","_","Protect","Dazzling Gleam"],"u":57750},"Gengar":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Cursed Body","i":"Focus Sash, Choice Scarf","m":["Shadow Ball","Sludge Bomb","Protect","_","Icy Wind","Destiny Bond","Psychic"],"u":57736},"Glimmora":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Toxic Debris","i":"Focus Sash, Choice Scarf","m":["Power Gem","Spiky Shield","Earth Power","Sludge Bomb","Mortal Spin","_","Stealth Rock","Venoshock","Sludge Wave"],"u":54048},"Armarouge":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Flash Fire","i":"Focus Sash, Charcoal, Twisted Spoon","m":["Armor Cannon","Protect","Psychic","Expanding Force","Wide Guard","Heat Wave","Trick Room","_","Aura Sphere"],"u":53946},"Vivillon":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Compound Eyes","i":"Focus Sash","m":["Sleep Powder","Protect","Hurricane","Tailwind","Rage Powder","_","Pollen Puff"],"u":52021},"Excadrill-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Piercing Drill","i":"Excadrite","m":["Iron Head","Protect","Rock Slide","Earthquake","High Horsepower","_","Swords Dance"],"u":50535},"Chimecho-Mega":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Levitate","i":"Chimechite","m":["Flash Cannon","Protect","Psychic","Trick Room","Boomburst","_","Calm Mind","Recover","Stored Power"],"u":49278},"Gallade-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Inner Focus","i":"Galladite","m":["Psycho Cut","Protect","Sacred Sword","_","Close Combat","Drain Punch","Wide Guard"],"u":49174},"Vanilluxe":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Snow Warning","i":"Choice Scarf, Never-Melt Ice, Focus Sash","m":["Blizzard","Freeze-Dry","Aurora Veil","Icy Wind","Protect","_","Sheer Cold"],"u":49154},"Basculegion-F":{"n":"Modest","e":{"def":2,"spa":32,"spe":32},"a":"Adaptability","i":"Choice Scarf, Mystic Water","m":["Shadow Ball","Muddy Water","Protect","Ice Beam","Flip Turn","_","Hydro Pump","Aqua Jet","Icy Wind","Last Respects","Wave Crash"],"u":47363},"Kleavor":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Sharpness","i":"Choice Scarf, Focus Sash","m":["Stone Axe","X-Scissor","U-turn","Close Combat","Night Slash","_","Protect","Tailwind","Rock Slide"],"u":46572},"Krookodile":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"Choice Scarf","m":["Knock Off","Earthquake","Rock Slide","Protect","High Horsepower","_","Close Combat","Crunch"],"u":44864},"Rotom-Mow":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Choice Scarf, Sitrus Berry","m":["Leaf Storm","Volt Switch","Thunderbolt","Protect","Will-O-Wisp","Electroweb","_","Trick"],"u":44609},"Abomasnow-Mega":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Snow Warning","i":"Abomasite","m":["Blizzard","Protect","Aurora Veil","Energy Ball","Giga Drain","_","Earth Power"],"u":44226},"Jolteon":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Volt Absorb","i":"Magnet, Focus Sash","m":["Protect","Thunderbolt","Volt Switch","Electroweb","_","Shadow Ball","Thunder","Weather Ball","Alluring Voice","Discharge","Fake Tears"],"u":43594},"Slowking":{"n":"Sassy","e":{"hp":32,"def":32,"spd":2},"a":"Regenerator","i":"Colbur Berry, Leftovers, Mental Herb, Sitrus Berry","m":["Trick Room","Chilly Reception","Scald","Psychic","_","Protect"],"u":43027},"Alcremie":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Aromaveil","i":"Leftovers, Sitrus Berry, Focus Sash","m":["Decorate","Protect","Dazzling Gleam","_","Helping Hand","Mystical Fire","Encore","Draining Kiss","Alluring Voice"],"u":42297},"Beedrill-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Adaptability","i":"Beedrillite","m":["Poison Jab","Protect","U-turn","Drill Run","_","Fell Stinger","Lunge","Knock Off"],"u":42246},"Cofagrigus":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Mummy","i":"Leftovers, Mental Herb, Colbur Berry, Sitrus Berry","m":["Trick Room","Will-O-Wisp","Shadow Ball","Body Press","Protect","_","Hex","Ally Switch"],"u":42076},"Clefable-Mega":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Magic Bounce","i":"Clefablite","m":["Follow Me","Moonblast","Protect","_","Air Slash","Dazzling Gleam","Calm Mind","Helping Hand","Life Dew"],"u":40522},"Altaria-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Pixilate","i":"Altarianite","m":["Hyper Voice","Protect","_","Tailwind","Draco Meteor","Roost","Dragon Pulse","Flamethrower"],"u":39077},"Heracross-Mega":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Skill Link","i":"Heracronite","m":["Rock Blast","Pin Missile","Close Combat","Protect","Bullet Seed"],"u":38668},"Blastoise":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Rain Dish","i":"Leftovers, White Herb, Mystic Water, Sitrus Berry","m":["Fake Out","Protect","Water Spout","Shell Smash","_","Flip Turn","Ice Beam","Life Dew","Muddy Water"],"u":37132},"Toxapex":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Regenerator","i":"Leftovers, Sitrus Berry","m":["Baneful Bunker","Toxic","Recover","Infestation","Wide Guard"],"u":36806},"Chandelure":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Flash Fire","i":"Focus Sash, Choice Scarf, Charcoal","m":["Shadow Ball","Heat Wave","Protect","Trick Room","_","Energy Ball"],"u":36452},"Hydrapple":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Regenerator","i":"Leftovers, Yache Berry, Sitrus Berry","m":["Protect","Fickle Beam","Earth Power","Giga Drain","_","Draco Meteor","Energy Ball","Pollen Puff","Leaf Storm","Nasty Plot"],"u":36051},"Lucario":{"n":"Jolly","e":{"hp":32,"atk":2,"spe":32},"a":"Inner Focus","i":"Choice Scarf, Focus Sash, Black Belt","m":["Close Combat","Meteor Mash","_","Protect","Aura Sphere","Final Gambit","Bullet Punch","Flash Cannon","Extreme Speed"],"u":35868},"Banette-Mega":{"n":"Adamant","e":{"hp":32,"atk":32,"def":2},"a":"Prankster","i":"Banettite","m":["Poltergeist","Destiny Bond","Encore","Shadow Sneak","_","Will-O-Wisp","Protect","Disable","Trick Room"],"u":34515},"Garganacl":{"n":"Careful","e":{"hp":32,"def":2,"spd":32},"a":"Purifying Salt","i":"Leftovers, Sitrus Berry","m":["Salt Cure","Protect","Recover","Wide Guard","Body Press","_","Rock Slide","Iron Defense"],"u":34135},"Decidueye-Hisui":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Scrappy","i":"Scope Lens, Black Belt, Focus Sash","m":["Triple Arrows","Leaf Blade","Protect","_","Sucker Punch","Tailwind","Brave Bird","Upper Hand"],"u":33428},"Victreebel-Mega":{"n":"Modest","e":{"hp":32,"spa":32,"spe":2},"a":"Innards Out","i":"Victreebelite","m":["Strength Sap","Sludge Bomb","Protect","Giga Drain","Sleep Powder","_","Energy Ball"],"u":33305},"Ditto":{"n":"Timid","e":{"hp":32,"def":2,"spe":32},"a":"Imposter","i":"Choice Scarf, Focus Sash, Quick Claw","m":["Transform"],"u":33167},"Umbreon":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Inner Focus","i":"Leftovers, Sitrus Berry","m":["Foul Play","Protect","Snarl","Yawn","_","Toxic","Moonlight","Wish","Taunt"],"u":32853},"Noivern":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Frisk","i":"Focus Sash","m":["Tailwind","Draco Meteor","Protect","_","Air Slash","Boomburst","Hurricane","Taunt","Super Fang"],"u":32213},"Samurott-Hisui":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Sharpness","i":"Choice Scarf, Black Glasses, Scope Lens, Focus Sash","m":["Sacred Sword","Ceaseless Edge","Aqua Cutter","Protect","_","Sucker Punch","Flip Turn","Razor Shell","Night Slash","Aqua Jet"],"u":31681},"Slowbro-Mega":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Shell Armor","i":"Slowbronite","m":["Scald","Trick Room","Body Press","Slack Off","Psychic","_","Calm Mind","Protect","Iron Defense","Expanding Force"],"u":31034},"Bellibolt":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Electromorphosis","i":"Leftovers, Magnet, Sitrus Berry, Shuca Berry","m":["Protect","Parabolic Charge","Thunderbolt","_","Volt Switch","Soak","Muddy Water","Slack Off","Discharge"],"u":30870},"Mudsdale":{"n":"Brave","e":{"hp":32,"atk":32,"spd":2},"a":"Inner Focus","i":"Leftovers, Soft Sand, Sitrus Berry","m":["Protect","High Horsepower","Rock Slide","Body Press","Earthquake","Heavy Slam"],"u":30070},"Rhyperior":{"n":"Brave","e":{"hp":32,"atk":32,"spd":2},"a":"Solid Rock","i":"Passho Berry, Leftovers, Hard Stone, Soft Sand, White Herb, Focus Sash","m":["Rock Slide","Protect","Earthquake","High Horsepower","_","Ice Punch"],"u":29706},"Serperior":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Contrary","i":"Miracle Seed, Leftovers","m":["Leaf Storm","Protect","Dragon Pulse","Glare","Giga Drain","_","Leech Seed"],"u":29594},"Altaria":{"n":"Calm","e":{"hp":32,"spd":32,"spe":2},"a":"Cloud Nine","i":"Leftovers, Sitrus Berry, Yache Berry, Focus Sash","m":["Protect","Tailwind","Roost","_","Perish Song","Will-O-Wisp","Draco Meteor","Brave Bird"],"u":28735},"Tauros-Paldea-Blaze":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"White Herb, Sitrus Berry, Choice Scarf","m":["Close Combat","Protect","Raging Bull","Flare Blitz","Rock Slide","_","Will-O-Wisp"],"u":27921},"Gliscor":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Hyper Cutter","i":"Leftovers, Yache Berry, Bright Powder, Sitrus Berry","m":["Protect","High Horsepower","Dual Wingbeat","Tailwind","Earthquake","_","Swords Dance","Rock Slide","Knock Off","U-turn"],"u":27711},"Liepard":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Prankster","i":"Focus Sash","m":["Fake Out","Encore","_","Thunder Wave","Knock Off","Foul Play","Taunt","Protect","Rain Dance","Fake Tears"],"u":27485},"Greninja":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Protean","i":"Choice Scarf, Focus Sash, Mystic Water","m":["Dark Pulse","Ice Beam","Protect","_","Hydro Pump","Water Shuriken","Extrasensory","Blizzard","Sludge Wave","Icy Wind","U-turn"],"u":27463},"Toxicroak":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Dry Skin","i":"Focus Sash, White Herb, Leftovers","m":["Fake Out","Poison Jab","Close Combat","Protect","_","Sucker Punch","Drain Punch","Gunk Shot"],"u":26685},"Glaceon":{"n":"Modest","e":{"hp":32,"spa":32,"spe":2},"a":"Snow Cloak","i":"Never-Melt Ice, Bright Powder, Leftovers, Choice Scarf","m":["Blizzard","Freeze-Dry","Protect","_","Ice Shard","Calm Mind","Icy Wind","Shadow Ball","Detect"],"u":26385},"Infernape":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Iron Fist","i":"Focus Sash, White Herb, Black Belt","m":["Fake Out","Close Combat","_","Protect","Flare Blitz","Fire Punch","Aura Sphere","Drain Punch","Overheat","Thunder Punch","Mach Punch","Heat Wave"],"u":25778},"Drampa":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Cloud Nine","i":"Leftovers, Silk Scarf, Sitrus Berry","m":["Protect","Hyper Voice","Draco Meteor","_","Earth Power","Thunderbolt","Dragon Pulse","Flamethrower"],"u":25463},"Ninetales":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Drought","i":"Charcoal, Focus Sash, Sitrus Berry","m":["Protect","Heat Wave","Solar Beam","_","Will-O-Wisp","Encore","Helping Hand","Weather Ball"],"u":24822},"Reuniclus":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Regenerator","i":"Leftovers, Sitrus Berry, Mental Herb, Colbur Berry, Twisted Spoon","m":["Trick Room","Psychic","Protect","_","Focus Blast","Shadow Ball","Expanding Force","Energy Ball","Calm Mind","Recover"],"u":24571},"Mr. Rime":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Screen Cleaner","i":"Focus Sash, Leftovers, Mental Herb, Sitrus Berry","m":["Fake Out","Protect","Trick Room","Freeze-Dry","_","Psychic","Sheer Cold","Blizzard","Frost Breath"],"u":24013},"Wyrdeer":{"n":"Sassy","e":{"hp":32,"def":2,"spd":32},"a":"Intimidate","i":"Mental Herb, Sitrus Berry, Leftovers, Colbur Berry","m":["Trick Room","Protect","Psyshield Bash","Skill Swap","_","Psychic","Earth Power"],"u":23218},"Emboar-Mega":{"n":"Adamant","e":{"hp":32,"atk":32,"def":2},"a":"Mold Breaker","i":"Emboarite","m":["Flare Blitz","Protect","Close Combat","Sucker Punch","Drain Punch","_","Bulk Up"],"u":22450},"Clawitzer":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Mega Launcher","i":"Mystic Water, Choice Scarf","m":["Water Pulse","Aura Sphere","Dark Pulse","Protect","Dragon Pulse","Heal Pulse"],"u":21243},"Runerigus":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Wandering Spirit","i":"Leftovers, Mental Herb, Sitrus Berry","m":["Trick Room","Body Press","Poltergeist","Will-O-Wisp","_","Earthquake","Protect","Rock Slide","Ally Switch"],"u":20741},"Beartic":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Slush Rush","i":"Never-Melt Ice, Focus Sash","m":["Icicle Crash","Close Combat","Protect","_","Rock Slide","Liquidation","Aqua Jet","Earthquake","Swords Dance"],"u":20129},"Steelix-Mega":{"n":"Brave","e":{"hp":32,"atk":32,"spd":2},"a":"Sand Force","i":"Steelixite","m":["Body Press","Protect","Heavy Slam","Earthquake","_","Rock Slide","Iron Defense","High Horsepower","Gyro Ball","Iron Head"],"u":19670},"Hippowdon":{"n":"Impish","e":{"hp":32,"def":2,"spd":32},"a":"Sand Stream","i":"Leftovers, Sitrus Berry, Passho Berry","m":["Protect","Slack Off","Earthquake","Yawn","High Horsepower","_","Rock Slide","Stealth Rock","Body Press","Ice Fang"],"u":19637},"Machamp":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"No Guard","i":"Black Belt, White Herb, Scope Lens, Sitrus Berry","m":["Dynamic Punch","Stone Edge","Protect","Bullet Punch","_","Wide Guard","Rock Slide","Knock Off","Ice Punch","Cross Chop"],"u":19550},"Slowbro-Galar":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Quick Draw","i":"Quick Claw, Leftovers, Sitrus Berry","m":["Shell Side Arm","Protect","Psychic","Trick Room","_","Zen Headbutt","Flamethrower"],"u":19536},"Passimian":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Defiant","i":"Choice Scarf, Black Belt, White Herb","m":["Close Combat","Protect","Knock Off","Rock Slide","_","U-turn","Drain Punch","Upper Hand","Gunk Shot","Iron Head"],"u":19466},"Spiritomb":{"n":"Sassy","e":{"hp":32,"def":2,"spd":32},"a":"Infiltrator","i":"Leftovers, Mental Herb, Sitrus Berry, Roseli Berry","m":["Trick Room","Will-O-Wisp","_","Foul Play","Snarl","Protect","Pain Split","Dark Pulse"],"u":18883},"Aurorus":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Snow Warning","i":"Never-Melt Ice, Chople Berry, Focus Sash, Leftovers","m":["Protect","Blizzard","Aurora Veil","Ancient Power","Hyper Voice","Freeze-Dry","_","Earth Power"],"u":18713},"Houndoom-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Solar Power","i":"Houndoominite","m":["Dark Pulse","Heat Wave","Protect","_","Solar Beam","Nasty Plot","Scorching Sands","Sludge Bomb"],"u":17911},"Skeledirge":{"n":"Modest","e":{"hp":32,"spa":32,"spd":2},"a":"Unaware","i":"Leftovers, Charcoal, Sitrus Berry","m":["Torch Song","Shadow Ball","Protect","Slack Off","_","Earth Power","Will-O-Wisp"],"u":17413},"Lycanroc-Dusk":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Tough Claws","i":"Focus Sash, Hard Stone","m":["Accelerock","Close Combat","Protect","Rock Slide","_","Psychic Fangs","Drill Run"],"u":17306},"Pinsir-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Aerilate","i":"Pinsirite","m":["Body Slam","Protect","Close Combat","Feint","Quick Attack","_","Lunge","Detect","Rock Slide","Swords Dance"],"u":17079},"Vaporeon":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Water Absorb","i":"Leftovers, Sitrus Berry","m":["Scald","Protect","Ice Beam","_","Calm Mind","Yawn","Wish","Icy Wind"],"u":17040},"Salazzle":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Corrosion","i":"Focus Sash","m":["Fake Out","Sludge Bomb","Protect","Heat Wave","_","Toxic","Flamethrower","Encore","Overheat","Dragon Cheer","Sludge Wave"],"u":16949},"Quaquaval":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Moxie","i":"White Herb, Mystic Water, Focus Sash, Choice Scarf","m":["Close Combat","Aqua Step","Protect","_","Aqua Jet","Ice Spinner","Detect","Triple Axel"],"u":16746},"Sableye-Mega":{"n":"Sassy","e":{"hp":32,"def":2,"spd":32},"a":"Magic Bounce","i":"Sablenite","m":["Fake Out","Will-O-Wisp","Encore","Foul Play","_","Recover","Knock Off","Disable","Protect"],"u":16508},"Glalie-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Refrigerate","i":"Glalitite","m":["Protect","Explosion","Body Slam","_","Ice Shard","Earthquake","Freeze-Dry","Substitute"],"u":16114},"Ariados":{"n":"Bold","e":{"hp":32,"def":30,"spd":4},"a":"Insomnia","i":"Focus Sash, Bright Powder, Scope Lens","m":["Rage Powder","Protect","_","String Shot","Struggle Bug","Toxic Spikes","First Impression","Poison Jab","Toxic Thread","Sucker Punch","Sticky Web"],"u":16110},"Slowbro":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Regenerator","i":"Leftovers, Colbur Berry, Sitrus Berry","m":["Trick Room","Scald","Psychic","Protect","_","Slack Off","Yawn","Ice Beam"],"u":16059},"Sharpedo-Mega":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Strong Jaw","i":"Sharpedonite","m":["Protect","Crunch","Liquidation","Psychic Fangs","Ice Fang","_","Waterfall"],"u":15916},"Medicham-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Pure Power","i":"Medichamite","m":["Fake Out","Close Combat","Zen Headbutt","Protect","_","Psycho Cut","Drain Punch","Bullet Punch","Ice Punch"],"u":15619},"Torterra":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Shell Armor","i":"White Herb, Leftovers","m":["Protect","Wood Hammer","Shell Smash","Earthquake","Headlong Rush","_","Rock Slide","Leech Seed","Seed Bomb","Wide Guard"],"u":15415},"Flapple":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Hustle","i":"Choice Scarf, Focus Sash, Miracle Seed","m":["Grav Apple","Dragon Rush","U-turn","Protect","Dual Wingbeat","_","Sucker Punch","Dragon Dance","Outrage"],"u":15225},"Lycanroc":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Sand Rush","i":"Focus Sash, Hard Stone","m":["Rock Slide","Protect","Close Combat","Accelerock","Endeavor","_","Psychic Fangs"],"u":15111},"Abomasnow":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Snow Warning","i":"Occa Berry, Focus Sash, Leftovers","m":["Aurora Veil","Blizzard","Protect","_","Giga Drain","Ice Shard","Energy Ball","Wood Hammer"],"u":15018},"Medicham":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Pure Power","i":"Focus Sash, Choice Scarf","m":["Fake Out","Skill Swap","Close Combat","_","Trick Room","Protect","Coaching","Zen Headbutt","Psycho Cut"],"u":14987},"Hawlucha":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Unburden","i":"White Herb, Focus Sash","m":["Close Combat","Acrobatics","Protect","_","Coaching","Brave Bird","Encore"],"u":14314},"Sandaconda":{"n":"Impish","e":{"hp":32,"def":32,"spd":2},"a":"Sand Veil","i":"Bright Powder, Leftovers","m":["Minimize","Body Press","Iron Defense","Rock Slide","_","Coil","Protect","High Horsepower"],"u":14153},"Floette-Eternal":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Flower Veil","i":"Choice Scarf, Fairy Feather","m":["Light of Ruin","Dazzling Gleam","Moonblast","Psychic","Protect","_","Trick","Pollen Puff"],"u":14004},"Aromatisse":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Aromaveil","i":"Sitrus Berry, Leftovers, Babiri Berry, Kebia Berry","m":["Trick Room","Moonblast","Protect","Heal Pulse","_","Dazzling Gleam","Encore","Helping Hand","Ally Switch"],"u":13983},"Luxray":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"Shuca Berry, Choice Scarf, Magnet, Sitrus Berry, Leftovers","m":["Volt Switch","Protect","Supercell Slam","_","Wild Charge","Snarl","Superpower","Ice Fang","Psychic Fangs","Crunch"],"u":13940},"Meowstic-F-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Trace","i":"Meowsticite","m":["Protect","Expanding Force","Alluring Voice","Thunderbolt","Psychic","Fake Out","_","Shadow Ball","Dark Pulse"],"u":13868},"Pidgeot-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"No Guard","i":"Pidgeotite","m":["Hurricane","Protect","Heat Wave","Tailwind","_","Hyper Beam"],"u":13717},"Meowstic-M-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Trace","i":"Meowsticite","m":["Expanding Force","Psychic Terrain","Fake Out","Protect","_","Psychic","Alluring Voice","Reflect","Light Screen"],"u":13642},"Rampardos":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Sheer Force","i":"Focus Sash, Hard Stone, Choice Scarf","m":["Rock Slide","Protect","Iron Head","Head Smash","_","Earthquake","Fire Punch","Hammer Arm","Zen Headbutt"],"u":12973},"Trevenant":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Harvest","i":"Sitrus Berry","m":["Trick Room","Horn Leech","Protect","Poltergeist","_","Leech Seed","Wood Hammer","Will-O-Wisp"],"u":12899},"Pikachu":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Lightning Rod","i":"Light Ball","m":["Fake Out","Protect","Volt Tackle","_","Thunderbolt","Volt Switch","Thunder","Nuzzle","Surf"],"u":12682},"Audino-Mega":{"n":"Relaxed","e":{"hp":32,"def":20,"spa":12,"spd":2},"a":"Healer","i":"Audinite","m":["Dazzling Gleam","Trick Room","Life Dew","Protect","_","Calm Mind","Heal Pulse","Ally Switch","Hyper Voice"],"u":12488},"Espeon":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Magic Bounce","i":"Focus Sash, Choice Scarf, Colbur Berry, Twisted Spoon","m":["Psychic","Protect","_","Shadow Ball","Trick Room","Power Gem","Dazzling Gleam","Expanding Force","Alluring Voice"],"u":11945},"Typhlosion":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Flash Fire","i":"Choice Scarf, Charcoal","m":["Eruption","Heat Wave","Protect","Scorching Sands","Flamethrower","Shadow Ball","_","Extrasensory","Solar Beam","Rock Tomb","Focus Blast","Overheat"],"u":11500},"Leafeon":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Chlorophyll","i":"Miracle Seed, Focus Sash, Scope Lens","m":["Solar Blade","Leaf Blade","Knock Off","Protect","_","Swords Dance","Detect","X-Scissor"],"u":11391},"Raichu-Alola":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Surge Surfer","i":"Focus Sash, Magnet","m":["Fake Out","Psychic","Volt Switch","Protect","_","Thunderbolt","Electric Terrain","Speed Swap","Rising Voltage","Electroweb"],"u":10894},"Tyrantrum":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Rock Head","i":"Choice Scarf, Hard Stone","m":["Head Smash","Protect","Rock Slide","Dragon Claw","_","Close Combat","Psychic Fangs","Crunch","Dragon Dance","Ice Fang","Earthquake"],"u":10893},"Absol-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Magic Bounce","i":"Absolite","m":["Sucker Punch","Protect","Knock Off","Close Combat","_","Play Rough","Swords Dance","Rock Slide","Psycho Cut"],"u":10660},"Scovillain":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Chlorophyll","i":"Focus Sash, Leftovers, Sitrus Berry","m":["Protect","Rage Powder","Flamethrower","_","Overheat","Leech Seed","Solar Beam","Giga Drain","Leaf Storm","Will-O-Wisp","Spicy Extract"],"u":10499},"Froslass":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Cursed Body","i":"Focus Sash, Choice Scarf","m":["Frost Breath","Icy Wind","Shadow Ball","Protect","_","Destiny Bond","Taunt","Blizzard","Psychic","Will-O-Wisp","Ice Beam"],"u":9951},"Goodra":{"n":"Modest","e":{"hp":32,"def":2,"spa":32},"a":"Sap Sipper","i":"Leftovers, Sitrus Berry, Haban Berry","m":["Protect","Draco Meteor","_","Dragon Pulse","Thunderbolt","Flamethrower","Sludge Bomb","Ice Beam","Life Dew","Acid Armor"],"u":9633},"Absol":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Super Luck","i":"Scope Lens, Nothing","m":["Night Slash","Sucker Punch","Protect","_","Psycho Cut","Close Combat","Knock Off","Shadow Claw"],"u":9393},"Bastiodon":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Sturdy","i":"Leftovers, Chople Berry","m":["Body Press","Protect","Wide Guard","Iron Defense","_","Heavy Slam","Foul Play","Metal Burst","Rock Slide"],"u":9362},"Chesnaught":{"n":"Impish","e":{"hp":32,"def":32,"spd":2},"a":"Bulletproof","i":"Leftovers, Sitrus Berry","m":["Spiky Shield","Body Press","Wide Guard","Wood Hammer","Leech Seed","_","Iron Defense","Drain Punch"],"u":9351},"Appletun":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Thick Fat","i":"Sitrus Berry, Leftovers","m":["Apple Acid","Protect","Leech Seed","Dragon Pulse","Draco Meteor","_","Recover","Giga Drain"],"u":9070},"Audino":{"n":"Bold","e":{"hp":32,"def":11,"spd":23},"a":"Healer","i":"Leftovers, Mental Herb, Sitrus Berry, Chople Berry","m":["Trick Room","Heal Pulse","Simple Beam","Protect","_","Helping Hand","Hyper Voice","Life Dew","Ally Switch","Encore"],"u":8937},"Toucannon":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Skill Link","i":"King's Rock, Sharpbeak, Focus Sash","m":["Beak Blast","Rock Blast","Bullet Seed","Protect","Tailwind","_","Brave Bird"],"u":8722},"Avalugg-Hisui":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Sturdy","i":"Leftovers, Chople Berry, Never-Melt Ice","m":["Rock Slide","Body Press","Mountain Gale","Protect","Wide Guard"],"u":8574},"Charizard":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Solar Power","i":"Choice Scarf, Charcoal, Charti Berry","m":["Heat Wave","Air Slash","Protect","Solar Beam","Weather Ball","_","Scorching Sands","Overheat","Hurricane","Ancient Power","Dragon Pulse"],"u":8486},"Pangoro":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Scrappy","i":"Black Belt, Focus Sash","m":["Close Combat","Knock Off","Protect","Darkest Lariat","_","Drain Punch","Parting Shot","Bullet Punch","Detect"],"u":8090},"Aggron":{"n":"Adamant","e":{"hp":2,"atk":32,"def":32},"a":"Sturdy","i":"Leftovers","m":["Body Press","Heavy Slam","Protect","Rock Slide","_","Head Smash","Iron Defense","Iron Head","Earthquake"],"u":7993},"Diggersby":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Huge Power","i":"Choice Scarf, Focus Sash, Soft Sand","m":["Earthquake","High Horsepower","Quick Attack","Body Slam","Protect","Rock Slide","_","Ice Punch","U-turn"],"u":7772},"Avalugg":{"n":"Relaxed","e":{"hp":32,"atk":2,"def":32},"a":"Sturdy","i":"Leftovers","m":["Body Press","Protect","Wide Guard","_","Iron Defense","Frost Breath","Aurora Veil","Avalanche","Recover","Ice Spinner","Icicle Crash"],"u":7689},"Roserade":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Poison Point","i":"Choice Scarf, Focus Sash, Miracle Seed","m":["Sludge Bomb","Protect","Sleep Powder","_","Energy Ball","Leaf Storm","Giga Drain","Dazzling Gleam","Extrasensory","Weather Ball"],"u":7523},"Manectric":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Lightning Rod","i":"Magnet, Focus Sash, Choice Scarf, Shuca Berry","m":["Volt Switch","Protect","Thunderbolt","Flamethrower","Snarl","Thunder","_","Overheat","Discharge"],"u":7510},"Morpeko":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Hunger Switch","i":"Focus Sash","m":["Aura Wheel","Fake Out","Parting Shot","Protect","_","Knock Off"],"u":7466},"Decidueye":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Long Reach","i":"Focus Sash, Spell Tag","m":["Spirit Shackle","Leaf Blade","Protect","Tailwind","_","Shadow Sneak","U-turn","Brave Bird"],"u":7336},"Skarmory":{"n":"Impish","e":{"hp":32,"def":32,"spd":2},"a":"Sturdy","i":"Leftovers, Sitrus Berry","m":["Tailwind","Body Press","Protect","Brave Bird","Roost","Iron Head","_","Iron Defense","Stealth Rock"],"u":6825},"Golurk":{"n":"Brave","e":{"hp":32,"atk":32,"spd":2},"a":"No Guard","i":"White Herb, Focus Sash","m":["Poltergeist","Protect","Dynamic Punch","Headlong Rush","_","High Horsepower","Earthquake","Rock Slide","Stone Edge"],"u":6811},"Arbok":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"Leftovers, Poison Barb, Choice Scarf, Sitrus Berry, Shuca Berry","m":["Gunk Shot","Protect","Glare","Coil","_","Poison Jab","Knock Off","Sucker Punch"],"u":6716},"Starmie":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Natural Cure","i":"Choice Scarf, Leftovers, Focus Sash, Bright Powder","m":["Scald","Psychic","Ice Beam","Protect","_","Thunderbolt","Hydro Pump","Minimize","Recover","Icy Wind"],"u":6687},"Emolga":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Motor Drive","i":"Focus Sash","m":["Nuzzle","Volt Switch","Protect","Encore","_","Air Slash","Taunt","Speed Swap","Helping Hand","Electroweb","Discharge","Thunderbolt"],"u":6625},"Castform":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Forecast","i":"Choice Scarf, Focus Sash, Quick Claw, Leftovers","m":["Weather Ball","Protect","Thunder","Hurricane","_","Blizzard","Solar Beam"],"u":6594},"Florges":{"n":"Bold","e":{"hp":32,"def":32,"spa":2},"a":"Flower Veil","i":"Leftovers, Sitrus Berry, Choice Scarf","m":["Protect","Moonblast","Pollen Puff","Calm Mind","_","Dazzling Gleam","Helping Hand","Draining Kiss","Wish","Psychic"],"u":6556},"Polteageist":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Weak Armor","i":"White Herb, Focus Sash","m":["Shadow Ball","Shell Smash","Stored Power","Baton Pass","Protect","_","Giga Drain","Strength Sap"],"u":6291},"Zoroark":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Illusion","i":"Focus Sash, Black Glasses, Choice Scarf","m":["Dark Pulse","Protect","Sludge Bomb","Flamethrower","_","Night Daze","Psychic","Sucker Punch","Focus Blast","U-turn","Knock Off"],"u":5940},"Steelix":{"n":"Adamant","e":{"hp":32,"atk":32,"def":2},"a":"Sturdy","i":"Leftovers","m":["Body Press","Protect","Heavy Slam","Earthquake","_","Wide Guard","Iron Defense","Iron Head","Gyro Ball","Rock Slide"],"u":5444},"Crabominable":{"n":"Brave","e":{"hp":32,"atk":32,"spd":2},"a":"Hyper Cutter","i":"Black Belt, Never-Melt Ice, Focus Sash, Leftovers","m":["Ice Hammer","Protect","Drain Punch","Close Combat","Mach Punch","_","Crabhammer","Rock Slide","Thunder Punch"],"u":5215},"Gourgeist-Super":{"n":"Sassy","e":{"hp":32,"def":2,"spd":32},"a":"Frisk","i":"Mental Herb, Leftovers, Sitrus Berry, Focus Sash","m":["Trick Room","Poltergeist","Will-O-Wisp","_","Protect","Trick-or-Treat","Power Whip","Leech Seed","Explosion","Ally Switch","Shadow Sneak","Destiny Bond"],"u":4967},"Heracross":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Moxie","i":"Choice Scarf, Black Belt, White Herb","m":["Close Combat","Megahorn","Rock Slide","_","Knock Off","Earthquake","Protect","Lunge","Facade","High Horsepower"],"u":4901},"Rotom-Fan":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Choice Scarf, Magnet, Sitrus Berry","m":["Air Slash","Volt Switch","Thunderbolt","Will-O-Wisp","_","Discharge","Electroweb","Protect","Trick"],"u":4541},"Forretress":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Sturdy","i":"Leftovers, Quick Claw, Occa Berry","m":["Body Press","Protect","Stealth Rock","_","Explosion","Gyro Ball","Iron Defense","Volt Switch","Thunder Wave"],"u":4445},"Delphox":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Magician","i":"Focus Sash, Choice Scarf, Nothing, Sitrus Berry, Charcoal","m":["Heat Wave","Protect","Psychic","_","Dazzling Gleam","Expanding Force","Flamethrower","Trick Room"],"u":4185},"Sharpedo":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Speed Boost","i":"Focus Sash, Mystic Water","m":["Protect","Crunch","Close Combat","Liquidation","_","Psychic Fangs","Destiny Bond","Waterfall"],"u":3969},"Dedenne":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Cheek Pouch","i":"Sitrus Berry, Focus Sash, Shuca Berry","m":["Nuzzle","Protect","Dazzling Gleam","Super Fang","_","Helping Hand","Volt Switch","Entrainment","Thunderbolt"],"u":3886},"Ampharos":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Static","i":"Magnet, Leftovers, Shuca Berry, Sitrus Berry","m":["Protect","Thunderbolt","Dazzling Gleam","Volt Switch","_","Dragon Pulse","Power Gem","Thunder","Discharge","Electroweb"],"u":3716},"Emboar":{"n":"Brave","e":{"hp":32,"atk":32,"spd":2},"a":"Reckless","i":"White Herb, Choice Scarf, Leftovers","m":["Flare Blitz","Close Combat","Head Smash","Wild Charge","Protect","_","Drain Punch","Sucker Punch"],"u":3690},"Glalie":{"n":"Timid","e":{"hp":32,"spd":2,"spe":32},"a":"Inner Focus","i":"Leftovers, Focus Sash, Choice Scarf","m":["Protect","Sheer Cold","Freeze-Dry","_","Explosion","Blizzard","Substitute","Icy Wind","Frost Breath"],"u":3499},"Simipour":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Torrent","i":"Mystic Water, Focus Sash, Sitrus Berry","m":["Fake Out","Scald","Flip Turn","Icy Wind","_","Protect","Taunt","Ice Beam","Helping Hand"],"u":3160},"Camerupt":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Solid Rock","i":"Charcoal, Passho Berry, Leftovers","m":["Protect","Earth Power","Eruption","Heat Wave","_","Earthquake","Rock Slide"],"u":3015},"Flareon":{"n":"Brave","e":{"hp":32,"atk":20,"def":14},"a":"Flash Fire","i":"Charcoal, White Herb, Lum Berry","m":["Flare Blitz","Superpower","Protect","Detect","_","Quick Attack","Will-O-Wisp"],"u":2928},"Chimecho":{"n":"Sassy","e":{"def":28,"spa":32,"spd":6},"a":"Levitate","i":"Mental Herb, Focus Sash, Sitrus Berry, Leftovers, White Herb","m":["Trick Room","_","Psychic","Protect","Dazzling Gleam","Heal Pulse","Helping Hand"],"u":2903},"Simisage":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Overgrow","i":"King's Rock, Miracle Seed, Sitrus Berry, Focus Sash","m":["Fake Out","Protect","_","Seed Bomb","Leaf Storm","Taunt","Rock Slide","Leech Seed"],"u":2815},"Stunfisk":{"n":"Modest","e":{"hp":32,"def":2,"spa":32},"a":"Static","i":"Leftovers, Sitrus Berry, Bright Powder, Soft Sand","m":["Earth Power","Protect","Thunderbolt","_","Yawn","Discharge","Scald","Fissure","Sludge Bomb","Electroweb"],"u":2679},"Garbodor":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Stench","i":"Leftovers, King's Rock, Sitrus Berry","m":["Gunk Shot","Protect","Drain Punch","_","Explosion","Poison Jab","Stomping Tantrum","Toxic","Rock Blast","Seed Bomb"],"u":2371},"Slurpuff":{"n":"Bold","e":{"hp":32,"def":18,"spd":16},"a":"Unburden","i":"Sitrus Berry, Focus Sash","m":["Protect","Dazzling Gleam","Sticky Web","_","Yawn","Helping Hand","String Shot","Draining Kiss","After You","Cotton Guard","Play Rough","Calm Mind","Light Screen","Endeavor"],"u":2364},"Tauros":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"Choice Scarf, Chople Berry, Sitrus Berry, Leftovers","m":["Protect","Close Combat","Rock Slide","Raging Bull","_","Earthquake","Double-Edge","Iron Head","Body Slam"],"u":2352},"Lycanroc-Midnight":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"No Guard","i":"Choice Scarf, Hard Stone, Focus Sash","m":["Rock Slide","Stone Edge","Close Combat","Iron Tail","Protect","_","Play Rough","Sucker Punch","Knock Off"],"u":2346},"Victreebel":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Chlorophyll","i":"Focus Sash, Sitrus Berry, Miracle Seed","m":["Protect","Sleep Powder","Poison Jab","_","Sludge Bomb","Leaf Blade","Solar Beam","Weather Ball","Power Whip","Strength Sap"],"u":2325},"Feraligatr":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Sheer Force","i":"Mystic Water, Choice Scarf","m":["Liquidation","Ice Punch","Aqua Jet","Protect","Dragon Dance","_","Crunch","Flip Turn"],"u":2211},"Lopunny":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Cute Charm","i":"Chople Berry, Focus Sash","m":["Fake Out","Baton Pass","_","Cotton Guard","U-turn","Protect","Encore","Close Combat","After You"],"u":2090},"Rotom":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Choice Scarf, Focus Sash","m":["Shadow Ball","Volt Switch","Protect","Thunderbolt","Will-O-Wisp","_","Discharge","Trick","Electroweb","Dark Pulse"],"u":2033},"Furfrou":{"n":"Bold","e":{"hp":32,"def":16,"spe":18},"a":"Fur Coat","i":"Leftovers, Sitrus Berry, Chople Berry","m":["Snarl","Thunder Wave","Protect","Cotton Guard","_","Helping Hand","Double-Edge","Psychic Fangs","Sucker Punch","U-turn","Charm"],"u":1689},"Simisear":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Blaze","i":"Charcoal, Sitrus Berry, Focus Sash","m":["Fake Out","Protect","_","Will-O-Wisp","Flare Blitz","Heat Wave","Rock Slide","Scorching Sands","Flamethrower","Taunt","Overheat"],"u":1675},"Tauros-Paldea-Combat":{"n":"Jolly","e":{"atk":32,"spd":2,"spe":32},"a":"Intimidate","i":"Choice Scarf, White Herb, Sitrus Berry, Leftovers","m":["Protect","Rock Slide","Close Combat","Raging Bull","High Horsepower","_","Iron Head","Throat Chop","Earthquake","Wild Charge"],"u":1511},"Houndoom":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Flash Fire","i":"Focus Sash, Choice Scarf, Charcoal","m":["Dark Pulse","Heat Wave","Protect","Scorching Sands","_","Snarl","Flamethrower","Sludge Bomb","Destiny Bond"],"u":1477},"Gourgeist":{"n":"Careful","e":{"hp":32,"spd":4,"spe":30},"a":"Frisk","i":"Choice Scarf, Coba Berry","m":["Poltergeist","Trick-or-Treat","Will-O-Wisp","Protect","Power Whip","_","Trick Room","Trick","Shadow Sneak","Disable","Leech Seed"],"u":1310},"Gourgeist-Small":{"n":"Jolly","e":{"atk":32,"def":2,"spe":32},"a":"Frisk","i":"Choice Scarf, Focus Sash, Mental Herb","m":["Trick-or-Treat","Poltergeist","_","Will-O-Wisp","Trick","Protect","Destiny Bond","Power Whip","Leech Seed","Explosion","Shadow Sneak"],"u":1229},"Stunfisk-Galar":{"n":"Impish","e":{"hp":23,"atk":16,"def":19,"spd":8},"a":"Mimicry","i":"Leftovers, Sitrus Berry","m":["Snap Trap","Protect","Yawn","_","Pain Split","Earthquake","Sucker Punch","Fissure","Counter"],"u":1220},"Banette":{"n":"Relaxed","e":{"hp":32,"def":32},"a":"Frisk","i":"Focus Sash, Kasib Berry","m":["Trick Room","Poltergeist","_","Encore","Knock Off","Protect","Taunt","Will-O-Wisp","Destiny Bond","Shadow Sneak","Curse","Helping Hand"],"u":1142},"Meganium":{"n":"Modest","e":{"hp":32,"spa":32,"spe":2},"a":"Overgrow","i":"Leftovers, Sitrus Berry","m":["Protect","Dazzling Gleam","Solar Beam","_","Synthesis","Weather Ball","Giga Drain","Leech Seed","Energy Ball"],"u":972},"Pinsir":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Hyper Cutter","i":"Choice Scarf, Focus Sash, Sitrus Berry","m":["Guillotine","Lunge","Protect","Close Combat","Rock Slide","_","X-Scissor","Storm Throw","Detect","Throat Chop","Earthquake"],"u":954},"Watchog":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Analytic","i":"Chople Berry, Focus Sash, Choice Scarf","m":["Super Fang","Crunch","_","Low Kick","Double-Edge","Hypnosis","Protect","Ice Punch","Helping Hand","Swords Dance","Thunder Wave"],"u":797},"Samurott":{"n":"Modest","e":{"hp":32,"spa":32,"spe":2},"a":"Shell Armor","i":"Scope Lens, Mystic Water, Choice Scarf","m":["Ice Beam","Hydro Pump","Protect","_","Aqua Jet","Detect","Vacuum Wave","Swords Dance"],"u":780},"Pidgeot":{"n":"Jolly","e":{"atk":32,"spd":2,"spe":32},"a":"Big Pecks","i":"Sharpbeak, Focus Sash","m":["Tailwind","Protect","Brave Bird","Quick Attack","U-turn","_","Dual Wingbeat","Air Slash","Heat Wave"],"u":675}};
+const CHAMPIONS_META_DATA = {"Incineroar":{"n":"Adamant","e":{"hp":32,"atk":32,"spe":2},"a":"Intimidate","i":"Sitrus Berry, Chople Berry","m":["Fake Out","Parting Shot","Flare Blitz","Darkest Lariat","Throat Chop","_","Protect"],"u":2363825},"Sneasler":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Unburden","i":"White Herb, Focus Sash","m":["Close Combat","Dire Claw","Fake Out","Protect","_","Coaching"],"u":2262250},"Sinistcha":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Hospitality","i":"Sitrus Berry, Leftovers","m":["Matcha Gotcha","Rage Powder","Trick Room","Life Dew","Protect","_","Shadow Ball","Strength Sap"],"u":1796680},"Garchomp":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Rough Skin","i":"Choice Scarf, White Herb, Soft Sand","m":["Earthquake","Dragon Claw","Rock Slide","Protect","Stomping Tantrum"],"u":1787384},"Kingambit":{"n":"Adamant","e":{"hp":32,"atk":32,"spd":2},"a":"Defiant","i":"Black Glasses, Chople Berry","m":["Sucker Punch","Kowtow Cleave","Protect","Iron Head","Low Kick","_","Swords Dance"],"u":1431112},"Basculegion":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Adaptability","i":"Choice Scarf, Mystic Water","m":["Last Respects","Wave Crash","Aqua Jet","Flip Turn","_","Protect"],"u":1370686},"Pelipper":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Drizzle","i":"Focus Sash, Sitrus Berry","m":["Hurricane","Tailwind","Weather Ball","Protect","Wide Guard"],"u":1005220},"Aerodactyl":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Unnerve","i":"Focus Sash","m":["Rock Slide","Tailwind","Dual Wingbeat","Protect","_","Wide Guard"],"u":941225},"Farigiraf":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Armor Tail","i":"Sitrus Berry, Mental Herb, Colbur Berry","m":["Trick Room","Hyper Voice","Psychic","Protect","Helping Hand","_","Twin Beam"],"u":920518},"Whimsicott":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Prankster","i":"Focus Sash, Mental Herb","m":["Tailwind","Moonblast","Encore","Protect","_","Sunny Day","Taunt"],"u":869297},"Rotom-Wash":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Choice Scarf, Sitrus Berry, Leftovers","m":["Hydro Pump","Thunderbolt","Volt Switch","Will-O-Wisp","Protect","Electroweb"],"u":846006},"Milotic":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Competitive","i":"Leftovers, Sitrus Berry","m":["Scald","Protect","Icy Wind","Recover","_","Ice Beam","Muddy Water","Coil","Hypnosis","Life Dew"],"u":844726},"Archaludon":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Stamina","i":"Leftovers","m":["Flash Cannon","Electro Shot","Protect","Draco Meteor","Dragon Pulse","_","Aura Sphere"],"u":831302},"Floette-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Fairy Aura","i":"Floettite","m":["Protect","Dazzling Gleam","Moonblast","Calm Mind","Light of Ruin","_","Draining Kiss"],"u":699330},"Charizard-Mega-Y":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Drought","i":"Charizardite Y","m":["Heat Wave","Protect","Solar Beam","Weather Ball","_","Air Slash"],"u":679725},"Froslass-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Snow Warning","i":"Froslassite","m":["Blizzard","Shadow Ball","Protect","Aurora Veil","_","Nasty Plot"],"u":485068},"Aegislash":{"n":"Adamant","e":{"hp":32,"atk":32,"spe":2},"a":"Stance Change","i":"Spell Tag, Leftovers","m":["King's Shield","Shadow Sneak","Poltergeist","Iron Head","_","Sacred Sword","Wide Guard","Shadow Ball","Flash Cannon"],"u":481558},"Gengar-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Shadow Tag","i":"Gengarite","m":["Protect","Shadow Ball","Sludge Bomb","Perish Song","_","Disable","Substitute"],"u":466340},"Meganium-Mega":{"n":"Modest","e":{"hp":32,"spa":32,"spe":2},"a":"Mega Sol","i":"Meganiumite","m":["Solar Beam","Weather Ball","Dazzling Gleam","Protect","_","Synthesis"],"u":462894},"Tyranitar-Mega":{"n":"Adamant","e":{"hp":32,"atk":32,"spd":2},"a":"Sand Stream","i":"Tyranitarite","m":["Rock Slide","Protect","Knock Off","Low Kick","_","Crunch","Dragon Dance"],"u":458428},"Maushold":{"n":"Jolly","e":{"hp":32,"def":2,"spe":32},"a":"Friend Guard","i":"Chople Berry, Focus Sash, Sitrus Berry","m":["Follow Me","Protect","Super Fang","Taunt","Encore","_","Population Bomb","Helping Hand"],"u":435225},"Talonflame":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Gale Wings","i":"Nothing, Sharpbeak, Focus Sash","m":["Tailwind","Protect","Flare Blitz","Brave Bird","_","Acrobatics","Dual Wingbeat","Will-O-Wisp"],"u":419970},"Corviknight":{"n":"Impish","e":{"hp":32,"def":32,"spd":2},"a":"Mirror Armor","i":"Leftovers, Sitrus Berry","m":["Brave Bird","Tailwind","Roost","Body Press","Iron Head","_","Bulk Up","Iron Defense","Protect"],"u":397508},"Venusaur":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Chlorophyll","i":"Focus Sash, Leftovers","m":["Sludge Bomb","Sleep Powder","Protect","Energy Ball","_","Leaf Storm","Earth Power","Solar Beam","Giga Drain"],"u":369864},"Torkoal":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Drought","i":"Charcoal","m":["Eruption","Protect","Heat Wave","Earth Power","Weather Ball","_","Solar Beam"],"u":363021},"Sableye":{"n":"Careful","e":{"hp":32,"def":2,"spd":32},"a":"Prankster","i":"Roseli Berry, Mental Herb, Focus Sash, Sitrus Berry","m":["Encore","Fake Out","Disable","_","Foul Play","Will-O-Wisp","Quash","Rain Dance","Light Screen","Reflect","Protect"],"u":343844},"Delphox-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Delphoxite","m":["Protect","Heat Wave","Psychic","_","Encore","Substitute","Nasty Plot"],"u":341484},"Dragonite-Mega":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Multiscale","i":"Dragoninite","m":["Hurricane","Protect","Draco Meteor","Thunder","Dragon Pulse","_","Tailwind","Extreme Speed"],"u":333537},"Tyranitar":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Sand Stream","i":"Chople Berry, Choice Scarf, Focus Sash","m":["Rock Slide","Protect","Knock Off","Low Kick","_","Ice Punch","Crunch"],"u":322230},"Primarina":{"n":"Modest","e":{"hp":32,"def":2,"spa":32},"a":"Liquid Voice","i":"Leftovers, Mystic Water, Sitrus Berry","m":["Hyper Voice","Protect","Moonblast","Calm Mind"],"u":320671},"Excadrill":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Sand Rush","i":"Focus Sash","m":["Iron Head","Protect","Rock Slide","Earthquake","High Horsepower"],"u":307645},"Gardevoir-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Pixilate","i":"Gardevoirite","m":["Hyper Voice","Protect","Psychic","Trick Room","_","Psyshock","Calm Mind"],"u":281945},"Aerodactyl-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Tough Claws","i":"Aerodactylite","m":["Rock Slide","Dual Wingbeat","Protect","Tailwind"],"u":263338},"Scovillain-Mega":{"n":"Calm","e":{"hp":32,"def":19,"spd":15},"a":"Spicy Spray","i":"Scovillainite","m":["Protect","Rage Powder","Leech Seed","Overheat","Flamethrower","_","Giga Drain"],"u":253258},"Ninetales-Alola":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Snow Warning","i":"Focus Sash, Never-Melt Ice","m":["Blizzard","Aurora Veil","Protect","Moonblast","_","Freeze-Dry","Encore","Icy Wind","Dazzling Gleam"],"u":251051},"Kommo-o":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Soundproof","i":"Leftovers, Dragon Fang, Sitrus Berry","m":["Protect","Clanging Scales","Clangorous Soul","Aura Sphere"],"u":246925},"Dragapult":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Clear Body","i":"Focus Sash, Dragon Fang","m":["Dragon Darts","Protect","Phantom Force","_","Draco Meteor","Will-O-Wisp","Shadow Ball","Psychic Fangs","U-turn"],"u":236908},"Politoed":{"n":"Calm","e":{"hp":32,"def":2,"spd":32},"a":"Drizzle","i":"Leftovers, Sitrus Berry","m":["Protect","Weather Ball","Perish Song","Icy Wind","Encore","_","Helping Hand","Muddy Water","Ice Beam"],"u":231060},"Sylveon":{"n":"Modest","e":{"hp":32,"def":2,"spa":32},"a":"Pixilate","i":"Fairy Feather","m":["Hyper Voice","Protect","Quick Attack","_","Hyper Beam","Calm Mind","Mystical Fire","Detect","Moonblast"],"u":227918},"Blastoise-Mega":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Mega Launcher","i":"Blastoisinite","m":["Water Spout","Protect","Dark Pulse","Aura Sphere","Fake Out","_","Shell Smash","Water Pulse","Ice Beam"],"u":224344},"Scizor-Mega":{"n":"Adamant","e":{"hp":32,"atk":32,"spd":2},"a":"Technician","i":"Scizorite","m":["Bullet Punch","Protect","Swords Dance","Bug Bite","_","Close Combat","Dual Wingbeat"],"u":222781},"Kangaskhan-Mega":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Parental Bond","i":"Kangaskhanite","m":["Fake Out","Double-Edge","Sucker Punch","Drain Punch","_","Protect","Low Kick"],"u":221416},"Aggron-Mega":{"n":"Careful","e":{"hp":32,"def":2,"spd":32},"a":"Filter","i":"Aggronite","m":["Body Press","Heavy Slam","Iron Defense","Protect"],"u":194627},"Rotom-Heat":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Choice Scarf, Sitrus Berry, Leftovers","m":["Overheat","Volt Switch","Thunderbolt","Electroweb","Protect","_","Will-O-Wisp","Trick"],"u":193467},"Venusaur-Mega":{"n":"Modest","e":{"hp":32,"def":8,"spa":18,"spe":8},"a":"Thick Fat","i":"Venusaurite","m":["Sludge Bomb","Protect","Giga Drain","Earth Power","Leech Seed","_","Sleep Powder"],"u":191764},"Clefable":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Unaware","i":"Sitrus Berry, Leftovers","m":["Follow Me","Moonblast","Protect","Helping Hand","_","Life Dew"],"u":189342},"Starmie-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Huge Power","i":"Starminite","m":["Liquidation","Protect","Aqua Jet","Zen Headbutt","_","Psycho Cut","Ice Spinner","Skill Swap","Flip Turn","Self-Destruct"],"u":184229},"Palafin":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Zero to Hero","i":"Mystic Water, Choice Scarf","m":["Jet Punch","Wave Crash","Flip Turn","Protect","Close Combat","_","Ice Punch","Drain Punch"],"u":180219},"Crabominable-Mega":{"n":"Brave","e":{"hp":32,"atk":32,"spd":2},"a":"Iron Fist","i":"Crabominite","m":["Ice Hammer","Protect","Drain Punch","Mach Punch","_","Thunder Punch","Close Combat"],"u":175066},"Glimmora-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Adaptability","i":"Glimmoranite","m":["Power Gem","Spiky Shield","Sludge Bomb","Earth Power","_","Sludge Wave","Protect"],"u":166469},"Zoroark-Hisui":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Illusion","i":"Focus Sash, Choice Scarf, Silk Scarf","m":["Hyper Voice","Bitter Malice","Protect","Shadow Ball","Icy Wind","_","Psychic","Nasty Plot","Taunt"],"u":163802},"Hydreigon":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Choice Scarf, Focus Sash","m":["Draco Meteor","Dark Pulse","Protect","_","Earth Power","Snarl","Tailwind","Heat Wave"],"u":163705},"Arcanine-Hisui":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"Choice Scarf, Focus Sash","m":["Flare Blitz","Rock Slide","Extreme Speed","Protect","Head Smash","_","Close Combat"],"u":162330},"Typhlosion-Hisui":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Frisk","i":"Choice Scarf, Charcoal","m":["Eruption","Shadow Ball","Heat Wave","Overheat","_","Protect"],"u":157140},"Dragonite":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Multiscale","i":"Lum Berry, Dragon Fang","m":["Extreme Speed","Protect","Dragon Claw","Tailwind","_","Scale Shot","Low Kick"],"u":154196},"Golurk-Mega":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Unseen Fist","i":"Golurkite","m":["Protect","Poltergeist","Headlong Rush","Ice Punch","_","Drain Punch","Earthquake"],"u":150254},"Charizard-Mega-X":{"n":"Adamant","e":{"hp":14,"atk":21,"def":1,"spd":1,"spe":29},"a":"Tough Claws","i":"Charizardite X","m":["Flare Blitz","Protect","Dragon Claw","Dragon Dance"],"u":149787},"Tsareena":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Queenly Majesty","i":"Choice Scarf, Sitrus Berry, Miracle Seed","m":["Triple Axel","Trop Kick","Protect","Low Kick","_","Power Whip","U-turn","High Jump Kick","Knock Off","Zen Headbutt"],"u":141165},"Volcarona":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Flame Body","i":"Sitrus Berry, Leftovers, Charti Berry","m":["Protect","Heat Wave","Rage Powder","Quiver Dance","_","Bug Buzz","Giga Drain","Fiery Dance","Tailwind","Struggle Bug"],"u":139937},"Oranguru":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Inner Focus","i":"Mental Herb, Colbur Berry, Sitrus Berry","m":["Instruct","Trick Room","Protect","Psychic","_","Encore"],"u":139281},"Orthworm":{"n":"Impish","e":{"hp":32,"def":32,"spd":2},"a":"Earth Eater","i":"Sitrus Berry, Leftovers","m":["Shed Tail","Body Press","Heavy Slam","Iron Defense","Protect","_","Iron Head"],"u":137591},"Hatterene":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Magic Bounce","i":"Fairy Feather, Focus Sash, Leftovers","m":["Dazzling Gleam","Trick Room","Protect","Psychic","_","Expanding Force","Mystical Fire"],"u":135790},"Lucario-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Adaptability","i":"Lucarionite","m":["Protect","Close Combat","Bullet Punch","Meteor Mash","_","Aura Sphere","Flash Cannon","Detect","Vacuum Wave"],"u":135786},"Drampa-Mega":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Berserk","i":"Drampanite","m":["Hyper Voice","Protect","Earth Power","Calm Mind","Dragon Pulse","Draco Meteor"],"u":134646},"Tauros-Paldea-Aqua":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"White Herb, Mystic Water","m":["Close Combat","Aqua Jet","Protect","Wave Crash","_","Raging Bull"],"u":117166},"Meowstic":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Prankster","i":"Focus Sash, Mental Herb, Colbur Berry","m":["Psychic Terrain","Fake Out","Expanding Force","_","Gravity","Reflect","Protect","Light Screen","Psychic","Helping Hand","Thunder Wave","Trick Room","Rain Dance"],"u":114564},"Meowscarada":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Protean","i":"Choice Scarf, Focus Sash","m":["Flower Trick","Knock Off","Triple Axel","U-turn","Protect","_","Sucker Punch","Low Kick"],"u":114513},"Camerupt-Mega":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Sheer Force","i":"Cameruptite","m":["Earth Power","Protect","Heat Wave","Eruption","_","Ancient Power"],"u":110607},"Gyarados":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"Leftovers, Sitrus Berry, Wacan Berry, Lum Berry","m":["Waterfall","Protect","Thunder Wave","Taunt","_","Dragon Dance","Ice Fang"],"u":106448},"Gyarados-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Mold Breaker","i":"Gyaradosite","m":["Waterfall","Protect","Crunch","Dragon Dance","_","Earthquake"],"u":102075},"Feraligatr-Mega":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Dragonize","i":"Feraligite","m":["Protect","Liquidation","Double-Edge","Aqua Jet","Dragon Dance","_","Body Slam"],"u":100323},"Mimikyu":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Disguise","i":"Mental Herb, White Herb, Spell Tag","m":["Play Rough","Trick Room","Shadow Sneak","Shadow Claw","Protect","_","Swords Dance","Will-O-Wisp"],"u":98226},"Araquanid":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Water Bubble","i":"Mystic Water, Leftovers","m":["Liquidation","Wide Guard","Protect","Leech Life","_","Sticky Web","Lunge"],"u":97390},"Rotom-Frost":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Choice Scarf, Never-Melt Ice","m":["Blizzard","Thunderbolt","Volt Switch","Protect","Electroweb","_","Helping Hand"],"u":96714},"Empoleon":{"n":"Modest","e":{"hp":32,"spa":19,"spe":15},"a":"Competitive","i":"Leftovers, Chople Berry, Mystic Water","m":["Flash Cannon","Protect","Hydro Pump","Ice Beam","_","Surf","Water Pulse","Roar"],"u":96076},"Raichu":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Lightning Rod","i":"Focus Sash, Magnet, Shuca Berry","m":["Fake Out","Volt Switch","Nuzzle","Protect","_","Thunderbolt","Encore","Thunder","Electroweb","Endeavor"],"u":94720},"Lopunny-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Scrappy","i":"Lopunnite","m":["Fake Out","Close Combat","Protect","Triple Axel","_","Encore","U-turn"],"u":93587},"Tinkaton":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Mold Breaker","i":"Metal Coat, Shuca Berry, Sitrus Berry, Leftovers","m":["Gigaton Hammer","Fake Out","Play Rough","Protect","_","Encore"],"u":92389},"Mamoswine":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Oblivious","i":"Choice Scarf, Focus Sash, Never-Melt Ice","m":["Icicle Crash","Ice Shard","Protect","Earthquake","High Horsepower","Rock Slide"],"u":90509},"Heliolisk":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Dry Skin","i":"Choice Scarf, Focus Sash, Magnet, Sitrus Berry","m":["Thunderbolt","Volt Switch","Protect","Hyper Voice","_","Shed Tail","Electroweb","Weather Ball","Thunder"],"u":89553},"Greninja-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Protean","i":"Greninjite","m":["Dark Pulse","Protect","Ice Beam","_","Blizzard","Hydro Pump","Water Shuriken","Sludge Wave","Low Kick","Surf"],"u":89072},"Garchomp-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Sand Force","i":"Garchompite","m":["Earthquake","Protect","Dragon Claw","Rock Slide","_","Swords Dance","Stomping Tantrum"],"u":88185},"Espathra":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Speed Boost","i":"Focus Sash, Colbur Berry, Mental Herb, Leftovers","m":["Protect","Lumina Crash","Calm Mind","Baton Pass","_","Dazzling Gleam","Hypnosis","Psychic Terrain"],"u":79920},"Gallade":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Sharpness","i":"Black Belt, Choice Scarf, White Herb, Focus Sash, Scope Lens","m":["Sacred Sword","Psycho Cut","Protect","Trick Room","_","Wide Guard","Leaf Blade","Night Slash"],"u":78394},"Scizor":{"n":"Adamant","e":{"hp":32,"atk":32,"spd":2},"a":"Technician","i":"Metal Coat, Occa Berry","m":["Bullet Punch","Protect","Swords Dance","Bug Bite","_","Close Combat","U-turn","Dual Wingbeat"],"u":78027},"Chandelure-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Infiltrator","i":"Chandelurite","m":["Shadow Ball","Heat Wave","Protect","_","Energy Ball","Trick Room","Calm Mind"],"u":74472},"Weavile":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Pressure","i":"Focus Sash","m":["Fake Out","Knock Off","Triple Axel","Protect","_","Low Kick","Ice Shard","Ice Spinner"],"u":74338},"Conkeldurr":{"n":"Adamant","e":{"hp":32,"atk":32,"spd":2},"a":"Iron Fist","i":"Black Belt, White Herb, Leftovers","m":["Drain Punch","Mach Punch","Protect","Ice Punch","_","Knock Off","Thunder Punch","Close Combat","Wide Guard","Rock Slide"],"u":73929},"Arcanine":{"n":"Jolly","e":{"hp":32,"atk":1,"def":2,"spd":5,"spe":26},"a":"Intimidate","i":"Sitrus Berry, Leftovers","m":["Flare Blitz","Protect","Will-O-Wisp","Extreme Speed","Snarl","_","Close Combat"],"u":72279},"Hawlucha-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"No Guard","i":"Hawluchanite","m":["Entrainment","Protect","Brave Bird","Close Combat","High Jump Kick","_","Dual Wingbeat","Detect","Cross Chop"],"u":71604},"Snorlax":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Thick Fat","i":"Leftovers, Sitrus Berry, Chople Berry","m":["Protect","Body Slam","_","Belly Drum","Fissure","High Horsepower","Crunch","Curse","Yawn"],"u":71019},"Skarmory-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Stalwart","i":"Skarmorite","m":["Iron Head","Brave Bird","Protect","Swords Dance","Tailwind","_","Body Press","Drill Run"],"u":70613},"Manectric-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Intimidate","i":"Manectite","m":["Protect","Volt Switch","Snarl","Thunderbolt","_","Overheat","Thunder","Flamethrower","Discharge"],"u":70186},"Slowking-Galar":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Regenerator","i":"Leftovers, Colbur Berry, Sitrus Berry, Mental Herb","m":["Trick Room","Sludge Bomb","Chilly Reception","_","Protect","Psychic","Eerie Spell","Psychic Noise"],"u":66228},"Kangaskhan":{"n":"Adamant","e":{"hp":32,"atk":32,"spe":2},"a":"Scrappy","i":"Silk Scarf","m":["Fake Out","Last Resort","_","Double-Edge","Protect"],"u":66196},"Gardevoir":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Telepathy","i":"Choice Scarf","m":["Moonblast","Dazzling Gleam","Psychic","_","Icy Wind","Protect","Psyshock","Aura Sphere","Trick Room"],"u":66015},"Goodra-Hisui":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Sap Sipper","i":"Leftovers, Sitrus Berry","m":["Protect","Body Press","Shelter","Heavy Slam","_","Flash Cannon","Draco Meteor","Life Dew","Dragon Pulse"],"u":65632},"Ceruledge":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Flash Fire","i":"Colbur Berry, Focus Sash, Charcoal","m":["Bitter Blade","Protect","Shadow Sneak","Swords Dance","_","Poltergeist","Close Combat","Bulk Up"],"u":65472},"Alakazam-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Trace","i":"Alakazite","m":["Protect","Expanding Force","Dazzling Gleam","Focus Blast","Shadow Ball","_","Psychic","Nasty Plot"],"u":63684},"Azumarill":{"n":"Adamant","e":{"hp":32,"atk":32,"def":2},"a":"Huge Power","i":"Sitrus Berry, Mystic Water","m":["Aqua Jet","Play Rough","Belly Drum","Protect","_","Liquidation"],"u":62565},"Klefki":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Prankster","i":"Mental Herb, Leftovers, Sitrus Berry","m":["Light Screen","Thunder Wave","Reflect","Dazzling Gleam","Trick Room","_","Rain Dance","Foul Play","Protect","Sandstorm"],"u":60016},"Chesnaught-Mega":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Bulletproof","i":"Chesnaughtite","m":["Body Press","Spiky Shield","Wood Hammer","Iron Defense","Leech Seed","_","Drain Punch"],"u":59774},"Ampharos-Mega":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Mold Breaker","i":"Ampharosite","m":["Dragon Pulse","Protect","Thunderbolt","_","Dazzling Gleam","Volt Switch","Parabolic Charge","Thunder","Discharge"],"u":58302},"Alakazam":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Inner Focus","i":"Focus Sash, Colbur Berry","m":["Psychic","Speed Swap","Light Screen","Reflect","_","Protect","Dazzling Gleam"],"u":57750},"Gengar":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Cursed Body","i":"Focus Sash, Choice Scarf","m":["Shadow Ball","Sludge Bomb","Protect","_","Icy Wind","Destiny Bond","Psychic"],"u":57736},"Glimmora":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Toxic Debris","i":"Focus Sash, Choice Scarf","m":["Power Gem","Spiky Shield","Earth Power","Sludge Bomb","Mortal Spin","_","Stealth Rock","Venoshock","Sludge Wave"],"u":54048},"Armarouge":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Flash Fire","i":"Focus Sash, Charcoal, Twisted Spoon","m":["Armor Cannon","Protect","Psychic","Expanding Force","Wide Guard","Heat Wave","Trick Room","_","Aura Sphere"],"u":53946},"Vivillon":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Compound Eyes","i":"Focus Sash","m":["Sleep Powder","Protect","Hurricane","Tailwind","Rage Powder","_","Pollen Puff"],"u":52021},"Excadrill-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Piercing Drill","i":"Excadrite","m":["Iron Head","Protect","Rock Slide","Earthquake","High Horsepower","_","Swords Dance"],"u":50535},"Chimecho-Mega":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Levitate","i":"Chimechite","m":["Flash Cannon","Protect","Psychic","Trick Room","Boomburst","_","Calm Mind","Recover","Stored Power"],"u":49278},"Gallade-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Inner Focus","i":"Galladite","m":["Psycho Cut","Protect","Sacred Sword","_","Close Combat","Drain Punch","Wide Guard"],"u":49174},"Vanilluxe":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Snow Warning","i":"Choice Scarf, Never-Melt Ice, Focus Sash","m":["Blizzard","Freeze-Dry","Aurora Veil","Icy Wind","Protect","_","Sheer Cold"],"u":49154},"Basculegion-F":{"n":"Modest","e":{"def":2,"spa":32,"spe":32},"a":"Adaptability","i":"Choice Scarf, Mystic Water","m":["Shadow Ball","Muddy Water","Protect","Ice Beam","Flip Turn","_","Hydro Pump","Aqua Jet","Icy Wind","Last Respects","Wave Crash"],"u":47363},"Kleavor":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Sharpness","i":"Choice Scarf, Focus Sash","m":["Stone Axe","X-Scissor","U-turn","Close Combat","Night Slash","_","Protect","Tailwind","Rock Slide"],"u":46572},"Krookodile":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"Choice Scarf","m":["Knock Off","Earthquake","Rock Slide","Protect","High Horsepower","_","Close Combat","Crunch"],"u":44864},"Rotom-Mow":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Choice Scarf, Sitrus Berry","m":["Leaf Storm","Volt Switch","Thunderbolt","Protect","Will-O-Wisp","Electroweb","_","Trick"],"u":44609},"Abomasnow-Mega":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Snow Warning","i":"Abomasite","m":["Blizzard","Protect","Aurora Veil","Energy Ball","Giga Drain","_","Earth Power"],"u":44226},"Jolteon":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Volt Absorb","i":"Magnet, Focus Sash","m":["Protect","Thunderbolt","Volt Switch","Electroweb","_","Shadow Ball","Thunder","Weather Ball","Alluring Voice","Discharge","Fake Tears"],"u":43594},"Slowking":{"n":"Sassy","e":{"hp":32,"def":32,"spd":2},"a":"Regenerator","i":"Colbur Berry, Leftovers, Mental Herb, Sitrus Berry","m":["Trick Room","Chilly Reception","Scald","Psychic","_","Protect"],"u":43027},"Alcremie":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Aromaveil","i":"Leftovers, Sitrus Berry, Focus Sash","m":["Decorate","Protect","Dazzling Gleam","_","Helping Hand","Mystical Fire","Encore","Draining Kiss","Alluring Voice"],"u":42297},"Beedrill-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Adaptability","i":"Beedrillite","m":["Poison Jab","Protect","U-turn","Drill Run","_","Fell Stinger","Lunge","Knock Off"],"u":42246},"Cofagrigus":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Mummy","i":"Leftovers, Mental Herb, Colbur Berry, Sitrus Berry","m":["Trick Room","Will-O-Wisp","Shadow Ball","Body Press","Protect","_","Hex","Ally Switch"],"u":42076},"Clefable-Mega":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Magic Bounce","i":"Clefablite","m":["Follow Me","Moonblast","Protect","_","Air Slash","Dazzling Gleam","Calm Mind","Helping Hand","Life Dew"],"u":40522},"Altaria-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Pixilate","i":"Altarianite","m":["Hyper Voice","Protect","_","Tailwind","Draco Meteor","Roost","Dragon Pulse","Flamethrower"],"u":39077},"Heracross-Mega":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Skill Link","i":"Heracronite","m":["Rock Blast","Pin Missile","Close Combat","Protect","Bullet Seed"],"u":38668},"Blastoise":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Rain Dish","i":"Leftovers, White Herb, Mystic Water, Sitrus Berry","m":["Fake Out","Protect","Water Spout","Shell Smash","_","Flip Turn","Ice Beam","Life Dew","Muddy Water"],"u":37132},"Toxapex":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Regenerator","i":"Leftovers, Sitrus Berry","m":["Baneful Bunker","Toxic","Recover","Infestation","Wide Guard"],"u":36806},"Chandelure":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Flash Fire","i":"Focus Sash, Choice Scarf, Charcoal","m":["Shadow Ball","Heat Wave","Protect","Trick Room","_","Energy Ball"],"u":36452},"Hydrapple":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Regenerator","i":"Leftovers, Yache Berry, Sitrus Berry","m":["Protect","Fickle Beam","Earth Power","Giga Drain","_","Draco Meteor","Energy Ball","Pollen Puff","Leaf Storm","Nasty Plot"],"u":36051},"Lucario":{"n":"Jolly","e":{"hp":32,"atk":2,"spe":32},"a":"Inner Focus","i":"Choice Scarf, Focus Sash, Black Belt","m":["Close Combat","Meteor Mash","_","Protect","Aura Sphere","Final Gambit","Bullet Punch","Flash Cannon","Extreme Speed"],"u":35868},"Banette-Mega":{"n":"Adamant","e":{"hp":32,"atk":32,"def":2},"a":"Prankster","i":"Banettite","m":["Poltergeist","Destiny Bond","Encore","Shadow Sneak","_","Will-O-Wisp","Protect","Disable","Trick Room"],"u":34515},"Garganacl":{"n":"Careful","e":{"hp":32,"def":2,"spd":32},"a":"Purifying Salt","i":"Leftovers, Sitrus Berry","m":["Salt Cure","Protect","Recover","Wide Guard","Body Press","_","Rock Slide","Iron Defense"],"u":34135},"Decidueye-Hisui":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Scrappy","i":"Scope Lens, Black Belt, Focus Sash","m":["Triple Arrows","Leaf Blade","Protect","_","Sucker Punch","Tailwind","Brave Bird","Upper Hand"],"u":33428},"Victreebel-Mega":{"n":"Modest","e":{"hp":32,"spa":32,"spe":2},"a":"Innards Out","i":"Victreebelite","m":["Strength Sap","Sludge Bomb","Protect","Giga Drain","Sleep Powder","_","Energy Ball"],"u":33305},"Ditto":{"n":"Timid","e":{"hp":32,"def":2,"spe":32},"a":"Imposter","i":"Choice Scarf, Focus Sash, Quick Claw","m":["Transform"],"u":33167},"Umbreon":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Inner Focus","i":"Leftovers, Sitrus Berry","m":["Foul Play","Protect","Snarl","Yawn","_","Toxic","Moonlight","Wish","Taunt"],"u":32853},"Noivern":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Frisk","i":"Focus Sash","m":["Tailwind","Draco Meteor","Protect","_","Air Slash","Boomburst","Hurricane","Taunt","Super Fang"],"u":32213},"Samurott-Hisui":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Sharpness","i":"Choice Scarf, Black Glasses, Scope Lens, Focus Sash","m":["Sacred Sword","Ceaseless Edge","Aqua Cutter","Protect","_","Sucker Punch","Flip Turn","Razor Shell","Night Slash","Aqua Jet"],"u":31681},"Slowbro-Mega":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Shell Armor","i":"Slowbronite","m":["Scald","Trick Room","Body Press","Slack Off","Psychic","_","Calm Mind","Protect","Iron Defense","Expanding Force"],"u":31034},"Bellibolt":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Electromorphosis","i":"Leftovers, Magnet, Sitrus Berry, Shuca Berry","m":["Protect","Parabolic Charge","Thunderbolt","_","Volt Switch","Soak","Muddy Water","Slack Off","Discharge"],"u":30870},"Mudsdale":{"n":"Brave","e":{"hp":32,"atk":32,"spd":2},"a":"Inner Focus","i":"Leftovers, Soft Sand, Sitrus Berry","m":["Protect","High Horsepower","Rock Slide","Body Press","Earthquake","Heavy Slam"],"u":30070},"Rhyperior":{"n":"Brave","e":{"hp":32,"atk":32,"spd":2},"a":"Solid Rock","i":"Passho Berry, Leftovers, Hard Stone, Soft Sand, White Herb, Focus Sash","m":["Rock Slide","Protect","Earthquake","High Horsepower","_","Ice Punch"],"u":29706},"Serperior":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Contrary","i":"Miracle Seed, Leftovers","m":["Leaf Storm","Protect","Dragon Pulse","Glare","Giga Drain","_","Leech Seed"],"u":29594},"Altaria":{"n":"Calm","e":{"hp":32,"spd":32,"spe":2},"a":"Cloud Nine","i":"Leftovers, Sitrus Berry, Yache Berry, Focus Sash","m":["Protect","Tailwind","Roost","_","Perish Song","Will-O-Wisp","Draco Meteor","Brave Bird"],"u":28735},"Tauros-Paldea-Blaze":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"White Herb, Sitrus Berry, Choice Scarf","m":["Close Combat","Protect","Raging Bull","Flare Blitz","Rock Slide","_","Will-O-Wisp"],"u":27921},"Gliscor":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Hyper Cutter","i":"Leftovers, Yache Berry, Bright Powder, Sitrus Berry","m":["Protect","High Horsepower","Dual Wingbeat","Tailwind","Earthquake","_","Swords Dance","Rock Slide","Knock Off","U-turn"],"u":27711},"Liepard":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Prankster","i":"Focus Sash","m":["Fake Out","Encore","_","Thunder Wave","Knock Off","Foul Play","Taunt","Protect","Rain Dance","Fake Tears"],"u":27485},"Greninja":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Protean","i":"Choice Scarf, Focus Sash, Mystic Water","m":["Dark Pulse","Ice Beam","Protect","_","Hydro Pump","Water Shuriken","Extrasensory","Blizzard","Sludge Wave","Icy Wind","U-turn"],"u":27463},"Toxicroak":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Dry Skin","i":"Focus Sash, White Herb, Leftovers","m":["Fake Out","Poison Jab","Close Combat","Protect","_","Sucker Punch","Drain Punch","Gunk Shot"],"u":26685},"Glaceon":{"n":"Modest","e":{"hp":32,"spa":32,"spe":2},"a":"Snow Cloak","i":"Never-Melt Ice, Bright Powder, Leftovers, Choice Scarf","m":["Blizzard","Freeze-Dry","Protect","_","Ice Shard","Calm Mind","Icy Wind","Shadow Ball","Detect"],"u":26385},"Infernape":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Iron Fist","i":"Focus Sash, White Herb, Black Belt","m":["Fake Out","Close Combat","_","Protect","Flare Blitz","Fire Punch","Aura Sphere","Drain Punch","Overheat","Thunder Punch","Mach Punch","Heat Wave"],"u":25778},"Drampa":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Cloud Nine","i":"Leftovers, Silk Scarf, Sitrus Berry","m":["Protect","Hyper Voice","Draco Meteor","_","Earth Power","Thunderbolt","Dragon Pulse","Flamethrower"],"u":25463},"Ninetales":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Drought","i":"Charcoal, Focus Sash, Sitrus Berry","m":["Protect","Heat Wave","Solar Beam","_","Will-O-Wisp","Encore","Helping Hand","Weather Ball"],"u":24822},"Reuniclus":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Regenerator","i":"Leftovers, Sitrus Berry, Mental Herb, Colbur Berry, Twisted Spoon","m":["Trick Room","Psychic","Protect","_","Focus Blast","Shadow Ball","Expanding Force","Energy Ball","Calm Mind","Recover"],"u":24571},"Mr. Rime":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Screen Cleaner","i":"Focus Sash, Leftovers, Mental Herb, Sitrus Berry","m":["Fake Out","Protect","Trick Room","Freeze-Dry","_","Psychic","Sheer Cold","Blizzard","Frost Breath"],"u":24013},"Wyrdeer":{"n":"Sassy","e":{"hp":32,"def":2,"spd":32},"a":"Intimidate","i":"Mental Herb, Sitrus Berry, Leftovers, Colbur Berry","m":["Trick Room","Protect","Psyshield Bash","Skill Swap","_","Psychic","Earth Power"],"u":23218},"Emboar-Mega":{"n":"Adamant","e":{"hp":32,"atk":32,"def":2},"a":"Mold Breaker","i":"Emboarite","m":["Flare Blitz","Protect","Close Combat","Sucker Punch","Drain Punch","_","Bulk Up"],"u":22450},"Clawitzer":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Mega Launcher","i":"Mystic Water, Choice Scarf","m":["Water Pulse","Aura Sphere","Dark Pulse","Protect","Dragon Pulse","Heal Pulse"],"u":21243},"Runerigus":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Wandering Spirit","i":"Leftovers, Mental Herb, Sitrus Berry","m":["Trick Room","Body Press","Poltergeist","Will-O-Wisp","_","Earthquake","Protect","Rock Slide","Ally Switch"],"u":20741},"Beartic":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Slush Rush","i":"Never-Melt Ice, Focus Sash","m":["Icicle Crash","Close Combat","Protect","_","Rock Slide","Liquidation","Aqua Jet","Earthquake","Swords Dance"],"u":20129},"Steelix-Mega":{"n":"Brave","e":{"hp":32,"atk":32,"spd":2},"a":"Sand Force","i":"Steelixite","m":["Body Press","Protect","Heavy Slam","Earthquake","_","Rock Slide","Iron Defense","High Horsepower","Gyro Ball","Iron Head"],"u":19670},"Hippowdon":{"n":"Impish","e":{"hp":32,"def":2,"spd":32},"a":"Sand Stream","i":"Leftovers, Sitrus Berry, Passho Berry","m":["Protect","Slack Off","Earthquake","Yawn","High Horsepower","_","Rock Slide","Stealth Rock","Body Press","Ice Fang"],"u":19637},"Machamp":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"No Guard","i":"Black Belt, White Herb, Scope Lens, Sitrus Berry","m":["Dynamic Punch","Stone Edge","Protect","Bullet Punch","_","Wide Guard","Rock Slide","Knock Off","Ice Punch","Cross Chop"],"u":19550},"Slowbro-Galar":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Quick Draw","i":"Quick Claw, Leftovers, Sitrus Berry","m":["Shell Side Arm","Protect","Psychic","Trick Room","_","Zen Headbutt","Flamethrower"],"u":19536},"Passimian":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Defiant","i":"Choice Scarf, Black Belt, White Herb","m":["Close Combat","Protect","Knock Off","Rock Slide","_","U-turn","Drain Punch","Upper Hand","Gunk Shot","Iron Head"],"u":19466},"Spiritomb":{"n":"Sassy","e":{"hp":32,"def":2,"spd":32},"a":"Infiltrator","i":"Leftovers, Mental Herb, Sitrus Berry, Roseli Berry","m":["Trick Room","Will-O-Wisp","_","Foul Play","Snarl","Protect","Pain Split","Dark Pulse"],"u":18883},"Aurorus":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Snow Warning","i":"Never-Melt Ice, Chople Berry, Focus Sash, Leftovers","m":["Protect","Blizzard","Aurora Veil","Ancient Power","Hyper Voice","Freeze-Dry","_","Earth Power"],"u":18713},"Houndoom-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Solar Power","i":"Houndoominite","m":["Dark Pulse","Heat Wave","Protect","_","Solar Beam","Nasty Plot","Scorching Sands","Sludge Bomb"],"u":17911},"Skeledirge":{"n":"Modest","e":{"hp":32,"spa":32,"spd":2},"a":"Unaware","i":"Leftovers, Charcoal, Sitrus Berry","m":["Torch Song","Shadow Ball","Protect","Slack Off","_","Earth Power","Will-O-Wisp"],"u":17413},"Lycanroc-Dusk":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Tough Claws","i":"Focus Sash, Hard Stone","m":["Accelerock","Close Combat","Protect","Rock Slide","_","Psychic Fangs","Drill Run"],"u":17306},"Pinsir-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Aerilate","i":"Pinsirite","m":["Body Slam","Protect","Close Combat","Feint","Quick Attack","_","Lunge","Detect","Rock Slide","Swords Dance"],"u":17079},"Vaporeon":{"n":"Bold","e":{"hp":32,"def":32,"spd":2},"a":"Water Absorb","i":"Leftovers, Sitrus Berry","m":["Scald","Protect","Ice Beam","_","Calm Mind","Yawn","Wish","Icy Wind"],"u":17040},"Salazzle":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Corrosion","i":"Focus Sash","m":["Fake Out","Sludge Bomb","Protect","Heat Wave","_","Toxic","Flamethrower","Encore","Overheat","Dragon Cheer","Sludge Wave"],"u":16949},"Quaquaval":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Moxie","i":"White Herb, Mystic Water, Focus Sash, Choice Scarf","m":["Close Combat","Aqua Step","Protect","_","Aqua Jet","Ice Spinner","Detect","Triple Axel"],"u":16746},"Sableye-Mega":{"n":"Sassy","e":{"hp":32,"def":2,"spd":32},"a":"Magic Bounce","i":"Sablenite","m":["Fake Out","Will-O-Wisp","Encore","Foul Play","_","Recover","Knock Off","Disable","Protect"],"u":16508},"Glalie-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Refrigerate","i":"Glalitite","m":["Protect","Explosion","Body Slam","_","Ice Shard","Earthquake","Freeze-Dry","Substitute"],"u":16114},"Ariados":{"n":"Bold","e":{"hp":32,"def":30,"spd":4},"a":"Insomnia","i":"Focus Sash, Bright Powder, Scope Lens","m":["Rage Powder","Protect","_","String Shot","Struggle Bug","Toxic Spikes","First Impression","Poison Jab","Toxic Thread","Sucker Punch","Sticky Web"],"u":16110},"Slowbro":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Regenerator","i":"Leftovers, Colbur Berry, Sitrus Berry","m":["Trick Room","Scald","Psychic","Protect","_","Slack Off","Yawn","Ice Beam"],"u":16059},"Sharpedo-Mega":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Strong Jaw","i":"Sharpedonite","m":["Protect","Crunch","Liquidation","Psychic Fangs","Ice Fang","_","Waterfall"],"u":15916},"Medicham-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Pure Power","i":"Medichamite","m":["Fake Out","Close Combat","Zen Headbutt","Protect","_","Psycho Cut","Drain Punch","Bullet Punch","Ice Punch"],"u":15619},"Torterra":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Shell Armor","i":"White Herb, Leftovers","m":["Protect","Wood Hammer","Shell Smash","Earthquake","Headlong Rush","_","Rock Slide","Leech Seed","Seed Bomb","Wide Guard"],"u":15415},"Flapple":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Hustle","i":"Choice Scarf, Focus Sash, Miracle Seed","m":["Grav Apple","Dragon Rush","U-turn","Protect","Dual Wingbeat","_","Sucker Punch","Dragon Dance","Outrage"],"u":15225},"Lycanroc":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Sand Rush","i":"Focus Sash, Hard Stone","m":["Rock Slide","Protect","Close Combat","Accelerock","Endeavor","_","Psychic Fangs"],"u":15111},"Abomasnow":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Snow Warning","i":"Occa Berry, Focus Sash, Leftovers","m":["Aurora Veil","Blizzard","Protect","_","Giga Drain","Ice Shard","Energy Ball","Wood Hammer"],"u":15018},"Medicham":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Pure Power","i":"Focus Sash, Choice Scarf","m":["Fake Out","Skill Swap","Close Combat","_","Trick Room","Protect","Coaching","Zen Headbutt","Psycho Cut"],"u":14987},"Hawlucha":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Unburden","i":"White Herb, Focus Sash","m":["Close Combat","Acrobatics","Protect","_","Coaching","Brave Bird","Encore"],"u":14314},"Sandaconda":{"n":"Impish","e":{"hp":32,"def":32,"spd":2},"a":"Sand Veil","i":"Bright Powder, Leftovers","m":["Minimize","Body Press","Iron Defense","Rock Slide","_","Coil","Protect","High Horsepower"],"u":14153},"Floette-Eternal":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Flower Veil","i":"Choice Scarf, Fairy Feather","m":["Light of Ruin","Dazzling Gleam","Moonblast","Psychic","Protect","_","Trick","Pollen Puff"],"u":14004},"Aromatisse":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Aromaveil","i":"Sitrus Berry, Leftovers, Babiri Berry, Kebia Berry","m":["Trick Room","Moonblast","Protect","Heal Pulse","_","Dazzling Gleam","Encore","Helping Hand","Ally Switch"],"u":13983},"Luxray":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"Shuca Berry, Choice Scarf, Magnet, Sitrus Berry, Leftovers","m":["Volt Switch","Protect","Supercell Slam","_","Wild Charge","Snarl","Superpower","Ice Fang","Psychic Fangs","Crunch"],"u":13940},"Meowstic-F-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Trace","i":"Meowsticite","m":["Protect","Expanding Force","Alluring Voice","Thunderbolt","Psychic","Fake Out","_","Shadow Ball","Dark Pulse"],"u":13868},"Pidgeot-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"No Guard","i":"Pidgeotite","m":["Hurricane","Protect","Heat Wave","Tailwind","_","Hyper Beam"],"u":13717},"Meowstic-M-Mega":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Trace","i":"Meowsticite","m":["Expanding Force","Psychic Terrain","Fake Out","Protect","_","Psychic","Alluring Voice","Reflect","Light Screen"],"u":13642},"Rampardos":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Sheer Force","i":"Focus Sash, Hard Stone, Choice Scarf","m":["Rock Slide","Protect","Iron Head","Head Smash","_","Earthquake","Fire Punch","Hammer Arm","Zen Headbutt"],"u":12973},"Trevenant":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Harvest","i":"Sitrus Berry","m":["Trick Room","Horn Leech","Protect","Poltergeist","_","Leech Seed","Wood Hammer","Will-O-Wisp"],"u":12899},"Pikachu":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Lightning Rod","i":"Light Ball","m":["Fake Out","Protect","Volt Tackle","_","Thunderbolt","Volt Switch","Thunder","Nuzzle","Surf"],"u":12682},"Audino-Mega":{"n":"Relaxed","e":{"hp":32,"def":20,"spa":12,"spd":2},"a":"Healer","i":"Audinite","m":["Dazzling Gleam","Trick Room","Life Dew","Protect","_","Calm Mind","Heal Pulse","Ally Switch","Hyper Voice"],"u":12488},"Espeon":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Magic Bounce","i":"Focus Sash, Choice Scarf, Colbur Berry, Twisted Spoon","m":["Psychic","Protect","_","Shadow Ball","Trick Room","Power Gem","Dazzling Gleam","Expanding Force","Alluring Voice"],"u":11945},"Typhlosion":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Flash Fire","i":"Choice Scarf, Charcoal","m":["Eruption","Heat Wave","Protect","Scorching Sands","Flamethrower","Shadow Ball","_","Extrasensory","Solar Beam","Rock Tomb","Focus Blast","Overheat"],"u":11500},"Leafeon":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Chlorophyll","i":"Miracle Seed, Focus Sash, Scope Lens","m":["Solar Blade","Leaf Blade","Knock Off","Protect","_","Swords Dance","Detect","X-Scissor"],"u":11391},"Raichu-Alola":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Surge Surfer","i":"Focus Sash, Magnet","m":["Fake Out","Psychic","Volt Switch","Protect","_","Thunderbolt","Electric Terrain","Speed Swap","Rising Voltage","Electroweb"],"u":10894},"Tyrantrum":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Rock Head","i":"Choice Scarf, Hard Stone","m":["Head Smash","Protect","Rock Slide","Dragon Claw","_","Close Combat","Psychic Fangs","Crunch","Dragon Dance","Ice Fang","Earthquake"],"u":10893},"Absol-Mega":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Magic Bounce","i":"Absolite","m":["Sucker Punch","Protect","Knock Off","Close Combat","_","Play Rough","Swords Dance","Rock Slide","Psycho Cut"],"u":10660},"Scovillain":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Chlorophyll","i":"Focus Sash, Leftovers, Sitrus Berry","m":["Protect","Rage Powder","Flamethrower","_","Overheat","Leech Seed","Solar Beam","Giga Drain","Leaf Storm","Will-O-Wisp","Spicy Extract"],"u":10499},"Froslass":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Cursed Body","i":"Focus Sash, Choice Scarf","m":["Frost Breath","Icy Wind","Shadow Ball","Protect","_","Destiny Bond","Taunt","Blizzard","Psychic","Will-O-Wisp","Ice Beam"],"u":9951},"Goodra":{"n":"Modest","e":{"hp":32,"def":2,"spa":32},"a":"Sap Sipper","i":"Leftovers, Sitrus Berry, Haban Berry","m":["Protect","Draco Meteor","_","Dragon Pulse","Thunderbolt","Flamethrower","Sludge Bomb","Ice Beam","Life Dew","Acid Armor"],"u":9633},"Absol":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Super Luck","i":"Scope Lens, Nothing","m":["Night Slash","Sucker Punch","Protect","_","Psycho Cut","Close Combat","Knock Off","Shadow Claw"],"u":9393},"Bastiodon":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Sturdy","i":"Leftovers, Chople Berry","m":["Body Press","Protect","Wide Guard","Iron Defense","_","Heavy Slam","Foul Play","Metal Burst","Rock Slide"],"u":9362},"Chesnaught":{"n":"Impish","e":{"hp":32,"def":32,"spd":2},"a":"Bulletproof","i":"Leftovers, Sitrus Berry","m":["Spiky Shield","Body Press","Wide Guard","Wood Hammer","Leech Seed","_","Iron Defense","Drain Punch"],"u":9351},"Appletun":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Thick Fat","i":"Sitrus Berry, Leftovers","m":["Apple Acid","Protect","Leech Seed","Dragon Pulse","Draco Meteor","_","Recover","Giga Drain"],"u":9070},"Audino":{"n":"Bold","e":{"hp":32,"def":11,"spd":23},"a":"Healer","i":"Leftovers, Mental Herb, Sitrus Berry, Chople Berry","m":["Trick Room","Heal Pulse","Simple Beam","Protect","_","Helping Hand","Hyper Voice","Life Dew","Ally Switch","Encore"],"u":8937},"Toucannon":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Skill Link","i":"King's Rock, Sharpbeak, Focus Sash","m":["Beak Blast","Rock Blast","Bullet Seed","Protect","Tailwind","_","Brave Bird"],"u":8722},"Avalugg-Hisui":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Sturdy","i":"Leftovers, Chople Berry, Never-Melt Ice","m":["Rock Slide","Body Press","Mountain Gale","Protect","Wide Guard"],"u":8574},"Charizard":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Solar Power","i":"Choice Scarf, Charcoal, Charti Berry","m":["Heat Wave","Air Slash","Protect","Solar Beam","Weather Ball","_","Scorching Sands","Overheat","Hurricane","Ancient Power","Dragon Pulse"],"u":8486},"Pangoro":{"n":"Brave","e":{"hp":32,"atk":32,"def":2},"a":"Scrappy","i":"Black Belt, Focus Sash","m":["Close Combat","Knock Off","Protect","Darkest Lariat","_","Drain Punch","Parting Shot","Bullet Punch","Detect"],"u":8090},"Aggron":{"n":"Adamant","e":{"hp":2,"atk":32,"def":32},"a":"Sturdy","i":"Leftovers","m":["Body Press","Heavy Slam","Protect","Rock Slide","_","Head Smash","Iron Defense","Iron Head","Earthquake"],"u":7993},"Diggersby":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Huge Power","i":"Choice Scarf, Focus Sash, Soft Sand","m":["Earthquake","High Horsepower","Quick Attack","Body Slam","Protect","Rock Slide","_","Ice Punch","U-turn"],"u":7772},"Avalugg":{"n":"Relaxed","e":{"hp":32,"atk":2,"def":32},"a":"Sturdy","i":"Leftovers","m":["Body Press","Protect","Wide Guard","_","Iron Defense","Frost Breath","Aurora Veil","Avalanche","Recover","Ice Spinner","Icicle Crash"],"u":7689},"Roserade":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Poison Point","i":"Choice Scarf, Focus Sash, Miracle Seed","m":["Sludge Bomb","Protect","Sleep Powder","_","Energy Ball","Leaf Storm","Giga Drain","Dazzling Gleam","Extrasensory","Weather Ball"],"u":7523},"Manectric":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Lightning Rod","i":"Magnet, Focus Sash, Choice Scarf, Shuca Berry","m":["Volt Switch","Protect","Thunderbolt","Flamethrower","Snarl","Thunder","_","Overheat","Discharge"],"u":7510},"Morpeko":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Hunger Switch","i":"Focus Sash","m":["Aura Wheel","Fake Out","Parting Shot","Protect","_","Knock Off"],"u":7466},"Decidueye":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Long Reach","i":"Focus Sash, Spell Tag","m":["Spirit Shackle","Leaf Blade","Protect","Tailwind","_","Shadow Sneak","U-turn","Brave Bird"],"u":7336},"Skarmory":{"n":"Impish","e":{"hp":32,"def":32,"spd":2},"a":"Sturdy","i":"Leftovers, Sitrus Berry","m":["Tailwind","Body Press","Protect","Brave Bird","Roost","Iron Head","_","Iron Defense","Stealth Rock"],"u":6825},"Golurk":{"n":"Brave","e":{"hp":32,"atk":32,"spd":2},"a":"No Guard","i":"White Herb, Focus Sash","m":["Poltergeist","Protect","Dynamic Punch","Headlong Rush","_","High Horsepower","Earthquake","Rock Slide","Stone Edge"],"u":6811},"Arbok":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"Leftovers, Poison Barb, Choice Scarf, Sitrus Berry, Shuca Berry","m":["Gunk Shot","Protect","Glare","Coil","_","Poison Jab","Knock Off","Sucker Punch"],"u":6716},"Starmie":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Natural Cure","i":"Choice Scarf, Leftovers, Focus Sash, Bright Powder","m":["Scald","Psychic","Ice Beam","Protect","_","Thunderbolt","Hydro Pump","Minimize","Recover","Icy Wind"],"u":6687},"Emolga":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Motor Drive","i":"Focus Sash","m":["Nuzzle","Volt Switch","Protect","Encore","_","Air Slash","Taunt","Speed Swap","Helping Hand","Electroweb","Discharge","Thunderbolt"],"u":6625},"Castform":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Forecast","i":"Choice Scarf, Focus Sash, Quick Claw, Leftovers","m":["Weather Ball","Protect","Thunder","Hurricane","_","Blizzard","Solar Beam"],"u":6594},"Florges":{"n":"Bold","e":{"hp":32,"def":32,"spa":2},"a":"Flower Veil","i":"Leftovers, Sitrus Berry, Choice Scarf","m":["Protect","Moonblast","Pollen Puff","Calm Mind","_","Dazzling Gleam","Helping Hand","Draining Kiss","Wish","Psychic"],"u":6556},"Polteageist":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Weak Armor","i":"White Herb, Focus Sash","m":["Shadow Ball","Shell Smash","Stored Power","Baton Pass","Protect","_","Giga Drain","Strength Sap"],"u":6291},"Zoroark":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Illusion","i":"Focus Sash, Black Glasses, Choice Scarf","m":["Dark Pulse","Protect","Sludge Bomb","Flamethrower","_","Night Daze","Psychic","Sucker Punch","Focus Blast","U-turn","Knock Off"],"u":5940},"Steelix":{"n":"Adamant","e":{"hp":32,"atk":32,"def":2},"a":"Sturdy","i":"Leftovers","m":["Body Press","Protect","Heavy Slam","Earthquake","_","Wide Guard","Iron Defense","Iron Head","Gyro Ball","Rock Slide"],"u":5444},"Crabominable":{"n":"Brave","e":{"hp":32,"atk":32,"spd":2},"a":"Hyper Cutter","i":"Black Belt, Never-Melt Ice, Focus Sash, Leftovers","m":["Ice Hammer","Protect","Drain Punch","Close Combat","Mach Punch","_","Crabhammer","Rock Slide","Thunder Punch"],"u":5215},"Gourgeist-Super":{"n":"Sassy","e":{"hp":32,"def":2,"spd":32},"a":"Frisk","i":"Mental Herb, Leftovers, Sitrus Berry, Focus Sash","m":["Trick Room","Poltergeist","Will-O-Wisp","_","Protect","Trick-or-Treat","Power Whip","Leech Seed","Explosion","Ally Switch","Shadow Sneak","Destiny Bond"],"u":4967},"Heracross":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Moxie","i":"Choice Scarf, Black Belt, White Herb","m":["Close Combat","Megahorn","Rock Slide","_","Knock Off","Earthquake","Protect","Lunge","Facade","High Horsepower"],"u":4901},"Rotom-Fan":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Choice Scarf, Magnet, Sitrus Berry","m":["Air Slash","Volt Switch","Thunderbolt","Will-O-Wisp","_","Discharge","Electroweb","Protect","Trick"],"u":4541},"Forretress":{"n":"Relaxed","e":{"hp":32,"def":32,"spd":2},"a":"Sturdy","i":"Leftovers, Quick Claw, Occa Berry","m":["Body Press","Protect","Stealth Rock","_","Explosion","Gyro Ball","Iron Defense","Volt Switch","Thunder Wave"],"u":4445},"Delphox":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Magician","i":"Focus Sash, Choice Scarf, Nothing, Sitrus Berry, Charcoal","m":["Heat Wave","Protect","Psychic","_","Dazzling Gleam","Expanding Force","Flamethrower","Trick Room"],"u":4185},"Sharpedo":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Speed Boost","i":"Focus Sash, Mystic Water","m":["Protect","Crunch","Close Combat","Liquidation","_","Psychic Fangs","Destiny Bond","Waterfall"],"u":3969},"Dedenne":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Cheek Pouch","i":"Sitrus Berry, Focus Sash, Shuca Berry","m":["Nuzzle","Protect","Dazzling Gleam","Super Fang","_","Helping Hand","Volt Switch","Entrainment","Thunderbolt"],"u":3886},"Ampharos":{"n":"Quiet","e":{"hp":32,"def":2,"spa":32},"a":"Static","i":"Magnet, Leftovers, Shuca Berry, Sitrus Berry","m":["Protect","Thunderbolt","Dazzling Gleam","Volt Switch","_","Dragon Pulse","Power Gem","Thunder","Discharge","Electroweb"],"u":3716},"Emboar":{"n":"Brave","e":{"hp":32,"atk":32,"spd":2},"a":"Reckless","i":"White Herb, Choice Scarf, Leftovers","m":["Flare Blitz","Close Combat","Head Smash","Wild Charge","Protect","_","Drain Punch","Sucker Punch"],"u":3690},"Glalie":{"n":"Timid","e":{"hp":32,"spd":2,"spe":32},"a":"Inner Focus","i":"Leftovers, Focus Sash, Choice Scarf","m":["Protect","Sheer Cold","Freeze-Dry","_","Explosion","Blizzard","Substitute","Icy Wind","Frost Breath"],"u":3499},"Simipour":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Torrent","i":"Mystic Water, Focus Sash, Sitrus Berry","m":["Fake Out","Scald","Flip Turn","Icy Wind","_","Protect","Taunt","Ice Beam","Helping Hand"],"u":3160},"Camerupt":{"n":"Quiet","e":{"hp":32,"spa":32,"spd":2},"a":"Solid Rock","i":"Charcoal, Passho Berry, Leftovers","m":["Protect","Earth Power","Eruption","Heat Wave","_","Earthquake","Rock Slide"],"u":3015},"Flareon":{"n":"Brave","e":{"hp":32,"atk":20,"def":14},"a":"Flash Fire","i":"Charcoal, White Herb, Lum Berry","m":["Flare Blitz","Superpower","Protect","Detect","_","Quick Attack","Will-O-Wisp"],"u":2928},"Chimecho":{"n":"Sassy","e":{"def":28,"spa":32,"spd":6},"a":"Levitate","i":"Mental Herb, Focus Sash, Sitrus Berry, Leftovers, White Herb","m":["Trick Room","_","Psychic","Protect","Dazzling Gleam","Heal Pulse","Helping Hand"],"u":2903},"Simisage":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Overgrow","i":"King's Rock, Miracle Seed, Sitrus Berry, Focus Sash","m":["Fake Out","Protect","_","Seed Bomb","Leaf Storm","Taunt","Rock Slide","Leech Seed"],"u":2815},"Stunfisk":{"n":"Modest","e":{"hp":32,"def":2,"spa":32},"a":"Static","i":"Leftovers, Sitrus Berry, Bright Powder, Soft Sand","m":["Earth Power","Protect","Thunderbolt","_","Yawn","Discharge","Scald","Fissure","Sludge Bomb","Electroweb"],"u":2679},"Garbodor":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Stench","i":"Leftovers, King's Rock, Sitrus Berry","m":["Gunk Shot","Protect","Drain Punch","_","Explosion","Poison Jab","Stomping Tantrum","Toxic","Rock Blast","Seed Bomb"],"u":2371},"Slurpuff":{"n":"Bold","e":{"hp":32,"def":18,"spd":16},"a":"Unburden","i":"Sitrus Berry, Focus Sash","m":["Protect","Dazzling Gleam","Sticky Web","_","Yawn","Helping Hand","String Shot","Draining Kiss","After You","Cotton Guard","Play Rough","Calm Mind","Light Screen","Endeavor"],"u":2364},"Tauros":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Intimidate","i":"Choice Scarf, Chople Berry, Sitrus Berry, Leftovers","m":["Protect","Close Combat","Rock Slide","Raging Bull","_","Earthquake","Double-Edge","Iron Head","Body Slam"],"u":2352},"Lycanroc-Midnight":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"No Guard","i":"Choice Scarf, Hard Stone, Focus Sash","m":["Rock Slide","Stone Edge","Close Combat","Iron Tail","Protect","_","Play Rough","Sucker Punch","Knock Off"],"u":2346},"Victreebel":{"n":"Modest","e":{"hp":2,"spa":32,"spe":32},"a":"Chlorophyll","i":"Focus Sash, Sitrus Berry, Miracle Seed","m":["Protect","Sleep Powder","Poison Jab","_","Sludge Bomb","Leaf Blade","Solar Beam","Weather Ball","Power Whip","Strength Sap"],"u":2325},"Feraligatr":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Sheer Force","i":"Mystic Water, Choice Scarf","m":["Liquidation","Ice Punch","Aqua Jet","Protect","Dragon Dance","_","Crunch","Flip Turn"],"u":2211},"Lopunny":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Cute Charm","i":"Chople Berry, Focus Sash","m":["Fake Out","Baton Pass","_","Cotton Guard","U-turn","Protect","Encore","Close Combat","After You"],"u":2090},"Rotom":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Levitate","i":"Choice Scarf, Focus Sash","m":["Shadow Ball","Volt Switch","Protect","Thunderbolt","Will-O-Wisp","_","Discharge","Trick","Electroweb","Dark Pulse"],"u":2033},"Furfrou":{"n":"Bold","e":{"hp":32,"def":16,"spe":18},"a":"Fur Coat","i":"Leftovers, Sitrus Berry, Chople Berry","m":["Snarl","Thunder Wave","Protect","Cotton Guard","_","Helping Hand","Double-Edge","Psychic Fangs","Sucker Punch","U-turn","Charm"],"u":1689},"Simisear":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Blaze","i":"Charcoal, Sitrus Berry, Focus Sash","m":["Fake Out","Protect","_","Will-O-Wisp","Flare Blitz","Heat Wave","Rock Slide","Scorching Sands","Flamethrower","Taunt","Overheat"],"u":1675},"Tauros-Paldea-Combat":{"n":"Jolly","e":{"atk":32,"spd":2,"spe":32},"a":"Intimidate","i":"Choice Scarf, White Herb, Sitrus Berry, Leftovers","m":["Protect","Rock Slide","Close Combat","Raging Bull","High Horsepower","_","Iron Head","Throat Chop","Earthquake","Wild Charge"],"u":1511},"Houndoom":{"n":"Timid","e":{"hp":2,"spa":32,"spe":32},"a":"Flash Fire","i":"Focus Sash, Choice Scarf, Charcoal","m":["Dark Pulse","Heat Wave","Protect","Scorching Sands","_","Snarl","Flamethrower","Sludge Bomb","Destiny Bond"],"u":1477},"Gourgeist":{"n":"Careful","e":{"hp":32,"spd":4,"spe":30},"a":"Frisk","i":"Choice Scarf, Coba Berry","m":["Poltergeist","Trick-or-Treat","Will-O-Wisp","Protect","Power Whip","_","Trick Room","Trick","Shadow Sneak","Disable","Leech Seed"],"u":1310},"Gourgeist-Small":{"n":"Jolly","e":{"atk":32,"def":2,"spe":32},"a":"Frisk","i":"Choice Scarf, Focus Sash, Mental Herb","m":["Trick-or-Treat","Poltergeist","_","Will-O-Wisp","Trick","Protect","Destiny Bond","Power Whip","Leech Seed","Explosion","Shadow Sneak"],"u":1229},"Stunfisk-Galar":{"n":"Impish","e":{"hp":23,"atk":16,"def":19,"spd":8},"a":"Mimicry","i":"Leftovers, Sitrus Berry","m":["Snap Trap","Protect","Yawn","_","Pain Split","Earthquake","Sucker Punch","Fissure","Counter"],"u":1220},"Banette":{"n":"Relaxed","e":{"hp":32,"def":32},"a":"Frisk","i":"Focus Sash, Kasib Berry","m":["Trick Room","Poltergeist","_","Encore","Knock Off","Protect","Taunt","Will-O-Wisp","Destiny Bond","Shadow Sneak","Curse","Helping Hand"],"u":1142},"Meganium":{"n":"Modest","e":{"hp":32,"spa":32,"spe":2},"a":"Overgrow","i":"Leftovers, Sitrus Berry","m":["Protect","Dazzling Gleam","Solar Beam","_","Synthesis","Weather Ball","Giga Drain","Leech Seed","Energy Ball"],"u":972},"Pinsir":{"n":"Jolly","e":{"hp":2,"atk":32,"spe":32},"a":"Hyper Cutter","i":"Choice Scarf, Focus Sash, Sitrus Berry","m":["Guillotine","Lunge","Protect","Close Combat","Rock Slide","_","X-Scissor","Storm Throw","Detect","Throat Chop","Earthquake"],"u":954},"Watchog":{"n":"Adamant","e":{"hp":2,"atk":32,"spe":32},"a":"Analytic","i":"Chople Berry, Focus Sash, Choice Scarf","m":["Super Fang","Crunch","_","Low Kick","Double-Edge","Hypnosis","Protect","Ice Punch","Helping Hand","Swords Dance","Thunder Wave"],"u":797},"Samurott":{"n":"Modest","e":{"hp":32,"spa":32,"spe":2},"a":"Shell Armor","i":"Scope Lens, Mystic Water, Choice Scarf","m":["Ice Beam","Hydro Pump","Protect","_","Aqua Jet","Detect","Vacuum Wave","Swords Dance"],"u":780},"Pidgeot":{"n":"Jolly","e":{"atk":32,"spd":2,"spe":32},"a":"Big Pecks","i":"Sharpbeak, Focus Sash","m":["Tailwind","Protect","Brave Bird","Quick Attack","U-turn","_","Dual Wingbeat","Air Slash","Heat Wave"],"u":675}};
 
 const STAT_LABEL_EV = {hp:'HP',atk:'Atk',def:'Def',spa:'SpA',spd:'SpD',spe:'Spe'};
 
@@ -3507,6 +3545,238 @@ function importJsonMeta(input) {
         if (slug === 'bugbuzz') return 'Bug Buzz';
         if (slug === 'behemothblade') return 'Behemoth Blade';
         if (slug === 'behemothbash') return 'Behemoth Bash';
+        if (slug === 'surgingstrikes') return 'Surging Strikes';
+        if (slug === 'wickedblow') return 'Wicked Blow';
+        if (slug === 'glaciallance') return 'Glacial Lance';
+        if (slug === 'astralbarrage') return 'Astral Barrage';
+        if (slug === 'poltergeist') return 'Poltergeist';
+        if (slug === 'expandingforce') return 'Expanding Force';
+        if (slug === 'risingvoltage') return 'Rising Voltage';
+        if (slug === 'terrainpulse') return 'Terrain Pulse';
+        if (slug === 'skittersmack') return 'Skitter Smack';
+        if (slug === 'steelroller') return 'Steel Roller';
+        if (slug === 'scorchingsands') return 'Scorching Sands';
+        if (slug === 'dualwingbeat') return 'Dual Wingbeat';
+        if (slug === 'dualchop') return 'Dual Chop';
+        if (slug === 'coreenforcer') return 'Core Enforcer';
+        if (slug === 'flipturn') return 'Flip Turn';
+        if (slug === 'watershuriken') return 'Water Shuriken';
+        if (slug === 'matblock') return 'Mat Block';
+        if (slug === 'floralhealing') return 'Floral Healing';
+        if (slug === 'muddywater') return 'Muddy Water';
+        if (slug === 'powergem') return 'Power Gem';
+        if (slug === 'rockblast') return 'Rock Blast';
+        if (slug === 'iceshard') return 'Ice Shard';
+        if (slug === 'iciclecrash') return 'Icicle Crash';
+        if (slug === 'icicledrill') return 'Icicle Drill';
+        if (slug === 'woodhammer') return 'Wood Hammer';
+        if (slug === 'seedbomb') return 'Seed Bomb';
+        if (slug === 'energyball') return 'Energy Ball';
+        if (slug === 'leafblade') return 'Leaf Blade';
+        if (slug === 'powerwhip') return 'Power Whip';
+        if (slug === 'calmmind') return 'Calm Mind';
+        if (slug === 'nastyplot') return 'Nasty Plot';
+        if (slug === 'swordsdance') return 'Swords Dance';
+        if (slug === 'dragondance') return 'Dragon Dance';
+        if (slug === 'quiverdance') return 'Quiver Dance';
+        if (slug === 'shellsmash') return 'Shell Smash';
+        if (slug === 'noretreat') return 'No Retreat';
+        if (slug === 'tidyup') return 'Tidy Up';
+        if (slug === 'lastrespects') return 'Last Respects';
+        if (slug === 'ragefist') return 'Rage Fist';
+        if (slug === 'populationbomb') return 'Population Bomb';
+        if (slug === 'trailblaze') return 'Trailblaze';
+        if (slug === 'saltcure') return 'Salt Cure';
+        if (slug === 'snowscape') return 'Snowscape';
+        if (slug === 'chillyreception') return 'Chilly Reception';
+        if (slug === 'snowball') return 'Snowball';
+        if (slug === 'avalanche') return 'Avalanche';
+        if (slug === 'blizzard') return 'Blizzard';
+        if (slug === 'auroraveil') return 'Aurora Veil';
+        if (slug === 'tailwind') return 'Tail Wind';
+        if (slug === 'followme') return 'Follow Me';
+        if (slug === 'ragepowder') return 'Rage Powder';
+        if (slug === 'trickroom') return 'Trick Room';
+        if (slug === 'wideguard') return 'Wide Guard';
+        if (slug === 'quickguard') return 'Quick Guard';
+        if (slug === 'feint') return 'Feint';
+        if (slug === 'helpinghand') return 'Helping Hand';
+        if (slug === 'afteryou') return 'After You';
+        if (slug === 'allyswitch') return 'Ally Switch';
+        if (slug === 'thunderwave') return 'Thunder Wave';
+        if (slug === 'willowisp') return 'Will-O-Wisp';
+        if (slug === 'taunt') return 'Taunt';
+        if (slug === 'encore') return 'Encore';
+        if (slug === 'disable') return 'Disable';
+        if (slug === 'swagger') return 'Swagger';
+        if (slug === 'flatter') return 'Flatter';
+        if (slug === 'imprison') return 'Imprison';
+        if (slug === 'yawn') return 'Yawn';
+        if (slug === 'spore') return 'Spore';
+        if (slug === 'sleeppowder') return 'Sleep Powder';
+        if (slug === 'electricterrain') return 'Electric Terrain';
+        if (slug === 'grassyterrain') return 'Grassy Terrain';
+        if (slug === 'mistyterrain') return 'Misty Terrain';
+        if (slug === 'psychicterrain') return 'Psychic Terrain';
+        if (slug === 'sandstorm') return 'Sandstorm';
+        if (slug === 'raindance') return 'Rain Dance';
+        if (slug === 'sunnyday') return 'Sunny Day';
+        if (slug === 'snowstorm') return 'Snowstorm';
+        if (slug === 'hailstorm') return 'Hailstorm';
+        if (slug === 'weatherball') return 'Weather Ball';
+        if (slug === 'mistball') return 'Mist Ball';
+        if (slug === 'lusterpurge') return 'Luster Purge';
+        if (slug === 'drainingkiss') return 'Draining Kiss';
+        if (slug === 'dazzlinggleam') return 'Dazzling Gleam';
+        if (slug === 'moonblast') return 'Moonblast';
+        if (slug === 'playrough') return 'Play Rough';
+        if (slug === 'flashcannon') return 'Flash Cannon';
+        if (slug === 'ironhead') return 'Iron Head';
+        if (slug === 'irondefense') return 'Iron Defense';
+        if (slug === 'ironpress') return 'Iron Press';
+        if (slug === 'smartstrike') return 'Smart Strike';
+        if (slug === 'meteormash') return 'Meteor Mash';
+        if (slug === 'gunkshot') return 'Gunk Shot';
+        if (slug === 'poisonjab') return 'Poison Jab';
+        if (slug === 'crosspoison') return 'Cross Poison';
+        if (slug === 'vcreate') return 'V-create';
+        if (slug === 'closecombat') return 'Close Combat';
+        if (slug === 'sacredsword') return 'Sacred Sword';
+        if (slug === 'drainpunch') return 'Drain Punch';
+        if (slug === 'hammerarm') return 'Hammer Arm';
+        if (slug === 'machpunch') return 'Mach Punch';
+        if (slug === 'bulletpunch') return 'Bullet Punch';
+        if (slug === 'icepunch') return 'Ice Punch';
+        if (slug === 'thunderpunch') return 'Thunder Punch';
+        if (slug === 'firepunch') return 'Fire Punch';
+        if (slug === 'seedflare') return 'Seed Flare';
+        if (slug === 'originpulse') return 'Origin Pulse';
+        if (slug === 'precipiceblades') return 'Precipice Blades';
+        if (slug === 'sunsteelstrike') return 'Sunsteel Strike';
+        if (slug === 'moongeistbeam') return 'Moongeist Beam';
+        if (slug === 'spectralthief') return 'Spectral Thief';
+        if (slug === 'darkestlariat') return 'Darkest Lariat';
+        if (slug === 'throatchop') return 'Throat Chop';
+        if (slug === 'knockoff') return 'Knock Off';
+        if (slug === 'partingshot') return 'Parting Shot';
+        if (slug === 'fakeout') return 'Fake Out';
+        if (slug === 'extremespeed') return 'Extreme Speed';
+        if (slug === 'quickattack') return 'Quick Attack';
+        if (slug === 'aquajet') return 'Aqua Jet';
+        if (slug === 'shadowsneak') return 'Shadow Sneak';
+        if (slug === 'accelerock') return 'Accelerock';
+        if (slug === 'firstimpression') return 'First Impression';
+        if (slug === 'voltswitch') return 'Volt Switch';
+        if (slug === 'uturn') return 'U-turn';
+        if (slug === 'teleport') return 'Teleport';
+        if (slug === 'heatwave') return 'Heat Wave';
+        if (slug === 'fireblast') return 'Fire Blast';
+        if (slug === 'flareblitz') return 'Flare Blitz';
+        if (slug === 'flamethrower') return 'Flamethrower';
+        if (slug === 'eruption') return 'Eruption';
+        if (slug === 'blueflare') return 'Blue Flare';
+        if (slug === 'overheat') return 'Overheat';
+        if (slug === 'sparklingaria') return 'Sparkling Aria';
+        if (slug === 'hydraulicpump') return 'Hydraulic Pump';
+        if (slug === 'hydropump') return 'Hydro Pump';
+        if (slug === 'waterfall') return 'Waterfall';
+        if (slug === 'aquatail') return 'Aqua Tail';
+        if (slug === 'dive') return 'Dive';
+        if (slug === 'icebeam') return 'Ice Beam';
+        if (slug === 'freezedry') return 'Freeze-Dry';
+        if (slug === 'thunderbolt') return 'Thunderbolt';
+        if (slug === 'thunder') return 'Thunder';
+        if (slug === 'wildcharge') return 'Wild Charge';
+        if (slug === 'boltstrike') return 'Bolt Strike';
+        if (slug === 'fusionbolt') return 'Fusion Bolt';
+        if (slug === 'earthpower') return 'Earth Power';
+        if (slug === 'earthquake') return 'Earthquake';
+        if (slug === 'bulldoze') return 'Bulldoze';
+        if (slug === 'stoneedge') return 'Stone Edge';
+        if (slug === 'rockslide') return 'Rock Slide';
+        if (slug === 'diamondstorm') return 'Diamond Storm';
+        if (slug === 'psychic') return 'Psychic';
+        if (slug === 'psyshock') return 'Psyshock';
+        if (slug === 'psychoboost') return 'Psycho Boost';
+        if (slug === 'shadowball') return 'Shadow Ball';
+        if (slug === 'dreameater') return 'Dream Eater';
+        if (slug === 'sludgebomb') return 'Sludge Bomb';
+        if (slug === 'sludgewave') return 'Sludge Wave';
+        if (slug === 'dracometeor') return 'Draco Meteor';
+        if (slug === 'dragonpulse') return 'Dragon Pulse';
+        if (slug === 'outrage') return 'Outrage';
+        if (slug === 'dragonrush') return 'Dragon Rush';
+        if (slug === 'bodypress') return 'Body Press';
+        if (slug === 'heavyslam') return 'Heavy Slam';
+        if (slug === 'heatcrash') return 'Heat Crash';
+        if (slug === 'matchagotcha') return 'Matcha Gotcha';
+        if (slug === 'ivycudgel') return 'Ivy Cudgel';
+        if (slug === 'syrupbomb') return 'Syrup Bomb';
+        if (slug === 'terablast') return 'Tera Blast';
+        if (slug === 'terastarstorm') return 'Tera Starstorm';
+        if (slug === 'flowertrick') return 'Flower Trick';
+        if (slug === 'psyblade') return 'Psyblade';
+        if (slug === 'electroshot') return 'Electro Shot';
+        if (slug === 'electrodrift') return 'Electro Drift';
+        if (slug === 'collisioncourse') return 'Collision Course';
+        if (slug === 'bloodmoon') return 'Blood Moon';
+        if (slug === 'behemothblade') return 'Behemoth Blade';
+        if (slug === 'behemothbash') return 'Behemoth Bash';
+        if (slug === 'jetpunch') return 'Jet Punch';
+        if (slug === 'crabammer') return 'Crabhammer';
+        if (slug === 'crabhammer') return 'Crabhammer';
+        if (slug === 'gigaimpact') return 'Giga Impact';
+        if (slug === 'hypervoice') return 'Hyper Voice';
+        if (slug === 'boomburst') return 'Boom Burst';
+        if (slug === 'relicsong') return 'Relic Song';
+        if (slug === 'perishsong') return 'Perish Song';
+        if (slug === 'roar') return 'Roar';
+        if (slug === 'whirlwind') return 'Whirlwind';
+        if (slug === 'stealthrock') return 'Stealth Rock';
+        if (slug === 'stickyweb') return 'Sticky Web';
+        if (slug === 'spikes') return 'Spikes';
+        if (slug === 'toxicspikes') return 'Toxic Spikes';
+        if (slug === 'rapidspin') return 'Rapid Spin';
+        if (slug === 'defog') return 'Defog';
+        if (slug === 'courtchange') return 'Court Change';
+        if (slug === 'recover') return 'Recover';
+        if (slug === 'roost') return 'Roost';
+        if (slug === 'moonlight') return 'Moonlight';
+        if (slug === 'synthesis') return 'Synthesis';
+        if (slug === 'morningsun') return 'Morning Sun';
+        if (slug === 'healingwish') return 'Healing Wish';
+        if (slug === 'lunardance') return 'Lunar Dance';
+        if (slug === 'wish') return 'Wish';
+        if (slug === 'lifedew') return 'Life Dew';
+        if (slug === 'leechseed') return 'Leech Seed';
+        if (slug === 'infestation') return 'Infestation';
+        if (slug === 'substitute') return 'Substitute';
+        if (slug === 'lightscreen') return 'Light Screen';
+        if (slug === 'reflect') return 'Reflect';
+        if (slug === 'spikyshield') return 'Spiky Shield';
+        if (slug === 'kingsshield') return "King's Shield";
+        if (slug === 'banefulbunker') return 'Baneful Bunker';
+        if (slug === 'silktrap') return 'Silk Trap';
+        if (slug === 'obstruct') return 'Obstruct';
+        if (slug === 'protect') return 'Protect';
+        if (slug === 'detect') return 'Detect';
+        if (slug === 'endure') return 'Endure';
+        if (slug === 'maxstrike') return 'Max Strike';
+        if (slug === 'maxflare') return 'Max Flare';
+        if (slug === 'maxlightning') return 'Max Lightning';
+        if (slug === 'maxhailstorm') return 'Max Hailstorm';
+        if (slug === 'maxgeyser') return 'Max Geyser';
+        if (slug === 'maxovergrowth') return 'Max Overgrowth';
+        if (slug === 'maxmindstorm') return 'Max Mindstorm';
+        if (slug === 'maxquake') return 'Max Quake';
+        if (slug === 'maxrockfall') return 'Max Rockfall';
+        if (slug === 'maxphantasm') return 'Max Phantasm';
+        if (slug === 'maxdarkness') return 'Max Darkness';
+        if (slug === 'maxsteelspike') return 'Max Steelspike';
+        if (slug === 'maxooze') return 'Max Ooze';
+        if (slug === 'maxknuckle') return 'Max Knuckle';
+        if (slug === 'maxairstream') return 'Max Airstream';
+        if (slug === 'maxguard') return 'Max Guard';
         // Check single-word entries in WORD_SPLITS
         if (slug in WORD_SPLITS) return WORD_SPLITS[slug].trim();
         // Try to split by finding known prefixes
@@ -3530,6 +3800,62 @@ function importJsonMeta(input) {
         }
         // Common item slug → display name table
         const ITEM_MAP = {
+          'widelens':'Wide Lens',
+          'toxicsludge':'Toxic Sludge',
+          'metronome':'Metronome',
+          'expertbelt':'Expert Belt',
+          'airballoon':'Air Balloon',
+          'ejectbutton':'Eject Button',
+          'ejectpack':'Eject Pack',
+          'redcard':'Red Card',
+          'shedshell':'Shed Shell',
+          'destinyknot':'Destiny Knot',
+          'everstone':'Everstone',
+          'powerherb':'Power Herb',
+          'razorclaw':'Razor Claw',
+          'ovalstone':'Oval Stone',
+          'soothebell':'Soothe Bell',
+          'thickclub':'Thick Club',
+          'adamantorb':'Adamant Orb',
+          'griseousorb':'Griseous Orb',
+          'lustrousorb':'Lustrous Orb',
+          'souldew':'Soul Dew',
+          'rustedsword':'Rusted Sword',
+          'rustedshield':'Rusted Shield',
+          'electricseed':'Electric Seed',
+          'mistyseed':'Misty Seed',
+          'grassyseed':'Grassy Seed',
+          'psychicseed':'Psychic Seed',
+          'terrainextender':'Terrain Extender',
+          'roomservice':'Room Service',
+          'utilityumbrella':'Utility Umbrella',
+          'throatspray':'Throat Spray',
+          'blunderpolicy':'Blunder Policy',
+          'adrenalineorb':'Adrenaline Orb',
+          'safetygoggles':'Safety Goggles',
+          'covertcloak':'Covert Cloak',
+          'clearamulet':'Clear Amulet',
+          'loadeddice':'Loaded Dice',
+          'mirrorherb':'Mirror Herb',
+          'boosterenergy':'Booster Energy',
+          'heavydutyboots':'Heavy-Duty Boots',
+          'rockyhelmet':'Rocky Helmet',
+          'assaultvest':'Assault Vest',
+          'choicescarf':'Choice Scarf',
+          'choiceband':'Choice Band',
+          'choicespecs':'Choice Specs',
+          'lifeorb':'Life Orb',
+          'focussash':'Focus Sash',
+          'eviolite':'Eviolite',
+          'leftovers':'Leftovers',
+          'blacksludge':'Black Sludge',
+          'shellbell':'Shell Bell',
+          'sitrusberry':'Sitrus Berry',
+          'lumberry':'Lum Berry',
+          'oranberry':'Oran Berry',
+          'goldberry':'Gold Berry',
+          'mentalherb':'Mental Herb',
+          'whiteherb':'White Herb',
           'assaultvest':'Assault Vest','choicescarf':'Choice Scarf','choiceband':'Choice Band',
           'choicespecs':'Choice Specs','lifeorb':'Life Orb','focussash':'Focus Sash',
           'rockyhelmet':'Rocky Helmet','eviolite':'Eviolite','leftovers':'Leftovers',
@@ -3569,13 +3895,223 @@ function importJsonMeta(input) {
       }
 
       function abilityName(slug) {
-        // Check Champions meta data
-        for (const entry of Object.values(CHAMPIONS_META_DATA)) {
-          const a = (entry.a || '').toLowerCase().replace(/[\s\-]/g,'');
-          if (a === slug) return entry.a;
-        }
         // Common ability slug → display name
         const ABILITY_MAP = {
+          'psychicsurge':'Psychic Surge',
+          'grassysurge':'Grassy Surge',
+          'electricsurge':'Electric Surge',
+          'mistysurge':'Misty Surge',
+          'friendguard':'Friend Guard',
+          'vesselofruin':'Vessel of Ruin',
+          'swordofruin':'Sword of Ruin',
+          'beadsofruin':'Beads of Ruin',
+          'tabletsofruin':'Tablets of Ruin',
+          'orichalcumpulse':'Orichalcum Pulse',
+          'hadronengine':'Hadron Engine',
+          'protosynthesis':'Protosynthesis',
+          'quarkdrive':'Quark Drive',
+          'goodasgold':'Good as Gold',
+          'purifyingsalt':'Purifying Salt',
+          'armortail':'Armor Tail',
+          'toxicdebris':'Toxic Debris',
+          'myceliummight':'Mycelium Might',
+          'supremeoverlord':'Supreme Overlord',
+          'lingeringaroma':'Lingering Aroma',
+          'embodyaspect':'Embody Aspect',
+          'windpower':'Wind Power',
+          'electromorphosis':'Electromorphosis',
+          'guarddog':'Guard Dog',
+          'eartheater':'Earth Eater',
+          'icescales':'Ice Scales',
+          'fluffy':'Fluffy',
+          'furcoat':'Fur Coat',
+          'prismarmor':'Prism Armor',
+          'gorillatactics':'Gorilla Tactics',
+          'rockypayload':'Rocky Payload',
+          'dragonsmaw':"Dragon's Maw",
+          'steelworker':'Steelworker',
+          'transistor':'Transistor',
+          'punkrock':'Punk Rock',
+          'neutralizinggas':'Neutralizing Gas',
+          'powerofalchemy':'Power of Alchemy',
+          'intrepidsword':'Intrepid Sword',
+          'dauntlessshield':'Dauntless Shield',
+          'shadowshield':'Shadow Shield',
+          'fullmetalbody':'Full Metal Body',
+          'wanderingspirit':'Wandering Spirit',
+          'mirrorarmor':'Mirror Armor',
+          'curiousmedicine':'Curious Medicine',
+          'costar':'Costar',
+          'commander':'Commander',
+          'hospitality':'Hospitality',
+          'zerotohere':'Zero to Hero',
+          'shieldsdown':'Shields Down',
+          'rkssystem':'RKS System',
+          'airlock':'Air Lock',
+          'cloudnine':'Cloud Nine',
+          'deltastream':'Delta Stream',
+          'primordialsea':'Primordial Sea',
+          'desolateland':'Desolate Land',
+          'naturalcure':'Natural Cure',
+          'regenerator':'Regenerator',
+          'magicguard':'Magic Guard',
+          'wonderguard':'Wonder Guard',
+          'lightningrod':'Lightning Rod',
+          'stormdrain':'Storm Drain',
+          'waterabsorb':'Water Absorb',
+          'voltabsorb':'Volt Absorb',
+          'dryskin':'Dry Skin',
+          'flashfire':'Flash Fire',
+          'sapsipper':'Sap Sipper',
+          'motordrive':'Motor Drive',
+          'cheekpouch':'Cheek Pouch',
+          'compoundeyes':'Compound Eyes',
+          'speedboost':'Speed Boost',
+          'swiftswim':'Swift Swim',
+          'chlorophyll':'Chlorophyll',
+          'slushrush':'Slush Rush',
+          'sandrush':'Sand Rush',
+          'sanstream':'Sand Stream',
+          'sandstream':'Sand Stream',
+          'snowwarning':'Snow Warning',
+          'drizzle':'Drizzle',
+          'drought':'Drought',
+          'magicbounce':'Magic Bounce',
+          'soundproof':'Soundproof',
+          'bulletproof':'Bulletproof',
+          'unaware':'Unaware',
+          'contrary':'Contrary',
+          'simple':'Simple',
+          'serenegrace':'Serene Grace',
+          'noguard':'No Guard',
+          'toughclaws':'Tough Claws',
+          'ironfist':'Iron Fist',
+          'megalauncher':'Mega Launcher',
+          'strongjaw':'Strong Jaw',
+          'sheerforce':'Sheer Force',
+          'reckless':'Reckless',
+          'technician':'Technician',
+          'skilllink':'Skill Link',
+          'adaptability':'Adaptability',
+          'protean':'Protean',
+          'libero':'Libero',
+          'pixilate':'Pixilate',
+          'refrigerate':'Refrigerate',
+          'aerilate':'Aerilate',
+          'galvanize':'Galvanize',
+          'liquidvoice':'Liquid Voice',
+          'normalize':'Normalize',
+          'sharpness':'Sharpness',
+          'stakeout':'Stakeout',
+          'moxie':'Moxie',
+          'defiant':'Defiant',
+          'competitive':'Competitive',
+          'intimidate':'Intimidate',
+          'prankster':'Prankster',
+          'multiscale':'Multiscale',
+          'terashell':'Tera Shell',
+          'terashift':'Tera Shift',
+          'unburden':'Unburden',
+          'guts':'Guts',
+          'hustle':'Hustle',
+          'stamina':'Stamina',
+          'berserk':'Berserk',
+          'galewings':'Gale Wings',
+          'queenlymajesty':'Queenly Majesty',
+          'dazzling':'Dazzling',
+          'telepathy':'Telepathy',
+          'levitate':'Levitate',
+          'disguise':'Disguise',
+          'iceface':'Ice Face',
+          'imposter':'Imposter',
+          'trace':'Trace',
+          'download':'Download',
+          'moody':'Moody',
+          'rattled':'Rattled',
+          'quickfeet':'Quick Feet',
+          'steadfast':'Steadfast',
+          'innerfocus':'Inner Focus',
+          'oblivious':'Oblivious',
+          'owntempo':'Own Tempo',
+          'scrappy':'Scrappy',
+          'moldbreaker':'Mold Breaker',
+          'turboblaze':'Turboblaze',
+          'teravolt':'Teravolt',
+          'blaze':'Blaze',
+          'torrent':'Torrent',
+          'overgrow':'Overgrow',
+          'swarm':'Swarm',
+          'pressure':'Pressure',
+          'roughskin':'Rough Skin',
+          'ironbarbs':'Iron Barbs',
+          'aftermath':'Aftermath',
+          'justified':'Justified',
+          'harvest':'Harvest',
+          'pickup':'Pickup',
+          'gluttony':'Gluttony',
+          'cutecharm':'Cute Charm',
+          'flamebody':'Flame Body',
+          'staticability':'Static',
+          'static':'Static',
+          'poisonpoint':'Poison Point',
+          'effectspore':'Effect Spore',
+          'klutz':'Klutz',
+          'shadowtag':'Shadow Tag',
+          'arenatrap':'Arena Trap',
+          'magnetpull':'Magnet Pull',
+          'illusion':'Illusion',
+          'healer':'Healer',
+          'insomnia':'Insomnia',
+          'vitalspirit':'Vital Spirit',
+          'earlybird':'Early Bird',
+          'synchronize':'Synchronize',
+          'forewarn':'Forewarn',
+          'frisk':'Frisk',
+          'anticipation':'Anticipation',
+          'analytic':'Analytic',
+          'raindish':'Rain Dish',
+          'solarpower':'Solar Power',
+          'leafguard':'Leaf Guard',
+          'flowerveil':'Flower Veil',
+          'sweetveil':'Sweet Veil',
+          'clearbody':'Clear Body',
+          'whitesmoke':'White Smoke',
+          'bigpecks':'Big Pecks',
+          'keeneye':'Keen Eye',
+          'hypercutter':'Hyper Cutter',
+          'colorchange':'Color Change',
+          'mimicry':'Mimicry',
+          'innardsout':'Innards Out',
+          'unseenfist':'Unseen Fist',
+          'piercingdrill':'Piercing Drill',
+          'screencleaner':'Screen Cleaner',
+          'stancechange':'Stance Change',
+          'hungerswitch':'Hunger Switch',
+          'powerconstruct':'Power Construct',
+          'zenmode':'Zen Mode',
+          'mummy':'Mummy',
+          'corrosion':'Corrosion',
+          'infiltrator':'Infiltrator',
+          'stalwart':'Stalwart',
+          'wellbakedbody':'Well-Baked Body',
+          'windshear':'Wind Shear',
+          'angershell':'Anger Shell',
+          'shieldtail':'Shield Tail',
+          'thermalexchange':'Thermal Exchange',
+          'toxicboost':'Toxic Boost',
+          'flareBoost':'Flare Boost',
+          'flareboost':'Flare Boost',
+          'suctioncups':'Suction Cups',
+          'shellarmor':'Shell Armor',
+          'battlearmor':'Battle Armor',
+          'sandveil':'Sand Veil',
+          'snowcloak':'Snow Cloak',
+          'filter':'Filter',
+          'solidrock':'Solid Rock',
+          'neuroforce':'Neuroforce',
+          'powerspot':'Power Spot',
+          'mindseye':"Mind's Eye",
+          'superioritycomplex':'Superiority Complex',
           'hadronengine':'Hadron Engine','orichalcumpulse':'Orichalcum Pulse','terashell':'Tera Shell','terashift':'Tera Shift',
           'protosynthesis':'Protosynthesis','quarkdrive':'Quark Drive',
           'intimidate':'Intimidate','drizzle':'Drizzle','drought':'Drought',
@@ -3600,7 +4136,7 @@ function importJsonMeta(input) {
           'pixilate':'Pixilate','refrigerate':'Refrigerate','aerilate':'Aerilate',
           'normalize':'Normalize','galvanize':'Galvanize','liquidvoice':'Liquid Voice',
           'megalauncher':'Mega Launcher','strongjaw':'Strong Jaw','toughclaws':'Tough Claws',
-          'punkrock':'Punk Rock','transistor':'Transistor','dragonsmaw':'Dragon\'s Maw',
+          'punkrock':'Punk Rock','transistor':'Transistor','dragonsmaw':"Dragon\'s Maw",
           'steelworker':'Steelworker','rockypayload':'Rocky Payload','gorillatactics':'Gorilla Tactics',
           'intrepidsword':'Intrepid Sword','dauntlessshield':'Dauntless Shield',
           'asonegrim':'As One (Glastrier)','asonespectrier':'As One (Spectrier)',
@@ -4075,7 +4611,7 @@ function getDefenderAbilityDmgMul(defenderAbility, moveType, defenderKey) {
   if (ab === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) return 0.5;
   if (ab === 'fluffy' && moveType === 'fire') return 2;
   if (ab === 'dryskin' && moveType === 'fire') return 1.25;
-  if ((ab === 'multiscale' || ab === 'shadowshield' || ab === 'terashell') && multiscaleOverrides.has(defenderKey)) return 0.5;
+  if ((ab === 'multiscale' || ab === 'shadowshield' || ab === 'shadowshield' || ab === 'terashell') && multiscaleOverrides.has(defenderKey)) return 0.5;
   if (ab === 'levitate'      && moveType === 'ground')   return 0;
   if (ab === 'lightningrod'  && moveType === 'electric') return 0;
   if (ab === 'voltabsorb'    && moveType === 'electric') return 0;
@@ -4121,11 +4657,17 @@ function weatherBallType(weather) {
 
 // Terrain / screen defense multiplier for a given move category
 function applyTerrainScreenMul(moveCat, terrain) {
-  if (!terrain || terrain === 'none') return 1;
-  if (terrain === 'auroraveil') return 2732/4096;   // ≈ 0.6665 (exact game fraction)
-  if (terrain === 'reflect'     && moveCat === 'physical') return 0.5;
-  if (terrain === 'lightscreen' && moveCat === 'special')  return 0.5;
-  return 1;
+  // Check active screen buttons (can stack with terrain)
+  let mul = 1;
+  if (activeScreens.has('auroraveil')) mul *= 2732/4096;
+  if (activeScreens.has('reflect')     && moveCat === 'physical') mul *= 0.5;
+  if (activeScreens.has('lightscreen') && moveCat === 'special')  mul *= 0.5;
+  // Legacy: terrain dropdown used to include screens
+  if (!terrain || terrain === 'none') return mul;
+  if (terrain === 'auroraveil') mul *= 2732/4096;
+  if (terrain === 'reflect'     && moveCat === 'physical') mul *= 0.5;
+  if (terrain === 'lightscreen' && moveCat === 'special')  mul *= 0.5;
+  return mul;
 }
 
 // Terrain move power multipliers
@@ -4683,8 +5225,15 @@ function computeResults(loadedMeta, defender) {
       // Tera Starstorm when tera'd: becomes spread (×0.75 applied via isSpread flag)
       const _isTeraStarstormSpread = isTeraStarstorm && _teraOn;
 
+      // Guaranteed crit moves: ×1.5 damage, ignore def drops (Ruin abilities still apply)
+      const mnNoSpaceCrit = mn.replace(/[\s-]/g,'');
+      const isGuaranteedCrit = ['flowertrick','wickedblow','surgingstrikes','glaciallance','floatfall'].includes(mnNoSpaceCrit);
+      const critMul = isGuaranteedCrit ? 1.5 : 1;
+
       const dmg = damageFormula(50, effectivePower, atkStat, defStat, _finalEff, isStab)
-                  * (moldBreaker ? 1 : getDefenderAbilityDmgMul(defender.ability, effectiveMoveType, defender.speciesRaw));      const pct = dmg / (dynamaxActive ? defender.stats.hp * 2 : defender.stats.hp) * 100;
+                  * (moldBreaker ? 1 : getDefenderAbilityDmgMul(defender.ability, effectiveMoveType, defender.speciesRaw))
+                  * critMul;
+      const pct = dmg / (dynamaxActive ? defender.stats.hp * 2 : defender.stats.hp) * 100;
 
       // ── Build activeMods list for display ──
       const activeMods = [];
@@ -4944,8 +5493,12 @@ function computeResults(loadedMeta, defender) {
       // Tera Starstorm when tera'd: spread move
       const _defIsStarstormSpread = _defIsTeraStarstorm && _tabTeraOnDef;
 
+      // Guaranteed crit for tab pokemon's moves too
+      const _defCritMul = ['flowertrick','wickedblow','surgingstrikes','glaciallance','floatfall'].includes(mn.replace(/[\s-]/g,'')) ? 1.5 : 1;
+
       const dmg = damageFormula(defender.level, atkMovePower * pwrMul * _tabSandForceMul, atkStat, defStat, _defFinalEff, isStab)
-                  * getDefenderAbilityDmgMul(attacker.ability, effectiveMoveType, attacker.speciesRaw);
+                  * getDefenderAbilityDmgMul(attacker.ability, effectiveMoveType, attacker.speciesRaw)
+                  * _defCritMul;
       const pct      = dmg / attacker.computedHp * 100;
 
       const isTripleAxel2 = mn === 'triple axel' || mn === 'triple-axel';
@@ -5853,12 +6406,14 @@ function renderResults() {
     const _hasMultiscale = _atkAbNorm === 'multiscale' || _atkAbNorm === 'shadowshield' || _atkAbNorm === 'terashell';
     const _multiscaleKey = r.attacker.speciesRaw;
     const _multiscaleOff = _hasMultiscale && multiscaleOverrides.has(_multiscaleKey);
+    const _multiscaleAbilityName = _atkAbNorm === 'shadowshield' ? 'Shadow Shield'
+      : _atkAbNorm === 'terashell' ? 'Tera Shell' : 'Multiscale';
     const multiscaleHtml = _hasMultiscale ? (() => {
       const style = _multiscaleOff
         ? 'color:var(--text3);border-color:var(--border2);'
         : 'color:var(--green);border-color:var(--green);background:rgba(93,202,165,0.1);';
       const safeKey = _multiscaleKey.replace(/'/g,"\\'");
-      return `<div style="padding:2px 0 4px;"><button onclick="toggleMultiscale(event,'${safeKey}')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;background:transparent;${style}" title="Toggle Multiscale — ×0.5 at full HP">Multiscale${_multiscaleOff ? ' off' : ' ✓'}</button></div>`;
+      return `<div style="padding:2px 0 4px;"><button onclick="toggleMultiscale(event,'${safeKey}')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;background:transparent;${style}" title="Toggle ${_multiscaleAbilityName} — ×0.5 at full HP">${_multiscaleAbilityName}${_multiscaleOff ? ' off' : ' ✓'}</button></div>`;
     })() : '';
 
     // Ability + item left-column for breakdown
@@ -5896,7 +6451,19 @@ function renderResults() {
           <button class="add-defender-btn" title="Add ${r.attacker.speciesRaw} as defender tab" onclick="addAttackerAsDefender(event,'${r.attacker.speciesRaw.replace(/'/g,"\\'")}','${index}')">+</button>
           <div class="result-expand">▶</div>
           <button class="pin-btn${isPinned ? ' pinned' : ''}" title="${pinTitle}" data-pinkey="${r.attacker.speciesRaw.replace(/"/g,'&quot;')}" onclick="handlePinClick(event)">${isPinned ? '📌' : '📍'}</button>
-          <div class="result-rank">${mode === 'damage' ? index + 1 : pasteOrderLabel}</div>
+          <div class="result-rank">${(() => {
+            const _rankItem = (r.attacker.item || '').split(',')[0].trim();
+            const _rankItemSlug = _rankItem.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+            const _rankItemIcon = _rankItemSlug
+              ? `<img src="https://www.serebii.net/itemdex/sprites/${_rankItemSlug}.png" style="width:18px;height:18px;image-rendering:pixelated;position:absolute;bottom:0;right:0;z-index:2;" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${_rankItemSlug}.png';this.onerror=function(){this.style.display='none'};" title="${_rankItem}">`
+              : '';
+            const _rankLabel = mode === 'damage' ? index + 1 : pasteOrderLabel;
+            return `<div style="position:relative;width:40px;height:30px;flex-shrink:0;">
+              ${psIconHtml(r.attacker.speciesRaw, r.attacker.speciesRaw)}
+              ${_rankItemIcon}
+            </div>
+            <span>${_rankLabel}</span>`;
+          })()}</div>
           <div class="result-name">
             <div class="result-name-text">
               ${r.attacker.speciesRaw}${statLabel}
@@ -7034,7 +7601,14 @@ function resetFieldConditions() {
   setVal('terrainMode', 'none');
   setVal('speedCondition', 'none');
   ['atkStage','spaStage','defStage','spdStage','speStage'].forEach(id => { setVal(id, '0'); updateStageDisplay(id, 0); });
+  // Clear screen buttons
+  activeScreens.clear();
+  ['screenAVBtn','screenRBtn','screenLSBtn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) { btn.style.background='transparent'; btn.style.color='var(--text3)'; btn.style.fontWeight='400'; }
+  });
   renderResults();
+  updateFieldStatus();
 }
 
 function clearAll() {
@@ -9697,14 +10271,14 @@ function onAttackingModeToggle() {
   if (atkBtn) {
     if (atk.checked) {
       atkBtn.textContent       = 'Attacking';
-      atkBtn.style.borderColor = '#2d6a4a';
-      atkBtn.style.color       = 'var(--green)';
-      atkBtn.style.background  = '#1a3a2a';
+      atkBtn.style.borderColor = '#e05c5c';
+      atkBtn.style.color       = '#e05c5c';
+      atkBtn.style.background  = 'rgba(224,92,92,0.12)';
     } else {
       atkBtn.textContent       = 'Defending';
-      atkBtn.style.borderColor = 'var(--border2)';
-      atkBtn.style.color       = 'var(--text3)';
-      atkBtn.style.background  = 'transparent';
+      atkBtn.style.borderColor = '#5b9bd5';
+      atkBtn.style.color       = '#5b9bd5';
+      atkBtn.style.background  = 'rgba(91,155,213,0.12)';
     }
   }
   // Also sync the attackingMode checkbox listener
@@ -9732,12 +10306,17 @@ function updateFieldStatus() {
   if (weather !== 'none') chips.push(chip(weather.charAt(0).toUpperCase()+weather.slice(1), wColors[weather]||'#ccc'));
 
   const tMap = {
-    psychic:     ['Psychic Terrain','#ED93B1'],
-    auroraveil:  ['Aurora Veil','#d0eeff'],
-    reflect:     ['Reflect','#ED93B1'],
-    lightscreen: ['Light Screen','#ED93B1'],
+    psychic:  ['Psychic Terrain', '#ED93B1'],
+    electric: ['Electric Terrain','#FAC775'],
+    grassy:   ['Grassy Terrain',  '#97C459'],
+    misty:    ['Misty Terrain',   '#f7c5f0'],
   };
   if (terrain !== 'none' && tMap[terrain]) chips.push(chip(tMap[terrain][0], tMap[terrain][1]));
+
+  // Active screens (from pill buttons)
+  if (activeScreens.has('auroraveil'))  chips.push(chip('Aurora Veil', '#d0eeff'));
+  if (activeScreens.has('reflect'))     chips.push(chip('Reflect',     '#ED93B1'));
+  if (activeScreens.has('lightscreen')) chips.push(chip('Light Screen','#ED93B1'));
 
   const sMap = {
     'tailwind-atk':  ['Tailwind (atk)','#87ceeb'],
