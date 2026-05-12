@@ -2,9 +2,6 @@
 
 
 
-- show blank ev screen in defender window at the beginning before team load
-
-- [__] flesh out EV window in team paste with move text boxes that have suggestive autocomplete same as the search bar but with legal moves for that pokemon
 
 
 
@@ -17,13 +14,12 @@
 
 
 
-- right click match window pokemon switches from attacking to defending graphic?
 
 
 
-- palafin zero to hero form switcher
 
-- temp ev/nature slider in move breakdown
+- basculegion-f grid sprite
+
 
 
 
@@ -44,7 +40,6 @@
 
 
 
-- pinning the tab of a pokemon with choice scarf seems to have the pinned version get a double buff of choice scarf for some reason
 
 
 - metagame folders for different saved metas and teams
@@ -76,6 +71,17 @@
 ---
 #### Completed
 
+- [XX] temp ev/nature slider in move breakdown
+- [XX] palafin zero to hero form switcher
+- [XX] pinning the tab of a pokemon with choice scarf seems to have the pinned version get a double buff of choice scarf for some reason
+- [XX] show blank ev screen in defender window at the beginning before team load
+- [XX] nature + and -s not showing as deselected when there's it's opposite already selected. one thing to note is that even though it's showing as not deselected, their logic seems to be acting as if they are so I like the logic just the appearance
+- [XX] right click match window pokemon switches from attacking to defending graphic?
+- [XX] WATER DOESNT RESIST GROUND DUMMY
+- [XX] with the resist keyword filter, also include immunities
+- [XX] with the hits: keyword, when doing multiple of them, have the results be filtered with and logic not or logic
+- [XX] singles / doubles damage switcher to remove spread debuffs
+- [XX] flesh out EV window in team paste with move text boxes that have suggestive autocomplete same as the search bar but with legal moves for that pokemon
 - [XX] scarf double up bug is soooo annoying
 - [XX] the add button doesn't work on listings that were previously tabs that became pinned
 - [XX] if I have a pinned terapagos-terastal, then I terastalize it, it becomes terapagos-stellar which removes it from the pinned pokemon, and also the current match window doesn't reflect it's form change (important to note, it was a starred pokemon, so I think it should also have a star on the end of the stellar form when it changes) also it loses its yellow highlight

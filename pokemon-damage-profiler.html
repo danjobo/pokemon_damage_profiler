@@ -640,7 +640,6 @@
     position: sticky;
     top: 0;
     z-index: 19;
-    margin-bottom: 14px;
   }
 
   /* In split view the results-header is also sticky at top:0;
@@ -834,7 +833,7 @@
     gap: 0;
   }
   .breakdown-left-col {
-    width: 58px;
+    width: 78px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -1557,25 +1556,14 @@ Adamant Nature
     </div><!-- end metaCard -->
 
     <!-- COUNTER POOL -->
-    <div class="card card-collapsible collapsed" id="counterPoolCard">
-      <div class="card-label" onclick="toggleCard('counterPoolCard',event)" style="cursor:pointer;">Counter pool <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:6px;">optional — for recommendations</span> <span class="card-collapse-hint">▼</span></div>
-      <div class="card-body">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Paste a larger meta here (e.g. top 100). Recommendations will pull from this pool instead of the main meta.</div>
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
-          <button class="btn-success" onclick="loadCounterPool()" style="font-size:11px;padding:4px 10px;flex-shrink:0;">Load pool</button>
-          <select id="counterPoolMetaSelect" style="font-size:12px;padding:4px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;flex:1;min-width:0;" onchange="onCounterPoolMetaSelect()">
-            <option value="">— saved metas —</option>
-          </select>
-          <button onclick="clearCounterPool()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;">Clear</button>
-        </div>
-        <textarea id="counterPoolInput" style="height:80px;min-height:80px;" placeholder="Paste sets here…"></textarea>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
-          <div class="spinner" id="counterPoolSpinner"></div>
-          <span id="counterPoolStatus" style="font-size:12px;color:var(--text2);"></span>
-        </div>
-        <div id="counterPoolChips" class="meta-chips" style="margin-top:6px;"></div>
-      </div>
-    </div><!-- end counterPoolCard -->
+    <!-- Counter pool UI moved into meta analysis panel -->
+    <div style="display:none;">
+      <select id="counterPoolMetaSelect" onchange="onCounterPoolMetaSelect()"><option value="">— saved metas —</option></select>
+      <textarea id="counterPoolInput" placeholder="Paste sets here…"></textarea>
+      <div class="spinner" id="counterPoolSpinner"></div>
+      <span id="counterPoolStatus"></span>
+      <div id="counterPoolChips"></div>
+    </div>
     <div class="card card-collapsible" id="defenderCard">
       <div class="card-label" onclick="toggleCard('defenderCard',event)" style="cursor:pointer;">Your Pokémon — defender <span class="card-collapse-hint">▼</span></div>
 
@@ -1632,15 +1620,37 @@ Impish Nature
         <div style="display:flex;gap:10px;align-items:flex-start;overflow:hidden;">
           <!-- Left 1/3: item/ability/tera/moves text inputs -->
           <div id="evInfoFields" style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;">
-            <input id="evItemInput" type="text" placeholder="Item" oninput="onEvFieldChange('item',this.value)" style="font-size:11px;padding:3px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;width:100%;box-sizing:border-box;">
-            <input id="evAbilityInput" type="text" placeholder="Ability" oninput="onEvFieldChange('ability',this.value)" style="font-size:11px;padding:3px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;width:100%;box-sizing:border-box;">
-            <div id="evTeraRow">
-              <input id="evTeraInput" type="text" placeholder="Tera Type" oninput="onEvFieldChange('tera',this.value)" style="font-size:11px;padding:3px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;width:100%;box-sizing:border-box;">
+            <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
+              <input id="evItemGhost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+              <input id="evItemInput" type="text" autocomplete="off" placeholder="Item" oninput="onEvFieldChange('item',this.value);_fieldAutocomplete('evItemInput','evItemGhost',ALL_ITEMS)" onkeydown="_fieldAutocompleteKey(event,'evItemInput','evItemGhost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
             </div>
-            <input id="evMove1Input" type="text" placeholder="Move 1" oninput="onEvMoveChange(0,this.value)" style="font-size:11px;padding:3px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;width:100%;box-sizing:border-box;">
-            <input id="evMove2Input" type="text" placeholder="Move 2" oninput="onEvMoveChange(1,this.value)" style="font-size:11px;padding:3px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;width:100%;box-sizing:border-box;">
-            <input id="evMove3Input" type="text" placeholder="Move 3" oninput="onEvMoveChange(2,this.value)" style="font-size:11px;padding:3px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;width:100%;box-sizing:border-box;">
-            <input id="evMove4Input" type="text" placeholder="Move 4" oninput="onEvMoveChange(3,this.value)" style="font-size:11px;padding:3px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;width:100%;box-sizing:border-box;">
+            <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
+              <input id="evAbilityGhost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+              <input id="evAbilityInput" type="text" autocomplete="off" placeholder="Ability" oninput="onEvFieldChange('ability',this.value);_fieldAutocomplete('evAbilityInput','evAbilityGhost',ALL_ABILITIES)" onkeydown="_fieldAutocompleteKey(event,'evAbilityInput','evAbilityGhost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+            </div>
+            <div id="evTeraRow" style="display:none;">
+            <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
+              <input id="evTeraGhost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+              <input id="evTeraInput" type="text" autocomplete="off" placeholder="Tera Type" oninput="onEvFieldChange('tera',this.value);_fieldAutocomplete('evTeraInput','evTeraGhost',ALL_TERA_TYPES)" onkeydown="_fieldAutocompleteKey(event,'evTeraInput','evTeraGhost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+            </div>
+            </div><!-- end evTeraRow -->
+            <div style="border-top:0.5px solid var(--border2);margin:2px 0;"></div>
+            <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
+              <input id="evMove1Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+              <input id="evMove1Input" type="text" autocomplete="off" placeholder="Move 1" oninput="onEvMoveChange(0,this.value);_fieldAutocomplete('evMove1Input','evMove1Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'evMove1Input','evMove1Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+            </div>
+            <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
+              <input id="evMove2Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+              <input id="evMove2Input" type="text" autocomplete="off" placeholder="Move 2" oninput="onEvMoveChange(1,this.value);_fieldAutocomplete('evMove2Input','evMove2Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'evMove2Input','evMove2Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+            </div>
+            <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
+              <input id="evMove3Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+              <input id="evMove3Input" type="text" autocomplete="off" placeholder="Move 3" oninput="onEvMoveChange(2,this.value);_fieldAutocomplete('evMove3Input','evMove3Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'evMove3Input','evMove3Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+            </div>
+            <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
+              <input id="evMove4Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+              <input id="evMove4Input" type="text" autocomplete="off" placeholder="Move 4" oninput="onEvMoveChange(3,this.value);_fieldAutocomplete('evMove4Input','evMove4Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'evMove4Input','evMove4Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+            </div>
           </div>
           <!-- Right 2/3: nature + sliders -->
           <div style="flex:2;min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:6px;">
@@ -1672,6 +1682,66 @@ Impish Nature
     ↑ top
   </button>
 
+  <!-- Meta EV editor popup — anchored panel, no backdrop -->
+  <div id="metaEvPopup" style="display:none;position:fixed;z-index:500;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px;width:min(520px,92vw);max-height:80vh;overflow-y:auto;box-shadow:0 6px 24px rgba(0,0,0,0.5);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:0;">
+      <span id="metaEvPopupTitle" style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;flex-shrink:0;">Edit Spread</span>
+      <select id="metaEvSpreadSelect" style="display:none;font-size:10px;padding:2px 4px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;cursor:pointer;flex:1;min-width:0;" onclick="event.stopPropagation()"></select>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;margin-left:auto;">
+        <button onclick="resetMetaEvToDefault()" style="padding:2px 8px;font-size:10px;border:0.5px solid var(--accent);border-radius:var(--radius-sm);background:rgba(124,106,247,0.15);color:var(--accent2);cursor:pointer;font-weight:500;" title="Reset to original meta paste values">↺ Default</button>
+        <button onclick="closeMetaEvPopup()" style="padding:1px 7px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;font-size:12px;">✕</button>
+      </div>
+    </div>
+      <!-- Same layout as defender EV panel -->
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <!-- Left 1/3: fields -->
+        <div id="metaEvInfoFields" style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;">
+          <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
+            <input id="metaEvItemGhost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+            <input id="metaEvItemInput" type="text" autocomplete="off" placeholder="Item" oninput="onMetaEvFieldChange('item',this.value);_fieldAutocomplete('metaEvItemInput','metaEvItemGhost',ALL_ITEMS)" onkeydown="_fieldAutocompleteKey(event,'metaEvItemInput','metaEvItemGhost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+          </div>
+          <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
+            <input id="metaEvAbilityGhost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+            <input id="metaEvAbilityInput" type="text" autocomplete="off" placeholder="Ability" oninput="onMetaEvFieldChange('ability',this.value);_fieldAutocomplete('metaEvAbilityInput','metaEvAbilityGhost',ALL_ABILITIES)" onkeydown="_fieldAutocompleteKey(event,'metaEvAbilityInput','metaEvAbilityGhost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+          </div>
+          <div id="metaEvTeraRow" style="display:none;">
+            <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
+              <input id="metaEvTeraGhost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+              <input id="metaEvTeraInput" type="text" autocomplete="off" placeholder="Tera Type" oninput="onMetaEvFieldChange('tera',this.value);_fieldAutocomplete('metaEvTeraInput','metaEvTeraGhost',ALL_TERA_TYPES)" onkeydown="_fieldAutocompleteKey(event,'metaEvTeraInput','metaEvTeraGhost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+            </div>
+          </div>
+          <div style="border-top:0.5px solid var(--border2);margin:2px 0;"></div>
+          <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
+            <input id="metaEvMove1Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+            <input id="metaEvMove1Input" type="text" autocomplete="off" placeholder="Move 1" oninput="onMetaEvMoveChange(0,this.value);_fieldAutocomplete('metaEvMove1Input','metaEvMove1Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'metaEvMove1Input','metaEvMove1Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+          </div>
+          <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
+            <input id="metaEvMove2Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+            <input id="metaEvMove2Input" type="text" autocomplete="off" placeholder="Move 2" oninput="onMetaEvMoveChange(1,this.value);_fieldAutocomplete('metaEvMove2Input','metaEvMove2Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'metaEvMove2Input','metaEvMove2Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+          </div>
+          <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
+            <input id="metaEvMove3Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+            <input id="metaEvMove3Input" type="text" autocomplete="off" placeholder="Move 3" oninput="onMetaEvMoveChange(2,this.value);_fieldAutocomplete('metaEvMove3Input','metaEvMove3Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'metaEvMove3Input','metaEvMove3Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+          </div>
+          <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
+            <input id="metaEvMove4Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+            <input id="metaEvMove4Input" type="text" autocomplete="off" placeholder="Move 4" oninput="onMetaEvMoveChange(3,this.value);_fieldAutocomplete('metaEvMove4Input','metaEvMove4Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'metaEvMove4Input','metaEvMove4Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+          </div>
+        </div>
+        <!-- Right 2/3: nature + sliders -->
+        <div style="flex:2;min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:6px;justify-content:space-between;margin-bottom:4px;">
+            <select id="metaEvNatureSelect" onchange="onMetaEvNatureChange()" onclick="event.stopPropagation()" style="font-size:11px;padding:2px 4px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;cursor:pointer;width:auto;"></select>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span id="metaEvTotalDisplay" style="font-size:10px;color:var(--text3);">0 EVs</span>
+              <button onclick="resetMetaEvs()" style="padding:2px 6px;font-size:10px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;">Reset</button>
+            </div>
+          </div>
+          <div id="metaEvSliders" style="display:flex;flex-direction:column;gap:6px;overflow:hidden;"></div>
+        </div>
+      </div>
+  </div>
+
   <!-- CALCULATE BAR -->
   <div class="calc-bar">
     <div style="font-size:12px;color:var(--text2);line-height:1.4;" id="readyHint">Load a meta and paste a defender, then click <b>Add to tab(s)</b>.</div>
@@ -1683,33 +1753,6 @@ Impish Nature
   <!-- RESULTS -->
   <div id="resultsSection" style="display:block">
     <!-- Defender slot tabs (up to 6) -->
-    <div class="results-header">
-      <div class="sort-row">
-        <label>Sort by:</label>
-        <select id="sortMode" onchange="renderResults()">
-          <option value="damage">Highest damage</option>
-          <option value="order">Paste order</option>
-          <option value="speed">Speed</option>
-          <option value="atk">Attack</option>
-          <option value="spa">Sp. Atk</option>
-          <option value="def">Defense</option>
-          <option value="spd">Sp. Def</option>
-          <option value="hp">HP</option>
-        </select>
-        <button id="sortDirBtn" onclick="toggleSortDir()" title="Reverse sort order" style="padding:4px 8px;font-size:12px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;line-height:1;">↓</button>
-        <select id="resultsLimit" onchange="renderResults()" title="Limit number of results shown" style="font-size:11px;padding:3px 6px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg2);color:var(--text2);cursor:pointer;">
-          <option value="0">All</option>
-          <option value="25">Top 25</option>
-          <option value="50">Top 50</option>
-          <option value="100">Top 100</option>
-        </select>
-      </div>
-
-      <div style="display:flex;align-items:center;gap:6px;">
-        <div id="defenderTag" class="defender-tag"></div>
-      </div>
-    </div>
-
     
     <div class="controls-sticky-wrap">
     <div class="results-controls">
@@ -1733,7 +1776,7 @@ Impish Nature
             <button class="stage-spinner-btn" onclick="stepStage('atkStage',-1)">▼</button>
           </div>
         </div>
-        <select id="atkStage" class="stage-select" onchange="renderResults()">
+        <select id="atkStage" class="stage-select" onchange="renderResultsDebounced()">
           <option value="-6">-6</option><option value="-5">-5</option>
           <option value="-4">-4</option><option value="-3">-3</option>
           <option value="-2">-2</option><option value="-1">-1</option>
@@ -1753,7 +1796,7 @@ Impish Nature
             <button class="stage-spinner-btn" onclick="stepStage('spaStage',-1)">▼</button>
           </div>
         </div>
-        <select id="spaStage" class="stage-select" onchange="renderResults()">
+        <select id="spaStage" class="stage-select" onchange="renderResultsDebounced()">
           <option value="-6">-6</option><option value="-5">-5</option>
           <option value="-4">-4</option><option value="-3">-3</option>
           <option value="-2">-2</option><option value="-1">-1</option>
@@ -1773,7 +1816,7 @@ Impish Nature
             <button class="stage-spinner-btn" onclick="stepStage('defStage',-1)">▼</button>
           </div>
         </div>
-        <select id="defStage" class="stage-select" onchange="renderResults()">
+        <select id="defStage" class="stage-select" onchange="renderResultsDebounced()">
           <option value="-6">-6</option><option value="-5">-5</option>
           <option value="-4">-4</option><option value="-3">-3</option>
           <option value="-2">-2</option><option value="-1">-1</option>
@@ -1793,7 +1836,7 @@ Impish Nature
             <button class="stage-spinner-btn" onclick="stepStage('spdStage',-1)">▼</button>
           </div>
         </div>
-        <select id="spdStage" class="stage-select" onchange="renderResults()">
+        <select id="spdStage" class="stage-select" onchange="renderResultsDebounced()">
           <option value="-6">-6</option><option value="-5">-5</option>
           <option value="-4">-4</option><option value="-3">-3</option>
           <option value="-2">-2</option><option value="-1">-1</option>
@@ -1813,7 +1856,7 @@ Impish Nature
             <button class="stage-spinner-btn" onclick="stepStage('speStage',-1)">▼</button>
           </div>
         </div>
-        <select id="speStage" class="stage-select" onchange="renderResults()">
+        <select id="speStage" class="stage-select" onchange="renderResultsDebounced()">
           <option value="-6">-6</option><option value="-5">-5</option>
           <option value="-4">-4</option><option value="-3">-3</option>
           <option value="-2">-2</option><option value="-1">-1</option>
@@ -1838,8 +1881,8 @@ Impish Nature
         <label>Speed Condition</label>
         <select id="speedCondition" onchange="renderResults()">
           <option value="none">Normal</option>
-          <option value="tailwind-atk">Tailwind (attacker)</option>
-          <option value="tailwind-def">Tailwind (defender)</option>
+          <option value="tailwind-atk">Tailwind (opponent)</option>
+          <option value="tailwind-def">Tailwind (tabs)</option>
           <option value="trickroom">Trick Room</option>
         </select>
       </div>
@@ -1853,6 +1896,14 @@ Impish Nature
           <option value="grassy">Grassy Terrain</option>
           <option value="misty">Misty Terrain</option>
         </select>
+      </div>
+
+      <div class="control-group">
+        <label>Format</label>
+        <div style="display:flex;border:0.5px solid var(--border2);border-radius:20px;overflow:hidden;">
+          <button id="singlesBtn" onclick="setGameMode('singles')" style="padding:4px 10px;font-size:10px;border:none;border-right:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Singles: no spread damage penalty">Singles</button>
+          <button id="doublesBtn" onclick="setGameMode('doubles')" style="padding:4px 10px;font-size:10px;border:none;background:var(--accent);color:#fff;cursor:pointer;white-space:nowrap;font-weight:600;" title="Doubles: spread moves deal 0.75× damage">Doubles</button>
+        </div>
       </div>
 
       <button id="dynamaxBtn" onclick="toggleModeBtn('dynamaxMode','dynamaxBtn')" style="display:none;padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;align-self:flex-end;" title="Double the defender's HP (Dynamax)">Dynamax</button>
@@ -1880,7 +1931,7 @@ Impish Nature
           <input id="searchGhost" tabindex="-1" readonly
             style="position:absolute;left:0;top:0;bottom:0;right:0;padding:5px 8px;font-size:12px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;z-index:1;">
           <input type="text" id="searchBar" placeholder="Search or filter…"
-            oninput="renderResults();updateSearchClear();updateSearchGhost()"
+            oninput="renderResultsDebounced();updateSearchClear();updateSearchGhost()"
             onkeydown="handleSearchKey(event)"
             style="padding:5px 8px;font-size:12px;border:none;background:transparent;color:var(--text);outline:none;flex:1;min-width:0;position:relative;z-index:2;user-select:text;">
         </div>
@@ -1915,6 +1966,28 @@ Impish Nature
         <button onclick="clearPins()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Clear all pinned Pokémon and collapse expanded rows">Clear pins</button>
         <button onclick="clearDefenders()" style="padding:3px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;">Clear tabs</button>
       </div>
+    </div>
+    <!-- Sort/results controls row — sticky with control bar -->
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 12px;background:var(--bg2);border:0.5px solid var(--border);border-top:none;flex-wrap:wrap;margin-bottom:14px;">
+      <label style="font-size:11px;color:var(--text3);white-space:nowrap;">Sort:</label>
+      <select id="sortMode" onchange="renderResults()" style="font-size:11px;padding:2px 5px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text2);cursor:pointer;outline:none;">
+        <option value="damage">Highest damage</option>
+        <option value="order">Paste order</option>
+        <option value="speed">Speed</option>
+        <option value="atk">Attack</option>
+        <option value="spa">Sp. Atk</option>
+        <option value="def">Defense</option>
+        <option value="spd">Sp. Def</option>
+        <option value="hp">HP</option>
+      </select>
+      <button id="sortDirBtn" onclick="toggleSortDir()" title="Reverse sort order" style="padding:2px 7px;font-size:12px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;line-height:1;">↓</button>
+      <select id="resultsLimit" onchange="renderResults()" title="Limit number of results shown" style="font-size:11px;padding:2px 5px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text2);cursor:pointer;outline:none;">
+        <option value="0">All</option>
+        <option value="25">Top 25</option>
+        <option value="50">Top 50</option>
+        <option value="100">Top 100</option>
+      </select>
+      <div id="defenderTag" class="defender-tag" style="margin-left:auto;"></div>
     </div>
     </div><!-- end controls-sticky-wrap -->
 
@@ -2026,13 +2099,13 @@ const NATURES = {
 const TYPE_CHART = {
   normal:   {rock:0.5,ghost:0,steel:0.5},
   fire:     {fire:0.5,water:0.5,rock:0.5,dragon:0.5,grass:2,ice:2,bug:2,steel:2},
-  water:    {fire:2,water:0.5,grass:0.5,dragon:0.5,ground:2,rock:2},
+  water:    {fire:2,water:0.5,grass:0.5,dragon:0.5,rock:2},
   grass:    {fire:0.5,water:2,grass:0.5,poison:0.5,flying:0.5,bug:0.5,dragon:0.5,steel:0.5,ground:2,rock:2},
   electric: {electric:0.5,grass:0.5,dragon:0.5,ground:0,flying:2,water:2},
   ice:      {fire:0.5,water:0.5,ice:0.5,steel:0.5,grass:2,ground:2,flying:2,dragon:2},
   fighting: {normal:2,rock:2,steel:2,ice:2,dark:2,poison:0.5,flying:0.5,psychic:0.5,bug:0.5,fairy:0.5,ghost:0},
   poison:   {grass:2,fairy:2,poison:0.5,ground:0.5,rock:0.5,ghost:0.5,steel:0},
-  ground:   {fire:2,electric:2,poison:2,rock:2,steel:2,grass:0.5,bug:0.5,flying:0,water:0.5},
+  ground:   {fire:2,electric:2,poison:2,rock:2,steel:2,grass:0.5,bug:0.5,flying:0},
   flying:   {grass:2,fighting:2,bug:2,electric:0.5,rock:0.5,steel:0.5},
   psychic:  {fighting:2,poison:2,psychic:0.5,steel:0.5,dark:0},
   bug:      {grass:2,psychic:2,dark:2,fire:0.5,fighting:0.5,flying:0.5,ghost:0.5,steel:0.5,fairy:0.5,poison:0.5},
@@ -2136,6 +2209,27 @@ const FORMATS = {
 };
 
 let _currentFormat = 'champions';
+let _gameMode = 'doubles'; // 'singles' or 'doubles'
+
+function setGameMode(mode) {
+  _gameMode = mode;
+  const sBtn = document.getElementById('singlesBtn');
+  const dBtn = document.getElementById('doublesBtn');
+  if (sBtn && dBtn) {
+    const activeStyle = `background:var(--accent);color:#fff;font-weight:600;`;
+    const inactiveStyle = `background:transparent;color:var(--text3);font-weight:400;`;
+    sBtn.style.cssText = sBtn.style.cssText.replace(/background:[^;]+;color:[^;]+;font-weight:[^;]+;/g, '');
+    dBtn.style.cssText = dBtn.style.cssText.replace(/background:[^;]+;color:[^;]+;font-weight:[^;]+;/g, '');
+    if (mode === 'singles') {
+      sBtn.style.background = 'var(--accent)'; sBtn.style.color = '#fff'; sBtn.style.fontWeight = '600';
+      dBtn.style.background = 'transparent'; dBtn.style.color = 'var(--text3)'; dBtn.style.fontWeight = '400';
+    } else {
+      dBtn.style.background = 'var(--accent)'; dBtn.style.color = '#fff'; dBtn.style.fontWeight = '600';
+      sBtn.style.background = 'transparent'; sBtn.style.color = 'var(--text3)'; sBtn.style.fontWeight = '400';
+    }
+  }
+  recomputeAndRender();
+}
 function getFormat() { return FORMATS[_currentFormat] || FORMATS.champions; }
 
 function calcStat(base, ev=0, iv=31, level=50, nature=1) {
@@ -2216,7 +2310,8 @@ const SLUG_MAP = {
   'squawkabilly':'squawkabilly-green-plumage',
   'basculin':'basculin-red-striped',
   'pyroar':'pyroar-male',
-  'palafin':'palafin-hero',
+  'palafin':'palafin-zero',
+  'palafin-hero':'palafin-hero',
   'annihilape':'annihilape',
   'great tusk':'great-tusk',       'scream tail':'scream-tail',
   'brute bonnet':'brute-bonnet',   'flutter mane':'flutter-mane',
@@ -2567,11 +2662,14 @@ function parseSinglePaste(text) {
   if (nicknameMatch) speciesRaw = nicknameMatch[1].trim();
 
   let ability='', level=50, nature='hardy';
-  let allAbilities = null; // set if multiple abilities specified (mega + base form)
+  let allAbilities = null;
   let evs = {hp:0,atk:0,def:0,spa:0,spd:0,spe:0};
   let ivs = {hp:31,atk:31,def:31,spa:31,spd:31,spe:31};
-  const moves = [];      // all move names including status (no divider sentinel)
-  let dividerIndex = null; // paste index where _ divider was found
+  let parsed_allNatures = null;
+  let parsed_allEvSets  = null;
+  let parsed_spreadUsage = null; // array of usage fractions from #SpreadUsage line
+  const moves = [];
+  let dividerIndex = null;
   let teraType = null;
 
   for (const line of lines.slice(1)) {
@@ -2602,20 +2700,45 @@ function parseSinglePaste(text) {
       continue;
     }
     if (line.startsWith('Level:'))      { level=parseInt(line.replace('Level:','').trim())||50; continue; }
-    if (line.match(/Nature$/))          { nature=line.replace(/\s*Nature$/,'').trim().toLowerCase(); continue; }
+    if (line.match(/Nature(?:,|$)/)) {
+      // Support comma-separated natures: "Impish Nature, Brave Nature"
+      // Parse ALL natures; primary is first
+      const allNatures = line.split(',').map(n => n.replace(/\s*Nature\s*$/i,'').trim().toLowerCase()).filter(Boolean);
+      if (allNatures.length) nature = allNatures[0];
+      // Store all natures for multi-spread support (merged later with EVs)
+      if (allNatures.length > 1) parsed_allNatures = allNatures;
+      continue;
+    }
+    if (line.startsWith('EVs:')) {
+      // Support comma-separated EV sets: "EVs: 32 HP / 32 Def, 32 HP / 14 Def / 20 SpDef"
+      const evSets = line.replace('EVs:','').split(',').map(s=>s.trim());
+      // Parse first set as primary EVs
+      for (const p of evSets[0].split('/')) {
+        const em = p.trim().match(/(\d+)\s+(\w[\w\s]*)/);
+        if (em) { const k=statKey(em[2].trim()); if(k) evs[k]=parseInt(em[1]); }
+      }
+      // Store all EV sets
+      if (evSets.length > 1) {
+        parsed_allEvSets = evSets.map(evStr => {
+          const e = {hp:0,atk:0,def:0,spa:0,spd:0,spe:0};
+          for (const p of evStr.split('/')) {
+            const em = p.trim().match(/(\d+)\s+(\w[\w\s]*)/);
+            if (em) { const k=statKey(em[2].trim()); if(k) e[k]=parseInt(em[1]); }
+          }
+          return e;
+        });
+      }
+      continue;
+    }
     if (line.startsWith('Tera Type:'))  { const tt=line.replace('Tera Type:','').trim().toLowerCase(); if(tt && tt !== 'none') teraType=tt; continue; }
+    if (line.startsWith('#SpreadUsage:')) {
+      parsed_spreadUsage = line.replace('#SpreadUsage:','').split(',').map(s => parseFloat(s.trim()) / 100);
+      continue;
+    }
     if (line.startsWith('Happiness:'))  { continue; }
     if (line.startsWith('Shiny:'))      { continue; }
     if (line.startsWith('Dynamax Level:')) { continue; }
     if (line.startsWith('Gigantamax:')) { continue; }
-    if (line.startsWith('EVs:')) {
-      for (const p of line.replace('EVs:','').split('/')) {
-        const em = p.trim().match(/(\d+)\s+(\w[\w\s]*)/);
-        if (em) { const k=statKey(em[2].trim()); if(k) evs[k]=parseInt(em[1]); }
-
-      }
-      continue;
-    }
     if (line.startsWith('IVs:')) {
       for (const p of line.replace('IVs:','').split('/')) {
         const im = p.trim().match(/(\d+)\s+(\w[\w\s]*)/);
@@ -2629,8 +2752,22 @@ function parseSinglePaste(text) {
   // If no _ divider found, threshold defaults to 4
   if (dividerIndex === null) dividerIndex = 4;
 
+  // Build allSpreads: array of {nature, evs} for all comma-separated combinations
+  // Natures and EV sets are zipped by index; if counts differ, last of each is repeated
+  let allSpreads = null;
+  if (parsed_allNatures || parsed_allEvSets) {
+    const nats  = parsed_allNatures || [nature];
+    const esets = parsed_allEvSets  || [evs];
+    const count = Math.max(nats.length, esets.length);
+    allSpreads = Array.from({length: count}, (_, i) => ({
+      nature: nats[Math.min(i, nats.length-1)],
+      evs:    normalizeEvs({...esets[Math.min(i, esets.length-1)]}),
+      usage:  parsed_spreadUsage ? parsed_spreadUsage[i] ?? null : null,
+    }));
+  }
+
   const normalizedEvs = normalizeEvs(evs);
-  return { speciesRaw, item, allItems, ability, allAbilities, level, nature, evs: normalizedEvs, ivs, moves, dividerIndex, teraType };
+  return { speciesRaw, item, allItems, ability, allAbilities, level, nature, evs: normalizedEvs, ivs, moves, dividerIndex, teraType, allSpreads };
 }
 
 function splitPaste(text) {
@@ -2964,6 +3101,10 @@ const MEGA_FORMS = {
   'aegislash': [{label:'Shield',slug:'aegislash-shield'},{label:'Blade',slug:'aegislash-blade'}],
   'aegislash-blade': [{label:'Shield',slug:'aegislash-shield'},{label:'Blade',slug:'aegislash-blade'}],
   'aegislash-shield':[{label:'Shield',slug:'aegislash-shield'},{label:'Blade',slug:'aegislash-blade'}],
+  // Palafin form swap
+  'palafin':          [{label:'Hero',slug:'palafin-hero'}],
+  'palafin-zero':     [{label:'Hero',slug:'palafin-hero'}],
+  'palafin-hero':     [{label:'Zero',slug:'palafin-zero'}],
 };
 
 // ─── Defender tab state ───────────────────────────────────────────────────────
@@ -3031,7 +3172,16 @@ function renderEvPanel() {
   const panel  = document.getElementById('evEditorPanel');
   const slot   = DEFENDER_SLOTS[activeDefenderSlot];
   if (!panel) return;
-  if (!slot || !slot.baseStats) { panel.style.display = 'none'; return; }
+  if (!slot || !slot.baseStats) {
+    // Show panel in empty state — fields visible but sliders blank
+    panel.style.display = 'block';
+    _populateEvInfoFields(slot || {});
+    const slidersDiv = document.getElementById('evSliders');
+    if (slidersDiv) slidersDiv.innerHTML = '<div style="font-size:11px;color:var(--text3);padding:4px 0;">Load a Pokémon to edit EVs</div>';
+    const evTotal = document.getElementById('evTotalDisplay');
+    if (evTotal) evTotal.textContent = '0 EVs';
+    return;
+  }
   panel.style.display = 'block';
 
   _populateEvInfoFields(slot);
@@ -3046,8 +3196,8 @@ function renderEvPanel() {
 
   const nat = NATURES[slot.nature] || {};
   // Use pending selections if present, otherwise derive from current nature
-  const natBoost = slot._pendingBoost || Object.keys(nat).find(k => nat[k] > 1) || null;
-  const natDrop  = slot._pendingDrop  || Object.keys(nat).find(k => nat[k] < 1) || null;
+  const natBoost = slot._pendingBoost !== undefined ? slot._pendingBoost : (Object.keys(nat).find(k => nat[k] > 1) || null);
+  const natDrop  = slot._pendingDrop  !== undefined ? slot._pendingDrop  : (Object.keys(nat).find(k => nat[k] < 1) || null);
 
   const slidersDiv = document.getElementById('evSliders');
   if (!slidersDiv) return;
@@ -3156,15 +3306,26 @@ function _populateEvInfoFields(slot) {
   const m2 = document.getElementById('evMove2Input');
   const m3 = document.getElementById('evMove3Input');
   const m4 = document.getElementById('evMove4Input');
-  if (itemEl) itemEl.value = (slot.item || '').split(',')[0].trim();
-  if (abilEl) abilEl.value = slot.ability || '';
-  if (teraEl) teraEl.value = slot.teraType ? slot.teraType.charAt(0).toUpperCase() + slot.teraType.slice(1) : '';
+  const itemVal = (slot.item || '').split(',')[0].trim();
+  const abilVal = slot.ability || '';
+  const teraVal = slot.teraType ? slot.teraType.charAt(0).toUpperCase() + slot.teraType.slice(1) : '';
+  if (itemEl) itemEl.value = itemVal;
+  if (abilEl) abilEl.value = abilVal;
+  if (teraEl) teraEl.value = teraVal;
   if (teraRow) teraRow.style.display = _currentFormat === 'scarletviolet' ? '' : 'none';
   const moves = slot.moves || [];
   if (m1) m1.value = moves[0] || '';
   if (m2) m2.value = moves[1] || '';
   if (m3) m3.value = moves[2] || '';
   if (m4) m4.value = moves[3] || '';
+  // Update ghost suggestions
+  _fieldAutocomplete('evItemInput',   'evItemGhost',   ALL_ITEMS);
+  _fieldAutocomplete('evAbilityInput','evAbilityGhost',ALL_ABILITIES);
+  _fieldAutocomplete('evTeraInput',   'evTeraGhost',   ALL_TERA_TYPES);
+  _fieldAutocomplete('evMove1Input',  'evMove1Ghost',  ALL_MOVES);
+  _fieldAutocomplete('evMove2Input',  'evMove2Ghost',  ALL_MOVES);
+  _fieldAutocomplete('evMove3Input',  'evMove3Ghost',  ALL_MOVES);
+  _fieldAutocomplete('evMove4Input',  'evMove4Ghost',  ALL_MOVES);
 }
 
 function onEvNatureChange() {
@@ -3343,7 +3504,7 @@ function renderDefenderTabs() {
         ? defSlugForMega
         : Object.keys(MEGA_FORMS).find(k => {
             const kn = k.replace(/[\s-]/g,'');
-            return defSpeciesNorm === kn || defSpeciesNorm.startsWith(kn+'mega') || defSpeciesNorm.startsWith(kn+'eternal');
+            return defSpeciesNorm === kn || defSpeciesNorm === kn.replace(/-/g,'') || defSpeciesNorm.startsWith(kn.replace(/-/g,'')+'mega') || defSpeciesNorm.startsWith(kn.replace(/-/g,'')+'eternal') || defSpeciesNorm.startsWith(kn.replace(/-/g,'')+'hero');
           });
       const defMegaForms = defMegaKey ? MEGA_FORMS[defMegaKey] : null;
       const defActiveMegaSlug = defenderMegaOverrides.get(i) ||
@@ -3351,7 +3512,7 @@ function renderDefenderTabs() {
           const match = defMegaForms.find(f => f.slug === defSlugForMega);
           return match ? match.slug : undefined;
         })());
-      const defMegaBtns = defMegaForms && _currentFormat !== 'scarletviolet' ? defMegaForms.map(f => {
+      const defMegaBtns = defMegaForms ? defMegaForms.map(f => {
         const isAct = defActiveMegaSlug === f.slug;
         const st = isAct
           ? 'color:var(--accent2);border-color:var(--accent);background:rgba(124,106,247,0.15);'
@@ -3760,48 +3921,35 @@ function importJsonMeta(input) {
 
       // Comprehensive move slug → display name lookup
       // First build from CHAMPIONS_META_DATA, then fall back to word-splitting
-      // Build slug→display map from three sources:
-      // 1. FETCH_POWER_OVERRIDES keys (canonical hyphenated slugs → Title Case name)
-      // 2. CHAMPIONS_META_DATA move names
-      // 3. Hardcoded special cases (U-turn, Will-O-Wisp etc.)
+      // Build slug→display map from FETCH_POWER_OVERRIDES + Champions + ALL_MOVES
       const slugToDisplay = {};
 
-      // Source 1: derive display names from FETCH_POWER_OVERRIDES hyphenated keys
-      // e.g. 'sandsear-storm' → 'Sandsear Storm', 'wild-bolt-storm' → 'Wild Bolt Storm'
-      // Special punctuation exceptions
-      const HYPHEN_EXCEPTIONS = {
-        'will-o-wisp': 'Will-O-Wisp',
-        'u-turn': 'U-turn',
-        'soft-boiled': 'Soft-Boiled',
-        'x-scissor': 'X-Scissor',
-        'power-up-punch': 'Power-Up Punch',
-        'freeze-dry': 'Freeze-Dry',
-        'never-ending-nightmare': 'Never-Ending Nightmare',
-        'kings-shield': "King's Shield",
-        'v-create': 'V-create',
-        'self-destruct': 'Self-Destruct',
-      };
-      for (const hyphenSlug of Object.keys(FETCH_POWER_OVERRIDES)) {
-        const displayName = HYPHEN_EXCEPTIONS[hyphenSlug] ||
-          hyphenSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        // Map both the no-hyphen version (JSON format) and hyphen version
-        const noHyphen = hyphenSlug.replace(/-/g, '');
-        slugToDisplay[noHyphen] = displayName;
-        slugToDisplay[hyphenSlug.replace(/-/g, '')] = displayName;
+      // Source 1: ALL_MOVES list (already has correct spacing/casing)
+      for (const mv of ALL_MOVES) {
+        const slug = mv.toLowerCase().replace(/[\s\-']/g,'');
+        slugToDisplay[slug] = mv;
       }
 
-      // Source 2: Champions meta move names
+      // Source 2: FETCH_POWER_OVERRIDES keys → derive display name
+      for (const hyphenSlug of Object.keys(FETCH_POWER_OVERRIDES)) {
+        const displayName = HYPHEN_EXCEPTIONS_GLOBAL[hyphenSlug] ||
+          hyphenSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        const noHyphen = hyphenSlug.replace(/-/g, '');
+        if (!slugToDisplay[noHyphen]) slugToDisplay[noHyphen] = displayName;
+      }
+
+      // Source 3: Champions meta move names (as fallback)
       try {
         for (const cmdEntry of Object.values(CHAMPIONS_META_DATA)) {
           for (const mv of (cmdEntry.m || [])) {
             if (mv === '_') continue;
             const slug = mv.toLowerCase().replace(/[\s\-']/g,'');
-            if (!slugToDisplay[slug]) slugToDisplay[slug] = mv; // don't override FETCH_POWER_OVERRIDES
+            if (!slugToDisplay[slug]) slugToDisplay[slug] = mv;
           }
         }
       } catch(e) {}
 
-      // Source 3: Special cases not derivable from hyphen-splitting
+      // Source 4: Special cases
       const SPECIAL_SLUGS = {
         'uturn': 'U-turn', 'willowisp': 'Will-O-Wisp', 'kingsshield': "King's Shield",
         'softboiled': 'Soft-Boiled', 'xscissor': 'X-Scissor', 'batonpass': 'Baton Pass',
@@ -3813,7 +3961,6 @@ function importJsonMeta(input) {
       function slugToName(slug) {
         if (!slug) return '';
         if (slug in slugToDisplay) return slugToDisplay[slug];
-        // Fallback: title-case the whole thing (handles single-word moves like Protect, Earthquake etc.)
         return slug.charAt(0).toUpperCase() + slug.slice(1);
       }
 
@@ -4212,19 +4359,32 @@ function importJsonMeta(input) {
         }
         const raw = entry['Raw count'] || 1;
 
+        const SPREAD_MIN = 0.035; // include spreads down to 3.5% popularity
+
         // Best spread: pick most common nature + EVs
         const spreads = Object.entries(entry.Spreads || {}).sort((a,b) => b[1]-a[1]);
         let nature = 'Hardy', evs = {};
-        if (spreads.length) {
-          const [spreadStr] = spreads[0];
+        // Collect all spreads above threshold for multi-spread support
+        const spreadSum = spreads.reduce((s,[,v])=>s+v,0) || 1;
+        const topSpreads = spreads.filter(([,v]) => v/spreadSum >= SPREAD_MIN);
+        if (!topSpreads.length && spreads.length) topSpreads.push(spreads[0]);
+
+        function parseSpread(spreadStr) {
           const parts = spreadStr.split(':');
-          nature = parts[0] || 'Hardy';
+          const nat = parts[0] || 'Hardy';
           const evStr = parts[1] || '';
           const statMap = { HP:'hp', Atk:'atk', Def:'def', SpA:'spa', SpD:'spd', Spe:'spe' };
+          const ev = {};
           evStr.split('/').forEach((v, i) => {
             const key = Object.keys(statMap)[i];
-            if (key && parseInt(v) > 0) evs[statMap[key]] = parseInt(v);
+            if (key && parseInt(v) > 0) ev[statMap[key]] = parseInt(v);
           });
+          return { nat, ev };
+        }
+
+        if (topSpreads.length) {
+          const { nat, ev } = parseSpread(topSpreads[0][0]);
+          nature = nat; evs = ev;
         }
 
         // Best ability — normalize by sum
@@ -4256,22 +4416,33 @@ function importJsonMeta(input) {
         const teraType = teraEntries.length ? teraEntries[0][0] : null;
         const teraLine = teraType ? `Tera Type: ${teraType.charAt(0).toUpperCase() + teraType.slice(1)}\n` : '';
 
-        const evTotal = Object.values(evs).reduce((s,v)=>s+v, 0);
-        const evParts = Object.entries(evs)
-          .filter(([,v]) => v > 0)
-          .map(([k,v]) => {
-            const label = {hp:'HP',atk:'Atk',def:'Def',spa:'SpA',spd:'SpD',spe:'Spe'}[k] || k;
-            return `${v} ${label}`;
-          });
-        const evLine = evParts.length ? `EVs: ${evParts.join(' / ')}\n` : '';
+        // Build EV line(s) — comma-separated if multiple spreads
+        const evLabel = {hp:'HP',atk:'Atk',def:'Def',spa:'SpA',spd:'SpD',spe:'Spe'};
+        function evLineStr(ev) {
+          const parts = Object.entries(ev).filter(([,v])=>v>0).map(([k,v])=>`${v} ${evLabel[k]||k}`);
+          return parts.length ? parts.join(' / ') : '';
+        }
+
+        let evLine, natureLine;
+        const spreadUsagePcts = topSpreads.map(([,v]) => (v/spreadSum));
+        if (topSpreads.length > 1) {
+          const allEvStrs = topSpreads.map(([s]) => evLineStr(parseSpread(s).ev));
+          const allNats   = topSpreads.map(([s]) => parseSpread(s).nat);
+          evLine     = `EVs: ${allEvStrs.join(', ')}\n`;
+          natureLine = allNats.map(n => `${n} Nature`).join(', ') + '\n';
+        } else {
+          const evParts = Object.entries(evs).filter(([,v])=>v>0).map(([k,v])=>`${v} ${evLabel[k]||k}`);
+          evLine     = evParts.length ? `EVs: ${evParts.join(' / ')}\n` : '';
+          natureLine = `${nature} Nature\n`;
+        }
         const movesStr = moves.map(m => m === '_' ? '_' : `- ${m}`).join('\n');
         const itemPart = itemStr ? ` @ ${itemStr}` : '';
 
+        const spreadUsageLine = spreadUsagePcts.length > 1 ? `#SpreadUsage: ${spreadUsagePcts.map(p=>(p*100).toFixed(0)+'%').join(', ')}\n` : '';
         pastes.push(`${name}${itemPart}
 Ability: ${ability}
 Level: 50
-${teraLine}${evLine}${nature} Nature
-${movesStr}`.trim());
+${teraLine}${evLine}${natureLine}${spreadUsageLine}${movesStr}`.trim());
       }
 
       if (!pastes.length) {
@@ -4731,7 +4902,9 @@ function applyTerrainPower(moveName, moveType, terrain, attacker) {
 }
 
 let _defenderInputTimer = null;
+let _suppressDefInput = false; // set true when programmatically updating textarea
 function onDefenderInputChange() {
+  if (_suppressDefInput) return;
   const slot = DEFENDER_SLOTS[activeDefenderSlot];
   if (!slot) return;
   // Save raw text immediately so tab switches preserve edits
@@ -5693,6 +5866,15 @@ function _hashResultRow(r, mode, maxRoll, attackingMode, maxInvest, maxHp, weath
   return `${r.attacker.speciesRaw}|${r.displayPct}|${mode}|${maxRoll}|${attackingMode}|${maxInvest}|${maxHp}|${weather}|${terrain}|${pinnedKeys.has(r.attacker.speciesRaw)}|${teraActive.has(r.attacker.speciesRaw)}|${expandedBreakdowns.has(r.attacker.speciesRaw)}|${_matchHighlightQueue.opp.includes(r.attacker.speciesRaw.replace(/\s*★$/,''))}|${scarfOverrides.get(r.attacker.speciesRaw)}|${typeBoostOverrides.get(r.attacker.speciesRaw)}|${lifeOrbOverrides.get(r.attacker.speciesRaw)}|${choiceOverrides.get(r.attacker.speciesRaw)}|${boosterOverrides.get(r.attacker.speciesRaw)}|${multiscaleOverrides.has(r.attacker.speciesRaw)}`;
 }
 
+let _renderResultsRaf = null;
+function renderResultsDebounced() {
+  if (_renderResultsRaf) return; // already scheduled
+  _renderResultsRaf = requestAnimationFrame(() => {
+    _renderResultsRaf = null;
+    renderResults();
+  });
+}
+
 function renderResults() {
   updateFieldStatus();
   if (_historyViewActive && !_skipBlankCheck) { renderMatchHistory(); return; }
@@ -5802,7 +5984,7 @@ function renderResults() {
       const isEffectivelySpread = m.isSpread || terrainBoost.spreadOverride;
 
       // Spread penalty: ×0.75 in doubles
-      if (isEffectivelySpread) adjustedDmg *= 0.75;
+      if (isEffectivelySpread && _gameMode !== 'singles') adjustedDmg *= 0.75;
 
       // Type-boost item override (×1.2)
       // If attacker already has a type-boost item, the 1.2 is already in computeResults.
@@ -5899,7 +6081,7 @@ function renderResults() {
       const terrainBoost = applyTerrainPower(m.move.name, moveType2, terrainMode);
       adjustedDmg *= terrainBoost.powerMul;
       const isEffSpread = m.isSpread || terrainBoost.spreadOverride;
-      if (isEffSpread) adjustedDmg *= 0.75;
+      if (isEffSpread && _gameMode !== 'singles') adjustedDmg *= 0.75;
 
       // Life Orb boost (tab pokemon attacking meta) — tab pokemon is r.defender
       const _defSpeciesKey = r.defender?.speciesRaw || '';
@@ -6006,11 +6188,11 @@ function renderResults() {
       // hits: terms combine as OR; all other terms are AND
       const hitTerms = terms.filter(t => /^hits[:\s]+/i.test(t));
       const otherTerms = terms.filter(t => !/^hits[:\s]+/i.test(t));
-      // If any hit term exists, attacker must match at least one
+      // hits: terms combine as AND — attacker must hit ALL specified types/pokemon
       if (hitTerms.length) {
         const divIdx2 = r.attacker.dividerIndex ?? 4;
         const primaryMoves2 = (r.attacker.resolvedMoves||[]).filter(m => (m.pasteIndex ?? 99) < divIdx2);
-        const hitsAny = hitTerms.some(term => {
+        const hitsAll = hitTerms.every(term => {
           const ht2 = term.match(/^hits[:\s]+(.+)/i);
           if (!ht2) return false;
           const q2 = ht2[1].toLowerCase().trim().replace(/\s+/g,'-');
@@ -6023,7 +6205,7 @@ function renderResults() {
             return typeEffWithAbility(mt2, tTypes2, tAb2) > 1;
           });
         });
-        if (!hitsAny) return false;
+        if (!hitsAll) return false;
       }
       return otherTerms.every(term => {
         const mv  = term.match(/^move[:\s]+(.+)/);
@@ -6049,12 +6231,12 @@ function renderResults() {
         }
         if (rs) {
           const t2 = rs[1].toLowerCase();
-          const e = typeEff(t2, r.attacker.types);
-          return e > 0 && e < 1;
+          const e = typeEffWithAbility(t2, r.attacker.types, r.attacker.ability||'', '');
+          return e < 1; // includes 0 (immune)
         }
         if (im) {
           const t2 = im[1].toLowerCase();
-          return typeEff(t2, r.attacker.types) === 0;
+          return typeEffWithAbility(t2, r.attacker.types, r.attacker.ability||'', '') === 0;
         }
         if (ht) {
           const q = ht[1].toLowerCase().replace(/[\s]/g,'-');
@@ -6215,7 +6397,7 @@ function renderResults() {
       const modTags = modList.map(mod =>
         `<span style="color:var(--accent2);font-size:10px;background:rgba(124,106,247,0.12);padding:1px 5px;border-radius:4px">${mod}</span>`
       ).join(' ');
-      const spreadTag = m.isEffectivelySpread ? `<span style="color:var(--text3);font-size:10px">spread ×0.75</span>` : '';
+      const spreadTag = (m.isEffectivelySpread && _gameMode !== 'singles') ? `<span style="color:var(--text3);font-size:10px">spread ×0.75</span>` : '';
       const typeDisplay = m.resolvedType && m.resolvedType !== m.move.type
         ? `<span style="color:var(--yellow);font-size:10px">${m.resolvedType}</span>` : m.resolvedType || m.move.type;
       const rowOpacity  = isPastDivider ? '' : '';  // no opacity dimming
@@ -6267,7 +6449,7 @@ function renderResults() {
     const primaryMoves = effectiveBreakdown.filter(m => (m.pasteIndex ?? 99) < dividerThreshold);
     const extraMoves   = effectiveBreakdown.filter(m => (m.pasteIndex ?? 99) >= dividerThreshold);
     const primaryHtml = primaryMoves.map(renderMoveRow).join('');
-    const extraHtml    = extraMoves.map(renderMoveRow).join('');
+    const extraHtml    = isExpanded ? extraMoves.map(renderMoveRow).join('') : '';
     const extraSection = hasExtraMoves ? `
       <div style="display:flex;align-items:center;gap:8px;padding:4px 0;margin:2px 0;cursor:pointer;" onclick="toggleExtraMoves(event,'${safeKey}')" id="extra-toggle-${index}">
         <div style="flex:1;height:0.5px;background:var(--border2)"></div>
@@ -6409,8 +6591,7 @@ function renderResults() {
       ? speciesLower
       : Object.keys(MEGA_FORMS).find(k => {
           const kn = k.replace(/[\s-]/g,'');
-          // exact normalized match, or species starts with key (e.g. "charizard-mega-y" starts with "charizard")
-          return speciesNorm === kn || speciesNorm.startsWith(kn + 'mega') || speciesNorm.startsWith(kn + 'shield') || speciesNorm.startsWith(kn + 'blade') || speciesNorm.startsWith(kn + 'eternal');
+          return speciesNorm === kn || speciesNorm.startsWith(kn + 'mega') || speciesNorm.startsWith(kn + 'shield') || speciesNorm.startsWith(kn + 'blade') || speciesNorm.startsWith(kn + 'eternal') || speciesNorm.startsWith(kn + 'hero');
         });
     const megaForms    = megaKey ? MEGA_FORMS[megaKey] : null;
     // Active slug: check override map first, then detect if speciesRaw IS already a mega form
@@ -6421,9 +6602,10 @@ function renderResults() {
         return match ? match.slug : undefined;
       })());
     let megaHtml = '';
-    if (megaForms && _currentFormat !== 'scarletviolet') {
-      const isAegi = megaKey.includes('aegislash');
-      const btnLabel = isAegi ? 'Form:' : 'Mega:';
+    if (megaForms) {
+      const isPalafin = megaKey && megaKey.includes('palafin');
+      const isAegi = megaKey && megaKey.includes('aegislash');
+      const btnLabel = isPalafin ? 'Form:' : isAegi ? 'Form:' : 'Mega:';
       const btns = megaForms.map(f => {
         const isActive = activeMegaSlug === f.slug;
         const style = isActive
@@ -6431,7 +6613,7 @@ function renderResults() {
           : 'color:var(--text3);border-color:var(--border2);opacity:0.5;';
         return `<button onclick="toggleMegaForm(event,'${r.attacker.speciesRaw.replace(/'/g,"\\'")}','${f.slug}')" style="padding:2px 8px;font-size:10px;border-radius:4px;border:0.5px solid;cursor:pointer;background:transparent;${style}">${f.label}</button>`;
       }).join('');
-      const megaHtml = `<div style="display:flex;align-items:center;gap:5px;padding:4px 0 2px;flex-wrap:wrap;"><span style="font-size:10px;color:var(--text3);">${btnLabel}</span>${btns}</div>`;
+      megaHtml = `<div style="display:flex;align-items:center;gap:5px;padding:4px 0 2px;flex-wrap:wrap;"><span style="font-size:10px;color:var(--text3);">${btnLabel}</span>${btns}</div>`;
     }
 
     // Tera button — SV format only
@@ -6477,7 +6659,7 @@ function renderResults() {
     const _hasAltItems = _altItems.length > 0;
     const _altItemsData = JSON.stringify(_altItems).replace(/"/g,'&quot;');
     const _itImg = _it
-      ? '<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/' + _itSlug + '.png" data-item-slug="' + _itSlug + '" data-item-name="' + _it.replace(/"/g,'&quot;') + '" data-it-effect="" style="width:24px;height:24px;image-rendering:pixelated;cursor:' + (_hasAltItems ? 'pointer' : 'help') + ';" onerror="this.src=\'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png\'"' + (_hasAltItems ? ' onclick="showAltItems(event,' + _altItemsData + ')"' : '') + '>'
+      ? '<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/' + _itSlug + '.png" data-item-slug="' + _itSlug + '" data-item-name="' + _it.replace(/"/g,'&quot;') + '" data-it-effect="" style="width:36px;height:36px;image-rendering:pixelated;cursor:' + (_hasAltItems ? 'pointer' : 'help') + ';" onerror="this.src=\'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png\'"' + (_hasAltItems ? ' onclick="showAltItems(event,' + _altItemsData + ')"' : '') + '>'
       : '';
     // Spread details: nature + invested EVs
     const _evs = r.attacker.evs || {};
@@ -6487,7 +6669,11 @@ function renderResults() {
       .filter(s => (_evs[s] || 0) > 0)
       .map(s => `${_evs[s]} ${({hp:'HP',atk:'Atk',def:'Def',spa:'SpA',spd:'SpD',spe:'Spe'})[s]}`);
     const _spreadTip = _natDisplay + ' · ' + (_evParts.length ? _evParts.join(' / ') : 'No EVs');
-    const _spreadBtn = `<div data-effect="${_spreadTip.replace(/"/g,'&quot;')}" style="font-size:9px;color:var(--text3);cursor:help;text-align:center;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52px;" title="${_spreadTip.replace(/"/g,'&quot;')}">📋 Spread</div>`;
+    const _safeSpeciesForPopup = r.attacker.speciesRaw.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    const _spreadBtn = `<button onclick="openMetaEvPopup(event,'${r.attacker.speciesRaw.replace(/'/g,"\\'")}');event.stopPropagation();" data-opens-meta-ev="1"
+      data-effect="${_spreadTip.replace(/"/g,'&quot;')}"
+      title="${_spreadTip.replace(/"/g,'&quot;')}"
+      style="font-size:9px;color:var(--text3);cursor:pointer;text-align:center;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72px;padding:2px 5px;border:0.5px solid var(--border2);border-radius:3px;background:transparent;display:block;">Edit Spread</button>`;
     const abilityItemColHtml = '<div class="breakdown-left-col">' + _abHtml + _itImg + _spreadBtn + '</div>';
 
     const isMatchOppHighlighted = _matchActive && isPinned &&
@@ -6651,6 +6837,331 @@ function toggleBreakdown(index) {
   }
 }
 
+// ── Meta EV editor popup ──────────────────────────────────────────────────────
+let _metaEvEntry = null;
+
+function openMetaEvPopup(e, speciesRaw) {
+  e.stopPropagation();
+  const entry = META_DB.find(p => p.speciesRaw === speciesRaw);
+  if (!entry) return;
+  _metaEvEntry = entry;
+  const popup = document.getElementById('metaEvPopup');
+  if (!popup) return;
+
+  // Populate before showing so we can measure height
+  document.getElementById('metaEvPopupTitle').textContent = entry.speciesRaw + ' — Edit Spread';
+
+  // Wire spread selector (static in HTML)
+  const spreadSel = document.getElementById('metaEvSpreadSelect');
+  if (spreadSel) {
+    spreadSel.onchange = function() {
+      const idx = parseInt(this.value);
+      const s = _metaEvEntry.allSpreads && _metaEvEntry.allSpreads[idx];
+      if (!s) return;
+      _metaEvEntry.evs = {...s.evs};
+      _metaEvEntry.nature = s.nature;
+      _metaEvEntry._pendingBoost = undefined;
+      _metaEvEntry._pendingDrop  = undefined;
+      const natEl = document.getElementById('metaEvNatureSelect');
+      if (natEl) natEl.value = s.nature;
+      _renderMetaEvSliders();
+      _applyMetaEvChanges();
+    };
+    if (entry.allSpreads && entry.allSpreads.length > 1) {
+      const evLabel = {hp:'HP',atk:'Atk',def:'Def',spa:'SpA',spd:'SpD',spe:'Spe'};
+      spreadSel.innerHTML = entry.allSpreads.map((s, i) => {
+        const evParts = Object.entries(s.evs).filter(([,v])=>v>0).map(([k,v])=>`${v} ${evLabel[k]||k}`);
+        const pct = s.usage != null ? ` (${(s.usage*100).toFixed(0)}%)` : '';
+        const label = `${s.nature.charAt(0).toUpperCase()+s.nature.slice(1)} • ${evParts.join(' / ') || 'No EVs'}${pct}`;
+        return `<option value="${i}">${label}</option>`;
+      }).join('');
+      spreadSel.value = '0';
+      spreadSel.style.display = '';
+    } else {
+      spreadSel.style.display = 'none';
+    }
+  }
+  const teraRow = document.getElementById('metaEvTeraRow');
+  if (teraRow) teraRow.style.display = _currentFormat === 'scarletviolet' ? '' : 'none';
+  _setMetaEvField('metaEvItemInput',    'metaEvItemGhost',    (entry.item||'').split(',')[0].trim(), ALL_ITEMS);
+  _setMetaEvField('metaEvAbilityInput', 'metaEvAbilityGhost', entry.ability||'', ALL_ABILITIES);
+  const teraVal = entry.teraType ? entry.teraType.charAt(0).toUpperCase()+entry.teraType.slice(1) : '';
+  _setMetaEvField('metaEvTeraInput',    'metaEvTeraGhost',    teraVal, ALL_TERA_TYPES);
+  const moves = entry.moves || (entry.resolvedMoves||[]).map(m=>m.name);
+  _setMetaEvField('metaEvMove1Input','metaEvMove1Ghost',moves[0]||'',ALL_MOVES);
+  _setMetaEvField('metaEvMove2Input','metaEvMove2Ghost',moves[1]||'',ALL_MOVES);
+  _setMetaEvField('metaEvMove3Input','metaEvMove3Ghost',moves[2]||'',ALL_MOVES);
+  _setMetaEvField('metaEvMove4Input','metaEvMove4Ghost',moves[3]||'',ALL_MOVES);
+  const natSel = document.getElementById('metaEvNatureSelect');
+  if (natSel) natSel.innerHTML = Object.keys(NATURES).sort().map(n =>
+    `<option value="${n}"${n===(entry.nature||'hardy')?' selected':''}>${n.charAt(0).toUpperCase()+n.slice(1)}</option>`
+  ).join('');
+
+  // Store a snapshot of original values for Reset to Default
+  if (!entry._origSnapshot) {
+    entry._origSnapshot = {
+      evs:    JSON.parse(JSON.stringify(entry.evs||{})),
+      nature: entry.nature||'hardy',
+      item:   entry.item||'',
+      ability:entry.ability||'',
+      teraType:entry.teraType||null,
+      moves:  [...(entry.moves||(entry.resolvedMoves||[]).map(m=>m.name))],
+    };
+  }
+
+  // Show off-screen first to measure
+  popup.style.display = 'block';
+  popup.style.top = '-9999px';
+  popup.style.left = '-9999px';
+  _renderMetaEvSliders();
+
+  // Position: to the right of the button, or left if no room; never above the sticky controls bar
+  requestAnimationFrame(() => {
+    const btn = e.currentTarget || e.target;
+    const br  = btn.getBoundingClientRect();
+    const pw  = popup.offsetWidth;
+    const ph  = popup.offsetHeight;
+    const vw  = window.innerWidth;
+    const vh  = window.innerHeight;
+
+    // Horizontal: prefer right of button, fall back to left
+    let left = br.right + 8;
+    if (left + pw > vw - 8) left = br.left - pw - 8;
+    left = Math.max(8, left);
+
+    // Vertical: align top with button, but keep inside viewport
+    // Floor: never go above 120px from top (clears sticky controls + tabs row)
+    let top = br.top;
+    if (top + ph > vh - 8) top = vh - ph - 8;
+    top = Math.max(120, top);
+
+    popup.style.top  = top + 'px';
+    popup.style.left = left + 'px';
+  });
+}
+
+function _setMetaEvField(inputId, ghostId, value, candidates) {
+  const inp = document.getElementById(inputId);
+  if (inp) inp.value = value;
+  _fieldAutocomplete(inputId, ghostId, candidates);
+}
+
+function resetMetaEvToDefault() {
+  const entry = _metaEvEntry;
+  if (!entry || !entry._origSnapshot) return;
+  const s = entry._origSnapshot;
+  entry.evs     = JSON.parse(JSON.stringify(s.evs));
+  entry.nature  = s.nature;
+  entry.item    = s.item;
+  entry.ability = s.ability;
+  entry.teraType= s.teraType;
+  entry.moves   = [...s.moves];
+  entry._pendingBoost = undefined;
+  entry._pendingDrop  = undefined;
+  // Reset spread dropdown to first option
+  const spreadSel = document.getElementById('metaEvSpreadSelect');
+  if (spreadSel) spreadSel.value = '0';
+  // Refresh move data
+  Promise.all((entry.moves||[]).map((mv,i) =>
+    mv ? fetchMoveData(mv).then(r => r ? {...r,pasteIndex:i} : {name:mv,power:0,type:'normal',cat:'status',isSpread:false,pasteIndex:i}) : Promise.resolve(null)
+  )).then(results => {
+    entry.allMoves = results.filter(Boolean);
+    entry.resolvedMoves = entry.allMoves.filter(m=>m.power>0);
+    _applyMetaEvChanges();
+    // Re-open to refresh all fields
+    const popup = document.getElementById('metaEvPopup');
+    if (popup && popup.style.display === 'block') {
+      _setMetaEvField('metaEvItemInput','metaEvItemGhost',(entry.item||'').split(',')[0].trim(),ALL_ITEMS);
+      _setMetaEvField('metaEvAbilityInput','metaEvAbilityGhost',entry.ability||'',ALL_ABILITIES);
+      const tv = entry.teraType?entry.teraType.charAt(0).toUpperCase()+entry.teraType.slice(1):'';
+      _setMetaEvField('metaEvTeraInput','metaEvTeraGhost',tv,ALL_TERA_TYPES);
+      (entry.moves||[]).forEach((mv,i)=>{
+        _setMetaEvField(`metaEvMove${i+1}Input`,`metaEvMove${i+1}Ghost`,mv||'',ALL_MOVES);
+      });
+      const sel=document.getElementById('metaEvNatureSelect');
+      if(sel)sel.value=entry.nature||'hardy';
+      _renderMetaEvSliders();
+    }
+  });
+}
+
+function closeMetaEvPopup() {
+  const popup = document.getElementById('metaEvPopup');
+  if (popup) popup.style.display = 'none';
+  _metaEvEntry = null;
+}
+
+function _updateMetaEvTotal() {
+  const entry = _metaEvEntry;
+  if (!entry) return;
+  const total = EV_STATS.reduce((s,k)=>s+((entry.evs||{})[k]||0),0);
+  const cap   = getFormat().evTotal || (EV_MAX()*6);
+  const totalEl = document.getElementById('metaEvTotalDisplay');
+  if (!totalEl) return;
+  totalEl.textContent = `${total} / ${cap} EVs`;
+  totalEl.style.color = total > cap ? 'var(--red)' : total === cap ? 'var(--green)' : 'var(--text3)';
+}
+
+function _renderMetaEvSliders() {
+  const entry = _metaEvEntry;
+  if (!entry || !entry.baseStats) return;
+  const slidersDiv = document.getElementById('metaEvSliders');
+  const totalEl    = document.getElementById('metaEvTotalDisplay');
+  if (!slidersDiv) return;
+  const nat = NATURES[entry.nature||'hardy'] || {};
+  const natBoost = entry._pendingBoost !== undefined ? entry._pendingBoost : (Object.keys(nat).find(k=>nat[k]>1)||null);
+  const natDrop  = entry._pendingDrop  !== undefined ? entry._pendingDrop  : (Object.keys(nat).find(k=>nat[k]<1)||null);
+  const maxEv = EV_MAX(); const evStep = getFormat().evStep||1; const lv = entry.level||50;
+  const fmt = getFormat();
+  slidersDiv.innerHTML = EV_STATS.map(stat => {
+    const ev = (entry.evs||{})[stat]||0;
+    const natMul = nat[stat]||1;
+    const computed = stat==='hp' ? calcHP(entry.baseStats[stat]||0,ev,(entry.ivs||{})[stat]??31,lv) : calcStat(entry.baseStats[stat]||0,ev,(entry.ivs||{})[stat]??31,lv,natMul);
+    const isBoost = stat===natBoost; const isDrop = stat===natDrop;
+    const plusStyle  = isBoost ? 'color:#f08080;border-color:#f08080;background:rgba(240,128,128,0.15);' : 'color:var(--text3);border-color:var(--border2);';
+    const minusStyle = isDrop  ? 'color:#87b4f5;border-color:#87b4f5;background:rgba(135,180,245,0.15);' : 'color:var(--text3);border-color:var(--border2);';
+    return `<div style="display:flex;align-items:center;gap:4px;min-width:0;overflow:hidden;">
+      <button onclick="onMetaNatureStatBtn('${stat}','boost');event.stopPropagation();" style="padding:0 5px;height:16px;font-size:10px;border-width:0.5px;border-style:solid;border-radius:3px;cursor:pointer;line-height:1;flex-shrink:0;${plusStyle}">+</button>
+      <button onclick="onMetaNatureStatBtn('${stat}','drop');event.stopPropagation();"  style="padding:0 5px;height:16px;font-size:10px;border-width:0.5px;border-style:solid;border-radius:3px;cursor:pointer;line-height:1;flex-shrink:0;${minusStyle}">−</button>
+      <span style="font-size:10px;color:var(--text3);width:26px;flex-shrink:0;">${EV_LABELS[stat]}</span>
+      <input type="range" min="0" max="${maxEv}" value="${ev}" step="${evStep}" id="metaEvSlider_${stat}"
+        style="flex:1;min-width:0;accent-color:var(--accent);height:4px;cursor:pointer;"
+        oninput="onMetaEvSliderChange('${stat}',this.value,this)">
+      <span id="metaEvVal_${stat}"  style="font-size:10px;color:var(--text2);width:20px;text-align:right;flex-shrink:0;">${ev}</span>
+      <span id="metaEvStat_${stat}" style="font-size:10px;color:var(--text);width:28px;text-align:right;font-weight:500;flex-shrink:0;">${computed}</span>
+    </div>`;
+  }).join('');
+  _updateMetaEvTotal();
+}
+
+function _updateMetaEvStatDisplays() {
+  // Update only the stat value spans — don't rebuild the slider DOM
+  const entry = _metaEvEntry;
+  if (!entry || !entry.baseStats) return;
+  const nat = NATURES[entry.nature||'hardy'] || {};
+  const lv = entry.level||50;
+  const maxEv = EV_MAX();
+  const total = EV_STATS.reduce((s,k)=>s+((entry.evs||{})[k]||0),0);
+  EV_STATS.forEach(stat => {
+    const ev = (entry.evs||{})[stat]||0;
+    const natMul = nat[stat]||1;
+    const computed = stat==='hp'
+      ? calcHP  (entry.baseStats[stat]||0, ev, (entry.ivs||{})[stat]??31, lv)
+      : calcStat(entry.baseStats[stat]||0, ev, (entry.ivs||{})[stat]??31, lv, natMul);
+    const valEl  = document.getElementById('metaEvVal_'+stat);
+    const statEl = document.getElementById('metaEvStat_'+stat);
+    const slEl   = document.getElementById('metaEvSlider_'+stat);
+    if (valEl)  valEl.textContent  = ev;
+    if (statEl) statEl.textContent = computed;
+    if (slEl && Number(slEl.value) !== ev) slEl.value = ev;
+  });
+  const totalEl = document.getElementById('metaEvTotalDisplay');
+  _updateMetaEvTotal();
+}
+
+function _applyMetaEvChanges() {
+  const entry = _metaEvEntry;
+  if (!entry||!entry.baseStats) return;
+  // Recompute ONLY this entry's stats — don't loop all of META_DB
+  const nat = NATURES[entry.nature||'hardy']||{};
+  const nm = s => nat[s]||1; const bs = entry.baseStats; const lv = entry.level||50;
+  entry.computedHp  = calcHP  (bs.hp ||0,(entry.evs||{}).hp ||0,(entry.ivs||{}).hp ??31,lv);
+  entry.computedAtk = calcStat(bs.atk||0,(entry.evs||{}).atk||0,(entry.ivs||{}).atk??31,lv,nm('atk'));
+  entry.computedDef = calcStat(bs.def||0,(entry.evs||{}).def||0,(entry.ivs||{}).def??31,lv,nm('def'));
+  entry.computedSpa = calcStat(bs.spa||0,(entry.evs||{}).spa||0,(entry.ivs||{}).spa??31,lv,nm('spa'));
+  entry.computedSpd = calcStat(bs.spd||0,(entry.evs||{}).spd||0,(entry.ivs||{}).spd??31,lv,nm('spd'));
+  entry.computedSpe = calcStat(bs.spe||0,(entry.evs||{}).spe||0,(entry.ivs||{}).spe??31,lv,nm('spe'));
+  entry.stats = {hp:entry.computedHp,atk:entry.computedAtk,def:entry.computedDef,spa:entry.computedSpa,spd:entry.computedSpd,spe:entry.computedSpe};
+  // Update stat displays in-place (no DOM rebuild — keeps slider drag smooth)
+  _updateMetaEvStatDisplays();
+  // Only recompute this entry's contribution to lastResults — not the full meta
+  const cur = DEFENDER_SLOTS[activeDefenderSlot];
+  if (cur && lastResults) {
+    // Find and update just the rows for this entry
+    const entryResults = computeResults([entry], cur);
+    // Replace matching rows in lastResults
+    entryResults.forEach(newRow => {
+      const idx = lastResults.findIndex(r => r.attacker === entry);
+      if (idx !== -1) {
+        newRow.originalOrder = lastResults[idx].originalOrder; // preserve paste position
+        lastResults[idx] = newRow;
+      } else lastResults.push(newRow);
+    });
+    cur._lastResults = lastResults;
+  }
+  renderResultsDebounced();
+}
+
+function onMetaEvSliderChange(stat, rawVal, inputEl) {
+  if (!_metaEvEntry) return;
+  if (!_metaEvEntry.evs) _metaEvEntry.evs = {};
+  let val = Math.min(EV_MAX(), Math.max(0, parseInt(rawVal) || 0));
+  // Non-champions: snap to nearest valid breakpoint (0 or 4+8n up to 252)
+  if (_currentFormat !== 'champions' && val > 0) {
+    const bp = [0, ...Array.from({length:32}, (_,i) => 4+i*8)];
+    val = bp.reduce((best, b) => Math.abs(b-val) < Math.abs(best-val) ? b : best);
+    val = Math.min(EV_MAX(), val);
+  }
+  _metaEvEntry.evs[stat] = val;
+  if (inputEl) inputEl.value = val;
+  _applyMetaEvChanges();
+}
+
+function onMetaEvNatureChange() {
+  if (!_metaEvEntry) return;
+  const sel = document.getElementById('metaEvNatureSelect');
+  if (!sel) return;
+  _metaEvEntry.nature = sel.value;
+  _metaEvEntry._pendingBoost = undefined; _metaEvEntry._pendingDrop = undefined;
+  _renderMetaEvSliders(); // full rebuild needed — nature changes stat multipliers
+  _applyMetaEvChanges();
+}
+
+function onMetaNatureStatBtn(stat, role) {
+  if (!_metaEvEntry) return;
+  const nat = NATURES[_metaEvEntry.nature||'hardy']||{};
+  const curBoost = _metaEvEntry._pendingBoost!==undefined?_metaEvEntry._pendingBoost:(Object.keys(nat).find(k=>nat[k]>1)||null);
+  const curDrop  = _metaEvEntry._pendingDrop !==undefined?_metaEvEntry._pendingDrop :(Object.keys(nat).find(k=>nat[k]<1)||null);
+  let newBoost=curBoost, newDrop=curDrop;
+  if(role==='boost'){newBoost=(newBoost===stat)?null:stat;if(newBoost&&newBoost===newDrop)newDrop=null;}
+  else              {newDrop =(newDrop ===stat)?null:stat;if(newDrop &&newDrop ===newBoost)newBoost=null;}
+  _metaEvEntry._pendingBoost=newBoost; _metaEvEntry._pendingDrop=newDrop;
+  if(newBoost&&newDrop){const found=NATURE_BY_EFFECT[newBoost+'_'+newDrop];if(found){_metaEvEntry.nature=found;_metaEvEntry._pendingBoost=undefined;_metaEvEntry._pendingDrop=undefined;const s=document.getElementById('metaEvNatureSelect');if(s)s.value=found;}}
+  else if(!newBoost&&!newDrop){_metaEvEntry.nature='hardy';const s=document.getElementById('metaEvNatureSelect');if(s)s.value='hardy';}
+  _renderMetaEvSliders(); // full rebuild — button highlight colors change
+  _applyMetaEvChanges();
+}
+
+function resetMetaEvs() {
+  if (!_metaEvEntry) return;
+  _metaEvEntry.evs={hp:0,atk:0,def:0,spa:0,spd:0,spe:0};
+  _metaEvEntry.nature='hardy'; _metaEvEntry._pendingBoost=undefined; _metaEvEntry._pendingDrop=undefined;
+  const s=document.getElementById('metaEvNatureSelect'); if(s)s.value='hardy';
+  _applyMetaEvChanges();
+}
+
+function onMetaEvFieldChange(field, value) {
+  if (!_metaEvEntry) return;
+  if(field==='item'){_metaEvEntry.item=value;_metaEvEntry.allItems=value?[value]:[];}
+  else if(field==='ability'){_metaEvEntry.ability=value;}
+  else if(field==='tera'){_metaEvEntry.teraType=value.toLowerCase()||null;}
+  _applyMetaEvChanges();
+}
+
+function onMetaEvMoveChange(idx, value) {
+  if (!_metaEvEntry) return;
+  if(!_metaEvEntry.moves)_metaEvEntry.moves=[];
+  while(_metaEvEntry.moves.length<4)_metaEvEntry.moves.push('');
+  _metaEvEntry.moves[idx]=value.trim();
+  Promise.all(_metaEvEntry.moves.map((mv,i)=>
+    mv?fetchMoveData(mv).then(r=>r?{...r,pasteIndex:i}:{name:mv,power:0,type:'normal',cat:'status',isSpread:false,pasteIndex:i}):Promise.resolve(null)
+  )).then(results=>{
+    _metaEvEntry.allMoves=results.filter(Boolean);
+    _metaEvEntry.resolvedMoves=_metaEvEntry.allMoves.filter(m=>m.power>0);
+    _applyMetaEvChanges();
+  });
+}
+
 function handlePinClick(e) {
   e.stopPropagation();
   const key = e.currentTarget.dataset.pinkey;
@@ -6766,6 +7277,153 @@ const SEARCH_PREFIXES = ['type:','move:','ability:','weak:','resist:','immune:',
 const ALL_TYPE_NAMES = ['normal','fire','water','electric','grass','ice','fighting','poison',
   'ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
 
+// ── Comprehensive game data for autocomplete ──────────────────────────────────
+
+const ALL_TERA_TYPES = ['Normal','Fire','Water','Electric','Grass','Ice','Fighting','Poison',
+  'Ground','Flying','Psychic','Bug','Rock','Ghost','Dragon','Dark','Steel','Fairy','Stellar'];
+
+const ALL_ABILITIES = [
+  'Adaptability','Aerilate','Aftermath','Air Lock','Analytic','Anger Point','Anger Shell',
+  'Anticipation','Arena Trap','Armor Tail','Aroma Veil','As One','Aura Break',
+  'Bad Dreams','Ball Fetch','Battery','Battle Armor','Battle Bond','Beads of Ruin',
+  'Beast Boost','Berserk','Big Pecks','Blaze','Bulletproof','Cheek Pouch','Chilling Neigh',
+  'Chlorophyll','Clear Body','Cloud Nine','Color Change','Comatose','Commander',
+  'Competitive','Compound Eyes','Contrary','Corrosion','Costar','Cotton Down',
+  'Curious Medicine','Cursed Body','Cute Charm','Damp','Dancer','Dark Aura',
+  'Dauntless Shield','Dazzling','Defeatist','Defiant','Delta Stream','Desolate Land',
+  'Disguise','Download','Dragon\'s Maw','Drizzle','Drought','Dry Skin',
+  'Early Bird','Earth Eater','Effect Spore','Electric Surge','Electric Terrain Surge',
+  'Electromorphosis','Emergency Exit','Enormous Power','Fairy Aura','Filter',
+  'Flame Body','Flare Boost','Flash Fire','Flower Gift','Flower Veil','Fluffy',
+  'Forecast','Forewarn','Friend Guard','Frisk','Full Metal Body','Fur Coat',
+  'Gale Wings','Galvanize','Gluttony','Gooey','Good as Gold','Gorilla Tactics',
+  'Grace','Grass Pelt','Grassy Surge','Grim Neigh','Guard Dog','Guts',
+  'Hadron Engine','Harvest','Healer','Heatproof','Heavy Metal','Honey Gather',
+  'Huge Power','Hustle','Hydration','Hyper Cutter','Ice Body','Ice Face','Ice Scales',
+  'Illuminate','Illusion','Immunity','Imposter','Infiltrator','Innards Out',
+  'Inner Focus','Insomnia','Intimidate','Intrepid Sword','Iron Barbs','Iron Fist',
+  'Justified','Keen Eye','Klutz','Leaf Guard','Levitate','Libero','Light Metal',
+  'Lightning Rod','Limber','Lingering Aroma','Liquid Ooze','Liquid Voice',
+  'Long Reach','Magic Bounce','Magic Guard','Magician','Magma Armor','Magnet Pull',
+  'Marvel Scale','Mind\'s Eye','Minus','Mirror Armor','Misty Surge','Mold Breaker',
+  'Moody','Motor Drive','Moxie','Multiscale','Multitype','Mummy',
+  'Natural Cure','Neutralizing Gas','No Guard','Normalize','Oblivious',
+  'Opportunist','Overcoat','Overgrow','Own Tempo','Parental Bond','Pastel Veil',
+  'Perish Body','Pickpocket','Pickup','Pixilate','Plus','Poison Heal','Poison Point',
+  'Poison Touch','Power Construct','Power of Alchemy','Prankster','Pressure',
+  'Primordial Sea','Prism Armor','Propeller Tail','Protean','Proud Heart',
+  'Psychic Surge','Punk Rock','Pure Power','Purifying Salt','Queenly Majesty',
+  'Quick Draw','Quick Feet','Rain Dish','Rattled','Receiver','Reckless',
+  'Refrigerate','Regenerator','Ripen','Rivalry','Rock Head','Rocky Payload',
+  'Run Away','Sand Force','Sand Rush','Sand Spit','Sand Stream','Sand Veil',
+  'Sap Sipper','Schooling','Scrappy','Screen Cleaner','Seed Sower','Serene Grace',
+  'Shadow Shield','Shed Skin','Sheer Force','Shell Armor','Shield Dust','Shields Down',
+  'Simple','Skill Link','Slow Start','Slush Rush','Sniper','Snow Cloak',
+  'Snow Warning','Solar Power','Solid Rock','Soul-Heart','Soundproof','Speed Boost',
+  'Stakeout','Stall','Stamina','Stance Change','Static','Steadfast','Steam Engine',
+  'Steelworker','Stench','Sticky Hold','Storm Drain','Strong Jaw','Sturdy',
+  'Suction Cups','Super Luck','Supersweet Syrup','Supreme Overlord','Surge Surfer',
+  'Swarm','Sweet Veil','Swift Swim','Sword of Ruin','Symbiosis','Synchronize',
+  'Tablets of Ruin','Tangled Feet','Tangling Hair','Technician','Telepathy',
+  'Teravolt','Thermal Exchange','Thick Fat','Tinted Lens','Torrent','Tough Claws',
+  'Toxic Boost','Toxic Chain','Toxic Debris','Trace','Transistor','Triage',
+  'Truant','Turboblaze','Unaware','Unburden','Unnerve','Unseen Fist','Vessel of Ruin',
+  'Victory Star','Vital Spirit','Volt Absorb','Water Absorb','Water Bubble',
+  'Water Compaction','Water Veil','Weak Armor','Well-Baked Body','White Smoke',
+  'Wimp Out','Wind Power','Wind Rider','Wonder Guard','Wonder Skin','Zen Mode',
+  'Zero to Hero','Tera Shell','Protosynthesis','Quark Drive',
+];
+
+const ALL_ITEMS = [
+  'Absorb Bulb','Air Balloon','Amulet Coin','Assault Vest','Berry Juice',
+  'Big Root','Binding Band','Black Belt','Black Glasses','Black Sludge',
+  'Blunder Policy','Booster Energy','Bright Powder','Bug Memory','Burn Drive',
+  'Cell Battery','Charcoal','Chill Drive','Choice Band','Choice Scarf','Choice Specs',
+  'Coba Berry','Colbur Berry','Dark Memory','Damp Rock','Deep Sea Scale',
+  'Deep Sea Tooth','Destiny Knot','Douse Drive','Dragon Fang','Dragon Memory',
+  'Eject Button','Eject Pack','Electric Memory','Electric Seed','Eviolite',
+  'Expert Belt','Fairy Feather','Fighting Memory','Fire Memory','Fire Stone',
+  'Flame Orb','Float Stone','Flying Memory','Focus Band','Focus Sash',
+  'Ghost Memory','Grass Memory','Grass Seed','Grassy Seed','Grip Claw',
+  'Ground Memory','Hard Stone','Heat Rock','Heavy-Duty Boots','Hondew Berry',
+  'Ice Memory','Icy Rock','Iron Ball','Iron Memory','Jaboca Berry',
+  'Kasib Berry','Kebia Berry','Kings Rock','Lagging Tail','Lax Incense',
+  'Leftovers','Life Orb','Light Ball','Light Clay','Lum Berry',
+  'Luminous Moss','Lustrous Globe','Lustrous Orb','Magnet','Metronome',
+  'Miracle Seed','Mirror Herb','Misty Seed','Muscle Band','Mystic Water',
+  'Never-Melt Ice','Normal Gem','Occa Berry','Odd Incense','Passho Berry',
+  'Payapa Berry','Persim Berry','Petaya Berry','Poison Barb','Poison Memory',
+  'Pokerus','Psychic Memory','Psychic Seed','Protective Pads','Punching Glove',
+  'Quick Claw','Razor Claw','Razor Fang','Rindo Berry','Rocky Helmet',
+  'Room Service','Rose Incense','Roseli Berry','Rusted Shield','Rusted Sword',
+  'Salac Berry','Scope Lens','Sea Incense','Sharp Beak','Shell Bell',
+  'Shed Shell','Silk Scarf','Silver Powder','Sitrus Berry','Smooth Rock',
+  'Snowball','Soft Sand','Soul Dew','Spell Tag','Steel Memory','Sticky Barb',
+  'Throat Spray','Toxic Orb','Twisted Spoon','Utility Umbrella',
+  'Wacan Berry','Water Memory','Wave Incense','Weakness Policy','White Herb',
+  'Wide Lens','Wiki Berry','Wise Glasses','Yache Berry','Zoom Lens',
+  'Cheri Berry','Chesto Berry','Pecha Berry','Rawst Berry','Aspear Berry',
+  'Leppa Berry','Oran Berry','Figy Berry','Iapapa Berry','Aguav Berry','Mago Berry',
+  'Apicot Berry','Ganlon Berry','Liechi Berry','Lansat Berry','Starf Berry',
+];
+
+const HYPHEN_EXCEPTIONS_GLOBAL = {
+  'will-o-wisp': 'Will-O-Wisp', 'u-turn': 'U-turn', 'soft-boiled': 'Soft-Boiled',
+  'x-scissor': 'X-Scissor', 'power-up-punch': 'Power-Up Punch', 'freeze-dry': 'Freeze-Dry',
+  'never-ending-nightmare': 'Never-Ending Nightmare', 'kings-shield': "King's Shield",
+  'v-create': 'V-create', 'self-destruct': 'Self-Destruct',
+};
+
+const ALL_MOVES = (() => {
+  // Derive display names from FETCH_POWER_OVERRIDES + common moves
+  const fromOverrides = Object.keys(FETCH_POWER_OVERRIDES).map(slug =>
+    HYPHEN_EXCEPTIONS_GLOBAL[slug] ||
+    slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+  );
+  const common = [
+    'Acrobatics','Aerial Ace','Air Slash','Aqua Jet','Aqua Tail','Aura Sphere',
+    'Avalanche','Body Press','Body Slam','Bolt Beam','Brave Bird','Bulldoze',
+    'Calm Mind','Camouflage','Close Combat','Crunch','Dark Pulse','Dazzling Gleam',
+    'Dig','Discharge','Dive','Dragon Claw','Dragon Dance','Dragon Pulse',
+    'Dragon Rush','Drain Punch','Draco Meteor','Earthquake','Energy Ball',
+    'Facade','Fake Out','Fire Blast','Fire Punch','Flamethrower','Flash Cannon',
+    'Foul Play','Giga Drain','Gyro Ball','Haze','Heat Wave','Helping Hand',
+    'High Jump Kick','Hurricane','Hydro Pump','Hyper Voice','Ice Beam','Ice Punch',
+    'Ice Spinner','Iron Head','Knock Off','Leaf Blade','Leaf Storm','Light Screen',
+    'Low Sweep','Mach Punch','Metal Claw','Moonblast','Night Shade','Night Slash',
+    'Outrage','Overheat','Play Rough','Poison Jab','Poltergeist','Power Gem',
+    'Protect','Psychic','Psyshock','Pursuit','Quick Attack','Rapid Spin',
+    'Recover','Reflect','Rest','Return','Roost','Sacred Sword','Scald',
+    'Shadow Ball','Shadow Claw','Shadow Sneak','Snarl','Solar Beam','Spikes',
+    'Stealth Rock','Sticky Web','Stone Edge','Substitute','Sucker Punch',
+    'Super Fang','Surf','Swagger','Swords Dance','Tailwind','Taunt','Thunder',
+    'Thunder Punch','Thunder Wave','Thunderbolt','Toxic','Toxic Spikes','Trick',
+    'Trick Room','U-turn','Vacuum Wave','Volt Switch','Water Spout','Will-O-Wisp',
+    'Wish','Wood Hammer','X-Scissor','Zap Cannon','Tera Blast','Tera Starstorm',
+    'Iron Defense','Stored Power','Cosmic Power','Calm Mind','Nasty Plot',
+    'Focus Energy','Agility','Belly Drum','Quiver Dance','Shell Smash',
+    'Cotton Guard','Amnesia','Howl','Work Up','Coil','Curse',
+    'Baton Pass','Encore','Disable','Torment','Whirlwind','Roar',
+    'Rain Dance','Sunny Day','Sandstorm','Hail','Snow',
+    'Wide Guard','Follow Me','Rage Powder','After You','Ally Switch',
+    'Icicle Crash','Power Whip','Superpower','Hammer Arm','Focus Blast',
+    'Aura Sphere','Shadow Force','Origin Pulse','Precipice Blades','Thousand Arrows',
+    'Thousand Waves','Land\'s Wrath','Light of Ruin','Diamond Storm','Steam Eruption',
+    'Hyperspace Hole','Hyperspace Fury','Oblivion Wing','Wring Out','Freeze-Dry',
+    'Soft-Boiled','Milk Drink','Slack Off','Roost','Moonlight','Morning Sun',
+    'Shore Up','Synthesis','Healing Wish','Lunar Dance','Jungle Healing',
+  ];
+  const seen = new Set();
+  return [...fromOverrides, ...common].filter(m => {
+    const key = m.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).sort();
+})();
+
+// Expose for slugToName in importJsonMeta
+
 function getAutocompleteSuggestion(val) {
   if (!val) return '';
 
@@ -6779,11 +7437,11 @@ function getAutocompleteSuggestion(val) {
   // Helper: given what was typed and the matched candidate, build the ghost string
   // Ghost = everything before this term + leading space + typed text + remainder of match
   function buildGhost(typed, candidate) {
-    // candidate must start with typed (case-insensitive); preserve typed casing + append rest
+    // candidate must start with typed (case-insensitive)
     if (!candidate.toLowerCase().startsWith(typed.toLowerCase())) return '';
     if (candidate.toLowerCase() === typed.toLowerCase()) return ''; // already complete
-    const remainder = candidate.slice(typed.length);
-    return prefix + leadingSpace + typed + remainder;
+    // Use the full correctly-cased candidate (not the user's typed casing)
+    return prefix + leadingSpace + candidate;
   }
 
   // ── Case 1: inside a prefix:value pattern (e.g. "move:earthq") ────────────
@@ -6828,6 +7486,39 @@ function getAutocompleteSuggestion(val) {
   }
 
   return '';
+}
+
+// ── EV panel field autocomplete ───────────────────────────────────────────────
+function _fieldAutocomplete(inputId, ghostId, candidates) {
+  const inp = document.getElementById(inputId);
+  const ghost = document.getElementById(ghostId);
+  if (!inp || !ghost) return;
+  const val = inp.value;
+  if (!val) { ghost.value = ''; return; }
+  const match = candidates.find(c => c.toLowerCase().startsWith(val.toLowerCase()) && c.toLowerCase() !== val.toLowerCase());
+  // Ghost shows the full correctly-cased candidate, not the user's typed prefix
+  ghost.value = match || '';
+}
+
+function _fieldAutocompleteKey(e, inputId, ghostId) {
+  const inp   = document.getElementById(inputId);
+  const ghost = document.getElementById(ghostId);
+  // Tab or ArrowRight: accept suggestion
+  if (e.key === 'Tab' || e.key === 'ArrowRight') {
+    if (ghost && inp && ghost.value && ghost.value !== inp.value) {
+      e.preventDefault();
+      inp.value = ghost.value;
+      inp.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    return;
+  }
+  // Ctrl+X with no selection: clear the field
+  if ((e.ctrlKey || e.metaKey) && e.key === 'x' && inp && inp.selectionStart === inp.selectionEnd) {
+    e.preventDefault();
+    inp.value = '';
+    if (ghost) ghost.value = '';
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+  }
 }
 
 function updateSearchGhost() {
@@ -6997,6 +7688,16 @@ document.addEventListener('click', (e) => {
   const btn = document.getElementById('filterHintBtn');
   if (h && h.style.display === 'block' && !h.contains(e.target) && e.target !== btn) {
     h.style.display = 'none';
+  }
+  // Close meta EV popup when clicking outside (use closest() — works even with detached nodes from re-renders)
+  const mepop = document.getElementById('metaEvPopup');
+  if (mepop && mepop.style.display === 'block') {
+    const insidePopup = e.target.closest && e.target.closest('#metaEvPopup');
+    const isOpenBtn   = e.target.closest && e.target.closest('[data-opens-meta-ev]');
+    if (!insidePopup && !isOpenBtn) {
+      mepop.style.display = 'none';
+      _metaEvEntry = null;
+    }
   }
 });
 
@@ -7229,7 +7930,8 @@ async function toggleDefenderMega(e, slotIdx, megaSlug) {
   const curSlug   = toSlug(slot.speciesRaw);
   const baseKey   = toSlug(slot._origSpeciesRaw || slot.speciesRaw)
     .replace(/-mega(-[xy])?$/, '').replace(/-gmax$/, '')
-    .replace(/-blade$|-shield$/, '').replace(/-eternal$/, '');
+    .replace(/-blade$|-shield$/, '').replace(/-eternal$/, '')
+    .replace(/-hero$/, '').replace(/-zero$/, '');
   const isAlready = curSlug === megaSlug || defenderMegaOverrides.get(slotIdx) === megaSlug;
 
   if (isAlready) {
@@ -7237,23 +7939,32 @@ async function toggleDefenderMega(e, slotIdx, megaSlug) {
     if (!slot._megaBaseStats) {
       try { const b = await fetchPokemonData(baseKey); slot._megaBaseStats = b.baseStats; slot._megaBaseTypes = b.types; slot._megaBaseSpriteUrl = b.spriteUrl; } catch {}
     }
-    slot.speciesRaw  = slot._origSpeciesRaw || slugToDisplayName(baseKey);
+    const revertName = slot._origSpeciesRaw || slugToDisplayName(baseKey);
+    slot.speciesRaw  = revertName;
     if (slot._megaBaseStats) { slot.baseStats = slot._megaBaseStats; slot._megaBaseStats = null; }
     if (slot._megaBaseTypes) { slot.types     = slot._megaBaseTypes; slot._megaBaseTypes = null; }
     if (slot._megaBaseAbility !== undefined) { slot.ability = slot._megaBaseAbility; slot._megaBaseAbility = undefined; }
     slot._origSpeciesRaw = null;
     defenderMegaOverrides.delete(slotIdx);
+    // Sync paste text with reverted species name
+    if (slot._rawText) {
+      const lines = slot._rawText.split('\n');
+      lines[0] = revertName + (slot.item ? ` @ ${slot.item}` : '');
+      slot._rawText = lines.join('\n');
+      const ta = document.getElementById('defenderInput');
+      if (ta && slotIdx === activeDefenderSlot) { _suppressDefInput = true; ta.value = slot._rawText; _suppressDefInput = false; }
+    }
   } else {
-    // Activate mega
+    // Activate form
     if (!pokemonCache[baseKey]) { try { await fetchPokemonData(baseKey); } catch {} }
     if (!slot._megaBaseStats) {
       slot._megaBaseStats   = slot.baseStats;
       slot._megaBaseTypes   = slot.types;
       slot._megaBaseSpriteUrl = slot.spriteUrl;
       slot._origSpeciesRaw  = slot.speciesRaw;
-      // Save base ability
-      const nativelyMega = curSlug.includes('-mega') || curSlug.includes('-eternal');
-      slot._megaBaseAbility = nativelyMega ? (FORM_ABILITIES[baseKey] || slot.ability) : slot.ability;
+      // Save base ability — check for any known alt-form suffix
+      const nativelyAltForm = curSlug.includes('-mega') || curSlug.includes('-eternal') || curSlug.includes('-hero') || curSlug.includes('-blade') || curSlug.includes('-shield');
+      slot._megaBaseAbility = nativelyAltForm ? (FORM_ABILITIES[baseKey] || slot.ability) : slot.ability;
     }
     try {
       const mega = await fetchPokemonData(megaSlug);
@@ -7261,12 +7972,21 @@ async function toggleDefenderMega(e, slotIdx, megaSlug) {
       slot.types     = mega.types;
       slot.spriteUrl = mega.spriteUrl || slot._megaBaseSpriteUrl || null;
     } catch {
-      // Fan-game mega: keep current stats, just rename
+      // Form not in PokeAPI: keep current stats, just rename
     }
-    slot.speciesRaw = slugToDisplayName(megaSlug);
+    const newName = slugToDisplayName(megaSlug);
+    slot.speciesRaw = newName;
     const megaAbility = FORM_ABILITIES[megaSlug];
     if (megaAbility) slot.ability = megaAbility;
     defenderMegaOverrides.set(slotIdx, megaSlug);
+    // Sync paste text with new species name
+    if (slot._rawText) {
+      const lines = slot._rawText.split('\n');
+      lines[0] = newName + (slot.item ? ` @ ${slot.item}` : '');
+      slot._rawText = lines.join('\n');
+      const ta = document.getElementById('defenderInput');
+      if (ta && slotIdx === activeDefenderSlot) { _suppressDefInput = true; ta.value = slot._rawText; _suppressDefInput = false; }
+    }
   }
 
   // Recompute stats for this slot
@@ -7376,13 +8096,17 @@ async function toggleMegaForm(e, speciesRaw, megaSlug) {
 
   // baseKey = the lowercase base-form slug, always (e.g. 'aggron', 'charizard')
   const currentName = entry.speciesRaw;
-  const rawSlug = toSlug(entry._origSpeciesRaw || entry.speciesRaw);
+  // Use current speciesRaw for slug computation (not _origSpeciesRaw which may be stale)
+  const rawSlug = toSlug(entry.speciesRaw);
   const baseKey = rawSlug === 'floette-mega' ? 'floette-eternal' :
     rawSlug.replace(/-mega(-[xy])?$/, '').replace(/-gmax$/, '')
-    .replace(/-blade$|-shield$/, '').replace(/-eternal$/, '');
+    .replace(/-blade$|-shield$/, '').replace(/-eternal$/, '')
+    .replace(/-hero$/, '').replace(/-zero$/, '');
 
-  // Is this mega already the current form?
-  const isAlreadyThisForm = toSlug(currentName) === megaSlug || megaOverrides.get(baseKey) === megaSlug;
+  // Is this form already the current form?
+  const isAlreadyThisForm = toSlug(currentName) === megaSlug;
+
+  console.log('[toggleMegaForm]', {speciesRaw, megaSlug, currentName, rawSlug, baseKey, isAlreadyThisForm});
 
 
   if (isAlreadyThisForm) {
@@ -7437,7 +8161,8 @@ async function toggleMegaForm(e, speciesRaw, megaSlug) {
         ? entry.allAbilities[1]
         : null;
       const nativelyMega = toSlug(entry.speciesRaw).includes('-mega') ||
-                           toSlug(entry.speciesRaw).includes('-eternal');
+                           toSlug(entry.speciesRaw).includes('-eternal') ||
+                           toSlug(entry.speciesRaw).includes('-hero');
       if (pasteBaseAbility) {
         entry._baseAbility = pasteBaseAbility;
       } else if (nativelyMega && FORM_ABILITIES[baseKey]) {
@@ -7481,6 +8206,9 @@ async function toggleMegaForm(e, speciesRaw, megaSlug) {
 // Convert a PokeAPI slug to a readable display name
 // e.g. "charizard-mega-x" → "Charizard-Mega-X", "aggron-mega" → "Aggron-Mega"
 function slugToDisplayName(slug) {
+  // Special display name overrides
+  if (slug === 'palafin-zero') return 'Palafin';
+  if (slug === 'palafin-hero') return 'Palafin-Hero';
   return slug.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('-');
 }
 
@@ -8971,33 +9699,43 @@ function getDamageLabel(speciesRaw, isMyTeam, isOffenseMode) {
 // Build pip grid: for each opposing pokemon, show how this attacker's best move hits them (offense)
 // or how their best move hits this pokemon (defense)
 function buildMatchupPips(pokemon, opposingSorted, isOffenseMode) {
-  const pips = opposingSorted.map(opp => {
-    if (isOffenseMode) {
-      // How well does pokemon's best move hit opp? High eff = good (blue/green), resisted = bad (red)
-      const eff = bestOffenseEff(pokemon.speciesRaw, opp.types, opp.ability);
-      if (eff === 0)    return 'off-immune';  // they're immune to you = very dark
-      if (eff >= 4)     return 'off-4x';      // ×4 = blue (great)
-      if (eff >= 2)     return 'off-2x';      // ×2 = green (good)
-      if (eff < 1)      return 'off-resist';  // resisted = red (bad)
-      return '';                               // neutral
-    } else {
-      // How well does opp's best move hit pokemon? High eff = bad (red), resisted = good (green)
-      const eff = bestOffenseEff(opp.speciesRaw, pokemon.types, pokemon.ability);
-      if (eff === 0)    return 'immune';    // you're immune = black (best)
-      if (eff >= 4)     return 'weak4x';   // they hit ×4 = bright red (very bad)
-      if (eff >= 2)     return 'weak2x';   // they hit ×2 = orange (bad)
-      if (eff <= 0.25)  return 'resist4x'; // you resist ×0.25 = blue (very good)
-      if (eff < 1)      return 'resist';   // you resist = green (good)
-      return '';
-    }
+  function pipRow(pips) {
+    const rows = [];
+    for (let i = 0; i < pips.length; i += 3) rows.push(pips.slice(i, i+3));
+    return rows.map(row =>
+      `<div class="wk-pip-row">${row.map(cls => `<div class="wk-pip${cls?' '+cls:''}"></div>`).join('')}</div>`
+    ).join('');
+  }
+
+  const offPips = opposingSorted.map(opp => {
+    const eff = bestOffenseEff(pokemon.speciesRaw, opp.types, opp.ability);
+    if (eff === 0)  return 'off-immune';
+    if (eff >= 4)   return 'off-4x';
+    if (eff >= 2)   return 'off-2x';
+    if (eff < 1)    return 'off-resist';
+    return '';
   });
 
-  const rows = [];
-  for (let i = 0; i < pips.length; i += 3) rows.push(pips.slice(i, i+3));
-  const rowHtml = rows.map(row =>
-    `<div class="wk-pip-row">${row.map(cls => `<div class="wk-pip${cls?' '+cls:''}"></div>`).join('')}</div>`
-  ).join('');
-  return `<div class="wk-pips" style="margin-bottom:2px;">${rowHtml}</div>`;
+  const defPips = opposingSorted.map(opp => {
+    const eff = bestOffenseEff(opp.speciesRaw, pokemon.types, pokemon.ability);
+    if (eff === 0)   return 'immune';
+    if (eff >= 4)    return 'weak4x';
+    if (eff >= 2)    return 'weak2x';
+    if (eff <= 0.25) return 'resist4x';
+    if (eff < 1)     return 'resist';
+    return '';
+  });
+
+  return `<div style="display:flex;gap:6px;margin-bottom:2px;align-items:flex-start;">
+    <div>
+      <div style="font-size:8px;color:var(--text3);margin-bottom:1px;text-align:center;">ATK</div>
+      <div class="wk-pips">${pipRow(offPips)}</div>
+    </div>
+    <div>
+      <div style="font-size:8px;color:var(--text3);margin-bottom:1px;text-align:center;">DEF</div>
+      <div class="wk-pips">${pipRow(defPips)}</div>
+    </div>
+  </div>`;
 }
 
 function sortTeamByThreat(team, isMyTeam) {
@@ -9986,7 +10724,7 @@ function renderMatchHistory() {
       const slug = toSlug(name);
       const baseSlug = slug === 'floette-mega' ? 'floette-eternal'
         : slug.replace(/-mega(-[xy])?$/, '').replace(/-gmax$/, '')
-             .replace(/-blade$|-shield$/, '').replace(/-eternal$/, '');
+             .replace(/-blade$|-shield$/, '').replace(/-eternal$/, '').replace(/-hero$/, '');
       const isForm = baseSlug !== slug;
       // For forms: prefer live cache (corrected) over saved sprite (may be stale/wrong base form)
       // For base pokemon: saved sprite is fine
@@ -10313,6 +11051,7 @@ function initGettingStarted() {
   if (!dismissed && card) card.style.display = 'block';
 }
 initFormat();
+renderEvPanel();
   initGettingStarted();
 
 // Pre-fetch base sprites for fan-game megas in match history so they're in cache when log renders
@@ -10327,7 +11066,7 @@ initFormat();
         const slug = toSlug(name);
         const baseSlug = slug === 'floette-mega' ? 'floette-eternal'
           : slug.replace(/-mega(-[xy])?$/, '').replace(/-gmax$/, '')
-               .replace(/-blade$|-shield$/, '').replace(/-eternal$/, '');
+               .replace(/-blade$|-shield$/, '').replace(/-eternal$/, '').replace(/-hero$/, '');
         if (baseSlug !== slug && !pokemonCache[baseSlug]?.spriteUrl) {
           toFetch.add(baseSlug);
         }
@@ -10423,8 +11162,8 @@ function updateFieldStatus() {
   if (activeScreens.has('lightscreen')) chips.push(chip('Light Screen','#ED93B1'));
 
   const sMap = {
-    'tailwind-atk':  ['Tailwind (atk)','#87ceeb'],
-    'tailwind-def':  ['Tailwind (def)','#87ceeb'],
+    'tailwind-atk':  ['Tailwind (opp)','#87ceeb'],
+    'tailwind-def':  ['Tailwind (tabs)','#87ceeb'],
     'tailwind-both': ['Tailwind','#87ceeb'],
     'trickroom':     ['Trick Room','#ED93B1'],
   };
@@ -11311,9 +12050,17 @@ function renderThreatRecs() {
   const noMegaStyle = _threatRecsNoMega
     ? 'color:var(--accent2);border-color:var(--accent);background:rgba(124,106,247,0.12);'
     : 'color:var(--text3);border-color:var(--border2);';
-  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-    <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;">💡 Recommended counters vs ${modeLabel}</div>
+  // Build counter pool select options
+  const _cpSel = document.getElementById('counterPoolMetaSelect');
+  const _cpOptHtml = (_cpSel ? Array.from(_cpSel.options).map(o => `<option value="${o.value}"${o.selected?' selected':''}>${o.text}</option>`).join('') : '<option value="">— saved metas —</option>');
+  const _cpChips = COUNTER_POOL_DB.length;
+  const _cpLoaded = _cpChips > 0;
+
+  let html = `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+    <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;flex:1;">💡 Recommended counters vs ${modeLabel}</div>
     <button onclick="_threatRecsNoMega=!_threatRecsNoMega;_threatRecsCount=3;renderThreatRecs();" style="font-size:10px;padding:2px 8px;border:0.5px solid;border-radius:var(--radius-sm);background:transparent;cursor:pointer;${noMegaStyle}" title="Toggle mega pokemon visibility">No Mega</button>
+    <select id="threatRecsPoolSelect" style="font-size:11px;padding:2px 5px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;max-width:130px;" onchange="document.getElementById('counterPoolMetaSelect').value=this.value;onCounterPoolMetaSelect();">${_cpOptHtml}</select>
+    <button onclick="loadCounterPool();renderThreatRecs();" style="font-size:10px;padding:2px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:${_cpLoaded?'var(--green)':'var(--text3)'};cursor:pointer;" title="Load counter pool from saved meta">${_cpLoaded ? '✓ Pool ('+_cpChips+')' : 'Load pool'}</button>
   </div>`;
 
   shown.forEach(({ candidate, totalScore, matchups }) => {
