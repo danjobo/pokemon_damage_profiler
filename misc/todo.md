@@ -4,7 +4,7 @@
 
 
 
-
+- meta analysis "good against" mode
 
 
 

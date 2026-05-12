@@ -567,8 +567,8 @@
     .match-delete-side { display: none !important; }
     .match-delete-inline { display: block !important; position: static; transform: none; margin-left: auto; }
   }
-  .match-sprite.hl-dim { opacity: 0.3; filter: grayscale(0.6); }
-  .match-sprite-fallback.hl-dim { opacity: 0.3; filter: grayscale(0.6); }
+  .match-sprite.hl-dim { opacity: 0.18; filter: grayscale(1); }
+  .match-sprite-fallback.hl-dim { opacity: 0.18; filter: grayscale(1); }
   .wr-score {
     display: flex; align-items: baseline; gap: 5px;
     font-size: 16px; font-weight: 700;
@@ -1670,7 +1670,16 @@ Impish Nature
 
     <!-- Type weakness overlay (visible when 2+ tabs filled) -->
     <div id="weaknessOverlay" class="card-collapsible">
-      <div class="overlay-title card-label" id="weaknessTitle" onclick="toggleCard('weaknessOverlay',event)" style="cursor:pointer;margin-bottom:0;">Team Type Weakness Overlap <span class="card-collapse-hint">▼</span></div>
+      <div class="overlay-title card-label" style="cursor:pointer;margin-bottom:0;display:flex;align-items:center;justify-content:space-between;" onclick="toggleCard('weaknessOverlay',event)">
+        <span id="weaknessTitle">Team Type Weakness Overlap</span>
+        <div style="display:flex;align-items:center;gap:6px;" onclick="event.stopPropagation()">
+          <div style="display:flex;border:0.5px solid var(--border2);border-radius:20px;overflow:hidden;">
+            <button id="weakModeDefBtn" onclick="setWeaknessMode('defense')" style="padding:2px 8px;font-size:10px;border:none;border-right:0.5px solid var(--border2);background:var(--accent);color:#fff;cursor:pointer;font-weight:600;">Defense</button>
+            <button id="weakModeOffBtn" onclick="setWeaknessMode('offense')" style="padding:2px 8px;font-size:10px;border:none;background:transparent;color:var(--text3);cursor:pointer;">Offense</button>
+          </div>
+          <span class="card-collapse-hint">▼</span>
+        </div>
+      </div>
       <div class="card-body">
         <div class="weakness-grid" id="weaknessGrid" style="margin-top:14px;"></div>
       </div>
@@ -1983,6 +1992,7 @@ Impish Nature
       <button id="sortDirBtn" onclick="toggleSortDir()" title="Reverse sort order" style="padding:2px 7px;font-size:12px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;line-height:1;">↓</button>
       <select id="resultsLimit" onchange="renderResults()" title="Limit number of results shown" style="font-size:11px;padding:2px 5px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text2);cursor:pointer;outline:none;">
         <option value="0">All</option>
+        <option value="15">Top 15</option>
         <option value="25">Top 25</option>
         <option value="50">Top 50</option>
         <option value="100">Top 100</option>
@@ -2041,6 +2051,10 @@ Impish Nature
         </div>
         <div style="display:flex;align-items:center;gap:6px;">
           <button id="threatViewModeBtn" onclick="toggleThreatViewMode()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;" title="Switch between whole team and active tab only">👥 Team</button>
+          <div style="display:flex;border:0.5px solid var(--border2);border-radius:20px;overflow:hidden;">
+            <button id="threatPerspMetaBtn" onclick="setThreatPerspective('meta')" style="padding:2px 8px;font-size:10px;border:none;border-right:0.5px solid var(--border2);background:var(--accent);color:#fff;cursor:pointer;font-weight:600;" title="Show threats FROM the meta TO your team">Meta → You</button>
+            <button id="threatPerspMineBtn" onclick="setThreatPerspective('mine')" style="padding:2px 8px;font-size:10px;border:none;background:transparent;color:var(--text3);cursor:pointer;" title="Show what your team threatens in the meta">You → Meta</button>
+          </div>
           <button id="threatRecsBtn" onclick="toggleThreatRecs()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;" title="Show recommended counters from meta">💡 Counters</button>
           <button onclick="closeThreatPanel()" style="padding:3px 10px;font-size:11px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;">Close</button>
         </div>
@@ -2099,7 +2113,7 @@ const NATURES = {
 const TYPE_CHART = {
   normal:   {rock:0.5,ghost:0,steel:0.5},
   fire:     {fire:0.5,water:0.5,rock:0.5,dragon:0.5,grass:2,ice:2,bug:2,steel:2},
-  water:    {fire:2,water:0.5,grass:0.5,dragon:0.5,rock:2},
+  water:    {fire:2,water:0.5,grass:0.5,dragon:0.5,rock:2,ground:2},
   grass:    {fire:0.5,water:2,grass:0.5,poison:0.5,flying:0.5,bug:0.5,dragon:0.5,steel:0.5,ground:2,rock:2},
   electric: {electric:0.5,grass:0.5,dragon:0.5,ground:0,flying:2,water:2},
   ice:      {fire:0.5,water:0.5,ice:0.5,steel:0.5,grass:2,ground:2,flying:2,dragon:2},
@@ -2110,7 +2124,7 @@ const TYPE_CHART = {
   psychic:  {fighting:2,poison:2,psychic:0.5,steel:0.5,dark:0},
   bug:      {grass:2,psychic:2,dark:2,fire:0.5,fighting:0.5,flying:0.5,ghost:0.5,steel:0.5,fairy:0.5,poison:0.5},
   rock:     {fire:2,ice:2,flying:2,bug:2,fighting:0.5,ground:0.5,steel:0.5},
-  ghost:    {ghost:2,psychic:2,dark:0.5,normal:0,fairy:0.5},
+  ghost:    {ghost:2,psychic:2,dark:0.5,normal:0},
   dragon:   {dragon:2,steel:0.5,fairy:0},
   dark:     {ghost:2,psychic:2,fighting:0.5,dark:0.5,fairy:0.5},
   steel:    {ice:2,rock:2,fairy:2,fire:0.5,water:0.5,electric:0.5,steel:0.5},
@@ -3273,6 +3287,8 @@ function onEvFieldChange(field, value) {
   _applyEvChanges(slot, false);
 }
 
+let _evMoveChangeGen = 0; // increment on each change; stale async resolutions are ignored
+
 function onEvMoveChange(idx, value) {
   const slot = DEFENDER_SLOTS[activeDefenderSlot];
   if (!slot) return;
@@ -3281,6 +3297,8 @@ function onEvMoveChange(idx, value) {
   slot.moves[idx] = value.trim();
   _syncPasteFromSlot(slot);
 
+  const gen = ++_evMoveChangeGen;
+
   // Re-fetch all moves by position so pasteIndex stays correct
   Promise.all(slot.moves.map((mv, i) =>
     mv ? fetchMoveData(mv).then(r => r
@@ -3288,6 +3306,7 @@ function onEvMoveChange(idx, value) {
       : { name: mv, power: 0, type: 'normal', cat: 'status', isSpread: false, pasteIndex: i })
     : Promise.resolve(null)
   )).then(results => {
+    if (gen !== _evMoveChangeGen) return; // stale — a newer keystroke has fired
     slot.allMoves = results.filter(Boolean);
     slot.resolvedMoves = slot.allMoves.filter(m => m.power > 0);
     const loadedMeta = META_DB.filter(p => p.loaded);
@@ -3721,6 +3740,27 @@ function saveCurrentDefenderToSlot(defender, rawText, results) {
 const ALL_TYPES = ['normal','fire','water','electric','grass','ice','fighting','poison',
   'ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
 
+let _weaknessMode = 'defense'; // 'defense' | 'offense'
+
+function setWeaknessMode(mode) {
+  _weaknessMode = mode;
+  const defBtn = document.getElementById('weakModeDefBtn');
+  const offBtn = document.getElementById('weakModeOffBtn');
+  if (defBtn && offBtn) {
+    const active   = 'background:var(--accent);color:#fff;font-weight:600;';
+    const inactive = 'background:transparent;color:var(--text3);font-weight:400;';
+    defBtn.style.cssText = defBtn.style.cssText + (mode === 'defense' ? active : inactive);
+    offBtn.style.cssText = offBtn.style.cssText + (mode === 'offense' ? active : inactive);
+    defBtn.style.background = mode === 'defense' ? 'var(--accent)' : 'transparent';
+    defBtn.style.color = mode === 'defense' ? '#fff' : 'var(--text3)';
+    defBtn.style.fontWeight = mode === 'defense' ? '600' : '400';
+    offBtn.style.background = mode === 'offense' ? 'var(--accent)' : 'transparent';
+    offBtn.style.color = mode === 'offense' ? '#fff' : 'var(--text3)';
+    offBtn.style.fontWeight = mode === 'offense' ? '600' : '400';
+  }
+  updateWeaknessOverlay();
+}
+
 function updateWeaknessOverlay() {
   const filled = DEFENDER_SLOTS.filter(Boolean);
   const overlay = document.getElementById('weaknessOverlay');
@@ -3730,50 +3770,90 @@ function updateWeaknessOverlay() {
 
   const n = filled.length;
   const titleEl = document.getElementById('weaknessTitle');
-  if (titleEl) titleEl.textContent = `Type Weakness Overlap (${n} defender${n!==1?'s':''}) — sorted by threat`;
 
-  // For each attacking type, tally effectiveness across all filled defenders
-  const typeData = ALL_TYPES.map(atkType => {
-    const effs = filled.map(def => typeEffWithAbility(atkType, def.types, def.ability));
-    const weakCount   = effs.filter(e => e > 1).length;
-    const immuneCount = effs.filter(e => e === 0).length;
-    const resistCount = effs.filter(e => e > 0 && e < 1).length;
-    // Score: weighted sum for sorting — quad weak > double weak > neutral > resist > immune
-    const score = effs.reduce((s, e) => s + (e >= 4 ? 4 : e >= 2 ? 2 : e === 1 ? 0 : e > 0 ? -1 : -2), 0);
-    return { atkType, effs, weakCount, immuneCount, resistCount, score };
-  });
+  if (_weaknessMode === 'offense') {
+    // Offensive coverage: for each defending type, how many team pokemon hit it supereffectively
+    if (titleEl) titleEl.textContent = `Team Type Coverage (${n} attacker${n!==1?'s':''}) — sorted by coverage`;
 
-  // Sort: most weaknesses first → among ties, highest weighted score (penalises resists/immunities)
-  // → among ties, most immunities last.
-  typeData.sort((a, b) =>
-    b.weakCount - a.weakCount ||
-    b.score - a.score ||
-    a.immuneCount - b.immuneCount
-  );
-
-  let html = '';
-  for (const { atkType, effs, weakCount, resistCount, immuneCount, score } of typeData) {
-    const countClass = weakCount >= Math.ceil(n * 0.66) ? 'danger3'
-                     : weakCount >= Math.ceil(n * 0.5)  ? 'danger2'
-                     : weakCount >= 2                    ? 'danger1' : '';
-
-    // Build pips — lay out in rows of 3 (up to 2 rows of 3 = 6)
-    const pipHtml = effs.map(e => {
-      const cls = e === 0 ? 'immune' : e >= 4 ? 'weak4x' : e >= 2 ? 'weak2x' : e > 1 ? 'weak2x' : e <= 0.25 ? 'resist4x' : e < 1 ? 'resist' : '';
-      return `<div class="wk-pip${cls ? ' '+cls : ''}"></div>`;
+    const typeData = ALL_TYPES.map(defType => {
+      const effs = filled.map(slot => {
+        // Best eff any of slot's primary moves hit against pure defType
+        const moves = (slot.resolvedMoves||[]).filter(m=>(m.pasteIndex??99)<(slot.dividerIndex??4));
+        if (!moves.length) return 1;
+        return Math.max(...moves.map(m => {
+          const mt = getEffectiveMoveType(m, slot.ability||'', slot.speciesRaw||'');
+          return (TYPE_CHART[mt]||{})[defType] ?? 1;
+        }));
+      });
+      const hitCount = effs.filter(e => e > 1).length;
+      const score = effs.reduce((s,e) => s + (e >= 4 ? 4 : e >= 2 ? 2 : 0), 0);
+      return { defType, effs, hitCount, score };
     });
-    const rows = [];
-    for (let i = 0; i < pipHtml.length; i += 3) rows.push(pipHtml.slice(i, i+3).join(''));
-    const pipRows = rows.map(r => `<div class="wk-pip-row">${r}</div>`).join('');
 
-    html += `
-      <div class="wk-cell" title="${atkType}: ${weakCount}/${n} weak, ${resistCount}/${n} resist, ${immuneCount}/${n} immune">
-        <div class="wk-pips">${pipRows}</div>
-        <div class="wk-cell-label" style="color:${TYPE_COLORS[atkType]||'var(--text3)'}">${atkType.slice(0,3)}</div>
-        <div class="wk-count ${countClass}">${weakCount > 0 ? weakCount+'×' : immuneCount ? '✦' : '—'}</div>
-      </div>`;
+    typeData.sort((a,b) => b.hitCount - a.hitCount || b.score - a.score);
+
+    let html = '';
+    for (const { defType, effs, hitCount, score } of typeData) {
+      const countClass = hitCount >= Math.ceil(n * 0.66) ? 'danger3'
+                       : hitCount >= Math.ceil(n * 0.5)  ? 'danger2'
+                       : hitCount >= 2                    ? 'danger1' : '';
+      const pipHtml = effs.map(e => {
+        const cls = e >= 4 ? 'off-4x' : e >= 2 ? 'off-2x' : e < 1 ? 'off-resist' : '';
+        return `<div class="wk-pip${cls?' '+cls:''}"></div>`;
+      });
+      const rows = [];
+      for (let i = 0; i < pipHtml.length; i += 3) rows.push(pipHtml.slice(i,i+3).join(''));
+      const pipRows = rows.map(r => `<div class="wk-pip-row">${r}</div>`).join('');
+      html += `
+        <div class="wk-cell" title="${defType}: ${hitCount}/${n} attackers hit super-effectively">
+          <div class="wk-pips">${pipRows}</div>
+          <div class="wk-cell-label" style="color:${TYPE_COLORS[defType]||'var(--text3)'}">${defType.slice(0,3)}</div>
+          <div class="wk-count ${countClass}">${hitCount > 0 ? hitCount+'×' : '—'}</div>
+        </div>`;
+    }
+    grid.innerHTML = html;
+  } else {
+    // Defense mode (original)
+    if (titleEl) titleEl.textContent = `Type Weakness Overlap (${n} defender${n!==1?'s':''}) — sorted by threat`;
+
+    const typeData = ALL_TYPES.map(atkType => {
+      const effs = filled.map(def => typeEffWithAbility(atkType, def.types, def.ability));
+      const weakCount   = effs.filter(e => e > 1).length;
+      const immuneCount = effs.filter(e => e === 0).length;
+      const resistCount = effs.filter(e => e > 0 && e < 1).length;
+      const score = effs.reduce((s, e) => s + (e >= 4 ? 4 : e >= 2 ? 2 : e === 1 ? 0 : e > 0 ? -1 : -2), 0);
+      return { atkType, effs, weakCount, immuneCount, resistCount, score };
+    });
+
+    typeData.sort((a, b) =>
+      b.weakCount - a.weakCount ||
+      b.score - a.score ||
+      a.immuneCount - b.immuneCount
+    );
+
+    let html = '';
+    for (const { atkType, effs, weakCount, resistCount, immuneCount } of typeData) {
+      const n = filled.length;
+      const countClass = weakCount >= Math.ceil(n * 0.66) ? 'danger3'
+                       : weakCount >= Math.ceil(n * 0.5)  ? 'danger2'
+                       : weakCount >= 2                    ? 'danger1' : '';
+      const pipHtml = effs.map(e => {
+        const cls = e === 0 ? 'immune' : e >= 4 ? 'weak4x' : e >= 2 ? 'weak2x' : e > 1 ? 'weak2x' : e <= 0.25 ? 'resist4x' : e < 1 ? 'resist' : '';
+        return `<div class="wk-pip${cls ? ' '+cls : ''}"></div>`;
+      });
+      const rows = [];
+      for (let i = 0; i < pipHtml.length; i += 3) rows.push(pipHtml.slice(i, i+3).join(''));
+      const pipRows = rows.map(r => `<div class="wk-pip-row">${r}</div>`).join('');
+      html += `
+        <div class="wk-cell" title="${atkType}: ${weakCount}/${n} weak, ${resistCount}/${n} resist, ${immuneCount}/${n} immune">
+          <div class="wk-pips">${pipRows}</div>
+          <div class="wk-cell-label" style="color:${TYPE_COLORS[atkType]||'var(--text3)'}">${atkType.slice(0,3)}</div>
+          <div class="wk-count ${countClass}">${weakCount > 0 ? weakCount+'×' : immuneCount ? '✦' : '—'}</div>
+        </div>`;
+    }
+    grid.innerHTML = html;
   }
-  grid.innerHTML = html;
+
   overlay.classList.remove('visible');
   void overlay.offsetHeight;
   overlay.classList.add('visible');
@@ -11192,6 +11272,22 @@ function updateFieldStatus() {
 // ── Meta Threat Analysis ──────────────────────────────────────────────────────
 let _threatMode = 'overall'; // 'overall' | 'offensive' | 'defensive'
 let _threatViewMode = 'team'; // 'team' | 'tab'
+let _threatPerspective = 'meta'; // 'meta' = meta threatens you | 'mine' = you threaten meta
+
+function setThreatPerspective(p) {
+  _threatPerspective = p;
+  const metaBtn = document.getElementById('threatPerspMetaBtn');
+  const mineBtn = document.getElementById('threatPerspMineBtn');
+  if (metaBtn && mineBtn) {
+    metaBtn.style.background  = p === 'meta' ? 'var(--accent)' : 'transparent';
+    metaBtn.style.color       = p === 'meta' ? '#fff' : 'var(--text3)';
+    metaBtn.style.fontWeight  = p === 'meta' ? '600' : '400';
+    mineBtn.style.background  = p === 'mine' ? 'var(--accent)' : 'transparent';
+    mineBtn.style.color       = p === 'mine' ? '#fff' : 'var(--text3)';
+    mineBtn.style.fontWeight  = p === 'mine' ? '600' : '400';
+  }
+  renderThreatPanel();
+}
 
 // ── Type Synergy Panel ────────────────────────────────────────────────────────
 let _synergyOpen = false;
@@ -12121,6 +12217,84 @@ function _getThreatSlots() {
   return DEFENDER_SLOTS.filter(Boolean);
 }
 
+function computeMyThreatScores() {
+  // Flip perspective: for each meta entry, score how much YOUR team threatens IT
+  const filledSlots = _getThreatSlots();
+  if (!filledSlots.length) return [];
+  const loadedMeta = getLoadedMetaPool();
+  if (!loadedMeta.length) return [];
+  const weather = document.getElementById('weatherMode')?.value || 'none';
+
+  return loadedMeta.map(metaEntry => {
+    let totalMyOffPct = 0; // your team's best damage into this meta entry
+    let totalMetaOffPct = 0; // meta entry's damage into your team
+    let outspeeds = 0;
+    let slotCount = 0;
+
+    for (const slot of filledSlots) {
+      const results = slot._lastResults || [];
+      const row = results.find(r => r.attacker.speciesRaw === metaEntry.speciesRaw);
+      if (!row) continue;
+      slotCount++;
+
+      // Your offense: how much damage does your tab deal to this meta entry?
+      // This is stored in defBestPct (the tab's best move against the attacker)
+      const myOffPct = (() => {
+        let best = 0;
+        (row.defMoveBreakdown || []).forEach(m => {
+          if (!m.move || m.move.power <= 0) return;
+          if ((m.pasteIndex ?? 99) >= (row.defDividerIndex ?? 4)) return;
+          const weatherMul = applyWeatherModifier(m.effectiveMoveType || m.move.type, weather);
+          const wpct = (m.pct || 0) * weatherMul;
+          if (wpct > best) best = wpct;
+        });
+        return best || row.defBestPct || 0;
+      })();
+
+      // Meta's offense into you: the existing pct (attacker hitting defender)
+      const metaOffPct = row.pct || 0;
+
+      totalMyOffPct   += myOffPct;
+      totalMetaOffPct += metaOffPct;
+
+      const mySpe   = effectiveSpe(slot);
+      const metaSpe = effectiveSpe(metaEntry);
+      const _tr = document.getElementById('speedCondition')?.value === 'trickroom';
+      if (_tr ? mySpe < metaSpe : mySpe > metaSpe) outspeeds++;
+    }
+
+    const avgMyOffPct   = slotCount > 0 ? totalMyOffPct / slotCount : 0;
+    const avgMetaOffPct = slotCount > 0 ? totalMetaOffPct / slotCount : 0;
+    const outspeedFrac  = filledSlots.length > 0 ? outspeeds / filledSlots.length : 0;
+
+    // Offensive score: how hard YOUR team hits this meta entry (weighted by outspeed)
+    let weightedOffScore = 0, threatenCount = 0;
+    for (const slot of filledSlots) {
+      const results = slot._lastResults || [];
+      const row = results.find(r => r.attacker.speciesRaw === metaEntry.speciesRaw);
+      if (!row) continue;
+      const pct = row.defBestPct || 0;
+      if (pct < 20) continue;
+      threatenCount++;
+      const mySpe2  = effectiveSpe(slot);
+      const metaSpe2 = effectiveSpe(metaEntry);
+      const _tr2 = document.getElementById('speedCondition')?.value === 'trickroom';
+      const isFaster = _tr2 ? mySpe2 < metaSpe2 : mySpe2 > metaSpe2;
+      weightedOffScore += pct * (isFaster ? 1.4 : 0.4);
+    }
+    const offensiveScore = threatenCount > 0
+      ? (weightedOffScore / threatenCount) + outspeedFrac * 10
+      : avgMyOffPct * 0.4;
+
+    // Defensive score from your perspective: how well do you wall this meta entry?
+    const defensiveScore = 100 - avgMetaOffPct;
+    const overallScore   = offensiveScore * 0.5 + defensiveScore * 0.35 + outspeedFrac * 10 * 0.15;
+
+    return { attacker: metaEntry, offensiveScore, defensiveScore, overallScore,
+             avgMyOffPct, avgMetaOffPct, outspeedFrac };
+  }).filter(s => s.offensiveScore > 0 || s.defensiveScore > 0);
+}
+
 function computeThreatScores() {
   const filledSlots = _getThreatSlots();
   if (!filledSlots.length) return [];
@@ -12225,7 +12399,7 @@ function renderThreatPanel() {
     return;
   }
 
-  const scores = computeThreatScores();
+  const scores = _threatPerspective === 'mine' ? computeMyThreatScores() : computeThreatScores();
   if (!scores.length) {
     container.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:16px 0;">No results yet — calculate damage first.</div>';
     return;
@@ -12359,9 +12533,11 @@ function renderThreatPanel() {
 
     const imgHtml = spriteImgHtmlCls(entry.attacker.speciesRaw, size, entry.attacker.spriteUrl || null, '');
 
-    const dmgLabel  = entry.avgDmgPct > 0 ? `~${entry.avgDmgPct.toFixed(0)}% dmg` : '—';
+    const dmgLabel  = _threatPerspective === 'mine'
+      ? (entry.avgMyOffPct > 0 ? `~${entry.avgMyOffPct.toFixed(0)}% dmg` : '—')
+      : (entry.avgDmgPct   > 0 ? `~${entry.avgDmgPct.toFixed(0)}% dmg`  : '—');
     const spdLabel  = `Spe ${effectiveSpe(entry.attacker)}`;
-    const outsLabel = entry.outspeeds > 0 ? `⚡${entry.outspeeds}/${filledSlots.length}` : '';
+    const outsLabel = entry.outspeedFrac > 0 ? `⚡${Math.round(entry.outspeedFrac * filledSlots.length)}/${filledSlots.length}` : '';
 
     const isPinned  = pinnedKeys.has(entry.attacker.speciesRaw);
     const safeKey   = entry.attacker.speciesRaw.replace(/"/g, '&quot;');
@@ -12370,32 +12546,42 @@ function renderThreatPanel() {
     const labelBlock = `<div class="wk-pips" style="margin-top:1px;">${buildSlotLabels()}</div>`;
 
     let tipBody = '';
+    const vsLabel   = _threatPerspective === 'mine' ? 'team ▶ it' : 'vs team ▶';
+    const fromLabel = _threatPerspective === 'mine' ? 'vs team ▶' : 'team ▶ it';
     if (_threatMode === 'overall') {
       // Two 3×2 pip grids side by side: offensive | divider | defensive
       tipBody = `
         <div style="display:flex;gap:8px;align-items:flex-start;justify-content:center;">
           <div style="display:flex;flex-direction:column;align-items:center;">
-            <div style="font-size:8px;color:var(--text3);margin-bottom:3px;">vs team ▶</div>
+            <div style="font-size:8px;color:var(--text3);margin-bottom:3px;">${vsLabel}</div>
             ${buildPipRow(offPips(entry))}
             ${buildSlotLabels()}
           </div>
           <div style="width:0.5px;background:var(--border2);align-self:stretch;flex-shrink:0;margin-top:14px;"></div>
           <div style="display:flex;flex-direction:column;align-items:center;">
-            <div style="font-size:8px;color:var(--text3);margin-bottom:3px;">team ▶ it</div>
+            <div style="font-size:8px;color:var(--text3);margin-bottom:3px;">${fromLabel}</div>
             ${buildPipRow(defPips(entry))}
             ${buildSlotLabels()}
           </div>
         </div>`;
     } else if (_threatMode === 'offensive') {
+      // Offensive sort: show the direction that defines "offensive"
+      // mine=you attacking it → defPips; meta=it attacking you → offPips
+      const pips = _threatPerspective === 'mine' ? defPips(entry) : offPips(entry);
       tipBody = `
         <div style="display:flex;flex-direction:column;align-items:center;">
-          <div class="wk-pips">${buildPipRow(offPips(entry))}</div>
+          <div style="font-size:8px;color:var(--text3);margin-bottom:3px;">${_threatPerspective === 'mine' ? 'team ▶ it' : 'vs team ▶'}</div>
+          <div class="wk-pips">${buildPipRow(pips)}</div>
           ${buildSlotLabels()}
         </div>`;
     } else {
+      // Defensive sort: show the direction that defines "defensive"
+      // mine=it hitting you → offPips; meta=you hitting it → defPips
+      const pips = _threatPerspective === 'mine' ? offPips(entry) : defPips(entry);
       tipBody = `
         <div style="display:flex;flex-direction:column;align-items:center;">
-          <div class="wk-pips">${buildPipRow(defPips(entry))}</div>
+          <div style="font-size:8px;color:var(--text3);margin-bottom:3px;">${_threatPerspective === 'mine' ? 'vs team ▶' : 'team ▶ it'}</div>
+          <div class="wk-pips">${buildPipRow(pips)}</div>
           ${buildSlotLabels()}
         </div>`;
     }
