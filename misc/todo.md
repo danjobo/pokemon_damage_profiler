@@ -1,6 +1,11 @@
 ## Feature Request
 
-- if I have a pinned terapagos-terastal, then I terastalize it, it becomes terapagos-stellar which removes it from the pinned pokemon, and also the current match window doesn't reflect it's form change (important to note, it was a starred pokemon, so I think it should also have a star on the end of the stellar form when it changes) also it loses its yellow highlight
+
+
+- show blank ev screen in defender window at the beginning before team load
+
+- [__] flesh out EV window in team paste with move text boxes that have suggestive autocomplete same as the search bar but with legal moves for that pokemon
+
 
 
 
@@ -23,7 +28,6 @@
 
 
 
-- flesh out EV window in team paste with move text boxes that have suggestive autocomplete same as the search bar but with legal moves for that pokemon
 
 
 
@@ -72,6 +76,16 @@
 ---
 #### Completed
 
+- [XX] scarf double up bug is soooo annoying
+- [XX] the add button doesn't work on listings that were previously tabs that became pinned
+- [XX] if I have a pinned terapagos-terastal, then I terastalize it, it becomes terapagos-stellar which removes it from the pinned pokemon, and also the current match window doesn't reflect it's form change (important to note, it was a starred pokemon, so I think it should also have a star on the end of the stellar form when it changes) also it loses its yellow highlight
+- [XX] change "clear defenders" to "clear tabs"
+- [XX] refreshing tab item sprites and listing sprites all the time, a little too much
+- [XX] current match defensive sorting is reversed?
+- [XX] assault vest 1.5x spdef boost?
+- [XX] there is no Thunder Clap, only Thunderclap
+- [XX] starred pins are being kept in results if they're loaded from a match log
+- [XX] renaming saved team clears their replays
 - [XX] grid icons on results listings below the paste #
 - [XX] split and connect the max HP/max stats buttons into one like a pill
 - [XX] wicked blow and surging strikes are always critical hits too
