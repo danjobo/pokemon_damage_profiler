@@ -7,6 +7,8 @@
 
 
 
+
+
 - [??] collapse headers in text edit window in notes?
 
 - ctrl+b not bolding whole current unselected word, should also count if you're at the end of a word
