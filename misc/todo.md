@@ -1,6 +1,9 @@
 ## Feature Request
 
 
+- ctrl+c with nothing clicked on the page will copy the current tabs to clipboard
+
+- gap above sort dropdowns
 
 
 
@@ -67,6 +70,7 @@
 ---
 #### Completed
 
+- [XX] ruinous abilities damage
 - [XX] print "Calcs document!"
 - [XX] meta analysis speed affected by tailwind/trickroom
 - [XX] meta analysis affected by tera types in tabs

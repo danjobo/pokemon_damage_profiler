@@ -4943,10 +4943,35 @@ function getItemPerMoveMul(item, moveType, eff) {
 
 // Ruin abilities: reduce the corresponding defensive stat of ALL Pokémon on the field
 // We apply them as a 0.75 multiplier on the defender's stat when the attacker has the ability
+function getFieldRuinMuls(attackerAbility, defenderAbility, moveCat) {
+  // Collect all abilities from active field pokemon
+  const fieldAbs = new Set();
+  if (attackerAbility) fieldAbs.add(attackerAbility.toLowerCase().replace(/[\s-]/g,''));
+  if (defenderAbility) fieldAbs.add(defenderAbility.toLowerCase().replace(/[\s-]/g,''));
+  DEFENDER_SLOTS.filter(Boolean).forEach(s => {
+    if (s.ability) fieldAbs.add(s.ability.toLowerCase().replace(/[\s-]/g,''));
+  });
+
+  let defMul = 1;
+  // Swords of Ruin: lowers defender's Def ×0.75 vs physical
+  if (moveCat === 'physical' && fieldAbs.has('swordofruin'))   defMul *= 0.75;
+  // Beads of Ruin: lowers defender's SpD ×0.75 vs special
+  if (moveCat === 'special'  && fieldAbs.has('beadsofruin'))   defMul *= 0.75;
+
+  let atkMul = 1;
+  // Tablets of Ruin: lowers attacker's Atk ×0.75 vs physical
+  if (moveCat === 'physical' && fieldAbs.has('tabletsofruin')) atkMul *= 0.75;
+  // Vessel of Ruin: lowers attacker's SpA ×0.75 vs special
+  if (moveCat === 'special'  && fieldAbs.has('vesselofruin'))  atkMul *= 0.75;
+
+  return { defMul, atkMul };
+}
+
 function getDefenderRuinDebuff(attackerAbility, moveCat) {
+  // Legacy single-attacker check — kept for compatibility, now wraps getFieldRuinMuls
   const ab = (attackerAbility || '').toLowerCase().replace(/[\s-]/g,'');
-  if (ab === 'swordofruin' && moveCat === 'physical') return 0.75;   // lowers Def
-  if (ab === 'tabletsofruin' && moveCat === 'special') return 0.75;  // lowers SpD
+  if (ab === 'swordofruin' && moveCat === 'physical') return 0.75;
+  if (ab === 'tabletsofruin' && moveCat === 'special') return 0.75;
   return 1;
 }
 
@@ -5543,12 +5568,10 @@ function computeResults(loadedMeta, defender) {
       const _atkAbNorm2 = (attacker.ability||'').toLowerCase().replace(/[\s-]/g,'');
       // Don't double-count if attacker also has the aura (both would make it × (4/3)^2, not ×2)
       const defAuraMul = (_defAuraPow > 1 && _atkAbNorm2 !== _defAbNorm) ? _defAuraPow : 1;
-      const abilityAtkMul = abMeff.atkMul * itemModsForMove.atkMul;
-      const atkStat = rawAtk * abilityAtkMul;
-
-      // Defender stat with Ruin ability debuff (use tera blast category if applicable)
-      const ruinMul = getDefenderRuinDebuff(attacker.ability, _teraBlastCat);
-      const defStat = rawDef * ruinMul;
+      // Field-wide Ruin ability debuffs — check all active pokemon on field
+      const _ruinMuls = getFieldRuinMuls(attacker.ability, defender.ability, _teraBlastCat);
+      const atkStat = rawAtk * (abMeff.atkMul * itemModsForMove.atkMul) * _ruinMuls.atkMul;
+      const defStat = rawDef * _ruinMuls.defMul;
 
       // Power modifiers:
       // - abMOrig.powerMul carries the type-change boost (e.g. Pixilate ×1.2)
@@ -5831,9 +5854,10 @@ function computeResults(loadedMeta, defender) {
                         : (_tabAbNorm === 'darkaura'  && effectiveMoveType === 'dark')  ? 4/3 : 1;
       // Only apply once if both have same aura
       const atkingAuraMul = (_metaAbNorm === _tabAbNorm) ? _tabAuraMul : Math.max(_metaAuraMul, _tabAuraMul);
-      const atkStat  = rawAtk * abMeff.atkMul * defItForMove.atkMul;
-      const ruinMul  = getDefenderRuinDebuff(defender.ability, move.cat);
-      const defStat  = rawDef * ruinMul;
+      // Field-wide Ruin ability debuffs — defender=tab is attacker here, attacker=meta is defender
+      const _defRuinMuls = getFieldRuinMuls(defender.ability, attacker.ability, move.cat);
+      const atkStat  = rawAtk * abMeff.atkMul * defItForMove.atkMul * _defRuinMuls.atkMul;
+      const defStat  = rawDef * _defRuinMuls.defMul;
       const pwrMul   = abMeff.powerMul * getAbilityMovePowerMul(defender.ability, move, eff) * defItForMove.powerMul * getItemPerMoveMul(defender.item, effectiveMoveType, eff);
       // Sand Force for tab pokemon attacking meta
       const _tabSandForce = (defender.ability||'').toLowerCase().replace(/[\s-]/g,'') === 'sandforce';
@@ -9792,6 +9816,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .hdr-title{font-size:12px;font-weight:700}
 .hdr-meta{font-size:7.5px;color:#555;text-align:right}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+@media print{
+  body{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+}
+@media print and (orientation:landscape){
+  .grid{grid-template-columns:1fr 1fr 1fr}
+}
 .mon{border:1px solid #ccc;border-radius:3px;overflow:hidden;break-inside:avoid}
 .mh{background:#e8e8f2;padding:2px 5px;display:flex;align-items:baseline;gap:4px}
 .mh b{font-size:9.5px;font-weight:700}
@@ -9812,7 +9842,7 @@ th:nth-child(4),td:nth-child(4){width:10%}
 .good-ohko{color:#1a7a3e;font-weight:700}
 .good{color:#1a5276;font-weight:600}
 .none{color:#999;font-style:italic;font-size:7.5px;padding:2px 3px}
-@media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+
 </style></head><body>
 <div class="hdr">
   <div class="hdr-title">📋 ${teamName}</div>
