@@ -4,14 +4,21 @@
 
 
 
-- meta analysis "good against" mode
-
-
-
 - [??] collapse headers in text edit window in notes?
 
+- ctrl+b not bolding whole current unselected word, should also count if you're at the end of a word
 
+- change ctrl+enter to do new line
 
+- hidden markdown should not have the **'s or ##'s be invisible but present, they should not be present until clicking the bolded text
+
+- hitting escape in notes editor saves current note
+
+- shortcuts on hover
+
+- shortcuts tooltips?
+
+- shortcuts overview button
 
 
 
@@ -25,16 +32,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-- print "Calcs document!"
 
 - use grid sprites for the match log
 
@@ -54,7 +51,6 @@
 
 - Status ticker per Pokemon (burn/para/…) and have that status be displayed on the listing below the name like the games
 
-- [__] lil triangle on type weakness overlap window to show it's collapsable like the other ones
 
 %SystemRoot%\System32\SHELL32.dll
 ## To-Do Stack
@@ -71,6 +67,11 @@
 ---
 #### Completed
 
+- [XX] print "Calcs document!"
+- [XX] meta analysis speed affected by tailwind/trickroom
+- [XX] meta analysis affected by tera types in tabs
+- [XX] lil triangle on type weakness overlap window to show it's collapsable like the other ones
+- [XX] meta analysis "good against" mode
 - [XX] temp ev/nature slider in move breakdown
 - [XX] palafin zero to hero form switcher
 - [XX] pinning the tab of a pokemon with choice scarf seems to have the pinned version get a double buff of choice scarf for some reason

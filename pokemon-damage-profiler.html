@@ -1185,7 +1185,31 @@
     flex-shrink: 0;
   }
 
-  /* ── Saved team custom dropdown ─────────────────────────────────────────── */
+  /* ── Tools drawer ─────────────────────────────────────────────────────────── */
+  #toolsDrawer { display: none; }
+  #toolsDrawer.open { display: flex; }
+  .tools-nav-btn {
+    display: block; width: 100%; text-align: left;
+    padding: 8px 10px; font-size: 11px; border-radius: var(--radius-sm);
+    border: none; background: transparent; color: var(--text3);
+    cursor: pointer; white-space: nowrap;
+  }
+  .tools-nav-btn:hover { background: rgba(255,255,255,0.05); color: var(--text2); }
+  .tools-nav-active { background: rgba(124,106,247,0.15) !important; color: var(--accent2) !important; font-weight: 600; }
+  .st-row {
+    display: flex; align-items: center; gap: 8px; padding: 5px 8px;
+    border-radius: var(--radius-sm); font-size: 11px;
+  }
+  .st-row.st-tab    { background: rgba(93,202,165,0.18); border: 1.5px solid var(--green); box-shadow: 0 0 10px rgba(93,202,165,0.25); }
+  .st-row.st-meta   { background: var(--bg3); }
+  .st-bar-wrap      { flex: 1; height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+  .st-bar           { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.2s; }
+  .st-bar.st-bar-tab{ background: var(--green); box-shadow: 0 0 6px rgba(93,202,165,0.6); }
+  .st-spe           { font-size: 10px; color: var(--text2); width: 30px; text-align: right; flex-shrink: 0; }
+  .st-name          { width: 110px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .st-divider       { font-size: 9px; color: var(--text3); padding: 6px 0 2px; text-align: center; letter-spacing: 0.08em; border-top: 0.5px solid var(--border2); margin-top: 4px; }
+
+
   .team-picker-wrap { position: relative; flex: 1; min-width: 0; }
   .team-picker-btn {
     width: 100%; padding: 4px 8px; font-size: 12px;
@@ -1438,11 +1462,53 @@
 
   <header>
     <div class="logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="48" fill="white" stroke="#111" stroke-width="4"/><clipPath id="toph"><rect x="0" y="0" width="100" height="50"/></clipPath><circle cx="50" cy="50" r="48" fill="#e74c3c" clip-path="url(#toph)"/><rect x="2" y="46" width="96" height="8" fill="#111"/><circle cx="50" cy="50" r="48" fill="none" stroke="#111" stroke-width="4"/><circle cx="50" cy="50" r="16" fill="white" stroke="#111" stroke-width="5"/><circle cx="50" cy="50" r="7" fill="#ddd"/></svg></div>
-    <div>
+    <div style="flex:1;">
       <h1>Pokémon Damage Calculator</h1>
       <div class="tagline">Paste real PokéPaste sets — base stats &amp; types fetched live from PokéAPI</div>
     </div>
+    <button onclick="toggleToolsDrawer()" id="toolsMenuBtn" title="Tools" style="padding:6px 10px;background:transparent;border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text3);cursor:pointer;font-size:18px;line-height:1;flex-shrink:0;">☰</button>
   </header>
+
+  <!-- Tools drawer -->
+  <div id="toolsDrawerBackdrop" onclick="closeToolsDrawer()" style="display:none;position:fixed;inset:0;z-index:299;background:rgba(0,0,0,0.4);"></div>
+  <div id="toolsDrawer" style="position:fixed;top:0;right:0;bottom:0;width:min(480px,96vw);z-index:300;background:var(--bg2);border-left:0.5px solid var(--border);box-shadow:-4px 0 24px rgba(0,0,0,0.4);flex-direction:row;overflow:hidden;">
+    <!-- Left nav -->
+    <div style="width:130px;flex-shrink:0;background:var(--bg3);border-right:0.5px solid var(--border2);display:flex;flex-direction:column;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 10px 10px;border-bottom:0.5px solid var(--border2);">
+        <span style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Tools</span>
+        <button onclick="closeToolsDrawer()" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;padding:0;">✕</button>
+      </div>
+      <nav style="display:flex;flex-direction:column;gap:2px;padding:8px 6px;">
+        <button onclick="showToolsPanel('speed')" id="toolTabSpeed" class="tools-nav-btn tools-nav-active">⚡ Speed Tiers</button>
+        <button onclick="showToolsPanel('counters')" id="toolTabCounters" class="tools-nav-btn">🛡 Counters</button>
+      </nav>
+    </div>
+    <!-- Right content -->
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+      <!-- Speed tier panel -->
+      <div id="toolPanelSpeed" style="flex:1;overflow-y:auto;padding:14px 16px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;">⚡ Speed Tiers</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+          <div style="display:flex;border:0.5px solid var(--border2);border-radius:20px;overflow:hidden;">
+            <button id="stTailwindBtn" onclick="toggleSpeedMod('tailwind')" style="padding:3px 9px;font-size:10px;border:none;border-right:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;">Tailwind ×2</button>
+            <button id="stTrickRoomBtn" onclick="toggleSpeedMod('trickroom')" style="padding:3px 9px;font-size:10px;border:none;border-right:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;">Trick Room</button>
+            <button id="stScarfBtn" onclick="toggleSpeedMod('scarf')" style="padding:3px 9px;font-size:10px;border:none;background:transparent;color:var(--text3);cursor:pointer;">+Scarf</button>
+          </div>
+          <select id="stFilterSelect" onchange="renderSpeedTier()" style="font-size:10px;padding:2px 5px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;cursor:pointer;">
+            <option value="all">All</option>
+            <option value="meta">Meta only</option>
+            <option value="tabs">Tabs only</option>
+          </select>
+        </div>
+        <div id="speedTierList" style="display:flex;flex-direction:column;gap:2px;"></div>
+      </div>
+      <!-- Counters panel -->
+      <div id="toolPanelCounters" style="flex:1;overflow-y:auto;padding:14px 16px;display:none;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;">🛡 Counters</div>
+        <div style="color:var(--text3);font-size:12px;">Counter recommendations coming soon.</div>
+      </div>
+    </div>
+  </div>
 
   <!-- <div class="two-col"> -->
 
@@ -1754,7 +1820,10 @@ Impish Nature
   <!-- CALCULATE BAR -->
   <div class="calc-bar">
     <div style="font-size:12px;color:var(--text2);line-height:1.4;" id="readyHint">Load a meta and paste a defender, then click <b>Add to tab(s)</b>.</div>
-    <button class="btn-primary" onclick="calculate()" id="calcBtn">Add to tab(s)</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button onclick="generatePrintDoc()" style="padding:6px 12px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;" title="Generate printable damage calc sheet">🖨 Print Calcs</button>
+      <button class="btn-primary" onclick="calculate()" id="calcBtn">Add to tab(s)</button>
+    </div>
   </div>
 
   </div><!-- end wide-left -->
@@ -8607,6 +8676,135 @@ function onSavedMetaSelect() {
   }
 }
 
+// ── Tools drawer ─────────────────────────────────────────────────────────────
+let _toolsDrawerOpen = false;
+let _activeToolPanel = 'speed';
+const _speedMods = new Set(); // 'tailwind' | 'trickroom' | 'scarf'
+
+function toggleToolsDrawer() {
+  _toolsDrawerOpen ? closeToolsDrawer() : openToolsDrawer();
+}
+
+function openToolsDrawer() {
+  _toolsDrawerOpen = true;
+  document.getElementById('toolsDrawer').classList.add('open');
+  document.getElementById('toolsDrawerBackdrop').style.display = 'block';
+  showToolsPanel(_activeToolPanel);
+}
+
+function closeToolsDrawer() {
+  _toolsDrawerOpen = false;
+  document.getElementById('toolsDrawer').classList.remove('open');
+  document.getElementById('toolsDrawerBackdrop').style.display = 'none';
+}
+
+function showToolsPanel(panel) {
+  _activeToolPanel = panel;
+  ['speed','counters'].forEach(p => {
+    const el = document.getElementById('toolPanel' + p.charAt(0).toUpperCase() + p.slice(1));
+    const tab = document.getElementById('toolTab' + p.charAt(0).toUpperCase() + p.slice(1));
+    if (el) el.style.display = p === panel ? 'block' : 'none';
+    if (tab) {
+      tab.classList.toggle('tools-nav-active', p === panel);
+    }
+  });
+  if (panel === 'speed') renderSpeedTier();
+}
+
+function toggleSpeedMod(mod) {
+  if (_speedMods.has(mod)) {
+    _speedMods.delete(mod);
+    // Trickroom and tailwind are mutually exclusive
+  } else {
+    if (mod === 'trickroom') _speedMods.delete('tailwind');
+    if (mod === 'tailwind')  _speedMods.delete('trickroom');
+    _speedMods.add(mod);
+  }
+  // Update button styles
+  ['tailwind','trickroom','scarf'].forEach(m => {
+    const btn = document.getElementById('st' + m.charAt(0).toUpperCase() + m.slice(1) + 'Btn');
+    if (!btn) return;
+    const on = _speedMods.has(m);
+    btn.style.background  = on ? 'var(--accent)' : 'transparent';
+    btn.style.color       = on ? '#fff' : 'var(--text3)';
+    btn.style.fontWeight  = on ? '600' : '400';
+  });
+  renderSpeedTier();
+}
+
+function _effectiveSpeForTier(pokemon) {
+  let spe = effectiveSpe(pokemon);
+  if (_speedMods.has('scarf') && !((pokemon.item||'').toLowerCase().replace(/[\s-]/g,'') === 'choicescarf'))
+    spe = Math.floor(spe * 1.5);
+  if (_speedMods.has('tailwind'))  spe = Math.floor(spe * 2);
+  if (_speedMods.has('trickroom')) spe = 10000 - spe; // invert for TR sort
+  return spe;
+}
+
+function renderSpeedTier() {
+  const list = document.getElementById('speedTierList');
+  if (!list) return;
+
+  const filter = document.getElementById('stFilterSelect')?.value || 'all';
+  const isTR   = _speedMods.has('trickroom');
+
+  // Gather pokemon
+  const limit = parseInt(document.getElementById('resultsLimit')?.value || '0');
+  const metaEntries = META_DB.filter(p => p.loaded && (filter !== 'tabs'))
+    .slice(0, limit > 0 ? limit : undefined);
+  const tabEntries  = DEFENDER_SLOTS.filter(Boolean).filter(() => filter !== 'meta');
+
+  // Build unified list with source tag
+  const all = [
+    ...metaEntries.map(p => ({ pokemon: p, isTab: false, label: p.speciesRaw, usage: p.usage ?? null })),
+    ...tabEntries.map(s  => ({ pokemon: s, isTab: true,  label: s.speciesRaw })),
+  ];
+
+  if (!all.length) {
+    list.innerHTML = '<div style="color:var(--text3);font-size:12px;">Load a meta or add tabs to see speed tiers.</div>';
+    return;
+  }
+
+  // Compute effective speed for each
+  const withSpe = all.map(e => ({ ...e, spe: _effectiveSpeForTier(e.pokemon) }));
+  // Sort descending (TR: already inverted so still desc = slowest-first)
+  withSpe.sort((a, b) => b.spe - a.spe);
+
+  const maxSpe = Math.max(...withSpe.map(e => e.spe));
+  const minSpe = Math.min(...withSpe.map(e => e.spe));
+  const range  = maxSpe - minSpe || 1;
+
+  // Group into speed tiers (within 1 of each other = same tier line)
+  let html = '';
+  let lastTierSpe = null;
+  withSpe.forEach(({ pokemon, isTab, label, spe, usage }) => {
+    const displaySpe = isTR ? 10000 - spe : spe;
+    if (lastTierSpe !== null && Math.abs(spe - lastTierSpe) > 1) {
+      // Speed gap — show divider
+      html += `<div class="st-divider">— ${isTR ? 10000-lastTierSpe : lastTierSpe} → ${displaySpe} —</div>`;
+    }
+    lastTierSpe = spe;
+
+    const barPct = Math.round(((spe - minSpe) / range) * 100);
+    const sprite = psIconHtml(label, label);
+    const usageTxt = usage != null ? `<span style="font-size:9px;color:var(--text3);flex-shrink:0;">${(usage*100).toFixed(1)}%</span>` : '';
+    const typeDotsHtml = (pokemon.types||[]).map(t =>
+      `<span style="width:8px;height:8px;border-radius:50%;background:${TYPE_COLORS[t]||'var(--border2)'};display:inline-block;flex-shrink:0;" title="${t}"></span>`
+    ).join('');
+
+    html += `<div class="st-row ${isTab ? 'st-tab' : 'st-meta'}">
+      <div style="width:24px;height:18px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;">${sprite}</div>
+      <div class="st-name" title="${label}" style="${isTab?'color:var(--green);font-weight:700;':''}">${label.replace(/\s*★$/,'')}</div>
+      <div style="display:flex;gap:2px;flex-shrink:0;">${typeDotsHtml}</div>
+      <div class="st-bar-wrap"><div class="st-bar${isTab?' st-bar-tab':''}" style="width:${barPct}%"></div></div>
+      ${usageTxt}
+      <div class="st-spe">${displaySpe}</div>
+    </div>`;
+  });
+
+  list.innerHTML = html;
+}
+
 function renameSavedMeta() {
   const sel  = document.getElementById('savedMetaSelect');
   const name = sel.value;
@@ -9480,6 +9678,154 @@ async function onSavedTeamSelect() {
   if (!inSplitView) collapseCard('defenderCard');
 }
 
+// ── Print calcs document ─────────────────────────────────────────────────────
+function generatePrintDoc() {
+  const slots = DEFENDER_SLOTS.filter(Boolean);
+  if (!slots.length) { alert('Add some pokemon to tabs first.'); return; }
+  if (!lastResults || !lastResults.length) { alert('Load a meta first.'); return; }
+
+  const limit   = parseInt(document.getElementById('resultsLimit')?.value || '0');
+  const weather = document.getElementById('weatherMode')?.value || 'none';
+  const terrain = document.getElementById('terrainMode')?.value || 'none';
+  const speedCond = document.getElementById('speedCondition')?.value || 'none';
+  const metaLabel = limit > 0 ? `Top ${limit}` : 'Full meta';
+
+  const condStr = [
+    weather !== 'none' ? weather : '',
+    terrain !== 'none' ? terrain : '',
+    speedCond !== 'none' ? speedCond : '',
+  ].filter(Boolean).join(' · ') || 'No field conditions';
+
+  function getNotable(slot) {
+    const rows = (slot._lastResults || []).filter(r =>
+      limit <= 0 || r.originalOrder <= limit
+    );
+    const results = [];
+    rows.forEach(r => {
+      const inPct  = r.adjustedPct ?? r.pct ?? 0;
+      const speedCond2 = document.getElementById('speedCondition')?.value || 'none';
+      const tr = speedCond2 === 'trickroom';
+      const tailAtk = speedCond2 === 'tailwind-atk';
+      const tailDef = speedCond2 === 'tailwind-def';
+      let atkSpe = effectiveSpe(r.attacker);
+      let defSpe = effectiveSpe(slot);
+      if (tailAtk) atkSpe = Math.floor(atkSpe * 2);
+      if (tailDef) defSpe = Math.floor(defSpe * 2);
+      const faster = tr ? defSpe < atkSpe : defSpe > atkSpe;
+
+      let outPct = 0, outMove = '';
+      (r.defMoveBreakdown || []).forEach(m => {
+        if (!m.move || m.move.power <= 0) return;
+        if ((m.pasteIndex ?? 99) >= (r.defDividerIndex ?? 4)) return;
+        const p = m.adjustedPct ?? m.pct ?? 0;
+        if (p > outPct) { outPct = p; outMove = m.move.name; }
+      });
+
+      const inBig  = inPct  >= 50;
+      const outBig = outPct >= 50;
+      if (!inBig && !outBig) return;
+
+      // Build meta entry spread string — include item
+      const attItem = (r.attacker.item||'').split(',')[0].trim();
+      const attEvParts = Object.entries(r.attacker.evs||{}).filter(([,v])=>v>0)
+        .map(([k,v])=>`${v} ${({hp:'HP',atk:'Atk',def:'Def',spa:'SpA',spd:'SpD',spe:'Spe'}[k]||k)}`);
+      const attNat = (r.attacker.nature||'hardy');
+      const attNatShort = attNat.charAt(0).toUpperCase()+attNat.slice(1,4)+'.';
+      const attSpread = [attItem ? `@${attItem}` : '', attNatShort, attEvParts.join('/')].filter(Boolean).join(' ');
+
+      const abbrevMove = m => m && m.length > 10 ? m.split(' ').map(w=>w[0]).join('') : m;
+      const fmt = (pct, move) => {
+        const label = pct >= 100 ? 'OHKO' : `${pct.toFixed(0)}%`;
+        return move ? `${label}(${abbrevMove(move)})` : label;
+      };
+      results.push({
+        name: r.attacker.speciesRaw.replace(/\s*★$/,''),
+        spread: attSpread,
+        in:   inBig  ? fmt(inPct, r.displayMove) : '—',
+        out:  outBig ? fmt(outPct, outMove) : '—',
+        inPct, outPct,
+        spd: faster ? '⚡' : '🐢',
+        atkSpe,
+      });
+    });
+    results.sort((a,b) => b.inPct - a.inPct || b.outPct - a.outPct);
+    return results;
+  }
+
+  let body = '';
+  for (const slot of slots) {
+    const notable = getNotable(slot);
+    const spe = effectiveSpe(slot);
+    const evParts = Object.entries(slot.evs||{}).filter(([,v])=>v>0)
+      .map(([k,v])=>`${v} ${({hp:'HP',atk:'Atk',def:'Def',spa:'SpA',spd:'SpD',spe:'Spe'}[k]||k)}`);
+    const evStr = evParts.join(' / ') || 'No EVs';
+    const nat  = (slot.nature||'hardy').charAt(0).toUpperCase()+(slot.nature||'hardy').slice(1);
+    const item = slot.item ? `@ ${slot.item}` : '';
+    const ab   = slot.ability || '';
+
+    let rows = notable.length
+      ? notable.map(n => `<tr>
+          <td class="nm">${n.name}<br><span class="spr">${n.spread}</span></td>
+          <td class="${n.inPct>=100?'ohko':n.inPct>=50?'twohko':''}">${n.in}</td>
+          <td class="${n.outPct>=100?'good-ohko':n.outPct>=50?'good':''}">${n.out}</td>
+          <td class="spd">${n.spd}${n.atkSpe}</td>
+        </tr>`).join('')
+      : `<tr><td colspan="4" class="none">No notable matchups</td></tr>`;
+
+    body += `<div class="mon">
+      <div class="mh"><b>${slot.speciesRaw.replace(/\s*★$/,'')}</b><span class="itm">${item}</span></div>
+      <div class="spread">${nat} · ${evStr} · ${ab} · Spe ${spe}</div>
+      <table><thead><tr><th>vs</th><th>In</th><th>Out</th><th></th></tr></thead>
+      <tbody>${rows}</tbody></table>
+    </div>`;
+  }
+
+  const teamName = _teamPickerSelected || 'Untitled Team';
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>${teamName} Calcs</title>
+<style>
+@page{margin:8mm}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:8.5px;color:#111}
+.hdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;padding-bottom:3px;border-bottom:1.5px solid #333}
+.hdr-title{font-size:12px;font-weight:700}
+.hdr-meta{font-size:7.5px;color:#555;text-align:right}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.mon{border:1px solid #ccc;border-radius:3px;overflow:hidden;break-inside:avoid}
+.mh{background:#e8e8f2;padding:2px 5px;display:flex;align-items:baseline;gap:4px}
+.mh b{font-size:9.5px;font-weight:700}
+.itm{font-size:7.5px;color:#555}
+.spread{font-size:7.5px;color:#444;padding:1px 5px;background:#f4f4f8;border-bottom:1px solid #ddd}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th{background:#f0f0f0;padding:1px 3px;text-align:left;font-size:7px;font-weight:600;color:#333;overflow:hidden}
+td{padding:1px 3px;border-top:1px solid #eee;font-size:7.5px;white-space:nowrap;vertical-align:top;overflow:hidden;text-overflow:ellipsis}
+th:nth-child(1),td:nth-child(1){width:30%}
+th:nth-child(2),td:nth-child(2){width:30%}
+th:nth-child(3),td:nth-child(3){width:30%}
+th:nth-child(4),td:nth-child(4){width:10%}
+.nm{max-width:80px;overflow:hidden;text-overflow:ellipsis;vertical-align:top}
+.spr{font-size:6.5px;color:#777;display:block;white-space:normal;line-height:1.2}
+.spd{text-align:left;width:36px;font-size:7.5px;white-space:nowrap}
+.ohko{color:#c0392b;font-weight:700}
+.twohko{color:#d35400;font-weight:600}
+.good-ohko{color:#1a7a3e;font-weight:700}
+.good{color:#1a5276;font-weight:600}
+.none{color:#999;font-style:italic;font-size:7.5px;padding:2px 3px}
+@media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+</style></head><body>
+<div class="hdr">
+  <div class="hdr-title">📋 ${teamName}</div>
+  <div class="hdr-meta">${metaLabel} · ${condStr}<br>${new Date().toLocaleString()}</div>
+</div>
+<div class="grid">${body}</div>
+<script>window.onload=()=>window.print()<\/script>
+</body></html>`;
+
+  const w = window.open('', '_blank');
+  if (w) { w.document.write(html); w.document.close(); }
+  else alert('Allow popups to generate the print document.');
+}
 function renameSavedTeam() {
   const name = _teamPickerSelected;
   if (!name) { alert('Select a saved team first.'); return; }
@@ -12218,77 +12564,91 @@ function _getThreatSlots() {
 }
 
 function computeMyThreatScores() {
-  // Flip perspective: for each meta entry, score how much YOUR team threatens IT
   const filledSlots = _getThreatSlots();
   if (!filledSlots.length) return [];
   const loadedMeta = getLoadedMetaPool();
   if (!loadedMeta.length) return [];
-  const weather = document.getElementById('weatherMode')?.value || 'none';
+
+  const speedCond   = document.getElementById('speedCondition')?.value || 'none';
+  const trickRoom   = speedCond === 'trickroom';
+  const tailwindAtk = speedCond === 'tailwind-atk'; // tailwind on meta (they attack)
+  const tailwindDef = speedCond === 'tailwind-def'; // tailwind on tabs (we attack)
 
   return loadedMeta.map(metaEntry => {
-    let totalMyOffPct = 0; // your team's best damage into this meta entry
-    let totalMetaOffPct = 0; // meta entry's damage into your team
+    let totalMyOffPct = 0;
+    let totalMetaOffPct = 0;
     let outspeeds = 0;
     let slotCount = 0;
 
     for (const slot of filledSlots) {
       const results = slot._lastResults || [];
-      const row = results.find(r => r.attacker.speciesRaw === metaEntry.speciesRaw);
+      const row = results.find(r =>
+        r.attacker.speciesRaw === metaEntry.speciesRaw ||
+        r.attacker.speciesRaw.replace(/\s*★$/,'') === metaEntry.speciesRaw.replace(/\s*★$/,'')
+      );
       if (!row) continue;
       slotCount++;
 
-      // Your offense: how much damage does your tab deal to this meta entry?
-      // This is stored in defBestPct (the tab's best move against the attacker)
+      // My offense: best adjusted damage my tab deals to this meta entry
       const myOffPct = (() => {
         let best = 0;
         (row.defMoveBreakdown || []).forEach(m => {
           if (!m.move || m.move.power <= 0) return;
           if ((m.pasteIndex ?? 99) >= (row.defDividerIndex ?? 4)) return;
-          const weatherMul = applyWeatherModifier(m.effectiveMoveType || m.move.type, weather);
-          const wpct = (m.pct || 0) * weatherMul;
-          if (wpct > best) best = wpct;
+          const p = m.adjustedPct ?? m.pct ?? 0;
+          if (p > best) best = p;
         });
         return best || row.defBestPct || 0;
       })();
 
-      // Meta's offense into you: the existing pct (attacker hitting defender)
-      const metaOffPct = row.pct || 0;
-
+      const metaOffPct = row.adjustedPct ?? row.pct ?? 0;
       totalMyOffPct   += myOffPct;
       totalMetaOffPct += metaOffPct;
 
-      const mySpe   = effectiveSpe(slot);
-      const metaSpe = effectiveSpe(metaEntry);
-      const _tr = document.getElementById('speedCondition')?.value === 'trickroom';
-      if (_tr ? mySpe < metaSpe : mySpe > metaSpe) outspeeds++;
+      // Speed: tabs have tailwindDef, meta has tailwindAtk
+      let mySpe   = effectiveSpe(slot);
+      let metaSpe = effectiveSpe(metaEntry);
+      if (tailwindDef) mySpe   = Math.floor(mySpe * 2);
+      if (tailwindAtk) metaSpe = Math.floor(metaSpe * 2);
+      if (trickRoom ? mySpe < metaSpe : mySpe > metaSpe) outspeeds++;
     }
 
     const avgMyOffPct   = slotCount > 0 ? totalMyOffPct / slotCount : 0;
     const avgMetaOffPct = slotCount > 0 ? totalMetaOffPct / slotCount : 0;
     const outspeedFrac  = filledSlots.length > 0 ? outspeeds / filledSlots.length : 0;
 
-    // Offensive score: how hard YOUR team hits this meta entry (weighted by outspeed)
     let weightedOffScore = 0, threatenCount = 0;
     for (const slot of filledSlots) {
       const results = slot._lastResults || [];
-      const row = results.find(r => r.attacker.speciesRaw === metaEntry.speciesRaw);
+      const row = results.find(r =>
+        r.attacker.speciesRaw === metaEntry.speciesRaw ||
+        r.attacker.speciesRaw.replace(/\s*★$/,'') === metaEntry.speciesRaw.replace(/\s*★$/,'')
+      );
       if (!row) continue;
-      const pct = row.defBestPct || 0;
+      const pct = (() => {
+        let best = 0;
+        (row.defMoveBreakdown || []).forEach(m => {
+          if (!m.move || m.move.power <= 0) return;
+          if ((m.pasteIndex ?? 99) >= (row.defDividerIndex ?? 4)) return;
+          const p = m.adjustedPct ?? m.pct ?? 0;
+          if (p > best) best = p;
+        });
+        return best || row.defBestPct || 0;
+      })();
       if (pct < 20) continue;
       threatenCount++;
-      const mySpe2  = effectiveSpe(slot);
-      const metaSpe2 = effectiveSpe(metaEntry);
-      const _tr2 = document.getElementById('speedCondition')?.value === 'trickroom';
-      const isFaster = _tr2 ? mySpe2 < metaSpe2 : mySpe2 > metaSpe2;
+      let mySpe2   = effectiveSpe(slot);
+      let metaSpe2 = effectiveSpe(metaEntry);
+      if (tailwindDef) mySpe2   = Math.floor(mySpe2 * 2);
+      if (tailwindAtk) metaSpe2 = Math.floor(metaSpe2 * 2);
+      const isFaster = trickRoom ? mySpe2 < metaSpe2 : mySpe2 > metaSpe2;
       weightedOffScore += pct * (isFaster ? 1.4 : 0.4);
     }
     const offensiveScore = threatenCount > 0
-      ? (weightedOffScore / threatenCount) + outspeedFrac * 10
+      ? (weightedOffScore / threatenCount) + outspeedFrac * 15
       : avgMyOffPct * 0.4;
-
-    // Defensive score from your perspective: how well do you wall this meta entry?
     const defensiveScore = 100 - avgMetaOffPct;
-    const overallScore   = offensiveScore * 0.5 + defensiveScore * 0.35 + outspeedFrac * 10 * 0.15;
+    const overallScore   = offensiveScore * 0.5 + defensiveScore * 0.35 + outspeedFrac * 15 * 0.15;
 
     return { attacker: metaEntry, offensiveScore, defensiveScore, overallScore,
              avgMyOffPct, avgMetaOffPct, outspeedFrac };
@@ -12298,11 +12658,13 @@ function computeMyThreatScores() {
 function computeThreatScores() {
   const filledSlots = _getThreatSlots();
   if (!filledSlots.length) return [];
-
   const loadedMeta = getLoadedMetaPool();
   if (!loadedMeta.length) return [];
 
-  const weather = document.getElementById('weatherMode')?.value || 'none';
+  const speedCond  = document.getElementById('speedCondition')?.value || 'none';
+  const trickRoom  = speedCond === 'trickroom';
+  const tailwindAtk = speedCond === 'tailwind-atk'; // tailwind on attacker (meta)
+  const tailwindDef = speedCond === 'tailwind-def'; // tailwind on defender (tabs)
 
   return loadedMeta.map(attacker => {
     let totalDmgPct = 0;
@@ -12312,58 +12674,62 @@ function computeThreatScores() {
 
     for (const slot of filledSlots) {
       const results = slot._lastResults || [];
-      const row = results.find(r => r.attacker.speciesRaw === attacker.speciesRaw);
+      // Match considering tera form swaps — check both raw and tera'd speciesRaw
+      const row = results.find(r =>
+        r.attacker.speciesRaw === attacker.speciesRaw ||
+        r.attacker.speciesRaw.replace(/\s*★$/,'') === attacker.speciesRaw.replace(/\s*★$/,'')
+      );
       if (!row) continue;
       slotCount++;
 
-      // Best offensive damage: use raw pct from computeResults, apply weather only
+      // Use adjustedPct which already has weather+terrain+tera applied by renderResults
       const bestMovePct = (() => {
         let best = 0;
         (row.moveBreakdown || []).forEach(m => {
           if (!m.move || m.move.power <= 0) return;
           if ((m.pasteIndex ?? 99) >= (row.dividerIndex ?? 4)) return;
-          const weatherMul = applyWeatherModifier(m.effectiveMoveType || m.move.type, weather);
-          const wpct = (m.pct || 0) * weatherMul;
-          if (wpct > best) best = wpct;
+          const pct = m.adjustedPct ?? m.pct ?? 0;
+          if (pct > best) best = pct;
         });
-        return best || row.pct || 0;
+        return best || row.adjustedPct || row.pct || 0;
       })();
 
       totalDmgPct += bestMovePct;
       totalDefPct += (row.defBestPct || 0);
 
-      const atkSpe = effectiveSpe(attacker) || 0;
-      const defSpe = effectiveSpe(slot);
-      const _trickRoom = document.getElementById('speedCondition')?.value === 'trickroom';
-      if (_trickRoom ? atkSpe < defSpe : atkSpe > defSpe) outspeeds++;
+      // Speed — apply tailwind multipliers
+      let atkSpe = effectiveSpe(attacker);
+      let defSpe = effectiveSpe(slot);
+      if (tailwindAtk) atkSpe = Math.floor(atkSpe * 2);
+      if (tailwindDef) defSpe = Math.floor(defSpe * 2);
+      if (trickRoom ? atkSpe < defSpe : atkSpe > defSpe) outspeeds++;
     }
 
     const avgDmgPct    = slotCount > 0 ? totalDmgPct / slotCount : 0;
     const avgDefPct    = slotCount > 0 ? totalDefPct / slotCount : 0;
     const outspeedFrac = filledSlots.length > 0 ? outspeeds / filledSlots.length : 0;
 
-    // Offensive score: weight by outspeed fraction against slots it actually threatens (>50% dmg)
-    // Slots it threatens but can't outspeed are penalized heavily
-    let weightedOffScore = 0;
-    let threatenCount = 0;
+    let weightedOffScore = 0, threatenCount = 0;
     for (const slot of filledSlots) {
       const results = slot._lastResults || [];
-      const row = results.find(r => r.attacker.speciesRaw === attacker.speciesRaw);
+      const row = results.find(r =>
+        r.attacker.speciesRaw === attacker.speciesRaw ||
+        r.attacker.speciesRaw.replace(/\s*★$/,'') === attacker.speciesRaw.replace(/\s*★$/,'')
+      );
       if (!row) continue;
-      const pct = row.pct || 0;
-      if (pct < 20) continue; // only count meaningful damage
+      const pct = row.adjustedPct ?? row.pct ?? 0;
+      if (pct < 20) continue;
       threatenCount++;
-      const atkSpe2 = effectiveSpe(attacker) || 0;
-      const defSpe2 = effectiveSpe(slot);
-      const _tr2 = document.getElementById('speedCondition')?.value === 'trickroom';
-      const outspeeds2 = _tr2 ? atkSpe2 < defSpe2 : atkSpe2 > defSpe2;
-      // If it can outspeed: full credit + bonus. If slower: significant penalty.
-      const speedMul = outspeeds2 ? 1.4 : 0.4;
-      weightedOffScore += pct * speedMul;
+      let atkSpe2 = effectiveSpe(attacker);
+      let defSpe2 = effectiveSpe(slot);
+      if (tailwindAtk) atkSpe2 = Math.floor(atkSpe2 * 2);
+      if (tailwindDef) defSpe2 = Math.floor(defSpe2 * 2);
+      const faster = trickRoom ? atkSpe2 < defSpe2 : atkSpe2 > defSpe2;
+      weightedOffScore += pct * (faster ? 1.4 : 0.4);
     }
     const offensiveScore = threatenCount > 0
       ? (weightedOffScore / threatenCount) + outspeedFrac * 10
-      : avgDmgPct * 0.4; // if it threatens nothing meaningful, heavily penalize
+      : avgDmgPct * 0.4;
     const defensiveScore = 100 - avgDefPct;
     const overallScore   = offensiveScore * 0.5 + defensiveScore * 0.35 + outspeedFrac * 10 * 0.15;
 
