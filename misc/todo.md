@@ -1,11 +1,13 @@
 ## Feature Request
 
 
+
+
 - ctrl+c with nothing clicked on the page will copy the current tabs to clipboard
 
-- gap above sort dropdowns
+- show exact OHKO percent in printing calcs
 
-
+- sometimes like in groudon's case, it's saying OHKO ([object Object]) on the incoming damage percents
 
 
 
@@ -72,6 +74,13 @@
 ---
 #### Completed
 
+- [XX] sun should activate protosynthesis on non booster energy pokemon
+- [XX] electric terrain should activate quark drive on non booster energy pokemon
+- [XX] there's still a gap above sort dropdowns section
+- [XX] the gaussian circle glow behind pokemon in match log should be yellow
+- [XX] screens/stat boosts should be saved per defending/attacking mode, so there will be separate screens/stat boosts for each mode
+- [XX] color the terrain text in the dropdown to match that in the field effects bar
+- [XX] color the weather text in the dropdown to match that in the field effects bar
 - [XX] ruinous abilities damage
 - [XX] print "Calcs document!"
 - [XX] meta analysis speed affected by tailwind/trickroom

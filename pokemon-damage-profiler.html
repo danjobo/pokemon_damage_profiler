@@ -958,7 +958,7 @@
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 6px;
-    margin-bottom: 10px;
+    margin-bottom: 0;
   }
   @media (max-width: 580px) {
     .defender-tabs-row { grid-template-columns: repeat(3, 1fr); }
@@ -1836,12 +1836,12 @@ Impish Nature
     <div class="results-controls">
       <div class="control-group">
         <label>Weather</label>
-        <select id="weatherMode" onchange="recomputeAndRender()">
-          <option value="none">None</option>
-          <option value="sun">Sun</option>
-          <option value="rain">Rain</option>
-          <option value="sand">Sand</option>
-          <option value="snow">Snow</option>
+        <select id="weatherMode" onchange="recomputeAndRender();_updateWeatherSelectColor(this)">
+          <option value="none" style="color:inherit;">None</option>
+          <option value="sun"  style="color:#EF9F27;">☀ Sun</option>
+          <option value="rain" style="color:#85B7EB;">🌧 Rain</option>
+          <option value="sand" style="color:#D3B07A;">🌪 Sand</option>
+          <option value="snow" style="color:#d0eeff;">❄ Snow</option>
         </select>
       </div>
 
@@ -1967,12 +1967,12 @@ Impish Nature
 
       <div class="control-group">
         <label>Terrain</label>
-        <select id="terrainMode" onchange="recomputeAndRender()">
-          <option value="none">None</option>
-          <option value="psychic">Psychic Terrain</option>
-          <option value="electric">Electric Terrain</option>
-          <option value="grassy">Grassy Terrain</option>
-          <option value="misty">Misty Terrain</option>
+        <select id="terrainMode" onchange="recomputeAndRender();_updateTerrainSelectColor(this)">
+          <option value="none"     style="color:inherit;">None</option>
+          <option value="psychic"  style="color:#ED93B1;">🔮 Psychic Terrain</option>
+          <option value="electric" style="color:#FAC775;">⚡ Electric Terrain</option>
+          <option value="grassy"   style="color:#97C459;">🌿 Grassy Terrain</option>
+          <option value="misty"    style="color:#f7c5f0;">🌫 Misty Terrain</option>
         </select>
       </div>
 
@@ -1996,7 +1996,7 @@ Impish Nature
 
     </div><!-- end results-controls -->
     <!-- Search bar on its own line -->
-    <div class="results-controls" style="flex-wrap:nowrap;">
+    <div class="results-controls" style="flex-wrap:nowrap;margin-bottom:0;padding-bottom:0;">
       <div class="control-group" style="width:100%;position:relative;margin-top:4px;">
         <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">
           <span style="font-size:11px;color:var(--text2);">Filter results</span>
@@ -2022,7 +2022,7 @@ Impish Nature
       <div id="fieldStatusText" style="flex:1;display:flex;flex-wrap:wrap;gap:4px;align-items:center;color:var(--text3);font-size:10px;"></div>
     </div><!-- end fieldStatusBar -->
     <!-- Defender tabs row — sticks with control bar -->
-    <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg2);border:0.5px solid var(--border);border-top:none;margin-bottom:10px;">
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg2);border:0.5px solid var(--border);border-top:none;">
       <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
         <div style="display:flex;border:0.5px solid var(--border2);border-radius:20px;overflow:hidden;">
           <button id="maxStatsBtn" onclick="toggleModeBtn('maxStatsMode','maxStatsBtn')" style="padding:4px 9px;font-size:11px;border:none;border-right:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Override Atk/SpA/Def/SpD/Spe to max investment">Max stats</button>
@@ -2293,6 +2293,11 @@ const FORMATS = {
 
 let _currentFormat = 'champions';
 let _gameMode = 'doubles'; // 'singles' or 'doubles'
+
+const _WEATHER_COLORS = { none:'var(--text2)', sun:'#EF9F27', rain:'#85B7EB', sand:'#D3B07A', snow:'#d0eeff' };
+const _TERRAIN_COLORS = { none:'var(--text2)', psychic:'#ED93B1', electric:'#FAC775', grassy:'#97C459', misty:'#f7c5f0' };
+function _updateWeatherSelectColor(sel) { if (sel) sel.style.color = _WEATHER_COLORS[sel.value] || 'var(--text2)'; }
+function _updateTerrainSelectColor(sel) { if (sel) sel.style.color = _TERRAIN_COLORS[sel.value] || 'var(--text2)'; }
 
 function setGameMode(mode) {
   _gameMode = mode;
@@ -2877,10 +2882,16 @@ let _threatPanelOpen = false;
 // Keys are speciesRaw strings — pins persist across tabs and search
 const pinnedKeys = new Set();
 const activeScreens = new Set(); // 'auroraveil', 'reflect', 'lightscreen'
+const _screensByMode = { defending: new Set(), attacking: new Set() }; // per-mode persistence
 
 function toggleScreenBtn(screen, btnId) {
   if (activeScreens.has(screen)) activeScreens.delete(screen);
   else activeScreens.add(screen);
+  // Persist to current mode
+  const atk = document.getElementById('attackingMode');
+  const modeKey = atk?.checked ? 'attacking' : 'defending';
+  if (activeScreens.has(screen)) _screensByMode[modeKey].add(screen);
+  else _screensByMode[modeKey].delete(screen);
   const btn = document.getElementById(btnId);
   if (btn) {
     const on = activeScreens.has(screen);
@@ -5349,7 +5360,12 @@ function computeResults(loadedMeta, defender) {
     // We apply the boost inline when selecting atkStat/defStat below.
     const _atkAbilSlug = (attacker.ability||'').toLowerCase().replace(/[\s-]/g,'');
     const _hasProtoQuark = _atkAbilSlug === 'protosynthesis' || _atkAbilSlug === 'quarkdrive';
-    const _boosterActive = boosterOverrides.get(attacker.speciesRaw) === 'on' && _hasProtoQuark;
+    const _weather2 = document.getElementById('weatherMode')?.value || 'none';
+    const _terrain2 = document.getElementById('terrainMode')?.value || 'none';
+    const _hasBoosterItem = (attacker.item||'').toLowerCase().replace(/[\s-]/g,'') === 'boosterenergy';
+    const _autoProto = _atkAbilSlug === 'protosynthesis' && _weather2 === 'sun' && !_hasBoosterItem;
+    const _autoQuark = _atkAbilSlug === 'quarkdrive' && _terrain2 === 'electric' && !_hasBoosterItem;
+    const _boosterActive = (_hasProtoQuark && boosterOverrides.get(attacker.speciesRaw) === 'on') || _autoProto || _autoQuark;
     // Find which stat gets boosted and its multiplier
     let _boostStat = null, _boostMul = 1;
     if (_boosterActive) {
@@ -11196,7 +11212,7 @@ function renderMatchHistory() {
       const hlOrder = typeof p !== 'string' && p.highlighted ? (p.highlightOrder ?? 99) : -1;
       const isPrimary = hlOrder !== -1 && hlOrder < 2;
       const glowStyle = isPrimary
-        ? 'border-radius:4px;background:radial-gradient(circle, rgba(124,106,247,0.7) 0%, rgba(124,106,247,0.2) 50%, transparent 80%);'
+        ? 'border-radius:4px;background:radial-gradient(circle, rgba(255,215,0,0.85) 0%, rgba(255,200,0,0.3) 50%, transparent 80%);'
         : '';
       const safeTeam = _currentTeamName.replace(/'/g,"\\'");
       const img = spriteImgHtmlCls(name, 38, sprite, cls);
@@ -11508,6 +11524,9 @@ function initGettingStarted() {
 }
 initFormat();
 renderEvPanel();
+// Initialize dropdown colors
+_updateWeatherSelectColor(document.getElementById('weatherMode'));
+_updateTerrainSelectColor(document.getElementById('terrainMode'));
   initGettingStarted();
 
 // Pre-fetch base sprites for fan-game megas in match history so they're in cache when log renders
@@ -11558,15 +11577,58 @@ function _setModeBtnActive(btnId, active) {
   btn.style.background  = active ? 'rgba(124,106,247,0.12)' : 'transparent';
 }
 
+const _stagesByMode = { defending: {}, attacking: {} }; // per-mode stage persistence
+const STAGE_IDS = ['atkStage','spaStage','defStage','spdStage','speStage'];
+
+function _saveStages(mode) {
+  STAGE_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    _stagesByMode[mode][id] = el ? (Number(el.value) || 0) : 0;
+  });
+}
+
+function _restoreStages(mode) {
+  STAGE_IDS.forEach(id => {
+    const val = _stagesByMode[mode][id] ?? 0;
+    const el = document.getElementById(id);
+    if (el) el.value = String(val);
+    updateStageDisplay(id, val);
+  });
+}
+
 function onAttackingModeToggle() {
   const atk     = document.getElementById('attackingMode');
   const maxRoll = document.getElementById('maxRollMode');
   const atkBtn  = document.getElementById('attackingModeBtn');
   if (!atk || !maxRoll) return;
+
+  // Save current screen and stage state for current mode before switching
+  const prevMode = atk.checked ? 'attacking' : 'defending';
+  _screensByMode[prevMode] = new Set(activeScreens);
+  _saveStages(prevMode);
+
   atk.checked     = !atk.checked;
-  maxRoll.checked = !atk.checked;   // defending = max rolls on; attacking = off
+  maxRoll.checked = !atk.checked;
   _setModeBtnActive('maxRollBtn', maxRoll.checked);
-  const rollBtn = document.getElementById('maxRollBtn'); if (rollBtn) rollBtn.textContent = maxRoll.checked ? 'Max rolls' : 'Min rolls';
+  const rollBtn = document.getElementById('maxRollBtn');
+  if (rollBtn) rollBtn.textContent = maxRoll.checked ? 'Max rolls' : 'Min rolls';
+
+  // Restore screen and stage state for new mode
+  const newMode = atk.checked ? 'attacking' : 'defending';
+  activeScreens.clear();
+  _screensByMode[newMode].forEach(s => activeScreens.add(s));
+  _restoreStages(newMode);
+
+  // Update screen button visuals
+  [['auroraveil','screenAVBtn'],['reflect','screenRBtn'],['lightscreen','screenLSBtn']].forEach(([s,id]) => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    const on = activeScreens.has(s);
+    btn.style.background = on ? 'rgba(100,160,255,0.18)' : 'transparent';
+    btn.style.color = on ? '#64a0ff' : 'var(--text3)';
+    btn.style.fontWeight = on ? '700' : '400';
+  });
+
   if (atkBtn) {
     if (atk.checked) {
       atkBtn.textContent       = 'Attacking';
@@ -11580,8 +11642,8 @@ function onAttackingModeToggle() {
       atkBtn.style.background  = 'rgba(91,155,213,0.12)';
     }
   }
-  // Also sync the attackingMode checkbox listener
   renderResults();
+  updateFieldStatus();
 }
 
 // ── Field status bar ──────────────────────────────────────────────────────────
