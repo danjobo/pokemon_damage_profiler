@@ -139,22 +139,22 @@
   .nb-ce:focus { border-color: var(--accent); }
   /* Markdown tokens — hidden syntax revealed on caret hover */
   .nb-ce .mk-bold { font-weight: 700; color: var(--text); }
-  .nb-ce .mk-bold .mk-sym { font-weight: 400; color: var(--text3); font-size: 11px; opacity: 0; transition: opacity 0.1s; }
-  .nb-ce .mk-bold.mk-active .mk-sym { opacity: 1; }
+  .nb-ce .mk-bold .mk-sym { font-weight: 400; color: var(--text3); font-size: 11px; display: none; }
+  .nb-ce .mk-bold.mk-active .mk-sym { display: inline; }
   .nb-ce .mk-italic { font-style: italic; color: var(--text); }
-  .nb-ce .mk-italic .mk-sym { font-style: normal; color: var(--text3); font-size: 11px; opacity: 0; transition: opacity 0.1s; }
-  .nb-ce .mk-italic.mk-active .mk-sym { opacity: 1; }
+  .nb-ce .mk-italic .mk-sym { font-style: normal; color: var(--text3); font-size: 11px; display: none; }
+  .nb-ce .mk-italic.mk-active .mk-sym { display: inline; }
   .nb-ce .mk-code { font-family: monospace; background: var(--bg2); padding: 0 3px; border-radius: 3px; font-size: 12px; }
-  .nb-ce .mk-code .mk-sym { color: var(--text3); font-size: 11px; opacity: 0; }
-  .nb-ce .mk-code.mk-active .mk-sym { opacity: 1; }
+  .nb-ce .mk-code .mk-sym { color: var(--text3); font-size: 11px; display: none; }
+  .nb-ce .mk-code.mk-active .mk-sym { display: inline; }
   .nb-ce .mk-link { color: var(--accent2); text-decoration: underline; cursor: pointer; }
-  .nb-ce .mk-link .mk-sym { color: var(--text3); text-decoration: none; font-size: 11px; opacity: 0; }
-  .nb-ce .mk-link.mk-active .mk-sym { opacity: 1; }
+  .nb-ce .mk-link .mk-sym { color: var(--text3); text-decoration: none; font-size: 11px; display: none; }
+  .nb-ce .mk-link.mk-active .mk-sym { display: inline; }
   .nb-ce .mk-h1 { font-size: 17px; font-weight: 700; color: var(--text); display: block; border-bottom: 0.5px solid var(--border2); padding-bottom: 2px; margin: 4px 0; }
   .nb-ce .mk-h2 { font-size: 14px; font-weight: 600; color: var(--text); display: block; margin: 4px 0 2px; }
   .nb-ce .mk-h3 { font-size: 13px; font-weight: 600; color: var(--text2); display: block; margin: 3px 0 1px; }
-  .nb-ce .mk-h1 .mk-sym, .nb-ce .mk-h2 .mk-sym, .nb-ce .mk-h3 .mk-sym { font-weight: 400; color: var(--text3); font-size: 11px; opacity: 0; }
-  .nb-ce .mk-h1.mk-active .mk-sym, .nb-ce .mk-h2.mk-active .mk-sym, .nb-ce .mk-h3.mk-active .mk-sym { opacity: 1; }
+  .nb-ce .mk-h1 .mk-sym, .nb-ce .mk-h2 .mk-sym, .nb-ce .mk-h3 .mk-sym { font-weight: 400; color: var(--text3); font-size: 11px; display: none; }
+  .nb-ce .mk-h1.mk-active .mk-sym, .nb-ce .mk-h2.mk-active .mk-sym, .nb-ce .mk-h3.mk-active .mk-sym { display: inline; }
   .nb-ce .mk-divider { display: block; border: none; border-top: 0.5px solid var(--border2); margin: 4px 0; height: 1px; }
   /* Collapsible header sections in editor */
   .nb-ce .mk-section-toggle { cursor: pointer; user-select: none; }
@@ -5341,6 +5341,7 @@ function heavySlamBP(atkWeightHg, defWeightHg) {
 function computeResults(loadedMeta, defender) {
   const results = [];
   const weather = document.getElementById('weatherMode')?.value || 'none';
+  const terrain = document.getElementById('terrainMode')?.value || 'none';
   const dynamaxActive = document.getElementById('dynamaxMode')?.checked || false;
   for (const attacker of loadedMeta) {
     const nat = NATURES[attacker.nature] || {};
@@ -5731,8 +5732,12 @@ function computeResults(loadedMeta, defender) {
     // Pre-compute booster energy multiplier for defender (tab pokemon)
     const _defAbilSlug = (defender.ability||'').toLowerCase().replace(/[\s-]/g,'');
     const _defHasProtoQuark = _defAbilSlug === 'protosynthesis' || _defAbilSlug === 'quarkdrive';
+    const _defHasBoosterItem = (defender.item||'').toLowerCase().replace(/[\s-]/g,'') === 'boosterenergy';
+    const _defAutoProto = _defAbilSlug === 'protosynthesis' && weather === 'sun' && !_defHasBoosterItem;
+    const _defAutoQuark = _defAbilSlug === 'quarkdrive' && terrain === 'electric' && !_defHasBoosterItem;
+    const _defBoosterOn = (_defHasProtoQuark && boosterOverrides.get(defender.speciesRaw) === 'on') || _defAutoProto || _defAutoQuark;
     let _defBoosterStat = null, _defBoosterMul = 1;
-    if (boosterOverrides.get(defender.speciesRaw) === 'on' && _defHasProtoQuark) {
+    if (_defBoosterOn) {
       // Compute base stats to find highest
       const _defStatsTemp = {
         atk: calcStat(defender.baseStats.atk, defender.evs.atk||0, defender.ivs.atk||31, defender.level, defNat.atk||1),
@@ -6839,7 +6844,17 @@ function renderResults() {
     const _ab = r.attacker.ability || '';
     const _it = r.attacker.item || '';
     const _abSlug = _ab.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-    const _itSlug = _it.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const _itSlug = (() => {
+      const base = _it.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+      // Some Gen 8/9 items have different PokeAPI sprite paths
+      const overrides = {
+        'clear-amulet':'clear-amulet','covert-cloak':'covert-cloak',
+        'loaded-dice':'loaded-dice','mirror-herb':'mirror-herb',
+        'punching-glove':'punching-glove','booster-energy':'booster-energy',
+        'tera-orb':'poke-ball',
+      };
+      return overrides[base] || base;
+    })();
     const _abHtml = _ab
       ? '<span data-ability-slug="' + _abSlug + '" data-ab-effect="" style="font-size:9px;color:var(--accent2);background:rgba(124,106,247,0.1);padding:2px 5px;border-radius:4px;cursor:help;border:0.5px solid rgba(124,106,247,0.25);text-align:center;line-height:1.2;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;">' + _ab + '</span>'
       : '';
@@ -9387,6 +9402,38 @@ function textareaKeyHandler(e) {
 
 // Attach via event delegation — catches static and dynamic textareas
 document.addEventListener('keydown', textareaKeyHandler, true);
+
+// Toast notification
+function showToast(msg, duration = 1800) {
+  let toast = document.getElementById('_toastEl');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = '_toastEl';
+    toast.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:9999;padding:8px 18px;background:var(--bg2);border:0.5px solid var(--border);border-radius:20px;font-size:12px;color:var(--text2);box-shadow:0 4px 16px rgba(0,0,0,0.4);pointer-events:none;transition:opacity 0.3s;opacity:0;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, duration);
+}
+
+// Global Ctrl+C with nothing selected → copy all tabs to clipboard
+document.addEventListener('keydown', function(e) {
+  if (!(e.ctrlKey || e.metaKey) || e.key !== 'c') return;
+  const sel = window.getSelection();
+  if (sel && sel.toString().length > 0) return;
+  const active = document.activeElement;
+  if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) return;
+  const slots = DEFENDER_SLOTS.filter(Boolean);
+  if (!slots.length) return;
+  const text = slots.map(s => s._rawText || s.speciesRaw || '').filter(Boolean).join('\n\n');
+  if (!text) return;
+  e.preventDefault();
+  navigator.clipboard.writeText(text).then(() => {
+    showToast(`📋 Copied ${slots.length} tab${slots.length !== 1 ? 's' : ''} to clipboard`);
+  }).catch(() => showToast('⚠ Copy failed'));
+});
 const DRIVE_CLIENT_ID = '352257766580-3ntfo6ga148ovb9rtbpq08otv5dqh615.apps.googleusercontent.com';
 const DRIVE_API_KEY   = 'AIzaSyDaMeZNB9DcLVrJQYTstTAIhYTmaMl3VRk';
 const DRIVE_SCOPES    = 'https://www.googleapis.com/auth/drive.file';
@@ -9773,15 +9820,20 @@ function generatePrintDoc() {
       const attNatShort = attNat.charAt(0).toUpperCase()+attNat.slice(1,4)+'.';
       const attSpread = [attItem ? `@${attItem}` : '', attNatShort, attEvParts.join('/')].filter(Boolean).join(' ');
 
-      const abbrevMove = m => m && m.length > 10 ? m.split(' ').map(w=>w[0]).join('') : m;
-      const fmt = (pct, move) => {
-        const label = pct >= 100 ? 'OHKO' : `${pct.toFixed(0)}%`;
-        return move ? `${label}(${abbrevMove(move)})` : label;
+      const abbrevMove = m => {
+        const name = typeof m === 'object' ? (m?.name || '') : (m || '');
+        return name.length > 10 ? name.split(' ').map(w=>w[0]).join('') : name;
       };
+      const fmt = (pct, move) => {
+        const label = pct >= 100 ? `OHKO(${pct.toFixed(1)}%)` : `${pct.toFixed(1)}%`;
+        const mn = abbrevMove(move);
+        return mn ? `${label}(${mn})` : label;
+      };
+      const inMove = typeof r.displayMove === 'object' ? r.displayMove?.name : r.displayMove;
       results.push({
         name: r.attacker.speciesRaw.replace(/\s*★$/,''),
         spread: attSpread,
-        in:   inBig  ? fmt(inPct, r.displayMove) : '—',
+        in:   inBig  ? fmt(inPct, inMove) : '—',
         out:  outBig ? fmt(outPct, outMove) : '—',
         inPct, outPct,
         spd: faster ? '⚡' : '🐢',
@@ -10639,7 +10691,7 @@ function renderNotebook() {
         html += `<div class="nb-expanded">
           <span class="nb-show-toggle" onclick="nbStartEdit(event,${note.id})">✏️ Edit</span>
           <span class="nb-show-toggle" onclick="nbToggleExpand(${note.id})" style="margin-left:10px;">Show less</span>
-          <div class="nb-rendered" id="nb-rendered-${note.id}">${rendered}</div>
+          <div class="nb-rendered" id="nb-rendered-${note.id}" ondblclick="nbStartEdit(event,${note.id})" style="cursor:text;">${rendered}</div>
         </div>`;
       }
     }
@@ -10789,34 +10841,75 @@ function nbStartEdit(e, id) {
 }
 
 function nbTaKeydown(e, id) {
-  if (e.key === 'Enter' && !e.shiftKey && e.ctrlKey) { e.preventDefault(); nbSaveEdit(id); return; }
-  if (e.key === 'Escape') { nbCancelEdit(id); return; }
+  if (e.key === 'Enter' && !e.shiftKey && e.ctrlKey) {
+    e.preventDefault();
+    const ta = e.target;
+    const val = ta.value;
+    const pos = ta.selectionStart;
+    // Find end of current line
+    let lineEnd = pos;
+    while (lineEnd < val.length && val[lineEnd] !== '\n') lineEnd++;
+    // Insert newline after current line
+    ta.value = val.slice(0, lineEnd) + '\n' + val.slice(lineEnd);
+    ta.selectionStart = ta.selectionEnd = lineEnd + 1;
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    return;
+  }
+  if (e.key === 'Escape') { nbSaveEdit(id); return; }
 
-  // Ctrl+B: bold, Ctrl+I: italic
+  // Ctrl+B: bold, Ctrl+I: italic — toggles markers on/off
   if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'i')) {
     e.preventDefault();
     const ta = e.target;
     const marker = e.key === 'b' ? '**' : '*';
+    const mlen = marker.length;
     const start = ta.selectionStart;
     const end   = ta.selectionEnd;
-    let sel = ta.value.slice(start, end);
+    const text  = ta.value;
+    let sel = text.slice(start, end);
+
     if (!sel) {
-      // No selection — find current word boundaries
-      const text = ta.value;
-      let ws = start, we = end;
+      // No selection — find current word
+      let ws = start, we = start;
       while (ws > 0 && /\w/.test(text[ws-1])) ws--;
       while (we < text.length && /\w/.test(text[we])) we++;
       sel = text.slice(ws, we);
       if (sel) {
-        ta.value = text.slice(0, ws) + marker + sel + marker + text.slice(we);
-        ta.selectionStart = ws + marker.length;
-        ta.selectionEnd   = we + marker.length;
+        // Check if already wrapped
+        if (text.slice(ws - mlen, ws) === marker && text.slice(we, we + mlen) === marker) {
+          // Unwrap
+          ta.value = text.slice(0, ws - mlen) + sel + text.slice(we + mlen);
+          ta.selectionStart = ws - mlen;
+          ta.selectionEnd   = we - mlen;
+        } else {
+          // Wrap
+          ta.value = text.slice(0, ws) + marker + sel + marker + text.slice(we);
+          ta.selectionStart = ws + mlen;
+          ta.selectionEnd   = we + mlen;
+        }
+      } else {
+        ta.value = text.slice(0, start) + marker + marker + text.slice(start);
+        ta.selectionStart = ta.selectionEnd = start + mlen;
       }
     } else {
-      // Wrap selection
-      ta.value = ta.value.slice(0, start) + marker + sel + marker + ta.value.slice(end);
-      ta.selectionStart = start + marker.length;
-      ta.selectionEnd   = end   + marker.length;
+      // Check if selection is already wrapped
+      if (text.slice(start - mlen, start) === marker && text.slice(end, end + mlen) === marker) {
+        // Unwrap — remove the surrounding markers
+        ta.value = text.slice(0, start - mlen) + sel + text.slice(end + mlen);
+        ta.selectionStart = start - mlen;
+        ta.selectionEnd   = end - mlen;
+      } else if (sel.startsWith(marker) && sel.endsWith(marker) && sel.length > mlen * 2) {
+        // Selection itself includes markers — strip them
+        const inner = sel.slice(mlen, sel.length - mlen);
+        ta.value = text.slice(0, start) + inner + text.slice(end);
+        ta.selectionStart = start;
+        ta.selectionEnd   = start + inner.length;
+      } else {
+        // Wrap
+        ta.value = text.slice(0, start) + marker + sel + marker + text.slice(end);
+        ta.selectionStart = start + mlen;
+        ta.selectionEnd   = end   + mlen;
+      }
     }
   }
 }
@@ -10826,6 +10919,19 @@ function nbUpdatePreview(id) {
 }
 
 // ── Contenteditable Obsidian-style editor ────────────────────────────────────
+
+// Set plain text in CE editor (rebuilds lines)
+function nbCeSetText(el, text) {
+  el.innerHTML = '';
+  const lines = text.split('\n');
+  lines.forEach(line => {
+    const div = document.createElement('div');
+    div.dataset.raw = line;
+    if (!line) div.innerHTML = '<br>';
+    else div.textContent = line;
+    el.appendChild(div);
+  });
+}
 
 // Extract plain text from the CE editor (preserve newlines from block elements)
 function nbCeGetText(el) {
@@ -10999,32 +11105,89 @@ function nbCeInput(e, id) {
 }
 
 function nbCeKeydown(e, id) {
-  if (e.key === 'Escape') { nbCancelEdit(id); return; }
-  if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); nbSaveEdit(id); return; }
+  if (e.key === 'Escape') { nbSaveEdit(id); return; }
 
-  // Ctrl+B / Ctrl+I wrapping
+  // Ctrl+Enter: insert new line below current line and move caret there
+  if (e.key === 'Enter' && e.ctrlKey) {
+    e.preventDefault();
+    const ce = document.getElementById('nb-ce-' + id);
+    if (!ce) return;
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    // Find current line div
+    let node = sel.getRangeAt(0).startContainer;
+    while (node && node.parentElement !== ce) node = node.parentElement;
+    if (!node) { nbSaveEdit(id); return; }
+    const newDiv = document.createElement('div');
+    newDiv.dataset.raw = '';
+    newDiv.innerHTML = '<br>';
+    if (node.nextSibling) ce.insertBefore(newDiv, node.nextSibling);
+    else ce.appendChild(newDiv);
+    // Move caret to new div
+    const r = document.createRange();
+    r.setStart(newDiv, 0); r.collapse(true);
+    sel.removeAllRanges(); sel.addRange(r);
+    nbCeInput({}, id);
+    return;
+  }
+
+  // Ctrl+B / Ctrl+I wrapping — toggles on/off
   if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'i')) {
     e.preventDefault();
     const marker = e.key === 'b' ? '**' : '*';
+    const mlen = marker.length;
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
     const range = sel.getRangeAt(0);
     const selected = range.toString();
+    const ce = document.getElementById('nb-ce-' + id);
+    const text = nbCeGetText(ce);
+
+    // Get caret offset within full text
+    const preCaretRange = range.cloneRange();
+    preCaretRange.selectNodeContents(ce);
+    preCaretRange.setEnd(range.startContainer, range.startOffset);
+    const caretOffset = preCaretRange.toString().length;
+    const selLen = selected.length;
+
     if (selected) {
-      document.execCommand('insertText', false, marker + selected + marker);
+      const selStart = caretOffset;
+      const selEnd   = caretOffset + selLen;
+      // Check if already wrapped outside selection
+      if (text.slice(selStart - mlen, selStart) === marker && text.slice(selEnd, selEnd + mlen) === marker) {
+        const newText = text.slice(0, selStart - mlen) + selected + text.slice(selEnd + mlen);
+        nbCeSetText(ce, newText);
+      } else if (selected.startsWith(marker) && selected.endsWith(marker) && selected.length > mlen * 2) {
+        const inner = selected.slice(mlen, selected.length - mlen);
+        const newText = text.slice(0, selStart) + inner + text.slice(selEnd);
+        nbCeSetText(ce, newText);
+      } else {
+        document.execCommand('insertText', false, marker + selected + marker);
+      }
     } else {
-      // Wrap current word
-      const el = document.getElementById('nb-ce-' + id);
-      // Insert markers and leave cursor between
-      document.execCommand('insertText', false, marker + marker);
-      // Move caret back by marker.length
-      const s2 = window.getSelection();
-      if (s2.rangeCount) {
-        const r2 = s2.getRangeAt(0).cloneRange();
-        r2.setStart(r2.startContainer, Math.max(0, r2.startOffset - marker.length));
-        r2.collapse(true);
-        s2.removeAllRanges();
-        s2.addRange(r2);
+      // No selection — find word around caret
+      let ws = caretOffset, we = caretOffset;
+      while (ws > 0 && /\w/.test(text[ws-1])) ws--;
+      while (we < text.length && /\w/.test(text[we])) we++;
+      const word = text.slice(ws, we);
+      if (word) {
+        if (text.slice(ws - mlen, ws) === marker && text.slice(we, we + mlen) === marker) {
+          // Unwrap
+          const newText = text.slice(0, ws - mlen) + word + text.slice(we + mlen);
+          nbCeSetText(ce, newText);
+        } else {
+          const newText = text.slice(0, ws) + marker + word + marker + text.slice(we);
+          nbCeSetText(ce, newText);
+        }
+      } else {
+        document.execCommand('insertText', false, marker + marker);
+        const s2 = window.getSelection();
+        if (s2.rangeCount) {
+          const r2 = s2.getRangeAt(0).cloneRange();
+          r2.setStart(r2.startContainer, Math.max(0, r2.startOffset - mlen));
+          r2.collapse(true);
+          s2.removeAllRanges(); s2.addRange(r2);
+        }
       }
     }
     nbCeInput({}, id);

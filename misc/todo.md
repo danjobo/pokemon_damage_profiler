@@ -3,23 +3,12 @@
 
 
 
-- ctrl+c with nothing clicked on the page will copy the current tabs to clipboard
-
-- show exact OHKO percent in printing calcs
-
-- sometimes like in groudon's case, it's saying OHKO ([object Object]) on the incoming damage percents
-
-
 
 - [??] collapse headers in text edit window in notes?
 
-- ctrl+b not bolding whole current unselected word, should also count if you're at the end of a word
 
-- change ctrl+enter to do new line
 
-- hidden markdown should not have the **'s or ##'s be invisible but present, they should not be present until clicking the bolded text
 
-- hitting escape in notes editor saves current note
 
 - shortcuts on hover
 
@@ -74,6 +63,16 @@
 ---
 #### Completed
 
+- [XX] ctrl+c with nothing clicked on the page will copy the current tabs to clipboard
+- [XX] little message popup to show that cliboard was copied
+- [XX] show exact OHKO percent in printing calcs
+- [XX] sometimes like in groudon's case, it's saying OHKO ([object Object]) on the incoming damage percents
+- [XX] ctrl+b not bolding whole current unselected word, should also count if you're at the end of a word
+- [XX] change ctrl+enter to do new line
+- [XX] remove ctrl+enter saving note in notes tab, hitting escape in notes editor saves current note
+- [XX] hidden markdown should not have the **'s or ##'s be invisible but present, they should not be present until clicking the bolded text
+- [XX] also should unbold current or un italicize
+- [XX] electric terrain quark drive and sun protosynthesis buff (on mons without booster energy) works on results listings, but doesn't work when it's your tab that has quark drive or protosynthesis (test case was seeing damage increasing in defending mode, but not your damage increasing in attacking mode)
 - [XX] sun should activate protosynthesis on non booster energy pokemon
 - [XX] electric terrain should activate quark drive on non booster energy pokemon
 - [XX] there's still a gap above sort dropdowns section
