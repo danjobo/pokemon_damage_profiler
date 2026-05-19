@@ -32,7 +32,6 @@
 
 
 
-
 - use grid sprites for the match log
 
 
@@ -67,6 +66,8 @@
 ---
 #### Completed
 
+- [XX] team changes save automatically + duplicate team button
+- [XX] remove the plus and minus buttons next to HP EV slider in team window and move breakdown spread editor
 - [XX] tab form changes reflect in match window calcs
 - [XX] make the yellow glow in match log listings to be less opacity
 - [XX] new team button next to teams dropdown that makes a new blank team with the name "Untitled X" where X starts at 1 and increases up to the next lowest available X (just like with file name duplicates)

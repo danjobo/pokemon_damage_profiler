@@ -1651,6 +1651,7 @@ Adamant Nature
           <div class="team-picker-dropdown" id="teamPickerDropdown"></div>
         </div>
         <button onclick="createNewTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Create a new blank team">＋ New</button>
+        <button onclick="duplicateCurrentTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Duplicate current team">⧉ Dupe</button>
         <button onclick="renameSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Rename selected team">Rename</button>
         <button onclick="deleteSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--red);cursor:pointer;white-space:nowrap;" title="Delete selected team">Delete</button>
         <div class="spinner" id="teamSpinner"></div>
@@ -3314,9 +3315,10 @@ function renderEvPanel() {
     const minusStyle = isDrop
       ? 'color:#87b4f5;border-color:#87b4f5;background:rgba(135,180,245,0.15);'
       : 'color:var(--text3);border-color:var(--border2);';
+    const _showNatBtns = stat !== 'hp';
     return `<div style="display:flex;align-items:center;gap:4px;min-width:0;overflow:hidden;">
-      <button onclick="onNatureStatBtn('${stat}','boost')" style="padding:0 5px;height:16px;font-size:10px;border-width:0.5px;border-style:solid;border-radius:3px;cursor:pointer;line-height:1;flex-shrink:0;${plusStyle}" title="Set as boosted nature stat">+</button>
-      <button onclick="onNatureStatBtn('${stat}','drop')"  style="padding:0 5px;height:16px;font-size:10px;border-width:0.5px;border-style:solid;border-radius:3px;cursor:pointer;line-height:1;flex-shrink:0;${minusStyle}" title="Set as dropped nature stat">−</button>
+      ${_showNatBtns ? `<button onclick="onNatureStatBtn('${stat}','boost')" style="padding:0 5px;height:16px;font-size:10px;border-width:0.5px;border-style:solid;border-radius:3px;cursor:pointer;line-height:1;flex-shrink:0;${plusStyle}" title="Set as boosted nature stat">+</button>` : '<span style="width:22px;flex-shrink:0;"></span>'}
+      ${_showNatBtns ? `<button onclick="onNatureStatBtn('${stat}','drop')"  style="padding:0 5px;height:16px;font-size:10px;border-width:0.5px;border-style:solid;border-radius:3px;cursor:pointer;line-height:1;flex-shrink:0;${minusStyle}" title="Set as dropped nature stat">−</button>` : '<span style="width:22px;flex-shrink:0;"></span>'}
       <span style="font-size:10px;color:var(--text3);width:26px;flex-shrink:0;">${EV_LABELS[stat]}</span>
       <input type="range" min="0" max="${EV_MAX()}" value="${ev}" step="${getFormat().evStep||1}" class="ev-slider"
         style="flex:1;min-width:0;accent-color:var(--accent);height:4px;cursor:pointer;"
@@ -3523,6 +3525,7 @@ function _applyEvChanges(slot, rebuildPanel) {
   lastResults = slot._lastResults;
   renderResults();
   renderDefenderTabs();
+  _autoSaveTeam();
 }
 
 function _syncPasteFromSlot(slot) {
@@ -3735,6 +3738,7 @@ function clearDefenderSlot(e, i) {
   }
   renderDefenderTabs();
   renderEvPanel();
+  _autoSaveTeam();
 }
 
 function copyTeamPaste252() {
@@ -5290,6 +5294,7 @@ async function calculate() {
   btn.disabled = false;
   btn.textContent = 'Add to tab(s)';
   renderEvPanel();
+  _autoSaveTeam();
 }
 
 function showDefenderInfo(defender) {
@@ -7244,9 +7249,10 @@ function _renderMetaEvSliders() {
     const isBoost = stat===natBoost; const isDrop = stat===natDrop;
     const plusStyle  = isBoost ? 'color:#f08080;border-color:#f08080;background:rgba(240,128,128,0.15);' : 'color:var(--text3);border-color:var(--border2);';
     const minusStyle = isDrop  ? 'color:#87b4f5;border-color:#87b4f5;background:rgba(135,180,245,0.15);' : 'color:var(--text3);border-color:var(--border2);';
+    const _metaShowNatBtns = stat !== 'hp';
     return `<div style="display:flex;align-items:center;gap:4px;min-width:0;overflow:hidden;">
-      <button onclick="onMetaNatureStatBtn('${stat}','boost');event.stopPropagation();" style="padding:0 5px;height:16px;font-size:10px;border-width:0.5px;border-style:solid;border-radius:3px;cursor:pointer;line-height:1;flex-shrink:0;${plusStyle}">+</button>
-      <button onclick="onMetaNatureStatBtn('${stat}','drop');event.stopPropagation();"  style="padding:0 5px;height:16px;font-size:10px;border-width:0.5px;border-style:solid;border-radius:3px;cursor:pointer;line-height:1;flex-shrink:0;${minusStyle}">−</button>
+      ${_metaShowNatBtns ? `<button onclick="onMetaNatureStatBtn('${stat}','boost');event.stopPropagation();" style="padding:0 5px;height:16px;font-size:10px;border-width:0.5px;border-style:solid;border-radius:3px;cursor:pointer;line-height:1;flex-shrink:0;${plusStyle}">+</button>` : '<span style="width:22px;flex-shrink:0;"></span>'}
+      ${_metaShowNatBtns ? `<button onclick="onMetaNatureStatBtn('${stat}','drop');event.stopPropagation();"  style="padding:0 5px;height:16px;font-size:10px;border-width:0.5px;border-style:solid;border-radius:3px;cursor:pointer;line-height:1;flex-shrink:0;${minusStyle}">−</button>` : '<span style="width:22px;flex-shrink:0;"></span>'}
       <span style="font-size:10px;color:var(--text3);width:26px;flex-shrink:0;">${EV_LABELS[stat]}</span>
       <input type="range" min="0" max="${maxEv}" value="${ev}" step="${evStep}" id="metaEvSlider_${stat}"
         style="flex:1;min-width:0;accent-color:var(--accent);height:4px;cursor:pointer;"
@@ -7986,6 +7992,7 @@ async function addAttackerAsDefender(e, speciesRaw, resultIndex) {
   document.getElementById('resultsSection').style.display = 'block';
   renderResults();
   renderEvPanel();
+  _autoSaveTeam();
   window.scrollTo({ top: savedScroll, behavior: 'instant' });
 }
 
@@ -9759,6 +9766,46 @@ function createNewTeam() {
   updateDefenderTabs();
   renderResults();
   showToast(`✨ Created "${newName}"`);
+}
+
+function _autoSaveTeam() {
+  // If no team selected, auto-create "Untitled 1" so tabs are always persisted
+  if (!_teamPickerSelected) {
+    const teams = getSavedTeams();
+    let x = 1;
+    while (teams[`Untitled ${x}`]) x++;
+    const newName = `Untitled ${x}`;
+    _teamPickerSelected = newName;
+    _currentTeamName = newName;
+    if (typeof loadWinrateForTeam === 'function') loadWinrateForTeam(newName);
+    if (typeof refreshTeamPickerDropdown === 'function') refreshTeamPickerDropdown(newName);
+  }
+  const slots = DEFENDER_SLOTS.map(s => s ? (s._rawText || '') : null);
+  const teams = getSavedTeams();
+  const existing = teams[_teamPickerSelected];
+  const savedAt = existing?.savedAt || Date.now();
+  teams[_teamPickerSelected] = { slots, savedAt };
+  putSavedTeams(teams);
+}
+
+function duplicateCurrentTeam() {
+  if (!_teamPickerSelected) { showToast('No team selected to duplicate'); return; }
+  const teams = getSavedTeams();
+  const src = teams[_teamPickerSelected];
+  if (!src) { showToast('No team data to duplicate'); return; }
+  // Find "Copy of X", "Copy of X (2)", "Copy of X (3)"...
+  const baseName = `Copy of ${_teamPickerSelected}`;
+  let newName = baseName;
+  let i = 2;
+  while (teams[newName]) { newName = `${baseName} (${i++})`; }
+  teams[newName] = { slots: [...(src.slots || [])], savedAt: Date.now() };
+  putSavedTeams(teams);
+  // Load the duplicate as the active team
+  _teamPickerSelected = newName;
+  _currentTeamName = newName;
+  refreshTeamPickerDropdown(newName);
+  loadWinrateForTeam(newName);
+  showToast(`⧉ Duplicated as "${newName}"`);
 }
 
 function saveCurrentTeam() {
