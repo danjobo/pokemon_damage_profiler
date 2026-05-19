@@ -144,6 +144,9 @@
   .nb-ce .mk-italic { font-style: italic; color: var(--text); }
   .nb-ce .mk-italic .mk-sym { font-style: normal; color: var(--text3); font-size: 11px; display: none; }
   .nb-ce .mk-italic.mk-active .mk-sym { display: inline; }
+  .nb-ce .mk-underline { text-decoration: underline; color: var(--text); }
+  .nb-ce .mk-underline .mk-sym { text-decoration: none; color: var(--text3); font-size: 11px; display: none; }
+  .nb-ce .mk-underline.mk-active .mk-sym { display: inline; }
   .nb-ce .mk-code { font-family: monospace; background: var(--bg2); padding: 0 3px; border-radius: 3px; font-size: 12px; }
   .nb-ce .mk-code .mk-sym { color: var(--text3); font-size: 11px; display: none; }
   .nb-ce .mk-code.mk-active .mk-sym { display: inline; }
@@ -2294,10 +2297,10 @@ const FORMATS = {
 let _currentFormat = 'champions';
 let _gameMode = 'doubles'; // 'singles' or 'doubles'
 
-const _WEATHER_COLORS = { none:'var(--text2)', sun:'#EF9F27', rain:'#85B7EB', sand:'#D3B07A', snow:'#d0eeff' };
-const _TERRAIN_COLORS = { none:'var(--text2)', psychic:'#ED93B1', electric:'#FAC775', grassy:'#97C459', misty:'#f7c5f0' };
-function _updateWeatherSelectColor(sel) { if (sel) sel.style.color = _WEATHER_COLORS[sel.value] || 'var(--text2)'; }
-function _updateTerrainSelectColor(sel) { if (sel) sel.style.color = _TERRAIN_COLORS[sel.value] || 'var(--text2)'; }
+const _WEATHER_COLORS = { sun:'#EF9F27', rain:'#85B7EB', sand:'#D3B07A', snow:'#d0eeff' };
+const _TERRAIN_COLORS = { psychic:'#ED93B1', electric:'#FAC775', grassy:'#97C459', misty:'#f7c5f0' };
+function _updateWeatherSelectColor(sel) { if (sel) sel.style.color = _WEATHER_COLORS[sel.value] || ''; }
+function _updateTerrainSelectColor(sel) { if (sel) sel.style.color = _TERRAIN_COLORS[sel.value] || ''; }
 
 function setGameMode(mode) {
   _gameMode = mode;
@@ -3589,7 +3592,11 @@ function renderDefenderTabs() {
       tab.onclick = () => selectDefenderTab(i);
     } else {
       const isActive = i === activeDefenderSlot;
-      const isMatchHighlighted = _matchActive && _matchHighlightQueue.my.includes(slot.speciesRaw);
+      const slotBase = (slot.speciesRaw || '').replace(/-(mega(-[xy])?|gmax|blade|shield|hero|zero|origin|sky|therian|resolute|crowned|hangry|noice|dusk|midnight|original|single-strike|rapid-strike)$/i, '').trim();
+      const isMatchHighlighted = _matchActive && _matchHighlightQueue.my.some(n => {
+        const nBase = n.replace(/-(mega(-[xy])?|gmax|blade|shield|hero|zero|origin|sky|therian|resolute|crowned|hangry|noice|dusk|midnight|original|single-strike|rapid-strike)$/i,'').trim();
+        return nBase.toLowerCase() === slotBase.toLowerCase();
+      });
       tab.className = `def-tab filled${isActive ? ' active' : ''}${isMatchHighlighted ? ' match-highlighted' : ''}`;
       const dots = slot.types.map(t =>
         `<div class="def-tab-dot" style="background:${TYPE_COLORS[t]||'#888'}"></div>`
@@ -8619,9 +8626,15 @@ function resetFieldConditions() {
   setVal('weatherMode', 'none');
   setVal('terrainMode', 'none');
   setVal('speedCondition', 'none');
+  _updateWeatherSelectColor(document.getElementById('weatherMode'));
+  _updateTerrainSelectColor(document.getElementById('terrainMode'));
   ['atkStage','spaStage','defStage','spdStage','speStage'].forEach(id => { setVal(id, '0'); updateStageDisplay(id, 0); });
-  // Clear screen buttons
+  // Clear screens + stages for BOTH modes
   activeScreens.clear();
+  _screensByMode.defending = new Set();
+  _screensByMode.attacking = new Set();
+  _stagesByMode.defending  = {};
+  _stagesByMode.attacking  = {};
   ['screenAVBtn','screenRBtn','screenLSBtn'].forEach(id => {
     const btn = document.getElementById(id);
     if (btn) { btn.style.background='transparent'; btn.style.color='var(--text3)'; btn.style.fontWeight='400'; }
@@ -9427,7 +9440,16 @@ document.addEventListener('keydown', function(e) {
   if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) return;
   const slots = DEFENDER_SLOTS.filter(Boolean);
   if (!slots.length) return;
-  const text = slots.map(s => s._rawText || s.speciesRaw || '').filter(Boolean).join('\n\n');
+  const text = slots.map(s => {
+    const raw = s._rawText || s.speciesRaw || '';
+    // Keep only first 4 move lines (lines starting with "- ")
+    const lines = raw.split('\n');
+    let moveCount = 0;
+    return lines.filter(l => {
+      if (/^\s*-\s+/.test(l)) { moveCount++; return moveCount <= 4; }
+      return true;
+    }).join('\n');
+  }).filter(Boolean).join('\n\n');
   if (!text) return;
   e.preventDefault();
   navigator.clipboard.writeText(text).then(() => {
@@ -10334,7 +10356,10 @@ function renderMatchWindow() {
   function teamGrid(team, side, oppSorted, isMyTeam) {
     return team.map(p => {
       const q        = _matchHighlightQueue[side] || [];
-      const queueIdx = q.indexOf(p.speciesRaw);
+      // Normalize form names for comparison (strip -hero, -zero, -mega suffixes)
+      const normName = s => s.replace(/\s*★$/,'').replace(/-(hero|zero|mega[-\w]*)$/i,'').toLowerCase().trim();
+      const pNorm    = normName(p.speciesRaw);
+      const queueIdx = q.findIndex(n => normName(n) === pNorm);
       const isPrimary   = queueIdx !== -1 && queueIdx < 2;
       const isSecondary = queueIdx !== -1 && queueIdx >= 2;
       const hl = queueIdx !== -1;
@@ -10818,11 +10843,23 @@ function nbInline(s) {
   return escHtml(s)
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/__(.+?)__/g, '<u>$1</u>')
     .replace(/`(.+?)`/g, '<code>$1</code>')
     .replace(/~~(.+?)~~/g, '<del>$1</del>')
-    // Markdown links [text](url)
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:var(--accent2);">$1</a>')
-    // Bare URLs
+    .replace(/\[\[item:([^\]]+)\]\]/g, (_, name) => {
+      const slug = name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+      return `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${slug}.png" style="width:20px;height:20px;image-rendering:pixelated;vertical-align:middle;" title="${name}">`;
+    })
+    .replace(/\[\[([^\]]+)\]\]/g, (_, name) => {
+      const idx = window._psIconMap?.[name.toLowerCase()] ?? (() => {
+        const slug = name.toLowerCase().replace(/[^a-z0-9-]/g,'');
+        const known = Object.keys(window._psIconMap||{}).find(k => k.replace(/[^a-z0-9]/g,'') === slug.replace(/-/g,''));
+        return window._psIconMap?.[known] ?? null;
+      })();
+      const col = idx !== null ? (idx % 12) * -40 : 0;
+      const row = idx !== null ? Math.floor(idx / 12) * -30 : 0;
+      return `<span style="display:inline-block;width:40px;height:30px;background:url('https://play.pokemonshowdown.com/sprites/pokemonicons-sheet.png?v21') ${col}px ${row}px no-repeat;image-rendering:pixelated;vertical-align:middle;" title="${name}"></span>`;
+    })
     .replace(/(^|[\s(])(https?:\/\/[^\s<)"]+)/g, '$1<a href="$2" target="_blank" rel="noopener" style="color:var(--accent2);">$2</a>');
 }
 
@@ -10855,13 +10892,28 @@ function nbTaKeydown(e, id) {
     ta.dispatchEvent(new Event('input', { bubbles: true }));
     return;
   }
+
+  // Ctrl+Shift+K → insert [[pokemon]] sprite, Ctrl+Shift+M → insert [[item:item]] sprite
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'K' || e.key === 'k' || e.key === 'M' || e.key === 'm')) {
+    e.preventDefault();
+    const isItem = e.key === 'M' || e.key === 'm';
+    const snippet = isItem ? '[[item:]]' : '[[]]';
+    const cursorBack = isItem ? 2 : 2; // chars from end to place caret inside [[]]
+    const ta = e.target;
+    if (ta && ta.tagName === 'TEXTAREA') {
+      const pos = ta.selectionStart;
+      ta.value = ta.value.slice(0, pos) + snippet + ta.value.slice(pos);
+      ta.selectionStart = ta.selectionEnd = pos + snippet.length - cursorBack;
+    }
+    return;
+  }
   if (e.key === 'Escape') { nbSaveEdit(id); return; }
 
-  // Ctrl+B: bold, Ctrl+I: italic — toggles markers on/off
-  if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'i')) {
+  // Ctrl+B: bold, Ctrl+I: italic, Ctrl+U: underline — toggles markers on/off
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'i' || e.key === 'u')) {
     e.preventDefault();
     const ta = e.target;
-    const marker = e.key === 'b' ? '**' : '*';
+    const marker = e.key === 'b' ? '**' : e.key === 'i' ? '*' : '__';
     const mlen = marker.length;
     const start = ta.selectionStart;
     const end   = ta.selectionEnd;
@@ -10869,46 +10921,85 @@ function nbTaKeydown(e, id) {
     let sel = text.slice(start, end);
 
     if (!sel) {
-      // No selection — find current word
+      // No selection — find current word around caret (ws=word start, we=word end)
       let ws = start, we = start;
       while (ws > 0 && /\w/.test(text[ws-1])) ws--;
       while (we < text.length && /\w/.test(text[we])) we++;
-      sel = text.slice(ws, we);
-      if (sel) {
-        // Check if already wrapped
+      const word = text.slice(ws, we);
+      if (word) {
         if (text.slice(ws - mlen, ws) === marker && text.slice(we, we + mlen) === marker) {
-          // Unwrap
-          ta.value = text.slice(0, ws - mlen) + sel + text.slice(we + mlen);
-          ta.selectionStart = ws - mlen;
-          ta.selectionEnd   = we - mlen;
+          // Already wrapped — unwrap, caret at end of bare word
+          const before = text.slice(0, ws - mlen);
+          const after  = text.slice(we + mlen);
+          ta.value = before + word + after;
+          ta.setSelectionRange(before.length + word.length, before.length + word.length);
         } else {
-          // Wrap
-          ta.value = text.slice(0, ws) + marker + sel + marker + text.slice(we);
-          ta.selectionStart = ws + mlen;
-          ta.selectionEnd   = we + mlen;
+          // Wrap — caret after closing marker
+          const before = text.slice(0, ws);
+          const after  = text.slice(we);
+          ta.value = before + marker + word + marker + after;
+          const pos = before.length + mlen + word.length + mlen;
+          ta.setSelectionRange(pos, pos);
         }
       } else {
-        ta.value = text.slice(0, start) + marker + marker + text.slice(start);
-        ta.selectionStart = ta.selectionEnd = start + mlen;
+        // No word at all — insert empty markers, caret between them
+        const before = text.slice(0, start);
+        const after  = text.slice(start);
+        ta.value = before + marker + marker + after;
+        ta.setSelectionRange(before.length + mlen, before.length + mlen);
       }
     } else {
       // Check if selection is already wrapped
       if (text.slice(start - mlen, start) === marker && text.slice(end, end + mlen) === marker) {
-        // Unwrap — remove the surrounding markers
-        ta.value = text.slice(0, start - mlen) + sel + text.slice(end + mlen);
-        ta.selectionStart = start - mlen;
-        ta.selectionEnd   = end - mlen;
+        const before = text.slice(0, start - mlen);
+        const after  = text.slice(end + mlen);
+        ta.value = before + sel + after;
+        ta.setSelectionRange(before.length, before.length + sel.length);
       } else if (sel.startsWith(marker) && sel.endsWith(marker) && sel.length > mlen * 2) {
-        // Selection itself includes markers — strip them
-        const inner = sel.slice(mlen, sel.length - mlen);
-        ta.value = text.slice(0, start) + inner + text.slice(end);
-        ta.selectionStart = start;
-        ta.selectionEnd   = start + inner.length;
+        const inner  = sel.slice(mlen, sel.length - mlen);
+        const before = text.slice(0, start);
+        ta.value = before + inner + text.slice(end);
+        ta.setSelectionRange(before.length, before.length + inner.length);
       } else {
-        // Wrap
-        ta.value = text.slice(0, start) + marker + sel + marker + text.slice(end);
-        ta.selectionStart = start + mlen;
-        ta.selectionEnd   = end   + mlen;
+        const before = text.slice(0, start);
+        const after  = text.slice(end);
+        ta.value = before + marker + sel + marker + after;
+        ta.setSelectionRange(before.length + mlen, before.length + mlen + sel.length);
+      }
+    }
+  }
+  // Ctrl+Shift+P: pokemon sprite snippet, Ctrl+Shift+M: item sprite snippet
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'K' || e.key === 'k' || e.key === 'M' || e.key === 'm')) {
+    e.preventDefault();
+    const ta = e.target;
+    const isItem = e.key === 'M' || e.key === 'm';
+    const text = ta.value;
+    const start = ta.selectionStart;
+    const end   = ta.selectionEnd;
+    const hasSel = start !== end;
+    if (hasSel) {
+      const word = text.slice(start, end);
+      const wrapped = isItem ? `[[item:${word}]]` : `[[${word}]]`;
+      ta.value = text.slice(0, start) + wrapped + text.slice(end);
+      // Select the word inside the brackets
+      const ws = start + (isItem ? 7 : 2);
+      ta.setSelectionRange(ws, ws + word.length);
+    } else {
+      // Wrap current word
+      let ws = start, we = start;
+      while (ws > 0 && /[\w-]/.test(text[ws-1])) ws--;
+      while (we < text.length && /[\w-]/.test(text[we])) we++;
+      const word = text.slice(ws, we);
+      if (word) {
+        const wrapped = isItem ? `[[item:${word}]]` : `[[${word}]]`;
+        ta.value = text.slice(0, ws) + wrapped + text.slice(we);
+        const innerStart = ws + (isItem ? 7 : 2);
+        ta.setSelectionRange(innerStart, innerStart + word.length);
+      } else {
+        const snippet = isItem ? '[[item:]]' : '[[]]';
+        ta.value = text.slice(0, start) + snippet + text.slice(start);
+        const innerPos = start + (isItem ? 7 : 2);
+        ta.setSelectionRange(innerPos, innerPos);
       }
     }
   }
@@ -10919,6 +11010,26 @@ function nbUpdatePreview(id) {
 }
 
 // ── Contenteditable Obsidian-style editor ────────────────────────────────────
+
+// Restore caret in CE editor at a specific text offset after DOM rebuild
+// Set caret to a character offset within the CE editor
+function nbCeSetCaret(el, offset) {
+  let remaining = offset;
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
+  let node;
+  while ((node = walker.nextNode())) {
+    if (remaining <= node.textContent.length) {
+      const r = document.createRange();
+      r.setStart(node, remaining);
+      r.collapse(true);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(r);
+      return;
+    }
+    remaining -= node.textContent.length;
+  }
+}
 
 // Set plain text in CE editor (rebuilds lines)
 function nbCeSetText(el, text) {
@@ -11013,8 +11124,8 @@ function _nbCeRenderLine(div, line) {
 
 function _nbCeRenderInline(text) {
   const frag = document.createDocumentFragment();
-  // Pattern: **bold**, *italic*, `code`, [text](url), bare url
-  const pat = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`|\[([^\]]+)\]\((https?:\/\/[^\)]+)\)|(https?:\/\/\S+))/g;
+  // Pattern: **bold**, *italic*, __underline__, `code`, [text](url), bare url
+  const pat = /(\*\*(.+?)\*\*|\*(.+?)\*|__(.+?)__|`(.+?)`|\[([^\]]+)\]\((https?:\/\/[^\)]+)\)|(https?:\/\/\S+))/g;
   let last = 0, m;
   while ((m = pat.exec(text)) !== null) {
     if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
@@ -11036,15 +11147,23 @@ function _nbCeRenderInline(text) {
       span.appendChild(s1);
       span.appendChild(document.createTextNode(m[3]));
       span.appendChild(s2);
-    } else if (m[4] !== undefined) { // `code`
+    } else if (m[4] !== undefined) { // __underline__
+      span = document.createElement('span');
+      span.className = 'mk-underline';
+      const s1 = document.createElement('span'); s1.className = 'mk-sym'; s1.textContent = '__';
+      const s2 = document.createElement('span'); s2.className = 'mk-sym'; s2.textContent = '__';
+      span.appendChild(s1);
+      span.appendChild(document.createTextNode(m[4]));
+      span.appendChild(s2);
+    } else if (m[5] !== undefined) { // `code`
       span = document.createElement('span');
       span.className = 'mk-code';
       const s1 = document.createElement('span'); s1.className = 'mk-sym'; s1.textContent = '`';
       const s2 = document.createElement('span'); s2.className = 'mk-sym'; s2.textContent = '`';
       span.appendChild(s1);
-      span.appendChild(document.createTextNode(m[4]));
+      span.appendChild(document.createTextNode(m[5]));
       span.appendChild(s2);
-    } else if (m[5] !== undefined) { // [text](url)
+    } else if (m[6] !== undefined) { // [text](url) — UPDATED INDEX
       span = document.createElement('span');
       span.className = 'mk-link';
       span.dataset.href = m[6];
@@ -11057,9 +11176,11 @@ function _nbCeRenderInline(text) {
     } else if (m[7] !== undefined) { // bare url
       span = document.createElement('span');
       span.className = 'mk-link';
-      span.dataset.href = m[7];
-      span.appendChild(document.createTextNode(m[7]));
-      span.addEventListener('click', e => { if (!span.classList.contains('mk-active')) window.open(m[7],'_blank'); });
+      const _linkUrl = m[7] || m[8] || '';
+      const _linkText = m[6] && m[7] ? m[6] : _linkUrl;
+      span.dataset.href = _linkUrl;
+      span.appendChild(document.createTextNode(_linkText));
+      span.addEventListener('click', e => { if (!span.classList.contains('mk-active')) window.open(_linkUrl,'_blank'); });
     }
     if (span) frag.appendChild(span);
     last = m.index + full.length;
@@ -11079,7 +11200,7 @@ function nbCeUpdateActive(id) {
   let node = sel.getRangeAt(0).commonAncestorContainer;
   // Walk up to find a mk-* span
   while (node && node !== el) {
-    if (node.nodeType === 1 && node.className && /mk-(bold|italic|code|link|h\d)/.test(node.className)) {
+    if (node.nodeType === 1 && node.className && /mk-(bold|italic|underline|code|link|h\d)/.test(node.className)) {
       node.classList.add('mk-active');
       break;
     }
@@ -11105,6 +11226,59 @@ function nbCeInput(e, id) {
 }
 
 function nbCeKeydown(e, id) {
+
+  // Ctrl+Shift+K → [[pokemon]], Ctrl+Shift+M → [[item:]]
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'K' || e.key === 'k' || e.key === 'M' || e.key === 'm')) {
+    e.preventDefault();
+    const isItem = e.key === 'M' || e.key === 'm';
+    const ce = document.getElementById('nb-ce-' + id);
+    const sel2 = window.getSelection();
+    const selStr2 = sel2.rangeCount ? sel2.getRangeAt(0).toString() : '';
+    if (selStr2) {
+      const wrapped = isItem ? `[[item:${selStr2}]]` : `[[${selStr2}]]`;
+      document.execCommand('insertText', false, wrapped);
+    } else if (sel2.rangeCount) {
+      const range = sel2.getRangeAt(0);
+      let lineDiv = range.startContainer;
+      while (lineDiv && lineDiv.parentNode !== ce) lineDiv = lineDiv.parentNode;
+      if (lineDiv) {
+        const rawText = lineDiv.dataset?.raw ?? lineDiv.textContent ?? '';
+        const preRange = range.cloneRange();
+        preRange.selectNodeContents(lineDiv);
+        preRange.setEnd(range.startContainer, range.startOffset);
+        const ci = preRange.toString().length;
+        let ws = ci, we = ci;
+        while (ws > 0 && /[\w-]/.test(rawText[ws-1])) ws--;
+        while (we < rawText.length && /[\w-]/.test(rawText[we])) we++;
+        const word = rawText.slice(ws, we);
+        const wrapped = word ? (isItem ? `[[item:${word}]]` : `[[${word}]]`) : (isItem ? '[[item:]]' : '[[]]');
+        const newRaw = rawText.slice(0, ws) + wrapped + rawText.slice(we);
+        lineDiv.dataset.raw = newRaw;
+        _nbCeRenderLine(lineDiv, newRaw);
+        // Place caret after the closing ]] — find the text node after the wrapped text
+        const afterPos = ws + wrapped.length; // position in newRaw after ]]
+        // In rendered DOM, [[...]] renders as a sprite/image with no visible text
+        // Place caret after the rendered sprite element
+        const sprites = lineDiv.querySelectorAll('img, span[style*="background"]');
+        let sprPlaced = false;
+        if (sprites.length > 0) {
+          const r3 = document.createRange();
+          r3.setStartAfter(sprites[sprites.length - 1]); r3.collapse(true);
+          sel2.removeAllRanges(); sel2.addRange(r3);
+          sprPlaced = true;
+        }
+        if (!sprPlaced) {
+          // Fallback: place at end of line
+          const r3 = document.createRange();
+          r3.selectNodeContents(lineDiv);
+          r3.collapse(false);
+          sel2.removeAllRanges(); sel2.addRange(r3);
+        }
+      }
+    }
+    nbCeInput({}, id);
+    return;
+  }
   if (e.key === 'Escape') { nbSaveEdit(id); return; }
 
   // Ctrl+Enter: insert new line below current line and move caret there
@@ -11131,66 +11305,145 @@ function nbCeKeydown(e, id) {
     return;
   }
 
-  // Ctrl+B / Ctrl+I wrapping — toggles on/off
-  if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'i')) {
+  // Ctrl+B / Ctrl+I / Ctrl+U wrapping — toggles on/off
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'i' || e.key === 'u')) {
     e.preventDefault();
-    const marker = e.key === 'b' ? '**' : '*';
+    const marker = e.key === 'b' ? '**' : e.key === 'i' ? '*' : '__';
     const mlen = marker.length;
+    const ce = document.getElementById('nb-ce-' + id);
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
     const range = sel.getRangeAt(0);
-    const selected = range.toString();
-    const ce = document.getElementById('nb-ce-' + id);
-    const text = nbCeGetText(ce);
 
-    // Get caret offset within full text
-    const preCaretRange = range.cloneRange();
-    preCaretRange.selectNodeContents(ce);
-    preCaretRange.setEnd(range.startContainer, range.startOffset);
-    const caretOffset = preCaretRange.toString().length;
-    const selLen = selected.length;
+    // Find the line div containing caret
+    let lineDiv = range.startContainer;
+    while (lineDiv && lineDiv.parentNode !== ce) lineDiv = lineDiv.parentNode;
+    if (!lineDiv) return;
 
-    if (selected) {
-      const selStart = caretOffset;
-      const selEnd   = caretOffset + selLen;
-      // Check if already wrapped outside selection
-      if (text.slice(selStart - mlen, selStart) === marker && text.slice(selEnd, selEnd + mlen) === marker) {
-        const newText = text.slice(0, selStart - mlen) + selected + text.slice(selEnd + mlen);
-        nbCeSetText(ce, newText);
-      } else if (selected.startsWith(marker) && selected.endsWith(marker) && selected.length > mlen * 2) {
-        const inner = selected.slice(mlen, selected.length - mlen);
-        const newText = text.slice(0, selStart) + inner + text.slice(selEnd);
-        nbCeSetText(ce, newText);
+    // Get raw text of this line (from data-raw, the source of truth)
+    const rawText = lineDiv.dataset?.raw ?? lineDiv.textContent ?? '';
+
+    // Find caret offset within this line's raw text
+    // Use the visible text of the line div up to the caret
+    const preRange = range.cloneRange();
+    preRange.selectNodeContents(lineDiv);
+    preRange.setEnd(range.startContainer, range.startOffset);
+    // Count only non-mk-sym text
+    let caretInLine = 0;
+    const countVisible = (node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        if (!node.parentElement?.classList.contains('mk-sym')) {
+          caretInLine += node.textContent.length;
+        }
+      } else if (node !== range.startContainer) {
+        for (const c of node.childNodes) countVisible(c);
+      }
+    };
+    // Simpler: just use the raw text and find caret via preRange text length minus mk-sym content
+    const preText = preRange.toString().replace(/\*\*/g, '').replace(/\*/g, '').replace(/__/g, '');
+    // Actually the safest: find caret position in rawText by matching visible chars
+    // rawText is the markdown source; we need to map visible caret to raw offset
+    // For simplicity, use execCommand for selection case, raw manipulation for no-selection
+    const selected = range.toString().replace(/\*\*/g, '').replace(/\*/g, '').replace(/__/g, '');
+
+    if (sel.toString()) {
+      // Has selection — use execCommand (browser handles caret)
+      const selStr = sel.toString();
+      if (selStr.startsWith(marker) && selStr.endsWith(marker) && selStr.length > mlen*2) {
+        document.execCommand('insertText', false, selStr.slice(mlen, selStr.length - mlen));
       } else {
-        document.execCommand('insertText', false, marker + selected + marker);
+        document.execCommand('insertText', false, marker + selStr + marker);
       }
     } else {
-      // No selection — find word around caret
-      let ws = caretOffset, we = caretOffset;
-      while (ws > 0 && /\w/.test(text[ws-1])) ws--;
-      while (we < text.length && /\w/.test(text[we])) we++;
-      const word = text.slice(ws, we);
+      // No selection — work on rawText
+      // Find caret position in rawText: count visible chars before caret
+      let visCount = 0, rawIdx = 0;
+      // Walk the line div text nodes, skipping mk-sym, to find how many raw chars = visCount
+      const getCaretInRaw = () => {
+        // preRange gives us the rendered text before caret, but mk-sym chars aren't visible
+        // Use rawText directly: caret is `preRange.toString().length` visible chars in
+        const visibleBefore = preRange.toString().length;
+        let vi = 0, ri = 0;
+        // rawText has markers; rendered text doesn't (until active). Walk rawText tracking visible chars
+        // Treat markers as invisible: skip ** * __ ` etc
+        const mkPat = /(\*\*|\*|__|`)/g;
+        let last = 0;
+        let m2;
+        mkPat.lastIndex = 0;
+        while ((m2 = mkPat.exec(rawText)) !== null) {
+          const segLen = m2.index - last;
+          if (vi + segLen >= visibleBefore) {
+            return last + (visibleBefore - vi);
+          }
+          vi += segLen;
+          last = m2.index + m2[0].length;
+        }
+        return last + Math.min(visibleBefore - vi, rawText.length - last);
+      };
+      const ci = getCaretInRaw();
+
+      let ws = ci, we = ci;
+      while (ws > 0 && /\w/.test(rawText[ws-1])) ws--;
+      while (we < rawText.length && /\w/.test(rawText[we])) we++;
+      const word = rawText.slice(ws, we);
+
+      let newRaw, newCaretInRaw;
       if (word) {
-        if (text.slice(ws - mlen, ws) === marker && text.slice(we, we + mlen) === marker) {
-          // Unwrap
-          const newText = text.slice(0, ws - mlen) + word + text.slice(we + mlen);
-          nbCeSetText(ce, newText);
+        if (rawText.slice(ws - mlen, ws) === marker && rawText.slice(we, we + mlen) === marker) {
+          newRaw = rawText.slice(0, ws - mlen) + word + rawText.slice(we + mlen);
+          newCaretInRaw = ws - mlen + word.length;
         } else {
-          const newText = text.slice(0, ws) + marker + word + marker + text.slice(we);
-          nbCeSetText(ce, newText);
+          newRaw = rawText.slice(0, ws) + marker + word + marker + rawText.slice(we);
+          newCaretInRaw = ws + mlen + word.length + mlen;
         }
       } else {
-        document.execCommand('insertText', false, marker + marker);
-        const s2 = window.getSelection();
-        if (s2.rangeCount) {
-          const r2 = s2.getRangeAt(0).cloneRange();
-          r2.setStart(r2.startContainer, Math.max(0, r2.startOffset - mlen));
-          r2.collapse(true);
-          s2.removeAllRanges(); s2.addRange(r2);
-        }
+        newRaw = rawText.slice(0, ci) + marker + marker + rawText.slice(ci);
+        newCaretInRaw = ci + mlen;
       }
+
+      // Update the line div
+      lineDiv.dataset.raw = newRaw;
+      _nbCeRenderLine(lineDiv, newRaw);
+
+      // Set caret to newCaretInRaw in the rendered line
+      // Walk text nodes of lineDiv, skip mk-sym, count visible chars
+      let targetVis = 0;
+      // Count visible chars before newCaretInRaw in newRaw
+      const mkPat2 = /(\*\*|\*|__|`)/g;
+      let last2 = 0, m3;
+      mkPat2.lastIndex = 0;
+      while ((m3 = mkPat2.exec(newRaw)) !== null) {
+        if (m3.index >= newCaretInRaw) break;
+        targetVis += Math.min(m3.index, newCaretInRaw) - last2;
+        last2 = m3.index + m3[0].length;
+      }
+      targetVis += Math.max(0, newCaretInRaw - last2);
+
+      // Place caret after the closing marker — deferred so browser doesn't override it
+      const mkClass = marker === '**' ? 'mk-bold' : marker === '__' ? 'mk-underline' : 'mk-italic';
+      requestAnimationFrame(() => {
+        const spans = lineDiv.querySelectorAll('.' + mkClass);
+        let placed = false;
+        for (const span of spans) {
+          const wordNode = [...span.childNodes].find(n => n.nodeType === Node.TEXT_NODE);
+          if (wordNode && wordNode.textContent === word) {
+            const r2 = document.createRange();
+            r2.setStartAfter(span); r2.collapse(true);
+            const sel2 = window.getSelection();
+            sel2.removeAllRanges(); sel2.addRange(r2);
+            placed = true;
+            break;
+          }
+        }
+        if (!placed) {
+          const r2 = document.createRange();
+          r2.selectNodeContents(lineDiv); r2.collapse(false);
+          const sel2 = window.getSelection();
+          sel2.removeAllRanges(); sel2.addRange(r2);
+        }
+      });
     }
-    nbCeInput({}, id);
+    return;
   }
 }
 

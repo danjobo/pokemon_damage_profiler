@@ -3,7 +3,6 @@
 
 
 
-
 - [??] collapse headers in text edit window in notes?
 
 
@@ -63,6 +62,13 @@
 ---
 #### Completed
 
+- [XX] reset field effects button should reset both attacker and defender field effects (stat spinner changes and screens). same for when the field effects reset on match completion
+- [XX] copy team to clipboard should not include more than the first 4 moves of each tab
+- [XX] changing forms of tab that is selected in match window game dehighlights it's yellow highlight. it only goes back when you change its form back. i want it to be yellow regardless the form
+- [XX] when I control+b in notes at the end of a word, it auto moves my cursor to the beginning of the note, I just want it to move to the end of the current word after the **'s or *'s
+- [XX] underline support
+- [XX] sprite support [[ITEM_NAME]] [[POKEMON_NAME]], maybe shortcut. what are some usable shortcut keys in chrome?
+- [XX] weather + terrain dropdown text option of "None"'s colors are being changed to last option selected when they should always be white
 - [XX] ctrl+c with nothing clicked on the page will copy the current tabs to clipboard
 - [XX] little message popup to show that cliboard was copied
 - [XX] show exact OHKO percent in printing calcs
