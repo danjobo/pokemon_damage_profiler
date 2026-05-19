@@ -1650,7 +1650,7 @@ Adamant Nature
           </button>
           <div class="team-picker-dropdown" id="teamPickerDropdown"></div>
         </div>
-        <button onclick="saveCurrentTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Save current defender tabs as a team">Save</button>
+        <button onclick="createNewTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Create a new blank team">＋ New</button>
         <button onclick="renameSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Rename selected team">Rename</button>
         <button onclick="deleteSavedTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--red);cursor:pointer;white-space:nowrap;" title="Delete selected team">Delete</button>
         <div class="spinner" id="teamSpinner"></div>
@@ -2230,6 +2230,8 @@ function typeEffWithAbility(moveType, defTypes, defAbility, atkAbility) {
   if (ab === 'eartheater'    && moveType === 'ground')    return 0;
   if (ab === 'windrider'     && moveType === 'flying')    return 0;
   if (ab === 'wellbakedbody' && moveType === 'fire')      return 0;
+  if (ab === 'purifyingsalt' && moveType === 'ghost')     return 0;
+  if (ab === 'wonderguard')  { const eff = typeEff(moveType, defTypes); return eff <= 1 ? 0 : eff; }
   return typeEff(moveType, defTypes);
 }
 
@@ -5522,6 +5524,17 @@ function computeResults(loadedMeta, defender) {
         if (_abImm === 'eartheater'   && effectiveMoveType === 'ground')   continue;
         if (_abImm === 'windrider'    && effectiveMoveType === 'flying')   continue;
         if (_abImm === 'wellbakedbody'&& effectiveMoveType === 'fire')     continue;
+        if (_abImm === 'purifyingsalt'&& effectiveMoveType === 'ghost')    continue;
+        // Bulletproof: immune to ball/bomb/cannon/bullet moves
+        if (_abImm === 'bulletproof') {
+          const _mvn = (move.name||'').toLowerCase();
+          if (/ball|bomb|cannon|barrage|bullet|seed|shot|volley|spit/.test(_mvn)) continue;
+        }
+        // Wonder Guard: only super-effective moves land
+        if (_abImm === 'wonderguard') {
+          const _wgEff = typeEff(effectiveMoveType, defender.types);
+          if (_wgEff <= 1) continue;
+        }
       }
 
       // Recalculate STAB with tera adjustments
@@ -8218,6 +8231,22 @@ async function toggleDefenderMega(e, slotIdx, megaSlug) {
   if (slotIdx === activeDefenderSlot) lastResults = results;
   renderDefenderTabs();
   renderResults();
+  if (_matchActive) {
+    const mi = _matchMyTeam.findIndex(p => {
+      const norm = s => s.replace(/\s*★$/,'').replace(/-(hero|zero|mega[-\w]*)$/i,'').toLowerCase().trim();
+      return norm(p.speciesRaw) === norm(slot.speciesRaw) || p._origSpeciesRaw === slot.speciesRaw;
+    });
+    if (mi !== -1) {
+      _matchMyTeam[mi].speciesRaw   = slot.speciesRaw;
+      _matchMyTeam[mi].spriteUrl    = getSpriteUrl(slot.speciesRaw);
+      _matchMyTeam[mi].types        = slot.types || [];
+      _matchMyTeam[mi].ability      = slot.ability || '';
+      _matchMyTeam[mi].computedSpe  = slot.computedSpe || slot.stats?.spe || 0;
+      _matchMyTeam[mi].resolvedMoves = slot.resolvedMoves || [];
+    }
+    renderMatchWindow();
+  }
+  if (_threatPanelOpen) renderThreatPanel();
 }
 
 function toggleMultiscale(e, defenderKey) {
@@ -8412,6 +8441,25 @@ async function toggleMegaForm(e, speciesRaw, megaSlug) {
     lastResults = results;
   }
   renderResults();
+  if (_matchActive) {
+    // Sync the match window's my-team snapshot with updated tab forms
+    DEFENDER_SLOTS.filter(Boolean).forEach(slot => {
+      const mi = _matchMyTeam.findIndex(p => {
+        const norm = s => s.replace(/\s*★$/,'').replace(/-(hero|zero|mega[-\w]*)$/i,'').toLowerCase().trim();
+        return norm(p.speciesRaw) === norm(slot.speciesRaw) || p.speciesRaw === slot._origSpeciesRaw;
+      });
+      if (mi !== -1) {
+        _matchMyTeam[mi].speciesRaw  = slot.speciesRaw;
+        _matchMyTeam[mi].spriteUrl   = getSpriteUrl(slot.speciesRaw);
+        _matchMyTeam[mi].types       = slot.types || [];
+        _matchMyTeam[mi].ability     = slot.ability || '';
+        _matchMyTeam[mi].computedSpe = slot.computedSpe || slot.stats?.spe || 0;
+        _matchMyTeam[mi].resolvedMoves = slot.resolvedMoves || [];
+      }
+    });
+    renderMatchWindow();
+  }
+  if (_threatPanelOpen) renderThreatPanel();
 }
 
 // Convert a PokeAPI slug to a readable display name
@@ -9689,6 +9737,28 @@ function importAllData(event) {
     event.target.value = '';
   };
   reader.readAsText(file);
+}
+
+function createNewTeam() {
+  const saved = getSavedTeams();
+  const names = new Set(Object.keys(saved));
+  let x = 1;
+  while (names.has(`Untitled ${x}`)) x++;
+  const newName = `Untitled ${x}`;
+  // Clear all tabs
+  DEFENDER_SLOTS.fill(null);
+  activeDefenderSlot = 0;
+  // Save empty team
+  const teams = getSavedTeams();
+  teams[newName] = { slots: DEFENDER_SLOTS.map(() => null), savedAt: Date.now() };
+  putSavedTeams(teams);
+  _teamPickerSelected = newName;
+  _currentTeamName = newName;
+  refreshTeamPickerDropdown(newName);
+  loadWinrateForTeam(newName);
+  updateDefenderTabs();
+  renderResults();
+  showToast(`✨ Created "${newName}"`);
 }
 
 function saveCurrentTeam() {
@@ -11387,61 +11457,72 @@ function nbCeKeydown(e, id) {
       while (we < rawText.length && /\w/.test(rawText[we])) we++;
       const word = rawText.slice(ws, we);
 
-      let newRaw, newCaretInRaw;
+      // Use execCommand so browser keeps caret naturally after insertion
       if (word) {
+        const mkClass = marker === '**' ? 'mk-bold' : marker === '__' ? 'mk-underline' : 'mk-italic';
         if (rawText.slice(ws - mlen, ws) === marker && rawText.slice(we, we + mlen) === marker) {
-          newRaw = rawText.slice(0, ws - mlen) + word + rawText.slice(we + mlen);
-          newCaretInRaw = ws - mlen + word.length;
+          // Unwrap — find and select the whole mk-span, replace with bare word
+          const spans = lineDiv.querySelectorAll('.' + mkClass);
+          let done = false;
+          for (const sp of spans) {
+            const tn = [...sp.childNodes].find(n => n.nodeType === Node.TEXT_NODE);
+            if (tn && tn.textContent === word) {
+              const r2 = document.createRange(); r2.selectNode(sp);
+              sel.removeAllRanges(); sel.addRange(r2);
+              document.execCommand('insertText', false, word);
+              done = true; break;
+            }
+          }
+          if (!done) document.execCommand('insertText', false, word);
         } else {
-          newRaw = rawText.slice(0, ws) + marker + word + marker + rawText.slice(we);
-          newCaretInRaw = ws + mlen + word.length + mlen;
-        }
-      } else {
-        newRaw = rawText.slice(0, ci) + marker + marker + rawText.slice(ci);
-        newCaretInRaw = ci + mlen;
-      }
-
-      // Update the line div
-      lineDiv.dataset.raw = newRaw;
-      _nbCeRenderLine(lineDiv, newRaw);
-
-      // Set caret to newCaretInRaw in the rendered line
-      // Walk text nodes of lineDiv, skip mk-sym, count visible chars
-      let targetVis = 0;
-      // Count visible chars before newCaretInRaw in newRaw
-      const mkPat2 = /(\*\*|\*|__|`)/g;
-      let last2 = 0, m3;
-      mkPat2.lastIndex = 0;
-      while ((m3 = mkPat2.exec(newRaw)) !== null) {
-        if (m3.index >= newCaretInRaw) break;
-        targetVis += Math.min(m3.index, newCaretInRaw) - last2;
-        last2 = m3.index + m3[0].length;
-      }
-      targetVis += Math.max(0, newCaretInRaw - last2);
-
-      // Place caret after the closing marker — deferred so browser doesn't override it
-      const mkClass = marker === '**' ? 'mk-bold' : marker === '__' ? 'mk-underline' : 'mk-italic';
-      requestAnimationFrame(() => {
-        const spans = lineDiv.querySelectorAll('.' + mkClass);
-        let placed = false;
-        for (const span of spans) {
-          const wordNode = [...span.childNodes].find(n => n.nodeType === Node.TEXT_NODE);
-          if (wordNode && wordNode.textContent === word) {
+          // Wrap — select the word in the raw text then insertText marker+word+marker
+          // Position caret at ws in visible text, select `word`, insert wrapped
+          let rem = ws;
+          const twx = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT, {
+            acceptNode: n => n.parentElement?.classList.contains('mk-sym') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+          });
+          let startNode = null, startOff = 0, tn4;
+          while ((tn4 = twx.nextNode())) {
+            if (rem <= tn4.textContent.length) { startNode = tn4; startOff = rem; break; }
+            rem -= tn4.textContent.length;
+          }
+          if (startNode) {
+            // Select word.length chars from startNode
             const r2 = document.createRange();
-            r2.setStartAfter(span); r2.collapse(true);
-            const sel2 = window.getSelection();
-            sel2.removeAllRanges(); sel2.addRange(r2);
-            placed = true;
-            break;
+            r2.setStart(startNode, startOff);
+            let rem2 = word.length - (startNode.textContent.length - startOff);
+            if (rem2 <= 0) {
+              r2.setEnd(startNode, startOff + word.length);
+            } else {
+              const twx2 = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT, {
+                acceptNode: n => n.parentElement?.classList.contains('mk-sym') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+              });
+              let tn5; while ((tn5 = twx2.nextNode()) && tn5 !== startNode) {}
+              while ((tn5 = twx2.nextNode())) {
+                if (rem2 <= tn5.textContent.length) { r2.setEnd(tn5, rem2); break; }
+                rem2 -= tn5.textContent.length;
+              }
+            }
+            sel.removeAllRanges(); sel.addRange(r2);
+            document.execCommand('insertText', false, marker + word + marker);
+            // Caret is now right after the inserted text — perfect
+          } else {
+            document.execCommand('insertText', false, marker + word + marker);
           }
         }
-        if (!placed) {
-          const r2 = document.createRange();
-          r2.selectNodeContents(lineDiv); r2.collapse(false);
-          const sel2 = window.getSelection();
-          sel2.removeAllRanges(); sel2.addRange(r2);
+      } else {
+        document.execCommand('insertText', false, marker + marker);
+        const s2 = window.getSelection();
+        if (s2.rangeCount) {
+          const r2 = s2.getRangeAt(0);
+          const nd = r2.startContainer;
+          if (nd.nodeType === Node.TEXT_NODE && r2.startOffset >= mlen) {
+            const r3 = document.createRange();
+            r3.setStart(nd, r2.startOffset - mlen); r3.collapse(true);
+            s2.removeAllRanges(); s2.addRange(r3);
+          }
         }
-      });
+      }
     }
     return;
   }
@@ -11628,7 +11709,7 @@ function renderMatchHistory() {
       const hlOrder = typeof p !== 'string' && p.highlighted ? (p.highlightOrder ?? 99) : -1;
       const isPrimary = hlOrder !== -1 && hlOrder < 2;
       const glowStyle = isPrimary
-        ? 'border-radius:4px;background:radial-gradient(circle, rgba(255,215,0,0.85) 0%, rgba(255,200,0,0.3) 50%, transparent 80%);'
+        ? 'border-radius:4px;background:radial-gradient(circle, rgba(255,215,0,0.45) 0%, rgba(255,200,0,0.12) 55%, transparent 80%);'
         : '';
       const safeTeam = _currentTeamName.replace(/'/g,"\\'");
       const img = spriteImgHtmlCls(name, 38, sprite, cls);

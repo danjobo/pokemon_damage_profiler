@@ -2,6 +2,11 @@
 
 
 
+- [??] bulletproof immunities support in calculations everywhere else (weakness overlap window, meta analysis, current match window calculations...)
+
+
+
+
 
 - [??] collapse headers in text edit window in notes?
 
@@ -62,6 +67,10 @@
 ---
 #### Completed
 
+- [XX] tab form changes reflect in match window calcs
+- [XX] make the yellow glow in match log listings to be less opacity
+- [XX] new team button next to teams dropdown that makes a new blank team with the name "Untitled X" where X starts at 1 and increases up to the next lowest available X (just like with file name duplicates)
+- [XX] ctrl+b on unselected text is still not putting the carat right after the two **s
 - [XX] reset field effects button should reset both attacker and defender field effects (stat spinner changes and screens). same for when the field effects reset on match completion
 - [XX] copy team to clipboard should not include more than the first 4 moves of each tab
 - [XX] changing forms of tab that is selected in match window game dehighlights it's yellow highlight. it only goes back when you change its form back. i want it to be yellow regardless the form
