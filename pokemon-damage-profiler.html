@@ -129,7 +129,7 @@
     resize: vertical; outline: none; line-height: 1.5;
   }
   .nb-ce {
-    width: 100%; box-sizing: border-box; min-height: 120px;
+    width: 100%; box-sizing: border-box; min-height: 120px; overscroll-behavior: contain;
     background: var(--bg3); border: 0.5px solid var(--border2);
     border-radius: var(--radius-sm); color: var(--text);
     font-size: 13px; font-family: inherit; padding: 8px;
@@ -1253,7 +1253,7 @@
     text-align: left; white-space: nowrap; overflow: hidden;
   }
   .team-picker-btn:hover { border-color: var(--accent); }
-  .team-picker-dropdown {
+  .team-picker-dropdown { overscroll-behavior: contain;
     display: none; position: fixed;
     background: var(--bg2); border: 0.5px solid var(--border2);
     border-radius: var(--radius); z-index: 9999;
@@ -1481,7 +1481,7 @@
       align-items: start;
     }
     .wide-left  { min-width: 0; }
-    .wide-right { min-width: 0; position: sticky; top: 0; max-height: 100vh; overflow-y: auto; }
+    .wide-right { min-width: 0; position: sticky; top: 0; max-height: 100vh; overflow-y: auto; overscroll-behavior: contain; }
     .wide-right::-webkit-scrollbar { width: 6px; }
     .wide-right::-webkit-scrollbar-track { background: transparent; }
     .wide-right::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
@@ -1520,7 +1520,7 @@
     <!-- Right content -->
     <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
       <!-- Speed tier panel -->
-      <div id="toolPanelSpeed" style="flex:1;overflow-y:auto;padding:14px 16px;">
+      <div id="toolPanelSpeed" style="flex:1;overflow-y:auto;padding:14px 16px;overscroll-behavior:contain;">
         <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;">⚡ Speed Tiers</div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
           <div style="display:flex;border:0.5px solid var(--border2);border-radius:20px;overflow:hidden;">
@@ -1533,11 +1533,12 @@
             <option value="meta">Meta only</option>
             <option value="tabs">Tabs only</option>
           </select>
+          <button id="stBaseSpeedBtn" onclick="toggleBaseSpeed()" style="padding:3px 9px;font-size:10px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;" title="Show base speed stats">Base Spe</button>
         </div>
         <div id="speedTierList" style="display:flex;flex-direction:column;gap:2px;"></div>
       </div>
       <!-- Counters panel -->
-      <div id="toolPanelCounters" style="flex:1;overflow-y:auto;padding:14px 16px;display:none;">
+      <div id="toolPanelCounters" style="flex:1;overflow-y:auto;padding:14px 16px;display:none;overscroll-behavior:contain;">
         <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;">🛡 Counters</div>
         <div style="color:var(--text3);font-size:12px;">Counter recommendations coming soon.</div>
       </div>
@@ -1811,7 +1812,7 @@ Impish Nature
   </button>
 
   <!-- Meta EV editor popup — anchored panel, no backdrop -->
-  <div id="metaEvPopup" style="display:none;position:fixed;z-index:500;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px;width:min(520px,92vw);max-height:80vh;overflow-y:auto;box-shadow:0 6px 24px rgba(0,0,0,0.5);">
+  <div id="metaEvPopup" style="display:none;position:fixed;z-index:500;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px;width:min(520px,92vw);max-height:80vh;overflow-y:auto;overscroll-behavior:contain;box-shadow:0 6px 24px rgba(0,0,0,0.5);">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:0;">
       <span id="metaEvPopupTitle" style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;flex-shrink:0;">Edit Spread</span>
       <select id="metaEvSpreadSelect" style="display:none;font-size:10px;padding:2px 4px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;cursor:pointer;flex:1;min-width:0;" onclick="event.stopPropagation()"></select>
@@ -9082,6 +9083,19 @@ function toggleSpeedMod(mod) {
   renderSpeedTier();
 }
 
+let _stShowBaseSpeed = false;
+
+function toggleBaseSpeed() {
+  _stShowBaseSpeed = !_stShowBaseSpeed;
+  const btn = document.getElementById('stBaseSpeedBtn');
+  if (btn) {
+    btn.style.background   = _stShowBaseSpeed ? 'rgba(124,106,247,0.15)' : 'transparent';
+    btn.style.color        = _stShowBaseSpeed ? 'var(--accent2)' : 'var(--text3)';
+    btn.style.borderColor  = _stShowBaseSpeed ? 'var(--accent)' : 'var(--border2)';
+  }
+  renderSpeedTier();
+}
+
 function _effectiveSpeForTier(pokemon) {
   let spe = effectiveSpe(pokemon);
   if (_speedMods.has('scarf') && !((pokemon.item||'').toLowerCase().replace(/[\s-]/g,'') === 'choicescarf'))
@@ -9096,7 +9110,7 @@ function renderSpeedTier() {
   if (!list) return;
 
   const filter = document.getElementById('stFilterSelect')?.value || 'all';
-  const isTR   = _speedMods.has('trickroom');
+  const isTR = _speedMods.has('trickroom') && !_stShowBaseSpeed;
 
   // Gather pokemon
   const limit = parseInt(document.getElementById('resultsLimit')?.value || '0');
@@ -9115,22 +9129,20 @@ function renderSpeedTier() {
     return;
   }
 
-  // Compute effective speed for each
-  const withSpe = all.map(e => ({ ...e, spe: _effectiveSpeForTier(e.pokemon) }));
-  // Sort descending (TR: already inverted so still desc = slowest-first)
+  // Compute speed for each — base stat or effective
+  const getSpe = p => _stShowBaseSpeed ? (p.baseStats?.spe ?? p.computedSpe ?? 0) : _effectiveSpeForTier(p);
+  const withSpe = all.map(e => ({ ...e, spe: getSpe(e.pokemon) }));
   withSpe.sort((a, b) => b.spe - a.spe);
 
   const maxSpe = Math.max(...withSpe.map(e => e.spe));
   const minSpe = Math.min(...withSpe.map(e => e.spe));
   const range  = maxSpe - minSpe || 1;
 
-  // Group into speed tiers (within 1 of each other = same tier line)
   let html = '';
   let lastTierSpe = null;
   withSpe.forEach(({ pokemon, isTab, label, spe, usage }) => {
     const displaySpe = isTR ? 10000 - spe : spe;
     if (lastTierSpe !== null && Math.abs(spe - lastTierSpe) > 1) {
-      // Speed gap — show divider
       html += `<div class="st-divider">— ${isTR ? 10000-lastTierSpe : lastTierSpe} → ${displaySpe} —</div>`;
     }
     lastTierSpe = spe;
@@ -14163,7 +14175,7 @@ function refreshThreatPanelIfOpen() {
 
 </script>
 <!-- Filter hint popup — lives at body level to escape all stacking contexts -->
-<div id="filterHint" style="display:none;position:fixed;background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:10px 12px;z-index:9998;font-size:11px;color:var(--text2);line-height:1.9;min-width:260px;max-width:320px;box-shadow:0 4px 16px rgba(0,0,0,0.4);">
+<div id="filterHint" style="display:none;position:fixed;overscroll-behavior:contain;background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:10px 12px;z-index:9998;font-size:11px;color:var(--text2);line-height:1.9;min-width:260px;max-width:320px;box-shadow:0 4px 16px rgba(0,0,0,0.4);">
   <div style="font-weight:600;color:var(--text);margin-bottom:4px;">Filter syntax — comma-separated</div>
   <div><span style="color:var(--accent2)">name text</span> — species name contains</div>
   <div><span style="color:var(--accent2)">type:fire</span> — is this type (or dual-type)</div>
