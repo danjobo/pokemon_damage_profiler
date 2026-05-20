@@ -1213,6 +1213,37 @@
   .st-divider       { font-size: 9px; color: var(--text3); padding: 6px 0 2px; text-align: center; letter-spacing: 0.08em; border-top: 0.5px solid var(--border2); margin-top: 4px; }
 
 
+  /* EV heatmap mode */
+  .ev-heatmap-wrap { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; height: 20px; }
+  .ev-heatmap-track { position: absolute; left: 0; right: 0; height: 6px; border-radius: 3px; pointer-events: none; z-index: 0; top: 50%; transform: translateY(-50%); }
+  .ev-heatmap-fill  { position: absolute; left: 0; height: 6px; border-radius: 3px 0 0 3px; pointer-events: none; z-index: 1; top: 50%; transform: translateY(-50%); filter: brightness(1.4) saturate(1.3); }
+  .ev-heatmap-marker { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 2px; height: 6px; background: rgba(255,255,255,0.9); border-radius: 1px; pointer-events: none; z-index: 2; box-shadow: 0 0 2px rgba(0,0,0,0.5); }
+  .ev-slider-heatmap {
+    position: relative; z-index: 3; width: 100%; cursor: pointer;
+    -webkit-appearance: none; appearance: none;
+    background: transparent !important;
+    height: 20px; margin: 0;
+  }
+  .ev-slider-heatmap::-webkit-slider-runnable-track {
+    -webkit-appearance: none; appearance: none;
+    background: transparent !important; height: 6px;
+  }
+  .ev-slider-heatmap::-moz-range-track {
+    background: transparent !important; height: 6px; border: none;
+  }
+  .ev-slider-heatmap::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #fff; border: 2px solid rgba(0,0,0,0.3);
+    cursor: pointer; margin-top: -4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+  .ev-slider-heatmap::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #fff; border: 2px solid rgba(0,0,0,0.3);
+    cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+
   .team-picker-wrap { position: relative; flex: 1; min-width: 0; }
   .team-picker-btn {
     width: 100%; padding: 4px 8px; font-size: 12px;
@@ -1730,7 +1761,10 @@ Impish Nature
               <button onclick="resetEvs()" style="padding:2px 6px;font-size:10px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;flex-shrink:0;">Reset</button>
             </div>
             <div id="evSliders" style="display:flex;flex-direction:column;gap:6px;overflow:hidden;"></div>
-            <div style="text-align:right;"><span id="evTotalDisplay" style="font-size:10px;color:var(--text3);">0 / 66 EVs</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
+              <button id="evHeatmapBtn" onclick="toggleEvHeatmap()" style="padding:2px 7px;font-size:10px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;" title="Show meta stat distribution on sliders">⟨ Heatmap</button>
+              <span id="evTotalDisplay" style="font-size:10px;color:var(--text3);">0 / 66 EVs</span>
+            </div>
           </div>
         </div>
       </div>
@@ -2063,7 +2097,7 @@ Impish Nature
         <option value="hp">HP</option>
       </select>
       <button id="sortDirBtn" onclick="toggleSortDir()" title="Reverse sort order" style="padding:2px 7px;font-size:12px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;line-height:1;">↓</button>
-      <select id="resultsLimit" onchange="renderResults()" title="Limit number of results shown" style="font-size:11px;padding:2px 5px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text2);cursor:pointer;outline:none;">
+      <select id="resultsLimit" onchange="renderResults();if(_evHeatmapOn)renderEvPanel();" title="Limit number of results shown" style="font-size:11px;padding:2px 5px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text2);cursor:pointer;outline:none;">
         <option value="0">All</option>
         <option value="15">Top 15</option>
         <option value="25">Top 25</option>
@@ -2304,6 +2338,100 @@ const _WEATHER_COLORS = { sun:'#EF9F27', rain:'#85B7EB', sand:'#D3B07A', snow:'#
 const _TERRAIN_COLORS = { psychic:'#ED93B1', electric:'#FAC775', grassy:'#97C459', misty:'#f7c5f0' };
 function _updateWeatherSelectColor(sel) { if (sel) sel.style.color = _WEATHER_COLORS[sel.value] || ''; }
 function _updateTerrainSelectColor(sel) { if (sel) sel.style.color = _TERRAIN_COLORS[sel.value] || ''; }
+
+// ── EV Heatmap ────────────────────────────────────────────────────────────────
+let _evHeatmapOn = false;
+
+function toggleEvHeatmap() {
+  _evHeatmapOn = !_evHeatmapOn;
+  const btn = document.getElementById('evHeatmapBtn');
+  if (btn) {
+    btn.style.background = _evHeatmapOn ? 'rgba(124,106,247,0.15)' : 'transparent';
+    btn.style.color      = _evHeatmapOn ? 'var(--accent2)' : 'var(--text3)';
+    btn.style.borderColor= _evHeatmapOn ? 'var(--accent)' : 'var(--border2)';
+  }
+  renderEvPanel();
+}
+
+function _getMetaStatDistribution() {
+  // Compute mean and stdev of each final stat across loaded+filtered meta
+  const limit = parseInt(document.getElementById('resultsLimit')?.value || '0');
+  const pool  = META_DB.filter(p => p.loaded).slice(0, limit > 0 ? limit : undefined);
+  const dist  = {};
+  EV_STATS.forEach(stat => {
+    const vals = pool.map(p => {
+      const key = stat === 'hp' ? 'computedHp'
+                : stat === 'atk' ? 'computedAtk' : stat === 'def' ? 'computedDef'
+                : stat === 'spa' ? 'computedSpa'  : stat === 'spd' ? 'computedSpd'
+                : stat === 'spe' ? 'computedSpe'  : 0;
+      return p[key] || p.stats?.[stat] || 0;
+    }).filter(v => v > 0);
+    if (!vals.length) { dist[stat] = null; return; }
+    const mean = vals.reduce((a,b) => a+b, 0) / vals.length;
+    const variance = vals.reduce((a,v) => a + (v-mean)**2, 0) / vals.length;
+    const stdev = Math.sqrt(variance);
+    dist[stat] = { mean, stdev, min: Math.min(...vals), max: Math.max(...vals) };
+  });
+  return dist;
+}
+
+function _heatmapGradient(stat, dist, sliderMax) {
+  // Returns a CSS linear-gradient string for the slider track
+  const d = dist[stat];
+  if (!d) return 'var(--bg3)';
+  // Map stat values to slider positions (0–sliderMax EVs is not the stat range!)
+  // We need to map STAT VALUES to positions on the SLIDER (which is EV 0 to EV_MAX)
+  // This is tricky because stat = f(base, ev, iv, level, natMul)
+  // Instead, just position mean marker as a percentage of (mean / (mean + 2*stdev))
+  // and build a gradient relative to the distribution spread
+  const slot = DEFENDER_SLOTS[activeDefenderSlot];
+  if (!slot || !slot.baseStats) return 'var(--bg3)';
+
+  // Compute stat values at EV 0 and EV_MAX to get slider stat range
+  const natMul = (NATURES[slot.nature||'hardy']||{})[stat] || 1;
+  const base   = slot.baseStats[stat] || 0;
+  const lv     = slot.level || 50;
+  const iv     = slot.ivs?.[stat] ?? 31;
+  const statAt = ev => stat === 'hp'
+    ? calcHP(base, ev, iv, lv)
+    : calcStat(base, ev, iv, lv, natMul);
+
+  const statMin = statAt(0);
+  const statMax = statAt(sliderMax);
+  if (statMax <= statMin) return 'var(--bg3)';
+
+  // Map a stat value to a % position on the slider
+  const toPos = v => Math.max(0, Math.min(100, ((v - statMin) / (statMax - statMin)) * 100));
+
+  const meanPos  = toPos(d.mean);
+  const lo2Pos   = toPos(d.mean - 2 * d.stdev);
+  const hi2Pos   = toPos(d.mean + 2 * d.stdev);
+  const lo1Pos   = toPos(d.mean - d.stdev);
+  const hi1Pos   = toPos(d.mean + d.stdev);
+
+  // Build gradient: red → orange → yellow → green → cyan → blue → purple
+  // centered at mean, hot below, cool above
+  const stops = [
+    [0,            '#c0392b'],          // deep red
+    [lo2Pos,       '#e74c3c'],          // red (−2σ)
+    [lo1Pos,       '#e67e22'],          // orange (−1σ)
+    [meanPos,      '#f1c40f'],          // yellow (mean)
+    [hi1Pos,       '#27ae60'],          // green (+1σ)
+    [hi2Pos,       '#2980b9'],          // blue (+2σ)
+    [100,          '#8e44ad'],          // purple (max)
+  ].map(([p, c]) => `${c} ${p.toFixed(1)}%`).join(', ');
+
+  return `linear-gradient(to right, ${stops})`;
+}
+
+function _updateHeatFill(stat, val, evMax) {
+  const fill = document.getElementById('evHeatFill_' + stat);
+  if (!fill) return;
+  const pct = (Math.max(0, Math.min(evMax, parseInt(val)||0)) / evMax * 100).toFixed(1);
+  const bgSize = pct > 0 ? (evMax / Math.max(parseInt(val)||1, 1) * 100).toFixed(1) : '100';
+  fill.style.width = pct + '%';
+  fill.style.backgroundSize = bgSize + '% 100%';
+}
 
 function setGameMode(mode) {
   _gameMode = mode;
@@ -3299,6 +3427,9 @@ function renderEvPanel() {
   const natBoost = slot._pendingBoost !== undefined ? slot._pendingBoost : (Object.keys(nat).find(k => nat[k] > 1) || null);
   const natDrop  = slot._pendingDrop  !== undefined ? slot._pendingDrop  : (Object.keys(nat).find(k => nat[k] < 1) || null);
 
+  const evMax = EV_MAX();
+  const heatDist = _evHeatmapOn ? _getMetaStatDistribution() : null;
+
   const slidersDiv = document.getElementById('evSliders');
   if (!slidersDiv) return;
   slidersDiv.innerHTML = EV_STATS.map(stat => {
@@ -3316,14 +3447,52 @@ function renderEvPanel() {
       ? 'color:#87b4f5;border-color:#87b4f5;background:rgba(135,180,245,0.15);'
       : 'color:var(--text3);border-color:var(--border2);';
     const _showNatBtns = stat !== 'hp';
+
+    // Heatmap gradient
+    let sliderInner = '';
+    if (_evHeatmapOn && heatDist) {
+      const grad = _heatmapGradient(stat, heatDist, evMax);
+      const d    = heatDist[stat];
+      // Mean marker position as EV value
+      let meanEv = '';
+      let meanMarker = '';
+      if (d) {
+        // Find EV where stat ≈ mean — binary search
+        const natMul2 = (NATURES[slot.nature||'hardy']||{})[stat] || 1;
+        const base2   = slot.baseStats[stat] || 0;
+        const lv2     = slot.level || 50;
+        const iv2     = slot.ivs?.[stat] ?? 31;
+        let lo = 0, hi = evMax;
+        for (let iter = 0; iter < 20; iter++) {
+          const mid = Math.floor((lo + hi) / 2);
+          const val = stat === 'hp' ? calcHP(base2, mid, iv2, lv2) : calcStat(base2, mid, iv2, lv2, natMul2);
+          if (val < d.mean) lo = mid + 1; else hi = mid;
+        }
+        const meanEvVal = lo;
+        const meanPct   = (meanEvVal / evMax * 100).toFixed(1);
+        meanMarker = `<div class="ev-heatmap-marker" style="left:${meanPct}%;" title="Meta mean: ${Math.round(d.mean)}"></div>`;
+      }
+      sliderInner = `
+        <div class="ev-heatmap-wrap" id="evHeatWrap_${stat}">
+          <div class="ev-heatmap-track" id="evHeatTrack_${stat}" style="background:${grad};"></div>
+          <div class="ev-heatmap-fill"  id="evHeatFill_${stat}"  style="width:${(ev/evMax*100).toFixed(1)}%;background:${grad};background-size:${evMax > 0 ? (evMax/Math.max(ev,1)*100).toFixed(1) : 100}% 100%;background-position:left center;"></div>
+          ${meanMarker}
+          <input type="range" min="0" max="${evMax}" value="${ev}" step="${getFormat().evStep||1}" class="ev-slider ev-slider-heatmap"
+            oninput="onEvSliderChange('${stat}', this.value, this); _updateHeatFill('${stat}', this.value, ${evMax})"
+            id="evSlider_${stat}">
+        </div>`;
+    } else {
+      sliderInner = `<div style="flex:1;min-width:0;display:flex;align-items:center;height:20px;"><input type="range" min="0" max="${evMax}" value="${ev}" step="${getFormat().evStep||1}" class="ev-slider"
+        style="flex:1;min-width:0;accent-color:var(--accent);height:6px;cursor:pointer;"
+        oninput="onEvSliderChange('${stat}', this.value, this)"
+        id="evSlider_${stat}"></div>`;
+    }
+
     return `<div style="display:flex;align-items:center;gap:4px;min-width:0;overflow:hidden;">
       ${_showNatBtns ? `<button onclick="onNatureStatBtn('${stat}','boost')" style="padding:0 5px;height:16px;font-size:10px;border-width:0.5px;border-style:solid;border-radius:3px;cursor:pointer;line-height:1;flex-shrink:0;${plusStyle}" title="Set as boosted nature stat">+</button>` : '<span style="width:22px;flex-shrink:0;"></span>'}
       ${_showNatBtns ? `<button onclick="onNatureStatBtn('${stat}','drop')"  style="padding:0 5px;height:16px;font-size:10px;border-width:0.5px;border-style:solid;border-radius:3px;cursor:pointer;line-height:1;flex-shrink:0;${minusStyle}" title="Set as dropped nature stat">−</button>` : '<span style="width:22px;flex-shrink:0;"></span>'}
       <span style="font-size:10px;color:var(--text3);width:26px;flex-shrink:0;">${EV_LABELS[stat]}</span>
-      <input type="range" min="0" max="${EV_MAX()}" value="${ev}" step="${getFormat().evStep||1}" class="ev-slider"
-        style="flex:1;min-width:0;accent-color:var(--accent);height:4px;cursor:pointer;"
-        oninput="onEvSliderChange('${stat}', this.value, this)"
-        id="evSlider_${stat}">
+      ${sliderInner}
       <span id="evVal_${stat}" style="font-size:10px;color:var(--text2);width:20px;text-align:right;flex-shrink:0;">${ev}</span>
       <span id="evStat_${stat}" style="font-size:10px;color:var(--text);width:28px;text-align:right;font-weight:500;flex-shrink:0;">${computed}</span>
     </div>`;
@@ -4736,6 +4905,7 @@ async function loadMeta() {
   if (cur) lastResults = cur._lastResults || [];
   const savedScroll = window.scrollY;
   recomputeAndRender();
+  if (_evHeatmapOn) renderEvPanel();
   window.scrollTo({ top: savedScroll, behavior: 'instant' });
   collapseCard('metaCard');
   // Dismiss getting started guide once meta is loaded
@@ -7256,7 +7426,7 @@ function _renderMetaEvSliders() {
       ${_metaShowNatBtns ? `<button onclick="onMetaNatureStatBtn('${stat}','drop');event.stopPropagation();"  style="padding:0 5px;height:16px;font-size:10px;border-width:0.5px;border-style:solid;border-radius:3px;cursor:pointer;line-height:1;flex-shrink:0;${minusStyle}">−</button>` : '<span style="width:22px;flex-shrink:0;"></span>'}
       <span style="font-size:10px;color:var(--text3);width:26px;flex-shrink:0;">${EV_LABELS[stat]}</span>
       <input type="range" min="0" max="${maxEv}" value="${ev}" step="${evStep}" id="metaEvSlider_${stat}"
-        style="flex:1;min-width:0;accent-color:var(--accent);height:4px;cursor:pointer;"
+        style="flex:1;min-width:0;accent-color:var(--accent);height:6px;cursor:pointer;"
         oninput="onMetaEvSliderChange('${stat}',this.value,this)">
       <span id="metaEvVal_${stat}"  style="font-size:10px;color:var(--text2);width:20px;text-align:right;flex-shrink:0;">${ev}</span>
       <span id="metaEvStat_${stat}" style="font-size:10px;color:var(--text);width:28px;text-align:right;font-weight:500;flex-shrink:0;">${computed}</span>
