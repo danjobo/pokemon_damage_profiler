@@ -173,7 +173,7 @@
   .nb-rendered h1 { font-size: 18px; font-weight: 700; color: var(--text); margin: 8px 0 4px; border-bottom: 0.5px solid var(--border2); padding-bottom: 4px; }
   .nb-rendered h2 { font-size: 15px; font-weight: 600; color: var(--text); margin: 6px 0 3px; }
   .nb-rendered h3 { font-size: 13px; font-weight: 600; color: var(--text); margin: 4px 0 2px; }
-  .nb-rendered p  { margin: 4px 0; }
+  .nb-rendered p  { margin: 4px 0; white-space: pre-wrap; }
   .nb-rendered ul, .nb-rendered ol { margin: 4px 0; padding-left: 26px; }
   .nb-rendered li { margin: 2px 0; }
   .nb-rendered strong { color: var(--text); font-weight: 600; }
@@ -10259,8 +10259,17 @@ function renameSavedTeam() {
     delete notebooks[name];
     putNotebooks(notebooks);
   }
+  // Migrate win/loss data to new name
+  const winrates = getWinrates();
+  if (winrates[name]) {
+    winrates[trimmed] = winrates[name];
+    delete winrates[name];
+    putWinrates(winrates);
+  }
   _teamPickerSelected = trimmed;
+  _currentTeamName = trimmed;
   refreshTeamPickerDropdown(trimmed);
+  loadWinrateForTeam(trimmed);
 }
 
 function deleteSavedTeam() {
@@ -11171,12 +11180,42 @@ function nbTaKeydown(e, id) {
     const ta = e.target;
     const val = ta.value;
     const pos = ta.selectionStart;
-    // Find end of current line
     let lineEnd = pos;
     while (lineEnd < val.length && val[lineEnd] !== '\n') lineEnd++;
-    // Insert newline after current line
     ta.value = val.slice(0, lineEnd) + '\n' + val.slice(lineEnd);
     ta.selectionStart = ta.selectionEnd = lineEnd + 1;
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    return;
+  }
+
+  // Ctrl+X with nothing selected → delete current line
+  if ((e.ctrlKey || e.metaKey) && e.key === 'x' && e.target.selectionStart === e.target.selectionEnd) {
+    e.preventDefault();
+    const ta = e.target;
+    const val = ta.value;
+    const pos = ta.selectionStart;
+    let lineStart = pos;
+    while (lineStart > 0 && val[lineStart-1] !== '\n') lineStart--;
+    let lineEnd = pos;
+    while (lineEnd < val.length && val[lineEnd] !== '\n') lineEnd++;
+    // Include the trailing newline if present
+    const deleteEnd = lineEnd < val.length ? lineEnd + 1 : lineEnd;
+    const lineText = val.slice(lineStart, lineEnd);
+    navigator.clipboard?.writeText(lineText).catch(()=>{});
+    ta.value = val.slice(0, lineStart) + val.slice(deleteEnd);
+    ta.selectionStart = ta.selectionEnd = Math.min(lineStart, ta.value.length);
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    return;
+  }
+
+  // Tab → insert a tab character
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const ta = e.target;
+    const start = ta.selectionStart;
+    const end   = ta.selectionEnd;
+    ta.value = ta.value.slice(0, start) + '\t' + ta.value.slice(end);
+    ta.selectionStart = ta.selectionEnd = start + 1;
     ta.dispatchEvent(new Event('input', { bubbles: true }));
     return;
   }
@@ -11808,18 +11847,17 @@ function nbSaveEdit(id) {
   const lines = [];
   ce.childNodes.forEach(node => {
     if (node.nodeType === 1 && node.tagName === 'DIV') {
-      // Prefer data-raw if available; otherwise walk all text nodes (preserves mk-sym)
-      if (node.dataset?.raw !== undefined) {
-        lines.push(node.dataset.raw);
-      } else {
-        let raw = '';
-        const walk = (n) => {
-          if (n.nodeType === Node.TEXT_NODE) raw += n.textContent;
-          else for (const c of n.childNodes) walk(c);
-        };
-        walk(node);
-        lines.push(raw.replace(/\n$/, ''));
-      }
+      // Always walk all text nodes (including mk-sym) to get true raw markdown
+      let raw = '';
+      const walk = (n) => {
+        if (n.nodeType === Node.TEXT_NODE) raw += n.textContent;
+        else for (const c of n.childNodes) walk(c);
+      };
+      walk(node);
+      // Also prefer data-raw if it's longer (more complete — e.g. from explicit edits)
+      const fromWalk = raw.replace(/\n$/, '');
+      const fromRaw  = node.dataset?.raw ?? '';
+      lines.push(fromRaw.length >= fromWalk.length ? fromRaw : fromWalk);
     } else if (node.nodeType === 3) {
       lines.push(node.textContent);
     }
