@@ -169,11 +169,11 @@
   .nb-live-preview .nb-h-toggle::before { content: '▾ '; font-size: 10px; opacity: 0.6; }
   .nb-live-preview .nb-h-toggle.nb-collapsed::before { content: '▸ '; }
   .nb-live-preview .nb-hidden { display: none; }
-  .nb-rendered { font-size: 13px; color: var(--text2); line-height: 1.6; white-space: pre-wrap; }
+  .nb-rendered { font-size: 13px; color: var(--text2); line-height: 1.6; }
   .nb-rendered h1 { font-size: 18px; font-weight: 700; color: var(--text); margin: 8px 0 4px; border-bottom: 0.5px solid var(--border2); padding-bottom: 4px; }
   .nb-rendered h2 { font-size: 15px; font-weight: 600; color: var(--text); margin: 6px 0 3px; }
   .nb-rendered h3 { font-size: 13px; font-weight: 600; color: var(--text); margin: 4px 0 2px; }
-  .nb-rendered p  { margin: 4px 0; white-space: pre-wrap; }
+  .nb-rendered p  { margin: 4px 0; }
   .nb-rendered ul, .nb-rendered ol { margin: 4px 0; padding-left: 26px; }
   .nb-rendered li { margin: 2px 0; }
   .nb-rendered strong { color: var(--text); font-weight: 600; }
@@ -11138,6 +11138,7 @@ function nbRenderLine(line) {
 
 function nbInline(s) {
   return escHtml(s)
+    .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/__(.+?)__/g, '<u>$1</u>')
