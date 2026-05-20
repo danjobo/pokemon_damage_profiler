@@ -169,7 +169,7 @@
   .nb-live-preview .nb-h-toggle::before { content: '▾ '; font-size: 10px; opacity: 0.6; }
   .nb-live-preview .nb-h-toggle.nb-collapsed::before { content: '▸ '; }
   .nb-live-preview .nb-hidden { display: none; }
-  .nb-rendered { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .nb-rendered { font-size: 13px; color: var(--text); line-height: 1.6; }
   .nb-rendered h1 { font-size: 18px; font-weight: 700; color: var(--text); margin: 8px 0 4px; border-bottom: 0.5px solid var(--border2); padding-bottom: 4px; }
   .nb-rendered h2 { font-size: 15px; font-weight: 600; color: var(--text); margin: 6px 0 3px; }
   .nb-rendered h3 { font-size: 13px; font-weight: 600; color: var(--text); margin: 4px 0 2px; }
@@ -11612,24 +11612,19 @@ function nbCeKeydown(e, id) {
         const newRaw = rawText.slice(0, ws) + wrapped + rawText.slice(we);
         lineDiv.dataset.raw = newRaw;
         _nbCeRenderLine(lineDiv, newRaw);
-        // Place caret after the closing ]] — find the text node after the wrapped text
-        const afterPos = ws + wrapped.length; // position in newRaw after ]]
-        // In rendered DOM, [[...]] renders as a sprite/image with no visible text
-        // Place caret after the rendered sprite element
-        const sprites = lineDiv.querySelectorAll('img, span[style*="background"]');
-        let sprPlaced = false;
-        if (sprites.length > 0) {
-          const r3 = document.createRange();
-          r3.setStartAfter(sprites[sprites.length - 1]); r3.collapse(true);
-          sel2.removeAllRanges(); sel2.addRange(r3);
-          sprPlaced = true;
-        }
-        if (!sprPlaced) {
-          // Fallback: place at end of line
-          const r3 = document.createRange();
-          r3.selectNodeContents(lineDiv);
-          r3.collapse(false);
-          sel2.removeAllRanges(); sel2.addRange(r3);
+        // Place caret just after the closing ]] by walking text nodes
+        const targetOffset = ws + wrapped.length;
+        let rem3 = targetOffset;
+        const tw3 = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT);
+        let tn3;
+        while ((tn3 = tw3.nextNode())) {
+          if (rem3 <= tn3.textContent.length) {
+            const r3 = document.createRange();
+            r3.setStart(tn3, rem3); r3.collapse(true);
+            sel2.removeAllRanges(); sel2.addRange(r3);
+            break;
+          }
+          rem3 -= tn3.textContent.length;
         }
       }
     }
