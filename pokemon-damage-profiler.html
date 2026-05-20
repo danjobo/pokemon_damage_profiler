@@ -1679,7 +1679,14 @@ Adamant Nature
             <span style="flex:1;color:var(--text3);">— saved teams —</span>
             <span style="color:var(--text3);font-size:10px;flex-shrink:0;">▼</span>
           </button>
-          <div class="team-picker-dropdown" id="teamPickerDropdown"></div>
+          <div class="team-picker-dropdown" id="teamPickerDropdown">
+            <div style="padding:6px 8px;border-bottom:0.5px solid var(--border2);">
+              <input id="teamPickerSearch" type="text" placeholder="Search by pokémon..." autocomplete="off"
+                oninput="filterTeamPickerByPokemon(this.value)"
+                onclick="event.stopPropagation()"
+                style="width:100%;font-size:11px;padding:3px 6px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none;">
+            </div>
+          </div>
         </div>
         <button onclick="createNewTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Create a new blank team">＋ New</button>
         <button onclick="duplicateCurrentTeam()" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;" title="Duplicate current team">⧉ Dupe</button>
@@ -3719,7 +3726,7 @@ function _syncPasteFromSlot(slot) {
     if (li === 0) return firstLine;
     if (/^EVs:/i.test(t))       { hasEV = true; return evLine || null; }
     if (/\bNature$/i.test(t))   { hasNature = true; return natureLine; }
-    if (/^Ability:/i.test(t))   return `Ability: ${slot.ability || t.replace(/^Ability:\s*/i,'')}`;
+    if (/^Ability:/i.test(t))   return `Ability: ${(slot.ability || t.replace(/^Ability:\s*/i,'')).split(',')[0].trim()}`;
     if (/^Tera Type:/i.test(t)) {
       if (slot.teraType) return `Tera Type: ${slot.teraType.charAt(0).toUpperCase()+slot.teraType.slice(1)}`;
       return null;
@@ -3917,7 +3924,7 @@ function copyTeamPaste252() {
   const blocks = filled.map(slot => {
     let block = slot.speciesRaw;
     if (slot.item) block += ` @ ${slot.item}`;
-    if (slot.ability) block += `\nAbility: ${slot.ability}`;
+    if (slot.ability) block += `\nAbility: ${slot.ability.split(',')[0].trim()}`;
     block += `\nLevel: ${slot.level || 50}`;
     // Convert Champions EVs (0-32) to 252 format: multiply by 8, cap at 252
     const evParts = Object.entries(slot.evs || {}).filter(([,v]) => v > 0)
@@ -3959,7 +3966,7 @@ function copyTeamPaste() {
   const blocks = filled.map(slot => {
     let block = slot.speciesRaw;
     if (slot.item) block += ` @ ${slot.item}`;
-    if (slot.ability) block += `\nAbility: ${slot.ability}`;
+    if (slot.ability) block += `\nAbility: ${slot.ability.split(',')[0].trim()}`;
     block += `\nLevel: ${slot.level || 50}`;
     const evParts = Object.entries(slot.evs || {}).filter(([,v]) => v > 0)
       .map(([k,v]) => `${v} ${k.toUpperCase().replace('SPA','SpA').replace('SPD','SpD').replace('SPE','Spe').replace('ATK','Atk').replace('DEF','Def')}`);
@@ -5632,8 +5639,10 @@ function computeResults(loadedMeta, defender) {
         // base normal stays normal
       }
       // Weather Ball: resolve type immediately so ghost immunity etc work
-      if (isWeatherBall && weather && weather !== 'none') {
-        effectiveMoveType = weatherBallType(weather);
+      const _weatherForWB = (weather !== 'none') ? weather
+        : (['megasol','drought','desolateland'].includes(_atkAbilSlug) ? 'sun' : 'none');
+      if (isWeatherBall && _weatherForWB !== 'none') {
+        effectiveMoveType = weatherBallType(_weatherForWB);
       }
 
       // Type-changing abilities on normal moves
@@ -5682,7 +5691,7 @@ function computeResults(loadedMeta, defender) {
           'gyro ball','ice ball','magnet bomb','mist ball','mud bomb','octazooka',
           'pollen puff','pyro ball','rock blast','rock wrecker','searing shot',
           'seed bomb','shadow ball','sludge bomb','weather ball','zap cannon'];
-        if (ballBombMoves.some(b => mn.includes(b.split(' ')[0]) || b.includes(mn))) continue;
+        if (ballBombMoves.includes(mn)) continue;
       }
 
       // Levitate: ground immunity (unless Mold Breaker)
@@ -6325,12 +6334,15 @@ function renderResults() {
       // Weather Ball: recompute damage completely from scratch with correct type/power/weather
       let moveType = m.effectiveMoveType || m.move.type;
       const isWB = m.isWeatherBall || (m.move && m.move.name.toLowerCase() === 'weather ball');
-      if (isWB && weather !== 'none') {
-        const newType = weatherBallType(weather);
+      const _atkAbSlugWB = (r.attacker?.ability||'').toLowerCase().replace(/[\s-]/g,'');
+      const _weatherForWB = weather !== 'none' ? weather
+        : (['megasol','drought','desolateland'].includes(_atkAbSlugWB) ? 'sun' : 'none');
+      if (isWB && _weatherForWB !== 'none') {
+        const newType = weatherBallType(_weatherForWB);
         const newEff  = typeEff(newType, r.defender ? r.defender.types : []);
         if (newEff === 0) { m.adjustedPct = 0; m.adjustedDmg = 0; return; }
         const wbPower       = 100;  // doubles in weather
-        const weatherBoost  = applyWeatherModifier(newType, weather); // e.g. 1.5 for water in rain
+        const weatherBoost  = applyWeatherModifier(newType, _weatherForWB);
         // Use stored atkStat/defStat/isStab if available, otherwise fall back to ratio method
         let wbDmg;
         if (m.atkStat && m.defStat) {
@@ -6348,7 +6360,7 @@ function renderResults() {
         adjustedDmg = wbDmg;
         moveType = newType;
       } else {
-        adjustedDmg *= applyWeatherModifier(moveType, weather);
+        adjustedDmg *= applyWeatherModifier(moveType, _weatherForWB);
       }
 
       // Sand SpD boost (rock types)
@@ -6435,11 +6447,14 @@ function renderResults() {
       let adjustedDmg = m.dmg;
       let moveType2 = m.effectiveMoveType || m.move.type;
       const isWB2 = m.isWeatherBall || (m.move && m.move.name.toLowerCase() === 'weather ball');
-      if (isWB2 && weather !== 'none') {
-        const newType = weatherBallType(weather);
+      const _tabAbSlug2 = (r.defender?.ability||'').toLowerCase().replace(/[\s-]/g,'');
+      const _weatherForWB2 = weather !== 'none' ? weather
+        : (['megasol','drought','desolateland'].includes(_tabAbSlug2) ? 'sun' : 'none');
+      if (isWB2 && _weatherForWB2 !== 'none') {
+        const newType = weatherBallType(_weatherForWB2);
         const newEff  = typeEff(newType, r.attacker.types || []);
         if (newEff === 0) { m.adjustedPct = 0; m.adjustedDmg = 0; return; }
-        const weatherBoost2 = applyWeatherModifier(newType, weather);
+        const weatherBoost2 = applyWeatherModifier(newType, _weatherForWB2);
         let wbDmg2;
         if (m.atkStat && m.defStat) {
           const defTypes = r.defender ? r.defender.types : [];
@@ -9502,8 +9517,30 @@ async function refreshTeamPickerDropdown(selectValue) {
   }
 
   // Render immediately with whatever dex nums we have
+  let _teamPickerFilter = '';
   const renderItems = () => {
-    dd.innerHTML = names.map(n => {
+    const filter = _teamPickerFilter.toLowerCase().trim();
+    const filtered = filter ? names.filter(n => {
+      const entry = teams[n];
+      const slots = Array.isArray(entry) ? entry : (entry?.slots || []);
+      // Check if any pokemon in this team matches the filter
+      return _parseSpeciesFromSlots(slots).some(s => s.toLowerCase().includes(filter));
+    }) : names;
+
+    const searchHtml = `<div style="padding:6px 8px;border-bottom:0.5px solid var(--border2);">
+      <input id="teamPickerSearch" type="text" placeholder="Search by pokémon..." autocomplete="off"
+        value="${_teamPickerFilter.replace(/"/g,'&quot;')}"
+        oninput="filterTeamPickerByPokemon(this.value)"
+        onclick="event.stopPropagation()"
+        style="width:100%;font-size:11px;padding:3px 6px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none;">
+    </div>`;
+
+    if (!filtered.length) {
+      dd.innerHTML = searchHtml + '<div style="padding:10px;font-size:12px;color:var(--text3);">No teams match.</div>';
+      return;
+    }
+
+    dd.innerHTML = searchHtml + filtered.map(n => {
       const score   = wr[n] || { wins:0, losses:0 };
       const entry   = teams[n];
       const slots   = Array.isArray(entry) ? entry : (entry?.slots || []);
@@ -10234,6 +10271,54 @@ th:nth-child(4),td:nth-child(4){width:10%}
   if (w) { w.document.write(html); w.document.close(); }
   else alert('Allow popups to generate the print document.');
 }
+function filterTeamPickerByPokemon(query) {
+  // Re-render dropdown with filter applied
+  const dd = document.getElementById('teamPickerDropdown');
+  if (!dd) return;
+  const teams = getSavedTeams();
+  const wr = (typeof getWinrates === 'function') ? getWinrates() : {};
+  const names = Object.keys(teams).sort((a,b) => (teams[b]?.savedAt||0) - (teams[a]?.savedAt||0));
+  const filter = (query || '').toLowerCase().trim();
+  const filtered = filter ? names.filter(n => {
+    const entry = teams[n];
+    const slots = Array.isArray(entry) ? entry : (entry?.slots || []);
+    return _parseSpeciesFromSlots(slots).some(s => s.toLowerCase().includes(filter));
+  }) : names;
+
+  // Rebuild items but keep the search input
+  const searchHtml = `<div style="padding:6px 8px;border-bottom:0.5px solid var(--border2);">
+    <input id="teamPickerSearch" type="text" placeholder="Search by pokémon..." autocomplete="off"
+      value="${filter.replace(/"/g,'&quot;')}"
+      oninput="filterTeamPickerByPokemon(this.value)"
+      onclick="event.stopPropagation()"
+      style="width:100%;font-size:11px;padding:3px 6px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none;">
+  </div>`;
+
+  if (!filtered.length) {
+    dd.innerHTML = searchHtml + '<div style="padding:10px;font-size:12px;color:var(--text3);">No teams match.</div>';
+    return;
+  }
+
+  const fmt = getFormat();
+  dd.innerHTML = searchHtml + filtered.map(n => {
+    const score = wr[n] || { wins:0, losses:0 };
+    const entry = teams[n];
+    const slots = Array.isArray(entry) ? entry : (entry?.slots || []);
+    const species = _parseSpeciesFromSlots(slots);
+    const icons = species.slice(0,6).map(s => psIconHtml(s, s)).join('');
+    const isSel = n === _teamPickerSelected;
+    const safeN = n.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div class="team-picker-item${isSel?' selected':''}" onclick="selectTeamPickerItem('${safeN}')">
+      <div class="team-picker-name"><span>${n}</span><span class="team-picker-wr">${score.wins}W–${score.losses}L</span></div>
+      <div class="team-picker-icons">${icons}</div>
+    </div>`;
+  }).join('');
+
+  // Re-focus the input
+  const inp = document.getElementById('teamPickerSearch');
+  if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+}
+
 function renameSavedTeam() {
   const name = _teamPickerSelected;
   if (!name) { alert('Select a saved team first.'); return; }

@@ -1,8 +1,6 @@
 ## Feature Request
 
 
-
-
 - [??] bulletproof immunities support in calculations everywhere else (weakness overlap window, meta analysis, current match window calculations...)
 
 
@@ -67,6 +65,9 @@
 ---
 #### Completed
 
+- [XX] bulletproof ability is showing as immune to ice hammer for some reason. should I give you the official list of affected moves?
+- [XX] copying to clipboard should only include first ability of each mon
+- [XX] mega sol weatherballs should always be fire type like sun is active
 - [XX] formatting in notes is sometimes disappearing when closing the editor, I suspect it might be due to the hiding it when not clicked on it. By disappearing I mean, I'll edit something in a note, close it, and in the preview the formatting of text elsewhere like a bolding or a header will just disappear
 - [XX] ctrl+x with nothing selected in notes editor should delete the current line
 - [XX] tab in the notes editor should insert a tab, and tabs should be supported in the markdown and not get eaten up
