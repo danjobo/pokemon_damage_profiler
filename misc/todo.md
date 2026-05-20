@@ -3,11 +3,10 @@
 
 - [??] bulletproof immunities support in calculations everywhere else (weakness overlap window, meta analysis, current match window calculations...)
 
+- [__] show hp values on damage calcs in move breakdowns
 
+- [__] pinned results can't be excluded from Top X filter
 
-
-
-- [??] collapse headers in text edit window in notes?
 
 
 
@@ -37,7 +36,6 @@
 
 
 
-- metagame folders for different saved metas and teams
 
 
 
@@ -65,6 +63,7 @@
 ---
 #### Completed
 
+- [XX] metagame folders for different saved metas and teams
 - [XX] bulletproof ability is showing as immune to ice hammer for some reason. should I give you the official list of affected moves?
 - [XX] copying to clipboard should only include first ability of each mon
 - [XX] mega sol weatherballs should always be fire type like sun is active
