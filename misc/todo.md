@@ -2,6 +2,7 @@
 
 
 
+
 - [??] bulletproof immunities support in calculations everywhere else (weakness overlap window, meta analysis, current match window calculations...)
 
 
@@ -66,6 +67,9 @@
 ---
 #### Completed
 
+- [XX] formatting in notes is sometimes disappearing when closing the editor, I suspect it might be due to the hiding it when not clicked on it. By disappearing I mean, I'll edit something in a note, close it, and in the preview the formatting of text elsewhere like a bolding or a header will just disappear
+- [XX] ctrl+x with nothing selected in notes editor should delete the current line
+- [XX] tab in the notes editor should insert a tab, and tabs should be supported in the markdown and not get eaten up
 - [XX] team changes save automatically + duplicate team button
 - [XX] remove the plus and minus buttons next to HP EV slider in team window and move breakdown spread editor
 - [XX] tab form changes reflect in match window calcs

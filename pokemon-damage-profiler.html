@@ -169,7 +169,7 @@
   .nb-live-preview .nb-h-toggle::before { content: '▾ '; font-size: 10px; opacity: 0.6; }
   .nb-live-preview .nb-h-toggle.nb-collapsed::before { content: '▸ '; }
   .nb-live-preview .nb-hidden { display: none; }
-  .nb-rendered { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .nb-rendered { font-size: 13px; color: var(--text2); line-height: 1.6; white-space: pre-wrap; }
   .nb-rendered h1 { font-size: 18px; font-weight: 700; color: var(--text); margin: 8px 0 4px; border-bottom: 0.5px solid var(--border2); padding-bottom: 4px; }
   .nb-rendered h2 { font-size: 15px; font-weight: 600; color: var(--text); margin: 6px 0 3px; }
   .nb-rendered h3 { font-size: 13px; font-weight: 600; color: var(--text); margin: 4px 0 2px; }
@@ -11197,6 +11197,30 @@ function nbTaKeydown(e, id) {
   }
   if (e.key === 'Escape') { nbSaveEdit(id); return; }
 
+  // Tab — insert a literal tab character
+  if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    e.preventDefault();
+    const ta = e.target;
+    const s = ta.selectionStart, en = ta.selectionEnd;
+    ta.value = ta.value.slice(0, s) + '\t' + ta.value.slice(en);
+    ta.selectionStart = ta.selectionEnd = s + 1;
+    return;
+  }
+
+  // Ctrl+X with no selection — delete current line
+  if ((e.ctrlKey || e.metaKey) && e.key === 'x' && e.target.tagName === 'TEXTAREA') {
+    const ta = e.target;
+    if (ta.selectionStart !== ta.selectionEnd) return;
+    e.preventDefault();
+    const val = ta.value, pos = ta.selectionStart;
+    let ls = pos; while (ls > 0 && val[ls-1] !== '\n') ls--;
+    let le = pos; while (le < val.length && val[le] !== '\n') le++;
+    const de = le < val.length ? le + 1 : le;
+    ta.value = val.slice(0, ls) + val.slice(de);
+    ta.selectionStart = ta.selectionEnd = ls;
+    return;
+  }
+
   // Ctrl+B: bold, Ctrl+I: italic, Ctrl+U: underline — toggles markers on/off
   if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'i' || e.key === 'u')) {
     e.preventDefault();
@@ -11496,21 +11520,26 @@ function nbCeUpdateActive(id) {
   }
 }
 
-// On input: just update data-raw on the current line div, no DOM re-render
+// On input: update data-raw on the current line div, preserving markdown syntax
 function nbCeInput(e, id) {
   const el = document.getElementById('nb-ce-' + id);
   if (!el) return;
   const sel = window.getSelection();
   if (!sel.rangeCount) return;
   let node = sel.getRangeAt(0).startContainer;
-  // Walk up to find direct child of editor
   let lineDiv = node;
   while (lineDiv && lineDiv.parentNode !== el) lineDiv = lineDiv.parentNode;
   if (lineDiv && lineDiv.nodeType === 1) {
-    // Update data-raw with current text content of this line
-    lineDiv.dataset.raw = lineDiv.innerText.replace(/\n$/, '');
+    // Reconstruct raw text by walking ALL text nodes (including mk-sym hidden ones)
+    // This preserves ** * __ etc that are display:none when not active
+    let raw = '';
+    const walk = (n) => {
+      if (n.nodeType === Node.TEXT_NODE) { raw += n.textContent; }
+      else { for (const c of n.childNodes) walk(c); }
+    };
+    walk(lineDiv);
+    lineDiv.dataset.raw = raw.replace(/\n$/, '');
   }
-  // Do NOT re-render — let the browser handle display while typing
 }
 
 function nbCeKeydown(e, id) {
@@ -11569,7 +11598,34 @@ function nbCeKeydown(e, id) {
   }
   if (e.key === 'Escape') { nbSaveEdit(id); return; }
 
-  // Ctrl+Enter: insert new line below current line and move caret there
+  // Tab — insert a literal tab character
+  if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    e.preventDefault();
+    document.execCommand('insertText', false, '\t');
+    return;
+  }
+
+  // Ctrl+X with no selection — delete current line in CE
+  if ((e.ctrlKey || e.metaKey) && e.key === 'x') {
+    const sel = window.getSelection();
+    if (!sel.rangeCount || sel.toString()) return; // has selection, let browser handle
+    e.preventDefault();
+    const ce = document.getElementById('nb-ce-' + id);
+    const range = sel.getRangeAt(0);
+    let lineDiv = range.startContainer;
+    while (lineDiv && lineDiv.parentNode !== ce) lineDiv = lineDiv.parentNode;
+    if (lineDiv && lineDiv.parentNode === ce) {
+      const next = lineDiv.nextSibling || lineDiv.previousSibling;
+      ce.removeChild(lineDiv);
+      // Place caret in adjacent line
+      if (next && next.nodeType === 1) {
+        const r2 = document.createRange();
+        r2.selectNodeContents(next); r2.collapse(true);
+        sel.removeAllRanges(); sel.addRange(r2);
+      }
+    }
+    return;
+  }
   if (e.key === 'Enter' && e.ctrlKey) {
     e.preventDefault();
     const ce = document.getElementById('nb-ce-' + id);
@@ -11747,13 +11803,23 @@ function nbCeKeydown(e, id) {
 }
 
 function nbSaveEdit(id) {
-  // Read from contenteditable — collect data-raw from each line div
   const ce = document.getElementById('nb-ce-' + id);
   if (!ce) return;
   const lines = [];
   ce.childNodes.forEach(node => {
     if (node.nodeType === 1 && node.tagName === 'DIV') {
-      lines.push(node.dataset?.raw ?? node.innerText.replace(/\n$/, ''));
+      // Prefer data-raw if available; otherwise walk all text nodes (preserves mk-sym)
+      if (node.dataset?.raw !== undefined) {
+        lines.push(node.dataset.raw);
+      } else {
+        let raw = '';
+        const walk = (n) => {
+          if (n.nodeType === Node.TEXT_NODE) raw += n.textContent;
+          else for (const c of n.childNodes) walk(c);
+        };
+        walk(node);
+        lines.push(raw.replace(/\n$/, ''));
+      }
     } else if (node.nodeType === 3) {
       lines.push(node.textContent);
     }
