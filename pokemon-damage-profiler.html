@@ -10462,7 +10462,7 @@ function filterTeamPickerByPokemon(query) {
     const hasFullEvs = _teamHasFullEvs(slots);
     const evBadge = hasFullEvs ? `<span style="font-size:9px;color:var(--green);margin-left:4px;">EV✓</span>` : '';
     return `<div class="team-picker-item${isSel?' selected':''}" onclick="selectTeamPickerItem('${safeN}')">
-      <div class="team-picker-name"><span>${n}</span><div style="display:flex;align-items:center;gap:4px;"><span class="team-picker-wr">${score.wins}W–${score.losses}L</span>${evBadge}</div></div>
+      <div class="team-picker-name"><span>${n}</span><div style="display:flex;align-items:center;gap:4px;">${evBadge}<span class="team-picker-wr">${score.wins}W–${score.losses}L</span></div></div>
       <div class="team-picker-icons">${icons}</div>
     </div>`;
   }).join('');
