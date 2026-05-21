@@ -5,10 +5,6 @@
 
 
 
-
-
-
-
 - shortcuts on hover
 
 - shortcuts tooltips?
@@ -20,14 +16,12 @@
 
 
 
-- basculegion-f grid sprite
 
 
 
 
 
 
-- use grid sprites for the match log
 
 
 
@@ -60,6 +54,19 @@
 ---
 #### Completed
 
+- [XX] in the team dropdowns, have the green EVs text be right justified next to the winrate and maybe make ti smaller like just "EV!" (I used ! instead of the checkmark but use the checkmark instead) also maybe to the right of the search bar in the team dropdown, have a small button that says EV that at first is unselected, but if you click it once, then it will turn green and filter the results to only teams with full EVs, if you click it again, it will turn red and filter the results to only teams without full EVs, and if you click it again it will go back to normal and be unselected
+- [XX] I'm not seeing in the saved teams dropdown the EV button to the right of the search bar
+- [XX] also in the team dropdowns, in the search bar, allow for searching for multiple pokemon separated by commas. it will then only filter teams that contain all of the pokemon in the search (logical AND operator)
+- [XX] add basculegion-f to the grid sprites. it's location is one before enamorus-therian on the sprite sheet
+- [XX] in the tab editor window with the move textboxes, it seems like the move suggestion auto complete is not recognizing all moves. (some examples: rock slide, rock tomb, plenty others I forget). Also for some moves like "Psychic", it's still showing text after trying to autocomplete when psychic is it's own move. I feel like in that case, it should wait till the user puts a space after psychic to show other autocomplete options
+- [XX] use grid sprites for the match log pokemon
+- [XX] EV slider portion of team window, make the nature dropdown only be as wide as it's text. you can remove the "Nature:" text before it, and move the Heatmap button to where the "Nature:" text is. also, you can change the text on the heatmap button to "Stat Heatmap" and it's hover text to say "Shows average meta stat values on sliders". maybe make the heatmap button itself be some kind of color gradient too
+- [XX] get rid of the auto minimize team window on loading a team. still have it be minimizable but just have it only be when the user clicks it
+- [XX] the search bar in the team dropdowns is having issues when I type comma, it doesn't show any more teams, when I press space it will deselect the search bar, and whenever I press a key it also deselects the search bar. I tried copy pasting some text like "sneasler, garchomp" into it but it still showed no teams
+- [XX] make basculegion-f's grid sprite 4 rows up and 3 columns to the left from whatever it is right now
+- [XX] in the match log listings, it looks like we're not using the grid sprites still. I'd like to pretty much just copy the exact logic/code we have for getting sprites in the tabs and team dropdowns and use that instead for the match log pokemon sprites
+- [XX] Stat Heatmap button shows as a gradient at first, but when I click it it goes back to a normal greyed out button and when I click it on it's just the regular lavender clicked on style
+- [XX] on creation of a new team, even though the team is empty, the tabs don't refresh as empty until you click one of them
 - [XX] show hp values on damage calcs in move breakdowns
 - [XX] pinned results can't be excluded from Top X filter
 - [XX] metagame folders for different saved metas and teams

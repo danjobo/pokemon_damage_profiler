@@ -1689,11 +1689,12 @@ Adamant Nature
             <span style="color:var(--text3);font-size:10px;flex-shrink:0;">▼</span>
           </button>
           <div class="team-picker-dropdown" id="teamPickerDropdown">
-            <div style="padding:6px 8px;border-bottom:0.5px solid var(--border2);">
-              <input id="teamPickerSearch" type="text" placeholder="Search by pokémon..." autocomplete="off"
-                oninput="filterTeamPickerByPokemon(this.value)"
-                onclick="event.stopPropagation()"
-                style="width:100%;font-size:11px;padding:3px 6px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none;">
+            <div style="padding:6px 8px;border-bottom:0.5px solid var(--border2);display:flex;gap:6px;align-items:center;">
+              <input id="teamPickerSearch" type="text" placeholder="Search (Sneasler, Garchomp, ...)" autocomplete="off"
+                oninput="filterTeamPickerByPokemon(this.value)" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='x'&&this.selectionStart===this.selectionEnd){event.preventDefault();this.value='';filterTeamPickerByPokemon('');}else{event.stopPropagation();}"
+                onclick="event.stopPropagation()" onkeydown="event.stopPropagation()"
+                style="flex:1;min-width:0;font-size:11px;padding:3px 6px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none;">
+              <button id="teamEvFilterBtn" onclick="event.stopPropagation();cycleEvFilter();" style="flex-shrink:0;padding:2px 7px;font-size:10px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;" title="Filter by EV completion">EV</button>
             </div>
           </div>
         </div>
@@ -1769,16 +1770,16 @@ Impish Nature
               <input id="evMove4Input" type="text" autocomplete="off" placeholder="Move 4" oninput="onEvMoveChange(3,this.value);_fieldAutocomplete('evMove4Input','evMove4Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'evMove4Input','evMove4Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
             </div>
           </div>
-          <!-- Right 2/3: nature + sliders -->
+            <!-- Right 2/3: nature + sliders -->
           <div style="flex:2;min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:6px;">
             <div style="display:flex;align-items:center;gap:6px;">
-              <span style="font-size:11px;color:var(--text3);flex-shrink:0;">Nature:</span>
-              <select id="evNatureSelect" onchange="onEvNatureChange()" style="font-size:11px;padding:2px 4px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;cursor:pointer;flex:1;min-width:0;max-width:100%;"></select>
-              <button onclick="resetEvs()" style="padding:2px 6px;font-size:10px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;flex-shrink:0;">Reset</button>
+              <button id="evHeatmapBtn" onclick="toggleEvHeatmap()" title="Shows average meta stat values on sliders"
+                style="padding:2px 7px;font-size:10px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:linear-gradient(90deg,rgba(230,126,34,0.35),rgba(241,196,15,0.35),rgba(39,174,96,0.35));color:var(--text);cursor:pointer;flex-shrink:0;white-space:nowrap;">Stat Heatmap</button>
+              <select id="evNatureSelect" onchange="onEvNatureChange()" style="font-size:11px;padding:2px 4px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text);outline:none;cursor:pointer;width:auto;"></select>
+              <button onclick="resetEvs()" style="padding:2px 6px;font-size:10px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;flex-shrink:0;margin-left:auto;">Reset</button>
             </div>
             <div id="evSliders" style="display:flex;flex-direction:column;gap:6px;overflow:hidden;"></div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
-              <button id="evHeatmapBtn" onclick="toggleEvHeatmap()" style="padding:2px 7px;font-size:10px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;" title="Show meta stat distribution on sliders">⟨ Heatmap</button>
+            <div style="display:flex;align-items:center;justify-content:flex-end;margin-top:2px;">
               <span id="evTotalDisplay" style="font-size:10px;color:var(--text3);">0 / 66 EVs</span>
             </div>
           </div>
@@ -2389,9 +2390,12 @@ function toggleEvHeatmap() {
   _evHeatmapOn = !_evHeatmapOn;
   const btn = document.getElementById('evHeatmapBtn');
   if (btn) {
-    btn.style.background = _evHeatmapOn ? 'rgba(124,106,247,0.15)' : 'transparent';
-    btn.style.color      = _evHeatmapOn ? 'var(--accent2)' : 'var(--text3)';
-    btn.style.borderColor= _evHeatmapOn ? 'var(--accent)' : 'var(--border2)';
+    const grad = 'linear-gradient(90deg,rgba(230,126,34,0.35),rgba(241,196,15,0.35),rgba(39,174,96,0.35))';
+    btn.style.background  = grad;
+    btn.style.color       = _evHeatmapOn ? 'var(--text)' : 'var(--text2)';
+    btn.style.borderColor = _evHeatmapOn ? 'var(--accent)' : 'var(--border2)';
+    btn.style.fontWeight  = _evHeatmapOn ? '600' : '400';
+    btn.style.boxShadow   = _evHeatmapOn ? '0 0 6px rgba(124,106,247,0.4)' : 'none';
   }
   renderEvPanel();
 }
@@ -7870,6 +7874,37 @@ const ALL_MOVES = (() => {
     'Hyperspace Hole','Hyperspace Fury','Oblivion Wing','Wring Out','Freeze-Dry',
     'Soft-Boiled','Milk Drink','Slack Off','Roost','Moonlight','Morning Sun',
     'Shore Up','Synthesis','Healing Wish','Lunar Dance','Jungle Healing',
+    'Rock Slide','Rock Tomb','Rock Blast','Rock Polish','Rock Wrecker',
+    'Stone Edge','Power Gem','Ancient Power','Head Smash',
+    'Psychic Noise','Expanding Force','Psyshield Bash','Twin Beam','Lumina Crash',
+    'Flower Trick','Wicked Blow','Surging Strikes','Glacial Lance','Astral Barrage',
+    'Behemoth Blade','Behemoth Bash','Dynamax Cannon',
+    'High Horsepower','Stomping Tantrum','Headlong Rush','Tectonic Rage',
+    'Dragon Darts','Dragon Cheer','Scale Shot','Dual Wingbeat',
+    'Flip Turn','Aqua Step','Wave Crash','Jet Punch',
+    'Bitter Blade','Ceaseless Edge','Stone Axe','Triple Arrows',
+    'Kowtow Cleave','Dire Claw','Population Bomb','Salt Cure',
+    'Rage Powder','Follow Me','Life Dew','Heal Pulse',
+    'Ice Hammer','Triple Axel','Icicle Spear','Ice Shard',
+    'Bullet Punch','Feint','First Impression','Upper Hand',
+    'Sucker Punch','Thunder Punch','Fire Punch','Ice Punch',
+    'Zen Headbutt','Iron Head','Heavy Slam','Gyro Ball',
+    'Poison Jab','Gunk Shot','Sludge Wave','Acid Spray',
+    'Air Cutter','Dual Wingbeat','Brave Bird','Acrobatics',
+    'Aqua Jet','Waterfall','Scald','Muddy Water','Surf',
+    'Sizzly Slide','Sparkly Swirl','Bouncy Bubble','Glitzy Glow',
+    'Baddy Bad','Sappy Seed','Freezy Frost','Zippy Zap','Floaty Fall',
+    'Zippy Zap','Pika Papow','Splishy Splash',
+    'Gigaton Hammer','Spin Out','Fillet Away','Mortal Spin',
+    'Chilling Water','Psyshield Bash','Twin Beam','Lumina Crash',
+    'Last Respects','Shed Tail','Grassy Glide','Misty Explosion',
+    'Burning Jealousy','Flip Turn','Terrain Pulse','Expanding Force',
+    'Ricochet','Psychic Terrain','Grassy Terrain','Misty Terrain','Electric Terrain',
+    'Helping Hand','Protect','Detect','Spiky Shield',"King's Shield",'Baneful Bunker',
+    'Crafty Shield','Mat Block','Wide Guard','Quick Guard',
+    'Parting Shot','Volt Switch','U-turn','Flip Turn','Teleport',
+    'Encore','Disable','Taunt','Torment','Imprison','Trick Room',
+    'Rain Dance','Sunny Day','Sandstorm','Snowscape','Hail',
   ];
   const seen = new Set();
   return [...fromOverrides, ...common].filter(m => {
@@ -7953,7 +7988,12 @@ function _fieldAutocomplete(inputId, ghostId, candidates) {
   if (!inp || !ghost) return;
   const val = inp.value;
   if (!val) { ghost.value = ''; return; }
-  const match = candidates.find(c => c.toLowerCase().startsWith(val.toLowerCase()) && c.toLowerCase() !== val.toLowerCase());
+  const valLow = val.toLowerCase();
+  // If typed text exactly matches a candidate, don't suggest a continuation
+  // (unless they've added a space, indicating they want a multi-word continuation)
+  const isExactMatch = candidates.some(c => c.toLowerCase() === valLow);
+  if (isExactMatch && !val.endsWith(' ')) { ghost.value = ''; return; }
+  const match = candidates.find(c => c.toLowerCase().startsWith(valLow) && c.toLowerCase() !== valLow);
   // Ghost shows the full correctly-cased candidate, not the user's typed prefix
   ghost.value = match || '';
 }
@@ -9288,6 +9328,8 @@ const PS_ICON_OVERRIDES = {
   'lycanrocdusk':1192,
   // Necrozma forms: shifted back 1 each
   'necrozmaduskmane':1193,'necrozmadawnwings':1194,
+  // Basculegion-F: one before enamorus-therian
+  'basculegionf':1254,'basculegionfemale':1254,
   // Enamorus-therian: original 1204 + 4 rows + 3 cols = 1204+51=1255
   'enamorustherian':1306,
   // Tauros-paldea
@@ -9506,6 +9548,36 @@ function _parseSpeciesFromSlots(slots) {
   }).filter(Boolean);
 }
 
+// Check if a team's slots have full EVs for all pokemon
+function _teamHasFullEvs(slots) {
+  const fmt = getFormat();
+  const cap = fmt.evTotal || (EV_MAX() * 6);
+  const filled = (slots||[]).filter(Boolean);
+  if (!filled.length) return false;
+  return filled.every(raw => {
+    if (!raw) return false;
+    const evMatch = raw.match(/EVs:([^\n]+)/);
+    if (!evMatch) return false;
+    const parts = evMatch[1].split(',')[0]; // first spread only
+    let total = 0;
+    parts.split('/').forEach(p => { const m2 = p.trim().match(/^(\d+)/); if (m2) total += parseInt(m2[1]); });
+    return total >= cap;
+  });
+}
+
+let _evFilterMode = 0; // 0=off, 1=full EVs only, -1=incomplete only
+
+function cycleEvFilter() {
+  _evFilterMode = _evFilterMode === 0 ? 1 : _evFilterMode === 1 ? -1 : 0;
+  const btn = document.getElementById('teamEvFilterBtn');
+  if (btn) {
+    btn.style.background  = _evFilterMode === 1 ? 'rgba(93,202,165,0.2)'  : _evFilterMode === -1 ? 'rgba(224,92,92,0.2)' : 'transparent';
+    btn.style.color       = _evFilterMode === 1 ? 'var(--green)'  : _evFilterMode === -1 ? 'var(--red)' : 'var(--text3)';
+    btn.style.borderColor = _evFilterMode === 1 ? 'var(--green)'  : _evFilterMode === -1 ? 'var(--red)' : 'var(--border2)';
+  }
+  filterTeamPickerByPokemon(document.getElementById('teamPickerSearch')?.value || '');
+}
+
 // Fetch just the dex number for a species slug (lightweight — uses cache first)
 async function fetchDexNum(slug) {
   if (pokemonCache[slug]?.dexNum) return pokemonCache[slug].dexNum;
@@ -9573,27 +9645,45 @@ async function refreshTeamPickerDropdown(selectValue) {
   let _teamPickerFilter = '';
   const renderItems = () => {
     const filter = _teamPickerFilter.toLowerCase().trim();
-    const filtered = filter ? names.filter(n => {
+    // Multi-pokemon AND search: "char, inca" matches teams with both
+    const terms = filter ? filter.split(',').map(t => t.trim()).filter(Boolean) : [];
+    const filtered = terms.length ? names.filter(n => {
       const entry = teams[n];
       const slots = Array.isArray(entry) ? entry : (entry?.slots || []);
-      // Check if any pokemon in this team matches the filter
-      return _parseSpeciesFromSlots(slots).some(s => s.toLowerCase().includes(filter));
+      const species = _parseSpeciesFromSlots(slots).map(s => s.toLowerCase());
+      return terms.every(term => species.some(s => s.includes(term)));
     }) : names;
 
-    const searchHtml = `<div style="padding:6px 8px;border-bottom:0.5px solid var(--border2);">
-      <input id="teamPickerSearch" type="text" placeholder="Search by pokémon..." autocomplete="off"
-        value="${_teamPickerFilter.replace(/"/g,'&quot;')}"
-        oninput="filterTeamPickerByPokemon(this.value)"
-        onclick="event.stopPropagation()"
-        style="width:100%;font-size:11px;padding:3px 6px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none;">
-    </div>`;
+    const _evBtnStyle = `flex-shrink:0;padding:2px 7px;font-size:10px;border:0.5px solid ${_evFilterMode===1?'var(--green)':_evFilterMode===-1?'var(--red)':'var(--border2)'};border-radius:var(--radius-sm);background:${_evFilterMode===1?'rgba(93,202,165,0.2)':_evFilterMode===-1?'rgba(224,92,92,0.2)':'transparent'};color:${_evFilterMode===1?'var(--green)':_evFilterMode===-1?'var(--red)':'var(--text3)'};cursor:pointer;`;
+    // searchHtml is now handled via teamPickerItems container to preserve focus
 
-    if (!filtered.length) {
-      dd.innerHTML = searchHtml + '<div style="padding:10px;font-size:12px;color:var(--text3);">No teams match.</div>';
+    const evFiltered2 = _evFilterMode === 0 ? filtered : filtered.filter(n => {
+      const _e2 = teams[n]; const _s2 = Array.isArray(_e2)?_e2:(_e2?.slots||[]);
+      const full = _teamHasFullEvs(_s2);
+      return _evFilterMode === 1 ? full : !full;
+    });
+
+    // Only update the items container — don't touch the search row (preserves focus)
+    let itemsEl = document.getElementById('teamPickerItems');
+    if (!itemsEl) {
+      // First render: build the full structure including search row
+      const searchHtml = `<div style="padding:6px 8px;border-bottom:0.5px solid var(--border2);display:flex;gap:6px;align-items:center;">
+        <input id="teamPickerSearch" type="text" placeholder="Search (Sneasler, Garchomp, ...)" autocomplete="off"
+          oninput="filterTeamPickerByPokemon(this.value)" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='x'&&this.selectionStart===this.selectionEnd){event.preventDefault();this.value='';filterTeamPickerByPokemon('');}else{event.stopPropagation();}"
+          onclick="event.stopPropagation()" onkeydown="event.stopPropagation()"
+          style="flex:1;min-width:0;font-size:11px;padding:3px 6px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none;">
+        <button id="teamEvFilterBtn" onclick="event.stopPropagation();cycleEvFilter();" style="flex-shrink:0;padding:2px 7px;font-size:10px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;" title="Filter by EV completion">EV</button>
+      </div><div id="teamPickerItems"></div>`;
+      dd.innerHTML = searchHtml;
+      itemsEl = document.getElementById('teamPickerItems');
+    }
+
+    if (!evFiltered2.length) {
+      itemsEl.innerHTML = '<div style="padding:10px;font-size:12px;color:var(--text3);">No teams match.</div>';
       return;
     }
 
-    dd.innerHTML = searchHtml + filtered.map(n => {
+    itemsEl.innerHTML = evFiltered2.map(n => {
       const score   = wr[n] || { wins:0, losses:0 };
       const entry   = teams[n];
       const slots   = Array.isArray(entry) ? entry : (entry?.slots || []);
@@ -9613,11 +9703,11 @@ async function refreshTeamPickerDropdown(selectValue) {
           return total >= maxTotal;
         } catch { return false; }
       });
-      const evBadge = allFullEvs ? '<span style="color:#4caf50;font-size:10px;font-weight:600;margin-left:6px;">EVs ✓</span>' : '';
+      const evBadge = allFullEvs ? '<span style="color:var(--green);font-size:9px;font-weight:600;">EV✓</span>' : '';
       return `<div class="team-picker-item${isSel?' selected':''}" onclick="selectTeamPickerItem('${safeN}')">
         <div class="team-picker-name">
-          <span>${n}${evBadge}</span>
-          <span class="team-picker-wr">${score.wins}W–${score.losses}L</span>
+          <span>${n}</span>
+          <div style="display:flex;align-items:center;gap:4px;">${evBadge}<span class="team-picker-wr">${score.wins}W–${score.losses}L</span></div>
         </div>
         <div class="team-picker-icons">${icons}</div>
       </div>`;
@@ -10024,7 +10114,8 @@ function createNewTeam() {
   _currentTeamName = newName;
   refreshTeamPickerDropdown(newName);
   loadWinrateForTeam(newName);
-  updateDefenderTabs();
+  renderDefenderTabs();
+  renderEvPanel();
   renderResults();
   showToast(`✨ Created "${newName}"`);
 }
@@ -10160,9 +10251,6 @@ async function onSavedTeamSelect() {
   loadWinrateForTeam(name);
   if (teamSpinner) teamSpinner.classList.remove('active');
   btn.disabled = false; btn.textContent = prevText;
-  // In split view (wide screen) keep the defender card open — it's on the left panel
-  const inSplitView = window.innerWidth >= 1100;
-  if (!inSplitView) collapseCard('defenderCard');
 }
 
 // ── Print calcs document ─────────────────────────────────────────────────────
@@ -10325,35 +10413,45 @@ th:nth-child(4),td:nth-child(4){width:10%}
   else alert('Allow popups to generate the print document.');
 }
 function filterTeamPickerByPokemon(query) {
-  // Re-render dropdown with filter applied
   const dd = document.getElementById('teamPickerDropdown');
   if (!dd) return;
   const teams = getSavedTeams();
   const wr = (typeof getWinrates === 'function') ? getWinrates() : {};
   const names = Object.keys(teams).sort((a,b) => (teams[b]?.savedAt||0) - (teams[a]?.savedAt||0));
   const filter = (query || '').toLowerCase().trim();
-  const filtered = filter ? names.filter(n => {
+
+  // Multi-pokemon AND search: comma-separated terms, all must match
+  const terms = filter ? filter.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const filtered = terms.length ? names.filter(n => {
     const entry = teams[n];
     const slots = Array.isArray(entry) ? entry : (entry?.slots || []);
-    return _parseSpeciesFromSlots(slots).some(s => s.toLowerCase().includes(filter));
+    const species = _parseSpeciesFromSlots(slots).map(s => s.toLowerCase());
+    return terms.every(term => species.some(s => s.includes(term)));
   }) : names;
 
-  // Rebuild items but keep the search input
-  const searchHtml = `<div style="padding:6px 8px;border-bottom:0.5px solid var(--border2);">
-    <input id="teamPickerSearch" type="text" placeholder="Search by pokémon..." autocomplete="off"
-      value="${filter.replace(/"/g,'&quot;')}"
-      oninput="filterTeamPickerByPokemon(this.value)"
-      onclick="event.stopPropagation()"
-      style="width:100%;font-size:11px;padding:3px 6px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);outline:none;">
-  </div>`;
+  // Apply EV filter
+  const evFiltered = _evFilterMode === 0 ? filtered : filtered.filter(n => {
+    const entry = teams[n];
+    const slots = Array.isArray(entry) ? entry : (entry?.slots || []);
+    const full = _teamHasFullEvs(slots);
+    return _evFilterMode === 1 ? full : !full;
+  });
 
-  if (!filtered.length) {
-    dd.innerHTML = searchHtml + '<div style="padding:10px;font-size:12px;color:var(--text3);">No teams match.</div>';
+  // Build items HTML only — don't touch the search row so focus is preserved
+  let itemsEl = document.getElementById('teamPickerItems');
+  if (!itemsEl) {
+    // First time: ensure the items container exists
+    itemsEl = document.createElement('div');
+    itemsEl.id = 'teamPickerItems';
+    dd.appendChild(itemsEl);
+  }
+
+  if (!evFiltered.length) {
+    itemsEl.innerHTML = '<div style="padding:10px;font-size:12px;color:var(--text3);">No teams match.</div>';
     return;
   }
 
-  const fmt = getFormat();
-  dd.innerHTML = searchHtml + filtered.map(n => {
+  itemsEl.innerHTML = evFiltered.map(n => {
     const score = wr[n] || { wins:0, losses:0 };
     const entry = teams[n];
     const slots = Array.isArray(entry) ? entry : (entry?.slots || []);
@@ -10361,15 +10459,13 @@ function filterTeamPickerByPokemon(query) {
     const icons = species.slice(0,6).map(s => psIconHtml(s, s)).join('');
     const isSel = n === _teamPickerSelected;
     const safeN = n.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const hasFullEvs = _teamHasFullEvs(slots);
+    const evBadge = hasFullEvs ? `<span style="font-size:9px;color:var(--green);margin-left:4px;">EV✓</span>` : '';
     return `<div class="team-picker-item${isSel?' selected':''}" onclick="selectTeamPickerItem('${safeN}')">
-      <div class="team-picker-name"><span>${n}</span><span class="team-picker-wr">${score.wins}W–${score.losses}L</span></div>
+      <div class="team-picker-name"><span>${n}</span><div style="display:flex;align-items:center;gap:4px;"><span class="team-picker-wr">${score.wins}W–${score.losses}L</span>${evBadge}</div></div>
       <div class="team-picker-icons">${icons}</div>
     </div>`;
   }).join('');
-
-  // Re-focus the input
-  const inp = document.getElementById('teamPickerSearch');
-  if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
 }
 
 function renameSavedTeam() {
@@ -11004,28 +11100,11 @@ async function loadBaseSprite(imgId, baseSlug) {
 }
 
 function spriteImgHtmlCls(speciesRaw, size, savedUrl, extraCls) {
-  size = size || 38; savedUrl = savedUrl || null; extraCls = extraCls || '';
-  const cleanRaw = (speciesRaw || '').replace(/\s*★$/, '').trim();
-  const slug = toSlug(cleanRaw);
-  const baseSlug = slug === 'floette-mega' ? 'floette-eternal' : slug.replace(/-mega(-[xy])?$/,'').replace(/-gmax$/,'').replace(/-blade$|-shield$/,'').replace(/-eternal$/,'');
-  const shortName = speciesRaw.split(/[\s-]/)[0].slice(0, 8);
-  const isForm = baseSlug !== slug;
-  // Own sprite URL takes priority; for forms, only use base cache if baseSlug matches exactly
-  const ownSrc = savedUrl || pokemonCache[slug]?.spriteUrl || null;
-  // Only use base cache when it's the right base (e.g. don't use 'floette' for 'floette-mega' which needs 'floette-eternal')
-  const baseSrc = isForm && pokemonCache[baseSlug]?.spriteUrl ? pokemonCache[baseSlug].spriteUrl : null;
-  const src = ownSrc || baseSrc;
-  if (src) {
-    return '<img class="match-sprite' + extraCls + '" src="' + src + '" style="width:' + size + 'px;height:' + size + 'px;image-rendering:pixelated;" alt="' + speciesRaw + '" title="' + speciesRaw + '">';
-  }
-  if (isForm) {
-    // No cached sprite — fetch base form on demand
-    const id = 'sp-' + slug.replace(/[^a-z0-9]/g,'') + '-' + Math.random().toString(36).slice(2,8);
-    const chipStyle = 'display:inline-flex;width:' + size + 'px;height:' + size + 'px;align-items:center;justify-content:center;font-size:8px;color:var(--text3);';
-    setTimeout(function(){ loadBaseSprite(id, baseSlug); }, 0);
-    return '<img id="' + id + '" class="match-sprite' + extraCls + '" src="" style="width:' + size + 'px;height:' + size + 'px;image-rendering:pixelated;display:none;" data-chip-style="' + chipStyle + '" data-short-name="' + shortName + '" alt="' + speciesRaw + '" title="' + speciesRaw + '">';
-  }
-  // Base form with no sprite — show text fallback immediately
+  size = size || 38; extraCls = extraCls || '';
+  // Use scale=1 (40x30 native) and center the icon within the container
+  const ps = psIconHtml(speciesRaw, speciesRaw, 1);
+  if (ps) return '<span class="match-sprite' + extraCls + '" style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;overflow:hidden;" title="' + speciesRaw + '">' + ps + '</span>';
+  const shortName = (speciesRaw||'').split(/[\s-]/)[0].slice(0, 8);
   return '<div class="match-sprite-fallback' + extraCls + '" style="width:' + size + 'px;height:' + size + 'px;display:inline-flex;align-items:center;justify-content:center;font-size:8px;color:var(--text3);" title="' + speciesRaw + '">' + shortName + '</div>';
 }
 
@@ -11035,24 +11114,10 @@ function spriteImgHtmlCls(speciesRaw, size, savedUrl, extraCls) {
 
 // Match window sprite: 52px, same PokeAPI-first fallback chain
 function matchWindowSpriteHtml(speciesRaw, spriteUrl) {
-  const cleanRaw = (speciesRaw || '').replace(/\s*★$/, '').trim();
-  const slug = toSlug(cleanRaw);
-  const baseSlug = slug === 'floette-mega' ? 'floette-eternal' : slug.replace(/-mega(-[xy])?$/,'').replace(/-gmax$/,'').replace(/-blade$|-shield$/,'').replace(/-eternal$/,'');
-  const shortName = speciesRaw.split(/[\s-]/)[0].slice(0, 6);
-  const isForm = baseSlug !== slug;
-  const ownSrc = spriteUrl || pokemonCache[slug]?.spriteUrl || null;
-  const baseSrc = isForm && pokemonCache[baseSlug]?.spriteUrl ? pokemonCache[baseSlug].spriteUrl : null;
-  const src = ownSrc || baseSrc;
-  if (src) {
-    return '<img src="' + src + '" style="width:52px;height:52px;image-rendering:pixelated;object-fit:contain;" alt="' + speciesRaw + '" title="' + speciesRaw + '">';
-  }
-  if (isForm) {
-    const id = 'mw-' + slug.replace(/[^a-z0-9]/g,'') + '-' + Math.random().toString(36).slice(2,8);
-    const chipStyle = 'display:inline-flex;width:52px;height:52px;align-items:center;justify-content:center;font-size:8px;color:var(--text3);background:var(--bg3);border-radius:4px;';
-    setTimeout(function(){ loadBaseSprite(id, baseSlug); }, 0);
-    return '<img id="' + id + '" src="" style="width:52px;height:52px;image-rendering:pixelated;object-fit:contain;display:none;" data-chip-style="' + chipStyle + '" data-short-name="' + shortName + '" alt="' + speciesRaw + '" title="' + speciesRaw + '">';
-  }
-  return '<div style="width:52px;height:52px;background:var(--bg3);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text3);" title="' + speciesRaw + '">' + shortName + '</div>';
+  const ps = psIconHtml(speciesRaw, speciesRaw, 1);
+  if (ps) return `<div style="width:52px;height:52px;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;">${ps}</div>`;
+  const shortName = (speciesRaw||'').split(/[\s-]/)[0].slice(0,6);
+  return `<div style="width:52px;height:52px;background:var(--bg3);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text3);" title="${speciesRaw}">${shortName}</div>`;
 }
 
 
