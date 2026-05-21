@@ -16,23 +16,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 - move/ability search will filter with all possible not just run in meta
 
 
@@ -54,6 +37,19 @@
 ---
 #### Completed
 
+- [XX] remove max stats / max hp buttons for now
+- [XX] the current match sprites and meta analysis sprites  got changed to grid sprites as well when I just wanted the match log ones to be affected. type synergy sprites did too, but I kind of like them as grid sprites
+- [XX] the info text in the move text boxes near the ev sliders in the team window overlaps the original text of the moves sometimes depending on the scaling of the window/if it's in landscape or portrait mode. is there a way to have it only show that info if there's enough room left in the text box?
+- [XX] in type synergies, in the expanded view, show up to 3 sprites of top 50 mons that outspeed and hit both supereffectively, but not through shared weakness
+- [XX] have it so when you open the saved team dropdown, it already selects the search bar so you can type immediately
+- [XX] in the type synergies, the feature we just added with showing mons that threaten all members, can we move those sprites in the same line with the offensive coverage vs meta but maybe split that so it's the 4x, 2x, 1x counts on the right, and the sprites on the left?
+- [XX] move text info is still overlaping sometimes in landscape mode. are you sure it's taking into account how much of the box is being taken up by the move's name?
+- [XX] can you have it so every time you open the saved team dropdown, it clears whatever text was in the search bar before as well?
+- [XX] current match sprites are still grid sprites, but it looks like the type synergies and meta analysis sprites got changed back to the pokeapi ones. I just wanted the current match and meta analysis ones changed to the pokeapi, I wanted to keep the type synergies as grid sprites.
+- [XX] in the type synergies window, now the sprites are being cutoff in teh bottom right. also it's not expanding anything when i click on them
+- [XX] the meta analysis window is not clickable for some reason. if it's because of the sprites, please use the existing code we've had for handling those sprite calls
+- [XX] the current match window sprites are still showing as grid sprites when I'd like them as the pokeapi sprites, please use the existing code we've had for handling those sprite calls
+- [XX] with the move text info in the team window, just make it so if it's in landscape mode, the move text info doesn't appear. make it only in portrait
 - [XX] in the team dropdowns, have the green EVs text be right justified next to the winrate and maybe make ti smaller like just "EV!" (I used ! instead of the checkmark but use the checkmark instead) also maybe to the right of the search bar in the team dropdown, have a small button that says EV that at first is unselected, but if you click it once, then it will turn green and filter the results to only teams with full EVs, if you click it again, it will turn red and filter the results to only teams without full EVs, and if you click it again it will go back to normal and be unselected
 - [XX] I'm not seeing in the saved teams dropdown the EV button to the right of the search bar
 - [XX] also in the team dropdowns, in the search bar, allow for searching for multiple pokemon separated by commas. it will then only filter teams that contain all of the pokemon in the search (logical AND operator)

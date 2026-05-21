@@ -1756,18 +1756,22 @@ Impish Nature
             <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
               <input id="evMove1Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
               <input id="evMove1Input" type="text" autocomplete="off" placeholder="Move 1" oninput="onEvMoveChange(0,this.value);_fieldAutocomplete('evMove1Input','evMove1Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'evMove1Input','evMove1Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+              <div id="evMoveInfo0" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;pointer-events:none;z-index:3;display:flex;align-items:center;gap:3px;white-space:nowrap;"></div>
             </div>
             <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
               <input id="evMove2Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
               <input id="evMove2Input" type="text" autocomplete="off" placeholder="Move 2" oninput="onEvMoveChange(1,this.value);_fieldAutocomplete('evMove2Input','evMove2Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'evMove2Input','evMove2Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+              <div id="evMoveInfo1" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;pointer-events:none;z-index:3;display:flex;align-items:center;gap:3px;white-space:nowrap;"></div>
             </div>
             <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
               <input id="evMove3Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
               <input id="evMove3Input" type="text" autocomplete="off" placeholder="Move 3" oninput="onEvMoveChange(2,this.value);_fieldAutocomplete('evMove3Input','evMove3Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'evMove3Input','evMove3Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+              <div id="evMoveInfo2" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;pointer-events:none;z-index:3;display:flex;align-items:center;gap:3px;white-space:nowrap;"></div>
             </div>
             <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
               <input id="evMove4Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
               <input id="evMove4Input" type="text" autocomplete="off" placeholder="Move 4" oninput="onEvMoveChange(3,this.value);_fieldAutocomplete('evMove4Input','evMove4Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'evMove4Input','evMove4Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+              <div id="evMoveInfo3" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;pointer-events:none;z-index:3;display:flex;align-items:center;gap:3px;white-space:nowrap;"></div>
             </div>
           </div>
             <!-- Right 2/3: nature + sliders -->
@@ -2080,8 +2084,7 @@ Impish Nature
     <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg2);border:0.5px solid var(--border);border-top:none;">
       <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
         <div style="display:flex;border:0.5px solid var(--border2);border-radius:20px;overflow:hidden;">
-          <button id="maxStatsBtn" onclick="toggleModeBtn('maxStatsMode','maxStatsBtn')" style="padding:4px 9px;font-size:11px;border:none;border-right:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Override Atk/SpA/Def/SpD/Spe to max investment">Max stats</button>
-          <button id="maxHpBtn" onclick="toggleModeBtn('maxHpMode','maxHpBtn')" style="padding:4px 9px;font-size:11px;border:none;background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Override HP to max investment">Max HP</button>
+
         </div>
         <button id="maxRollBtn" onclick="toggleModeBtn('maxRollMode','maxRollBtn')" style="padding:5px 10px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;white-space:nowrap;" title="Show max/min damage rolls">Max rolls</button>
         <button id="attackingModeBtn" onclick="onAttackingModeToggle()" style="padding:5px 10px;font-size:11px;border:0.5px solid #5b9bd5;border-radius:var(--radius-sm);background:rgba(91,155,213,0.12);color:#5b9bd5;cursor:pointer;white-space:nowrap;" title="Toggle between defending (incoming damage) and attacking (outgoing damage)">Defending</button>
@@ -3592,6 +3595,168 @@ function onEvFieldChange(field, value) {
 
 let _evMoveChangeGen = 0; // increment on each change; stale async resolutions are ignored
 
+// Move info overlay — type, BP, category for the move input ghost overlays
+const MOVE_INFO_TABLE = (() => {
+  // [type, cat, power, acc] — power 0 = status/variable, acc null = always hits
+  const t = {
+    // Common moves not in FETCH_POWER_OVERRIDES
+    'earthquake':      ['ground',   'physical', 100, 100],
+    'rock slide':      ['rock',     'physical',  75,  90],
+    'rock tomb':       ['rock',     'physical',  60,  95],
+    'stone edge':      ['rock',     'physical', 100,  80],
+    'head smash':      ['rock',     'physical', 150,  80],
+    'close combat':    ['fighting', 'physical', 120, 100],
+    'drain punch':     ['fighting', 'physical',  75, 100],
+    'mach punch':      ['fighting', 'physical',  40, 100],
+    'iron head':       ['steel',    'physical',  80, 100],
+    'heavy slam':      ['steel',    'physical',   0, 100],
+    'bullet punch':    ['steel',    'physical',  40, 100],
+    'zen headbutt':    ['psychic',  'physical',  80,  90],
+    'psychic':         ['psychic',  'special',   90, 100],
+    'psyshock':        ['psychic',  'special',   80, 100],
+    'dazzling gleam':  ['fairy',    'special',   80, 100],
+    'moonblast':       ['fairy',    'special',   95, 100],
+    'play rough':      ['fairy',    'physical',  90,  90],
+    'shadow ball':     ['ghost',    'special',   80, 100],
+    'shadow sneak':    ['ghost',    'physical',  40, 100],
+    'poltergeist':     ['ghost',    'physical', 110, 100],
+    'sucker punch':    ['dark',     'physical',  70, 100],
+    'knock off':       ['dark',     'physical',  65, 100],
+    'foul play':       ['dark',     'physical',  95, 100],
+    'dark pulse':      ['dark',     'special',   80, 100],
+    'crunch':          ['dark',     'physical',  80, 100],
+    'flare blitz':     ['fire',     'physical', 120, 100],
+    'fire punch':      ['fire',     'physical',  75, 100],
+    'heat wave':       ['fire',     'special',   95,  90],
+    'overheat':        ['fire',     'special',  130,  90],
+    'eruption':        ['fire',     'special',  150, 100],
+    'flamethrower':    ['fire',     'special',   90, 100],
+    'ice beam':        ['ice',      'special',   90, 100],
+    'blizzard':        ['ice',      'special',  110,  70],
+    'ice punch':       ['ice',      'physical',  75, 100],
+    'icicle crash':    ['ice',      'physical',  85,  90],
+    'freeze dry':      ['ice',      'special',   70, 100],
+    'thunderbolt':     ['electric', 'special',   90, 100],
+    'thunder':         ['electric', 'special',  110,  70],
+    'thunder punch':   ['electric', 'physical',  75, 100],
+    'volt switch':     ['electric', 'special',   70, 100],
+    'wild charge':     ['electric', 'physical',  90, 100],
+    'surf':            ['water',    'special',   90, 100],
+    'scald':           ['water',    'special',   80, 100],
+    'hydro pump':      ['water',    'special',  110,  80],
+    'waterfall':       ['water',    'physical',  80, 100],
+    'liquidation':     ['water',    'physical',  85, 100],
+    'aqua jet':        ['water',    'physical',  40, 100],
+    'wave crash':      ['water',    'physical', 120, 100],
+    'jet punch':       ['water',    'physical',  60, 100],
+    'muddy water':     ['water',    'special',   90,  85],
+    'energy ball':     ['grass',    'special',   90, 100],
+    'leaf storm':      ['grass',    'special',  130,  90],
+    'giga drain':      ['grass',    'special',   75, 100],
+    'solar beam':      ['grass',    'special',  120, 100],
+    'wood hammer':     ['grass',    'physical', 120, 100],
+    'power whip':      ['grass',    'physical', 120,  85],
+    'seed bomb':       ['grass',    'physical',  80, 100],
+    'dragon claw':     ['dragon',   'physical',  80, 100],
+    'draco meteor':    ['dragon',   'special',  130,  90],
+    'dragon pulse':    ['dragon',   'special',   85, 100],
+    'outrage':         ['dragon',   'physical', 120, 100],
+    'sludge bomb':     ['poison',   'special',   90, 100],
+    'poison jab':      ['poison',   'physical',  80, 100],
+    'gunk shot':       ['poison',   'physical', 120,  80],
+    'sludge wave':     ['poison',   'special',   95, 100],
+    'body press':      ['fighting', 'physical',  80, 100],
+    'high horsepower': ['ground',   'physical',  95,  95],
+    'headlong rush':   ['ground',   'physical', 120, 100],
+    'stomping tantrum':['ground',   'physical',  75, 100],
+    'flash cannon':    ['steel',    'special',   80, 100],
+    'gyro ball':       ['steel',    'physical',   0, 100],
+    'iron defense':    ['steel',    'status',     0, null],
+    'brave bird':      ['flying',   'physical', 120, 100],
+    'air slash':       ['flying',   'special',   75,  95],
+    'hurricane':       ['flying',   'special',  110,  70],
+    'dual wingbeat':   ['flying',   'physical',  40, 100],
+    'body slam':       ['normal',   'physical',  85, 100],
+    'hyper voice':     ['normal',   'special',   90, 100],
+    'boomburst':       ['normal',   'special',  140, 100],
+    'facade':          ['normal',   'physical',  70, 100],
+    'extreme speed':   ['normal',   'physical',  80, 100],
+    'fake out':        ['normal',   'physical',  40, 100],
+    'protect':         ['normal',   'status',     0, null],
+    'detect':          ['fighting', 'status',     0, null],
+    'tailwind':        ['flying',   'status',     0, null],
+    'trick room':      ['psychic',  'status',     0, null],
+    'helping hand':    ['normal',   'status',     0, null],
+    'follow me':       ['normal',   'status',     0, null],
+    'rage powder':     ['bug',      'status',     0, null],
+    'wide guard':      ['rock',     'status',     0, null],
+    'parting shot':    ['dark',     'status',     0, null],
+    'u-turn':          ['bug',      'physical',   70, 100],
+    'aura sphere':     ['fighting', 'special',    80, null],
+    'focus blast':     ['fighting', 'special',   120,  70],
+    'sacred sword':    ['fighting', 'physical',   90, 100],
+    'bitter blade':    ['fire',     'physical',   90, 100],
+    'kowtow cleave':   ['dark',     'physical',   85, null],
+    'flower trick':    ['grass',    'physical',   70, 100],
+    'wicked blow':     ['dark',     'physical',   80, 100],
+    'surging strikes': ['water',    'physical',   25, 100],
+    'glacial lance':   ['ice',      'physical',  120, 100],
+    'astral barrage':  ['ghost',    'special',   120, 100],
+    'population bomb': ['normal',   'physical',   20,  90],
+    'gigaton hammer':  ['steel',    'physical',  160, 100],
+    'salt cure':       ['rock',     'status',      0, 100],
+    'ice hammer':      ['ice',      'physical',  100,  90],
+    'last respects':   ['ghost',    'physical',   50, 100],
+    'dire claw':       ['poison',   'physical',   80, 100],
+    'shed tail':       ['normal',   'status',      0, null],
+    'torch song':      ['fire',     'special',    80, 100],
+    'acrobatics':      ['flying',   'physical',   55, 100],
+    'throat chop':     ['dark',     'physical',   80, 100],
+    'nuzzle':          ['electric', 'physical',   20, 100],
+    'will-o-wisp':     ['fire',     'status',      0,  85],
+    'thunder wave':    ['electric', 'status',      0,  90],
+    'taunt':           ['dark',     'status',      0, 100],
+    'encore':          ['normal',   'status',      0, 100],
+    'snarl':           ['dark',     'special',    55,  95],
+    'icy wind':        ['ice',      'special',    55,  95],
+    'electroweb':      ['electric', 'special',    55,  95],
+    'bulldoze':        ['ground',   'physical',   60, 100],
+  };
+  // Merge FETCH_POWER_OVERRIDES
+  for (const [slug, d] of Object.entries(FETCH_POWER_OVERRIDES)) {
+    const name = slug.replace(/-/g,' ');
+    if (!t[name]) t[name] = [d.type, d.cat, d.power, 100];
+  }
+  return t;
+})();
+
+function getMoveInfo(moveName) {
+  if (!moveName) return null;
+  return MOVE_INFO_TABLE[moveName.toLowerCase().trim()] || null;
+}
+
+function _updateMoveInfoOverlay(idx, moveName) {
+  const infoEl = document.getElementById('evMoveInfo' + idx);
+  const inputEl = document.getElementById('evMove' + (idx+1) + 'Input');
+  if (!infoEl) return;
+  const info = getMoveInfo(moveName);
+  if (!info || !moveName || !ALL_MOVES.some(m => m.toLowerCase() === moveName.toLowerCase().trim())) {
+    infoEl.innerHTML = '';
+    return;
+  }
+  const [type, cat, power, acc] = info;
+  const typeColor = TYPE_COLORS[type] || 'var(--text3)';
+  const catIcon = cat === 'physical' ? '⚔' : cat === 'special' ? '✦' : '●';
+  const catColor = cat === 'physical' ? '#e07060' : cat === 'special' ? '#6090e0' : '#aaaaaa';
+  const bpText = power > 0 ? `${power}` : '—';
+  const accText = acc != null ? `${acc}%` : '—';
+  infoEl.innerHTML = `<span style="color:${typeColor};font-weight:600;">${type}</span><span style="color:var(--text3);"> ${bpText} </span><span style="color:${catColor};">${catIcon}</span><span style="color:var(--text3);"> ${accText}</span>`;
+  // Only show in portrait mode
+  const isPortrait = window.innerHeight > window.innerWidth;
+  if (!isPortrait) { infoEl.style.display = 'none'; return; }
+  infoEl.style.display = '';
+}
+
 function onEvMoveChange(idx, value) {
   const slot = DEFENDER_SLOTS[activeDefenderSlot];
   if (!slot) return;
@@ -3599,6 +3764,7 @@ function onEvMoveChange(idx, value) {
   while (slot.moves.length < 4) slot.moves.push('');
   slot.moves[idx] = value.trim();
   _syncPasteFromSlot(slot);
+  _updateMoveInfoOverlay(idx, value.trim());
 
   const gen = ++_evMoveChangeGen;
 
@@ -3648,6 +3814,8 @@ function _populateEvInfoFields(slot) {
   _fieldAutocomplete('evMove2Input',  'evMove2Ghost',  ALL_MOVES);
   _fieldAutocomplete('evMove3Input',  'evMove3Ghost',  ALL_MOVES);
   _fieldAutocomplete('evMove4Input',  'evMove4Ghost',  ALL_MOVES);
+  // Update move info overlays
+  [0,1,2,3].forEach(i => _updateMoveInfoOverlay(i, moves[i] || ''));
 }
 
 function onEvNatureChange() {
@@ -9503,6 +9671,11 @@ function openTeamPicker(e) {
     dd.classList.add('open');
     // Refresh and fetch missing dex nums (async — icons fill in after fetch)
     refreshTeamPickerDropdown(_teamPickerSelected);
+    // Clear search and auto-focus
+    requestAnimationFrame(() => {
+      const inp = document.getElementById('teamPickerSearch');
+      if (inp) { inp.value = ''; inp.focus(); filterTeamPickerByPokemon(''); }
+    });
   } else {
     _teamPickerOpen = false;
     dd.classList.remove('open');
@@ -11100,11 +11273,27 @@ async function loadBaseSprite(imgId, baseSlug) {
 }
 
 function spriteImgHtmlCls(speciesRaw, size, savedUrl, extraCls) {
-  size = size || 38; extraCls = extraCls || '';
-  // Use scale=1 (40x30 native) and center the icon within the container
+  size = size || 38; savedUrl = savedUrl || null; extraCls = extraCls || '';
+  const cleanRaw = (speciesRaw || '').replace(/\s*★$/, '').trim();
+  const slug = toSlug(cleanRaw);
+  const baseSlug = slug.replace(/-mega(-[xy])?$/, '').replace(/-gmax$/, '').replace(/-blade$|-shield$/, '').replace(/-eternal$/, '');
+  const shortName = (speciesRaw||'').split(/[\s-]/)[0].slice(0, 8);
+  const isForm = baseSlug !== slug;
+  const ownSrc = savedUrl || pokemonCache[slug]?.spriteUrl || null;
+  const baseSrc = isForm && pokemonCache[baseSlug]?.spriteUrl ? pokemonCache[baseSlug].spriteUrl : null;
+  const src = ownSrc || baseSrc;
+  if (src) {
+    return '<img class="match-sprite' + extraCls + '" src="' + src + '" style="width:' + size + 'px;height:' + size + 'px;image-rendering:pixelated;" alt="' + speciesRaw + '" title="' + speciesRaw + '">';
+  }
+  if (isForm) {
+    const id = 'sp-' + slug.replace(/[^a-z0-9]/g,'') + '-' + Math.random().toString(36).slice(2,8);
+    const chipStyle = 'display:inline-flex;width:' + size + 'px;height:' + size + 'px;align-items:center;justify-content:center;font-size:8px;color:var(--text3);';
+    setTimeout(function(){ loadBaseSprite(id, baseSlug); }, 0);
+    return '<img id="' + id + '" class="match-sprite' + extraCls + '" src="" style="width:' + size + 'px;height:' + size + 'px;image-rendering:pixelated;display:none;" data-chip-style="' + chipStyle + '" data-short-name="' + shortName + '" alt="' + speciesRaw + '" title="' + speciesRaw + '">';
+  }
+  // No sprite cached — use PS grid icon
   const ps = psIconHtml(speciesRaw, speciesRaw, 1);
   if (ps) return '<span class="match-sprite' + extraCls + '" style="display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;overflow:hidden;" title="' + speciesRaw + '">' + ps + '</span>';
-  const shortName = (speciesRaw||'').split(/[\s-]/)[0].slice(0, 8);
   return '<div class="match-sprite-fallback' + extraCls + '" style="width:' + size + 'px;height:' + size + 'px;display:inline-flex;align-items:center;justify-content:center;font-size:8px;color:var(--text3);" title="' + speciesRaw + '">' + shortName + '</div>';
 }
 
@@ -11114,10 +11303,7 @@ function spriteImgHtmlCls(speciesRaw, size, savedUrl, extraCls) {
 
 // Match window sprite: 52px, same PokeAPI-first fallback chain
 function matchWindowSpriteHtml(speciesRaw, spriteUrl) {
-  const ps = psIconHtml(speciesRaw, speciesRaw, 1);
-  if (ps) return `<div style="width:52px;height:52px;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;">${ps}</div>`;
-  const shortName = (speciesRaw||'').split(/[\s-]/)[0].slice(0,6);
-  return `<div style="width:52px;height:52px;background:var(--bg3);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text3);" title="${speciesRaw}">${shortName}</div>`;
+  return spriteImgHtmlCls(speciesRaw, 52, spriteUrl || null, '');
 }
 
 
@@ -13384,10 +13570,17 @@ function buildSynergyListHTML(pairs) {
 let _synergyPairs = []; // cached pair results for expand/collapse
 
 function synergySprite(speciesRaw) {
-  // Reuse the exact same sprite logic as match window/log
   const entry = META_DB.find(p => p.speciesRaw === speciesRaw) ||
                 COUNTER_POOL_DB.find(p => p.speciesRaw === speciesRaw);
   return spriteImgHtmlCls(speciesRaw, 48, entry?.spriteUrl || null, ' syn-pair-sprite-img');
+}
+
+function synergyGridSprite(speciesRaw) {
+  // Grid sprite for inline detail sections (always available, no async)
+  const ps = psIconHtml(speciesRaw, speciesRaw, 1);
+  if (ps) return '<span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:30px;overflow:hidden;" title="' + speciesRaw + '">' + ps + '</span>';
+  const shortName = (speciesRaw||'').split(/[\s-]/)[0].slice(0,6);
+  return '<div style="width:40px;height:30px;display:inline-flex;align-items:center;justify-content:center;font-size:8px;color:var(--text3);" title="' + speciesRaw + '">' + shortName + '</div>';
 }
 
 function toggleSynergyPair(i) {
@@ -13494,30 +13687,58 @@ function buildSynergyDetail(pair) {
     <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;border:1.5px solid var(--green);vertical-align:middle;"></span> Covered by partner</span>
   </div>`;
 
-  // Offensive coverage — all members combined
+  // Offensive coverage + threats section
   const allMovTypes = mData.flatMap(md => md.movTypes);
   const metaMons = META_DB.filter(p => p.loaded && p.types?.length);
-  if (metaMons.length && allMovTypes.length) {
-    const cov = { '4x': 0, '2x': 0, '1x': 0, '0.5x': 0, '0.25x': 0, '0x': 0 };
-    metaMons.forEach(def => {
-      const bestEff = Math.max(...allMovTypes.map(mt => typeEffWithAbility(mt, def.types, def.ability||'')));
-      if (bestEff === 0)      cov['0x']++;
-      else if (bestEff < 0.5) cov['0.25x']++;
-      else if (bestEff < 1)   cov['0.5x']++;
-      else if (bestEff === 1) cov['1x']++;
-      else if (bestEff < 4)   cov['2x']++;
-      else                    cov['4x']++;
+  if (metaMons.length && members.length >= 2) {
+    // Shared weaknesses = types where ALL members are weak (>=2x)
+    const sharedWeakTypes = new Set(ALL_TYPES_18.filter(t =>
+      mData.every(md => typeEffWithAbility(t, md.p.types||[], md.p.ability||'') >= 2)
+    ));
+    const teamMinSpe = Math.min(...members.map(m => m.computedSpe || m.stats?.spe || 0));
+    const threats = metaMons.filter(attacker => {
+      const atkSpe = attacker.computedSpe || attacker.stats?.spe || 0;
+      if (atkSpe <= teamMinSpe) return false;
+      const atkMoves = (attacker.resolvedMoves || []).filter(m => m.power > 0);
+      if (!atkMoves.length) return false;
+      return members.every(defender => atkMoves.some(mv => {
+        const mt = getEffectiveMoveType(mv, attacker.ability||'', attacker.speciesRaw||'');
+        const eff = typeEffWithAbility(mt, defender.types||[], defender.ability||'');
+        return eff >= 2 && !sharedWeakTypes.has(mt);
+      }));
     });
-    const covTotal = Object.values(cov).reduce((s,v) => s+v, 0);
-    if (covTotal > 0) {
-      grid += `<div style="margin-top:12px;border-top:0.5px solid var(--border2);padding-top:8px;">
-        <div style="font-size:11px;font-weight:600;color:var(--text3);margin-bottom:6px;">Offensive coverage vs meta (primary moves)</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:11px;">`;
-      const labels = [['4×','var(--red)','4x'],['2×','var(--orange)','2x'],['1×','var(--text2)','1x'],['½×','var(--green)','0.5x'],['¼×','#4a9eff','0.25x'],['Immune','var(--text3)','0x']];
-      labels.forEach(([label, color, key]) => {
-        if (cov[key] > 0) grid += `<span style="color:${color};">${label}: <b style="color:var(--text);">${cov[key]}</b></span>`;
-      });
-      grid += `</div></div>`;
+    const top = threats.slice(0, 50).sort((a,b) => (b.usage||0) - (a.usage||0)).slice(0, 3);
+
+    if (top.length || allMovTypes.length) {
+      grid += `<div style="margin-top:12px;border-top:0.5px solid var(--border2);padding-top:8px;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;">`;
+      if (top.length) {
+        grid += `<div style="flex:0 0 auto;"><div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:4px;">⚡ Threatens all</div><div style="display:flex;gap:4px;">`;
+        top.forEach(p => {
+          grid += `<div style="display:flex;flex-direction:column;align-items:center;gap:1px;" title="${p.speciesRaw}">
+            ${synergyGridSprite(p.speciesRaw)}
+            <span style="font-size:8px;color:var(--text3);">${p.speciesRaw.split(/[\s-]/)[0]}</span>
+          </div>`;
+        });
+        grid += `</div></div>`;
+      }
+      if (allMovTypes.length) {
+        const cov = { '4x':0,'2x':0,'1x':0,'0.5x':0,'0.25x':0,'0x':0 };
+        metaMons.forEach(def => {
+          const bestEff = Math.max(...allMovTypes.map(mt => typeEffWithAbility(mt, def.types, def.ability||'')));
+          if (bestEff === 0) cov['0x']++;
+          else if (bestEff < 0.5) cov['0.25x']++;
+          else if (bestEff < 1) cov['0.5x']++;
+          else if (bestEff === 1) cov['1x']++;
+          else if (bestEff < 4) cov['2x']++;
+          else cov['4x']++;
+        });
+        grid += `<div style="flex:1;min-width:0;"><div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:4px;">Coverage vs meta</div><div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;">`;
+        [['4×','var(--red)','4x'],['2×','var(--orange)','2x'],['1×','var(--text2)','1x'],['½×','var(--green)','0.5x'],['¼×','#4a9eff','0.25x'],['Immune','var(--text3)','0x']].forEach(([label,color,key]) => {
+          if (cov[key] > 0) grid += `<span style="color:${color};">${label}: <b style="color:var(--text);">${cov[key]}</b></span>`;
+        });
+        grid += `</div></div>`;
+      }
+      grid += `</div>`;
     }
   }
 
@@ -13525,7 +13746,6 @@ function buildSynergyDetail(pair) {
 }
 
 function toggleThreatPanel() {
-  if (_synergyOpen) closeSynergyPanel();
   _threatPanelOpen = !_threatPanelOpen;
   const panel = document.getElementById('threatPanel');
   const btn   = document.getElementById('threatToggleBtn');
