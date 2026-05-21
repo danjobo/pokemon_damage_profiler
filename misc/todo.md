@@ -1,8 +1,15 @@
 ## Feature Request
 
 
-- [??] bulletproof immunities support in calculations everywhere else (weakness overlap window, meta analysis, current match window calculations...)
 
+
+- [XX] move/ability search will filter with all possible not just run in meta
+- when searching for pokemon moves and abilities, right now in the "can learn" results, the listings aren't clickable and look kind of odd. I'd like to just have them reference actual listings in the meta, not ghost listings. also, right now it doesn't look like "can learn" filters work in multiples, so I can't search for "move:grassy terrain, move:trick room", and have that give me pokemon that can learn grassy terrain and trick room. it'll just say no results match your search
+
+
+
+
+- collapsible control bar for more screen real estate?
 
 
 - shortcuts on hover
@@ -16,11 +23,9 @@
 
 
 
-- move/ability search will filter with all possible not just run in meta
-
-
 - Status ticker per Pokemon (burn/para/…) and have that status be displayed on the listing below the name like the games
 
+- [??] bulletproof immunities support in calculations everywhere else (weakness overlap window, meta analysis, current match window calculations...)
 
 %SystemRoot%\System32\SHELL32.dll
 ## To-Do Stack

@@ -5428,6 +5428,15 @@ function applyWeatherModifier(moveType, weather) {
 }
 
 // Weather Ball doubles power in weather and changes type
+// Map weather-setting abilities to their weather
+const _ABIL_WEATHER = {
+  'megasol':'sun','drought':'sun','desolateland':'sun',
+  'drizzle':'rain','primordialsea':'rain',
+  'sandstream':'sand','sandforce':'sand',
+  'snowwarning':'snow','chillingneigh':'snow',
+};
+function _abilWeather(abilSlug) { return _ABIL_WEATHER[abilSlug] || null; }
+
 function weatherBallType(weather) {
   if (weather === 'sun')  return 'fire';
   if (weather === 'rain') return 'water';
@@ -5847,8 +5856,7 @@ function computeResults(loadedMeta, defender) {
         // base normal stays normal
       }
       // Weather Ball: resolve type immediately so ghost immunity etc work
-      const _weatherForWB = (weather !== 'none') ? weather
-        : (['megasol','drought','desolateland'].includes(_atkAbilSlug) ? 'sun' : 'none');
+      const _weatherForWB = (weather !== 'none') ? weather : (_abilWeather(_atkAbilSlug) || 'none');
       if (isWeatherBall && _weatherForWB !== 'none') {
         effectiveMoveType = weatherBallType(_weatherForWB);
       }
@@ -6543,8 +6551,7 @@ function renderResults() {
       let moveType = m.effectiveMoveType || m.move.type;
       const isWB = m.isWeatherBall || (m.move && m.move.name.toLowerCase() === 'weather ball');
       const _atkAbSlugWB = (r.attacker?.ability||'').toLowerCase().replace(/[\s-]/g,'');
-      const _weatherForWB = weather !== 'none' ? weather
-        : (['megasol','drought','desolateland'].includes(_atkAbSlugWB) ? 'sun' : 'none');
+      const _weatherForWB = weather !== 'none' ? weather : (_abilWeather(_atkAbSlugWB) || 'none');
       if (isWB && _weatherForWB !== 'none') {
         const newType = weatherBallType(_weatherForWB);
         const newEff  = typeEff(newType, r.defender ? r.defender.types : []);
@@ -6656,8 +6663,7 @@ function renderResults() {
       let moveType2 = m.effectiveMoveType || m.move.type;
       const isWB2 = m.isWeatherBall || (m.move && m.move.name.toLowerCase() === 'weather ball');
       const _tabAbSlug2 = (r.defender?.ability||'').toLowerCase().replace(/[\s-]/g,'');
-      const _weatherForWB2 = weather !== 'none' ? weather
-        : (['megasol','drought','desolateland'].includes(_tabAbSlug2) ? 'sun' : 'none');
+      const _weatherForWB2 = weather !== 'none' ? weather : (_abilWeather(_tabAbSlug2) || 'none');
       if (isWB2 && _weatherForWB2 !== 'none') {
         const newType = weatherBallType(_weatherForWB2);
         const newEff  = typeEff(newType, r.attacker.types || []);
@@ -7372,6 +7378,18 @@ function renderResults() {
     renderNonMetaSearch(searchQuery);
   }
 
+  // "Can also use" section for move: and ability: searches
+  const mvTerm = searchQuery.match(/^move[:\s]+(.+)/i);
+  const abTerm = searchQuery.match(/^ability[:\s]+(.+)/i);
+  if (mvTerm || abTerm) {
+    const q = (mvTerm ? mvTerm[1] : abTerm[1]).toLowerCase().trim();
+    const matchedKeys = new Set(sorted.map(r => r.attacker.speciesRaw));
+    const candidates = META_DB.filter(p => p.loaded && !matchedKeys.has(p.speciesRaw));
+    if (candidates.length) {
+      _renderCanUseSection(q, !!abTerm, candidates, matchedKeys, container, searchQuery);
+    }
+  }
+
   // Restore any previously-open breakdown panels after re-render
   if (expandedBreakdowns.size > 0) {
     document.querySelectorAll('.result-row[data-specieskey]').forEach((row, i) => {
@@ -7383,6 +7401,87 @@ function renderResults() {
       }
     });
   }
+}
+
+// Cache for ability/move learner lists from PokeAPI
+const _abilLearnerCache = {}; // abilSlug → Set of pokemon slugs
+const _moveLearnerCache = {};  // moveSlug → Set of pokemon slugs
+
+async function _fetchAbilityLearners(abilSlug) {
+  if (abilSlug in _abilLearnerCache) return _abilLearnerCache[abilSlug];
+  try {
+    const res = await fetch(`https://pokeapi.co/api/v2/ability/${abilSlug}/`);
+    if (!res.ok) { _abilLearnerCache[abilSlug] = null; return null; }
+    const data = await res.json();
+    // data.pokemon = [{ pokemon: { name, url }, is_hidden }]
+    const slugs = new Set(data.pokemon.map(e => e.pokemon.name));
+    _abilLearnerCache[abilSlug] = { slugs, displayName: data.names?.find(n => n.language.name === 'en')?.name || abilSlug };
+    return _abilLearnerCache[abilSlug];
+  } catch { _abilLearnerCache[abilSlug] = null; return null; }
+}
+
+async function _fetchMoveLearners(moveSlug) {
+  if (moveSlug in _moveLearnerCache) return _moveLearnerCache[moveSlug];
+  try {
+    const res = await fetch(`https://pokeapi.co/api/v2/move/${moveSlug}/`);
+    if (!res.ok) { _moveLearnerCache[moveSlug] = null; return null; }
+    const data = await res.json();
+    // data.learned_by_pokemon = [{ name, url }]
+    const slugs = new Set(data.learned_by_pokemon.map(e => e.name));
+    _moveLearnerCache[moveSlug] = { slugs, displayName: data.names?.find(n => n.language.name === 'en')?.name || moveSlug };
+    return _moveLearnerCache[moveSlug];
+  } catch { _moveLearnerCache[moveSlug] = null; return null; }
+}
+
+async function _renderCanUseSection(q, isAbility, candidates, matchedKeys, container, searchQuery) {
+  const qSlug = q.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const label = isAbility ? `Can have ability "${q}"` : `Can learn move "${q}"`;
+
+  // Show placeholder while fetching
+  const placeholderId = 'canUse-' + Date.now();
+  container.innerHTML += `<div id="${placeholderId}" style="margin-top:10px;border-top:0.5px solid var(--border2);padding-top:6px;">
+    <div style="font-size:10px;color:var(--text3);padding:0 4px 6px;">${label} <span style="opacity:0.5;">(checking…)</span></div>
+  </div>`;
+
+  // One API call to get all pokemon that can use this ability/move
+  const result = isAbility
+    ? await _fetchAbilityLearners(qSlug)
+    : await _fetchMoveLearners(qSlug);
+
+  // Bail if search changed
+  const currentQ = (document.getElementById('searchBar')?.value || '').toLowerCase().trim();
+  if (currentQ !== searchQuery) return;
+  const placeholder = document.getElementById(placeholderId);
+  if (!placeholder) return;
+
+  if (!result) { placeholder.remove(); return; }
+
+  // Match learners against meta candidates (by slug)
+  const canUse = candidates.filter(p => {
+    const slug = toSlug(p.speciesRaw.replace(/\s*★$/, ''));
+    // Also try base form slug for forms like iron-hands, flutter-mane, etc.
+    const baseSlug = slug.replace(/-[a-z]+$/, '');
+    return result.slugs.has(slug) || result.slugs.has(baseSlug);
+  });
+
+  if (!canUse.length) { placeholder.remove(); return; }
+
+  const displayLabel = isAbility ? `Can have ability "${result.displayName || q}"` : `Can learn "${result.displayName || q}"`;
+  const groupHtml = canUse.map(p => {
+    const types = (p.types||[]).map(t => `<span class="type-chip ${t}">${t}</span>`).join('');
+    return `<div class="result-row" style="opacity:0.75;">
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;">
+        ${spriteImgHtml(p.speciesRaw, 28, p.spriteUrl||null)}
+        <span style="font-size:12px;color:var(--text);">${p.speciesRaw}</span>
+        <span style="font-size:10px;color:var(--text3);">${(p.usage||0).toFixed(1)}%</span>
+        <div style="display:flex;gap:3px;">${types}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  placeholder.innerHTML = `
+    <div style="font-size:10px;color:var(--text3);padding:0 4px 6px;font-weight:600;">${displayLabel}</div>
+    ${groupHtml}`;
 }
 
 // ── Non-meta Pokémon search (dummy pinnable rows) ─────────────────────────────
@@ -13552,7 +13651,7 @@ function buildSynergyListHTML(pairs) {
             <div style="font-size:9px;color:var(--text3);margin-top:1px;">${statBadges}</div>
             <div class="syn-score-bar-wrap"><div class="syn-score-bar" style="width:${pct2}%"></div></div>
           </div>
-          <span style="font-size:11px;color:var(--text3);flex-shrink:0;">${isOpen ? '▲' : '▼'}</span>
+          <span class="syn-toggle-arrow" style="font-size:11px;color:var(--text3);flex-shrink:0;">${isOpen ? '▲' : '▼'}</span>
         </div>
         ${threatLabel ? `<div style="padding:3px 12px 5px;font-size:10px;pointer-events:none;">${threatLabel}</div>` : ''}
         <div class="syn-pair-detail${isOpen ? ' open' : ''}" id="synDetail-${i}">
@@ -13590,7 +13689,7 @@ function toggleSynergyPair(i) {
     _synergyExpanded.add(i);
   }
   const detail = document.getElementById('synDetail-' + i);
-  const arrow  = detail?.closest('.syn-pair')?.querySelector('.syn-pair-header span:last-child');
+  const arrow  = detail?.closest('.syn-pair')?.querySelector('.syn-toggle-arrow');
   const isOpen = _synergyExpanded.has(i);
   if (detail) {
     detail.classList.toggle('open', isOpen);
