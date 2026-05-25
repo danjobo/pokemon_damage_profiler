@@ -1244,6 +1244,23 @@
     cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.4);
   }
 
+  /* Move learnset dropdown */
+  .move-learn-dd {
+    position: fixed; z-index: 9000;
+    background: var(--bg2); border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm); box-shadow: 0 4px 18px rgba(0,0,0,0.45);
+    max-height: 220px; overflow-y: auto; overscroll-behavior: contain;
+    min-width: 220px; display: none;
+  }
+  .move-learn-dd.open { display: block; }
+  .move-learn-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 10px; cursor: pointer; gap: 8px; font-size: 11px;
+  }
+  .move-learn-item:hover { background: var(--bg3); }
+  .move-learn-item .mli-name { color: var(--text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .move-learn-item .mli-info { display: flex; gap: 6px; align-items: center; flex-shrink: 0; font-size: 10px; }
+
   .team-picker-wrap { position: relative; flex: 1; min-width: 0; }
   .team-picker-btn {
     width: 100%; padding: 4px 8px; font-size: 12px;
@@ -1755,22 +1772,22 @@ Impish Nature
             <div style="border-top:0.5px solid var(--border2);margin:2px 0;"></div>
             <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
               <input id="evMove1Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
-              <input id="evMove1Input" type="text" autocomplete="off" placeholder="Move 1" oninput="onEvMoveChange(0,this.value);_fieldAutocomplete('evMove1Input','evMove1Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'evMove1Input','evMove1Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+              <input id="evMove1Input" type="text" autocomplete="off" placeholder="Move 1" oninput="onEvMoveChange(0,this.value);_fieldAutocomplete('evMove1Input','evMove1Ghost',ALL_MOVES);_showMoveLearnDd(0,this)" onkeydown="_moveDdKeydown(event,0,'evMove1Input','evMove1Ghost')" onfocus="_showMoveLearnDd(0,this)" onblur="_hideMoveLearnDd()" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
               <div id="evMoveInfo0" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;pointer-events:none;z-index:3;display:flex;align-items:center;gap:3px;white-space:nowrap;"></div>
             </div>
             <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
               <input id="evMove2Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
-              <input id="evMove2Input" type="text" autocomplete="off" placeholder="Move 2" oninput="onEvMoveChange(1,this.value);_fieldAutocomplete('evMove2Input','evMove2Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'evMove2Input','evMove2Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+              <input id="evMove2Input" type="text" autocomplete="off" placeholder="Move 2" oninput="onEvMoveChange(1,this.value);_fieldAutocomplete('evMove2Input','evMove2Ghost',ALL_MOVES);_showMoveLearnDd(1,this)" onkeydown="_moveDdKeydown(event,1,'evMove2Input','evMove2Ghost')" onfocus="_showMoveLearnDd(1,this)" onblur="_hideMoveLearnDd()" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
               <div id="evMoveInfo1" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;pointer-events:none;z-index:3;display:flex;align-items:center;gap:3px;white-space:nowrap;"></div>
             </div>
             <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
               <input id="evMove3Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
-              <input id="evMove3Input" type="text" autocomplete="off" placeholder="Move 3" oninput="onEvMoveChange(2,this.value);_fieldAutocomplete('evMove3Input','evMove3Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'evMove3Input','evMove3Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+              <input id="evMove3Input" type="text" autocomplete="off" placeholder="Move 3" oninput="onEvMoveChange(2,this.value);_fieldAutocomplete('evMove3Input','evMove3Ghost',ALL_MOVES);_showMoveLearnDd(2,this)" onkeydown="_moveDdKeydown(event,2,'evMove3Input','evMove3Ghost')" onfocus="_showMoveLearnDd(2,this)" onblur="_hideMoveLearnDd()" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
               <div id="evMoveInfo2" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;pointer-events:none;z-index:3;display:flex;align-items:center;gap:3px;white-space:nowrap;"></div>
             </div>
             <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
               <input id="evMove4Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
-              <input id="evMove4Input" type="text" autocomplete="off" placeholder="Move 4" oninput="onEvMoveChange(3,this.value);_fieldAutocomplete('evMove4Input','evMove4Ghost',ALL_MOVES)" onkeydown="_fieldAutocompleteKey(event,'evMove4Input','evMove4Ghost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+              <input id="evMove4Input" type="text" autocomplete="off" placeholder="Move 4" oninput="onEvMoveChange(3,this.value);_fieldAutocomplete('evMove4Input','evMove4Ghost',ALL_MOVES);_showMoveLearnDd(3,this)" onkeydown="_moveDdKeydown(event,3,'evMove4Input','evMove4Ghost')" onfocus="_showMoveLearnDd(3,this)" onblur="_hideMoveLearnDd()" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
               <div id="evMoveInfo3" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;pointer-events:none;z-index:3;display:flex;align-items:center;gap:3px;white-space:nowrap;"></div>
             </div>
           </div>
@@ -2482,6 +2499,214 @@ function _updateHeatFill(stat, val, evMax) {
   fill.style.width = pct + '%';
   fill.style.backgroundSize = bgSize + '% 100%';
 }
+
+// ── Move learnset dropdown ─────────────────────────────────────────────────────
+const _moveLearnCache = {}; // speciesSlug → ['Move Name', ...]
+let _moveLearnDdActive = null; // { idx }
+let _moveLearnDdMoves = []; // current loaded moves
+
+async function _fetchLearnset(speciesSlug) {
+  if (speciesSlug in _moveLearnCache) return _moveLearnCache[speciesSlug];
+  try {
+    // Fetch this pokemon's moves
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${speciesSlug}/`);
+    if (!res.ok) { _moveLearnCache[speciesSlug] = []; return []; }
+    const data = await res.json();
+    const toDisplayName = s => s.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+    const moveSet = new Set(data.moves.map(e => toDisplayName(e.move.name)));
+
+    // Walk pre-evolutions via species endpoint and union their moves
+    try {
+      const speciesUrl = data.species?.url;
+      if (speciesUrl) {
+        let currentUrl = speciesUrl;
+        const visited = new Set([speciesSlug]);
+        while (currentUrl) {
+          const sr = await fetch(currentUrl);
+          if (!sr.ok) break;
+          const sd = await sr.json();
+          const prevSpecies = sd.evolves_from_species;
+          if (!prevSpecies) break;
+          const prevSlug = prevSpecies.name;
+          if (visited.has(prevSlug)) break;
+          visited.add(prevSlug);
+          // Fetch the pre-evo's moves (use first variety = default form)
+          const prevRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${prevSlug}/`);
+          if (prevRes.ok) {
+            const prevData = await prevRes.json();
+            prevData.moves.forEach(e => moveSet.add(toDisplayName(e.move.name)));
+          }
+          currentUrl = prevSpecies.url; // walk further up the chain
+        }
+      }
+    } catch {} // pre-evo fetch failure is non-fatal
+
+    const moves = [...moveSet].sort();
+    _moveLearnCache[speciesSlug] = moves;
+    return moves;
+  } catch { _moveLearnCache[speciesSlug] = []; return []; }
+}
+
+function _moveLearnInfoHtml(moveName) {
+  const info = getMoveInfo(moveName);
+  if (!info) return '';
+  const [type, cat, power, acc] = info;
+  const tc = TYPE_COLORS[type] || 'var(--text3)';
+  const catIcon = cat === 'physical' ? '⚔' : cat === 'special' ? '✦' : '●';
+  const catColor = cat === 'physical' ? '#e07060' : cat === 'special' ? '#6090e0' : '#aaaaaa';
+  const bp = power > 0 ? power : '—';
+  const ac = acc != null ? acc+'%' : '—';
+  return `<span style="color:${tc};font-weight:600;">${type}</span>`
+       + `<span style="color:var(--text3);"> ${bp}</span>`
+       + `<span style="color:${catColor};"> ${catIcon}</span>`
+       + `<span style="color:var(--text3);"> ${ac}</span>`;
+}
+
+function _parseMoveFilters(query) {
+  // Parse type:X, cat:X filters out of query string
+  // Returns { filters: [{key,val}], nameQuery: string }
+  const parts = query.split(',').map(s => s.trim()).filter(Boolean);
+  const filters = [];
+  const nameTerms = [];
+  for (const p of parts) {
+    const tf = p.match(/^type[:\s]+(\w+)/i);
+    const cf = p.match(/^cat(?:egory)?[:\s]+(\w+)/i);
+    if (tf) filters.push({ key: 'type', val: tf[1].toLowerCase() });
+    else if (cf) filters.push({ key: 'cat', val: cf[1].toLowerCase() });
+    else nameTerms.push(p.toLowerCase());
+  }
+  return { filters, nameQuery: nameTerms.join(' ').trim() };
+}
+
+function _filterLearnsetMoves(moves, query) {
+  if (!query) return moves;
+  const { filters, nameQuery } = _parseMoveFilters(query);
+  return moves.filter(m => {
+    // Name filter
+    if (nameQuery && !m.toLowerCase().includes(nameQuery)) return false;
+    // Type/cat filters
+    if (filters.length) {
+      const info = getMoveInfo(m);
+      if (!info) return filters.length === 0; // no info — only show if no filters active
+      const [type, cat] = info;
+      for (const f of filters) {
+        if (f.key === 'type' && !type.startsWith(f.val)) return false;
+        if (f.key === 'cat') {
+          const catAlias = f.val === 'phys' ? 'physical' : f.val === 'spec' ? 'special' : f.val === 'stat' ? 'status' : f.val;
+          if (!cat.startsWith(catAlias)) return false;
+        }
+      }
+    }
+    return true;
+  });
+}
+
+async function _showMoveLearnDd(idx, inputEl) {
+  const slot = DEFENDER_SLOTS[activeDefenderSlot];
+  if (!slot) return;
+  const slug = toSlug((slot.speciesRaw||'').replace(/\s*★$/,''));
+  if (!slug) return;
+  const dd = document.getElementById('moveLearnDd');
+  if (!dd) return;
+  _moveLearnDdActive = { idx, slug };
+
+  const rect = inputEl.getBoundingClientRect();
+  dd.style.left  = rect.left + 'px';
+  dd.style.top   = (rect.bottom + 2) + 'px';
+  dd.style.width = Math.max(260, rect.width) + 'px';
+  dd.classList.add('open');
+
+  const query = (inputEl.value || '').toLowerCase().trim();
+
+  // If already cached, render immediately
+  if (_moveLearnCache[slug]) {
+    _moveLearnDdMoves = _moveLearnCache[slug];
+    _renderMoveLearnDd(_moveLearnDdMoves, query, dd, idx);
+    return;
+  }
+
+  dd.innerHTML = '<div style="padding:8px 10px;font-size:11px;color:var(--text3);">Loading moves…</div>';
+
+  const allMoves = await _fetchLearnset(slug);
+  // Check still active and same slot
+  if (!_moveLearnDdActive || _moveLearnDdActive.idx !== idx || _moveLearnDdActive.slug !== slug) return;
+  _moveLearnDdMoves = allMoves;
+  const currentInput = document.getElementById('evMove'+(idx+1)+'Input');
+  const currentQ = (currentInput?.value || '').toLowerCase().trim();
+  _renderMoveLearnDd(_moveLearnDdMoves, currentQ, dd, idx);
+}
+
+function _renderMoveLearnDd(allMoves, query, dd, idx) {
+  const filtered = _filterLearnsetMoves(allMoves, query);
+
+  if (!filtered.length) {
+    const hint = query.includes(':')
+      ? '<div style="padding:8px 10px;font-size:11px;color:var(--text3);">Filters: type:fire, cat:physical, cat:special, cat:status</div>'
+      : '<div style="padding:8px 10px;font-size:11px;color:var(--text3);">No moves match</div>';
+    dd.innerHTML = hint;
+    return;
+  }
+
+  dd.innerHTML = filtered.slice(0, 80).map((m, i) => {
+    const infoHtml = _moveLearnInfoHtml(m);
+    const safeName = m.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div class="move-learn-item" tabindex="-1"
+      onmousedown="event.preventDefault()"
+      onclick="_selectLearnsetMove(${idx},'${safeName}')"
+      onkeydown="if(event.key==='Enter'){_selectLearnsetMove(${idx},'${safeName}');event.preventDefault();}else if(event.key==='ArrowDown'){event.preventDefault();this.nextElementSibling?.focus();}else if(event.key==='ArrowUp'){event.preventDefault();(this.previousElementSibling||document.getElementById('evMove'+(${idx}+1)+'Input'))?.focus();}else if(event.key==='Escape'){_hideMoveLearnDd();}">
+      <span class="mli-name">${m}</span>
+      ${infoHtml ? `<span class="mli-info">${infoHtml}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function _selectLearnsetMove(idx, moveName) {
+  const inputEl = document.getElementById('evMove'+(idx+1)+'Input');
+  if (inputEl) {
+    inputEl.value = moveName;
+    onEvMoveChange(idx, moveName);
+    _fieldAutocomplete('evMove'+(idx+1)+'Input', 'evMove'+(idx+1)+'Ghost', ALL_MOVES);
+    inputEl.focus();
+  }
+  _hideMoveLearnDd();
+}
+
+function _hideMoveLearnDd() {
+  const dd = document.getElementById('moveLearnDd');
+  if (dd) { dd.classList.remove('open'); dd.innerHTML = ''; }
+  _moveLearnDdActive = null;
+  _moveLearnDdMoves = [];
+}
+
+function _moveDdKeydown(event, idx, inputId, ghostId) {
+  if (event.key === 'Escape') { _hideMoveLearnDd(); return; }
+  if (event.key === 'ArrowDown') {
+    const dd = document.getElementById('moveLearnDd');
+    if (dd?.classList.contains('open')) {
+      event.preventDefault();
+      dd.querySelector('.move-learn-item')?.focus();
+      return;
+    }
+  }
+  _fieldAutocompleteKey(event, inputId, ghostId);
+  // Update dropdown after keydown settles
+  const dd = document.getElementById('moveLearnDd');
+  if (dd?.classList.contains('open') && _moveLearnDdMoves.length) {
+    setTimeout(() => {
+      const inputEl = document.getElementById(inputId);
+      _renderMoveLearnDd(_moveLearnDdMoves, (inputEl?.value||'').toLowerCase().trim(), dd, idx);
+    }, 0);
+  }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('mousedown', e => {
+  const dd = document.getElementById('moveLearnDd');
+  if (!dd || !dd.classList.contains('open')) return;
+  if (!e.target.closest('#moveLearnDd') && !['evMove1Input','evMove2Input','evMove3Input','evMove4Input'].includes(e.target.id)) {
+    _hideMoveLearnDd();
+  }
+}, true);
 
 function setGameMode(mode) {
   _gameMode = mode;
@@ -3633,6 +3858,320 @@ const MOVE_INFO_TABLE = (() => {
     'flamethrower':    ['fire',     'special',   90, 100],
     'ice beam':        ['ice',      'special',   90, 100],
     'blizzard':        ['ice',      'special',  110,  70],
+    'aurora veil':     ['ice',      'status',     0, null],
+    'light screen':    ['psychic',  'status',     0, null],
+    'reflect':         ['psychic',  'status',     0, null],
+    'mist':            ['ice',      'status',     0, null],
+    'spore':           ['grass',    'status',     0, 100],
+    'sleep powder':    ['grass',    'status',     0,  75],
+    'poison powder':   ['poison',   'status',     0,  75],
+    'stun spore':      ['grass',    'status',     0,  75],
+    'toxic':           ['poison',   'status',     0,  90],
+    'leech seed':      ['grass',    'status',     0,  90],
+    'yawn':            ['normal',   'status',     0, null],
+    'confuse ray':     ['ghost',    'status',     0, 100],
+    'swagger':         ['normal',   'status',     0,  85],
+    'flatter':         ['dark',     'status',     0, 100],
+    'glare':           ['normal',   'status',     0, 100],
+    'haze':            ['ice',      'status',     0, null],
+    'clear smog':      ['poison',   'special',    50, null],
+    'whirlwind':       ['normal',   'status',     0, null],
+    'roar':            ['normal',   'status',     0, null],
+    'swords dance':    ['normal',   'status',     0, null],
+    'nasty plot':      ['dark',     'status',     0, null],
+    'calm mind':       ['psychic',  'status',     0, null],
+    'quiver dance':    ['bug',      'status',     0, null],
+    'dragon dance':    ['dragon',   'status',     0, null],
+    'geomancy':        ['fairy',    'status',     0, null],
+    'shell smash':     ['normal',   'status',     0, null],
+    'cosmic power':    ['psychic',  'status',     0, null],
+    'substitute':      ['normal',   'status',     0, null],
+    'endure':          ['normal',   'status',     0, null],
+    'instruct':        ['psychic',  'status',     0, null],
+    'after you':       ['normal',   'status',     0, null],
+    'ally switch':     ['psychic',  'status',     0, null],
+    'speed swap':      ['psychic',  'status',     0, null],
+    'gravity':         ['psychic',  'status',     0, null],
+    'magic room':      ['psychic',  'status',     0, null],
+    'wonder room':     ['psychic',  'status',     0, null],
+    'stealth rock':    ['rock',     'status',     0, null],
+    'spikes':          ['ground',   'status',     0, null],
+    'toxic spikes':    ['poison',   'status',     0, null],
+    'sticky web':      ['bug',      'status',     0, null],
+    'quick guard':     ['fighting', 'status',     0, null],
+    'crafty shield':   ['fairy',    'status',     0, null],
+    'mat block':       ['fighting', 'status',     0, null],
+    'trick':           ['psychic',  'status',     0, 100],
+    'switcheroo':      ['dark',     'status',     0, 100],
+    'rain dance':      ['water',    'status',     0, null],
+    'sunny day':       ['fire',     'status',     0, null],
+    'sandstorm':       ['rock',     'status',     0, null],
+    'snowscape':       ['ice',      'status',     0, null],
+    'hail':            ['ice',      'status',     0, null],
+    'strength sap':    ['grass',    'status',     0, 100],
+    'recover':         ['normal',   'status',     0, null],
+    'rest':            ['psychic',  'status',     0, null],
+    'feint':           ['normal',   'physical',   30, 100],
+    'switcheroo':      ['dark',     'status',     0, 100],
+    // Physical attackers
+    'aerial ace':      ['flying',   'physical',   60, null],
+    'acrobatics':      ['flying',   'physical',   55, 100],
+    'aqua tail':       ['water',    'physical',   90,  90],
+    'arm thrust':      ['fighting', 'physical',   15, 100],
+    'assurance':       ['dark',     'physical',   60, 100],
+    'bite':            ['dark',     'physical',   60, 100],
+    'blaze kick':      ['fire',     'physical',   85,  90],
+    'body slam':       ['normal',   'physical',   85, 100],
+    'bounce':          ['flying',   'physical',   85,  85],
+    'brick break':     ['fighting', 'physical',   75, 100],
+    'bug bite':        ['bug',      'physical',   60, 100],
+    'bug buzz':        ['bug',      'special',    90, 100],
+    'bulldoze':        ['ground',   'physical',   60, 100],
+    'catastropika':    ['electric', 'physical',   210,null],
+    'circle throw':    ['fighting', 'physical',   60,  90],
+    'cross chop':      ['fighting', 'physical',  100,  80],
+    'cross poison':    ['poison',   'physical',   70, 100],
+    'cut':             ['normal',   'physical',   50,  95],
+    'dark pulse':      ['dark',     'special',    80, 100],
+    'darkest lariat':  ['dark',     'physical',   85, 100],
+    'dig':             ['ground',   'physical',   80, 100],
+    'dive':            ['water',    'physical',   80, 100],
+    'double edge':     ['normal',   'physical',  120, 100],
+    'double kick':     ['fighting', 'physical',   30, 100],
+    'drill peck':      ['flying',   'physical',   80, 100],
+    'drill run':       ['ground',   'physical',   80,  95],
+    'dual chop':       ['dragon',   'physical',   40,  90],
+    'dynamic punch':   ['fighting', 'physical',  100,  50],
+    'earth power':     ['ground',   'special',    90, 100],
+    'extreme speed':   ['normal',   'physical',   80, 100],
+    'facade':          ['normal',   'physical',   70, 100],
+    'fake out':        ['normal',   'physical',   40, 100],
+    'false swipe':     ['normal',   'physical',   40, 100],
+    'feather dance':   ['flying',   'status',      0, 100],
+    'fell stinger':    ['bug',      'physical',   50, 100],
+    'fire fang':       ['fire',     'physical',   65,  95],
+    'fire lash':       ['fire',     'physical',   80, 100],
+    'fire spin':       ['fire',     'special',    35,  85],
+    'first impression':['bug',      'physical',   90, 100],
+    'fling':           ['dark',     'physical',    0, 100],
+    'fly':             ['flying',   'physical',   90,  95],
+    'focus punch':     ['fighting', 'physical',  150, 100],
+    'force palm':      ['fighting', 'physical',   60, 100],
+    'frenzy plant':    ['grass',    'special',   150,  90],
+    'frustration':     ['normal',   'physical',    0, 100],
+    'fury cutter':     ['bug',      'physical',   40,  95],
+    'fury swipes':     ['normal',   'physical',   18,  80],
+    'giga impact':     ['normal',   'physical',  150,  90],
+    'headbutt':        ['normal',   'physical',   70, 100],
+    'heat crash':      ['fire',     'physical',    0, 100],
+    'high jump kick':  ['fighting', 'physical',  130,  90],
+    'horn attack':     ['normal',   'physical',   65, 100],
+    'hydro cannon':    ['water',    'special',   150,  90],
+    'hyper beam':      ['normal',   'special',   150,  90],
+    'hyper fang':      ['normal',   'physical',   80,  90],
+    'icicle spear':    ['ice',      'physical',   25, 100],
+    'ice ball':        ['ice',      'physical',   30,  90],
+    'ice fang':        ['ice',      'physical',   65,  95],
+    'ice shard':       ['ice',      'physical',   40, 100],
+    'iron tail':       ['steel',    'physical',  100,  75],
+    'jaw lock':        ['dark',     'physical',   80, 100],
+    'jump kick':       ['fighting', 'physical',  100,  95],
+    'karate chop':     ['fighting', 'physical',   50, 100],
+    'last resort':     ['normal',   'physical',  140, 100],
+    'leaf blade':      ['grass',    'physical',   90, 100],
+    'lick':            ['ghost',    'physical',   30, 100],
+    'low kick':        ['fighting', 'physical',    0, 100],
+    'low sweep':       ['fighting', 'physical',   65, 100],
+    'mega kick':       ['normal',   'physical',  120,  75],
+    'mega punch':      ['normal',   'physical',   80,  85],
+    'meteor mash':     ['steel',    'physical',   90,  90],
+    'night slash':     ['dark',     'physical',   70, 100],
+    'payback':         ['dark',     'physical',   50, 100],
+    'peck':            ['flying',   'physical',   35, 100],
+    'petal blizzard':  ['grass',    'physical',   90, 100],
+    'pin missile':     ['bug',      'physical',   25,  95],
+    'play nice':       ['normal',   'status',      0, null],
+    'poison fang':     ['poison',   'physical',   50, 100],
+    'poison sting':    ['poison',   'physical',   15, 100],
+    'pound':           ['normal',   'physical',   40, 100],
+    'powder snow':     ['ice',      'special',    40, 100],
+    'power-up punch':  ['fighting', 'physical',   40, 100],
+    'psybeam':         ['psychic',  'special',    65, 100],
+    'psycho cut':      ['psychic',  'physical',   70, 100],
+    'pursuit':         ['dark',     'physical',   40, 100],
+    'quick attack':    ['normal',   'physical',   40, 100],
+    'rapid spin':      ['normal',   'physical',   50, 100],
+    'razor leaf':      ['grass',    'physical',   55,  95],
+    'razor shell':     ['water',    'physical',   75,  95],
+    'return':          ['normal',   'physical',    0, 100],
+    'revenge':         ['fighting', 'physical',   60, 100],
+    'rock smash':      ['fighting', 'physical',   40, 100],
+    'rollout':         ['rock',     'physical',   30,  90],
+    'scratch':         ['normal',   'physical',   40, 100],
+    'seed bomb':       ['grass',    'physical',   80, 100],
+    'shadow claw':     ['ghost',    'physical',   70, 100],
+    'shadow force':    ['ghost',    'physical',  120, 100],
+    'shadow punch':    ['ghost',    'physical',   60, null],
+    'signal beam':     ['bug',      'special',    75, 100],
+    'skull bash':      ['normal',   'physical',  130, 100],
+    'sky attack':      ['flying',   'physical',  140,  90],
+    'sky uppercut':    ['fighting', 'physical',   85,  90],
+    'slash':           ['normal',   'physical',   70, 100],
+    'slam':            ['normal',   'physical',   80,  75],
+    'sleep talk':      ['normal',   'status',      0, null],
+    'smelling salts':  ['normal',   'physical',   70, 100],
+    'snap trap':       ['grass',    'physical',   35, 100],
+    'spark':           ['electric', 'physical',   65, 100],
+    'steel wing':      ['steel',    'physical',   70,  90],
+    'stomp':           ['normal',   'physical',   65, 100],
+    'strength':        ['normal',   'physical',   80, 100],
+    'submission':      ['fighting', 'physical',   80,  80],
+    'super fang':      ['normal',   'physical',    0,  90],
+    'superpower':      ['fighting', 'physical',  120, 100],
+    'surf':            ['water',    'special',    90, 100],
+    'swift':           ['normal',   'special',    60, null],
+    'tackle':          ['normal',   'physical',   40, 100],
+    'take down':       ['normal',   'physical',   90,  85],
+    'thrash':          ['normal',   'physical',  120, 100],
+    'thunder fang':    ['electric', 'physical',   65,  95],
+    'thundershock':    ['electric', 'special',    40, 100],
+    'trap jaw':        ['bug',      'physical',   35, 100],
+    'triple kick':     ['fighting', 'physical',   10,  90],
+    'trump card':      ['normal',   'special',     0, null],
+    'twineedle':       ['bug',      'physical',   25, 100],
+    'vice grip':       ['normal',   'physical',   55, 100],
+    'vine whip':       ['grass',    'physical',   45, 100],
+    'vital throw':     ['fighting', 'physical',   70, null],
+    'volt tackle':     ['electric', 'physical',  120, 100],
+    'water gun':       ['water',    'special',    40, 100],
+    'wing attack':     ['flying',   'physical',   60, 100],
+    'wrap':            ['normal',   'physical',   15,  90],
+    'x-scissor':       ['bug',      'physical',   80, 100],
+    // Status / boosts
+    'agility':         ['psychic',  'status',      0, null],
+    'amnesia':         ['psychic',  'status',      0, null],
+    'aromatherapy':    ['grass',    'status',      0, null],
+    'attract':         ['normal',   'status',      0, 100],
+    'baby-doll eyes':  ['fairy',    'status',      0, 100],
+    'barrier':         ['psychic',  'status',      0, null],
+    'belly drum':      ['normal',   'status',      0, null],
+    'bulk up':         ['fighting', 'status',      0, null],
+    'camouflage':      ['normal',   'status',      0, null],
+    'charge':          ['electric', 'status',      0, null],
+    'charm':           ['fairy',    'status',      0, 100],
+    'coil':            ['poison',   'status',      0, null],
+    'conversion':      ['normal',   'status',      0, null],
+    'copycat':         ['normal',   'status',      0, null],
+    'cotton guard':    ['grass',    'status',      0, null],
+    'defense curl':    ['normal',   'status',      0, null],
+    'destiny bond':    ['ghost',    'status',      0, null],
+    'disable':         ['normal',   'status',      0, 100],
+    'double team':     ['normal',   'status',      0, null],
+    'fake tears':      ['dark',     'status',      0, 100],
+    'flash':           ['normal',   'status',      0, 100],
+    'focus energy':    ['normal',   'status',      0, null],
+    'gastro acid':     ['poison',   'status',      0, 100],
+    'growl':           ['normal',   'status',      0, 100],
+    'growth':          ['normal',   'status',      0, null],
+    'grudge':          ['ghost',    'status',      0, null],
+    'guard swap':      ['psychic',  'status',      0, null],
+    'harden':          ['normal',   'status',      0, null],
+    'heal bell':       ['normal',   'status',      0, null],
+    'heal block':      ['psychic',  'status',      0, 100],
+    'hyper voice':     ['normal',   'special',    90, 100],
+    'imprison':        ['psychic',  'status',      0, null],
+    'ingrain':         ['grass',    'status',      0, null],
+    'iron defense':    ['steel',    'status',      0, null],
+    'laser focus':     ['normal',   'status',      0, null],
+    'leer':            ['normal',   'status',      0, 100],
+    'lock-on':         ['normal',   'status',      0, null],
+    'lovely kiss':     ['normal',   'status',      0,  75],
+    'lucky chant':     ['normal',   'status',      0, null],
+    'meditate':        ['psychic',  'status',      0, null],
+    'memento':         ['dark',     'status',      0, 100],
+    'metal sound':     ['steel',    'status',      0,  85],
+    'milk drink':      ['normal',   'status',      0, null],
+    'minimize':        ['normal',   'status',      0, null],
+    'mirror move':     ['flying',   'status',      0, null],
+    'misty terrain':   ['fairy',    'status',      0, null],
+    'moonlight':       ['fairy',    'status',      0, null],
+    'morning sun':     ['normal',   'status',      0, null],
+    'mud sport':       ['ground',   'status',      0, null],
+    'pain split':      ['normal',   'status',      0, null],
+    'perish song':     ['normal',   'status',      0, null],
+    'play rough':      ['fairy',    'physical',   90,  90],
+    'power split':     ['psychic',  'status',      0, null],
+    'power trick':     ['psychic',  'status',      0, null],
+    'psychic terrain': ['psychic',  'status',      0, null],
+    'recycle':         ['normal',   'status',      0, null],
+    'refresh':         ['normal',   'status',      0, null],
+    'role play':       ['psychic',  'status',      0, null],
+    'roost':           ['flying',   'status',      0, null],
+    'safeguard':       ['normal',   'status',      0, null],
+    'screech':         ['normal',   'status',      0,  85],
+    'simple beam':     ['normal',   'status',      0, 100],
+    'sing':            ['normal',   'status',      0,  55],
+    'skill swap':      ['psychic',  'status',      0, null],
+    'slack off':       ['normal',   'status',      0, null],
+    'sleep talk':      ['normal',   'status',      0, null],
+    'smokescreen':     ['normal',   'status',      0, 100],
+    'snatch':          ['dark',     'status',      0, null],
+    'softboiled':      ['normal',   'status',      0, null],
+    'soft-boiled':     ['normal',   'status',      0, null],
+    'sour gas':        ['poison',   'status',      0, null],
+    'spider web':      ['bug',      'status',      0, null],
+    'spite':           ['ghost',    'status',      0, 100],
+    'splash':          ['water',    'status',      0, null],
+    'swords dance':    ['normal',   'status',      0, null],
+    'tail whip':       ['normal',   'status',      0, 100],
+    'topsy-turvy':     ['dark',     'status',      0, null],
+    'torment':         ['dark',     'status',      0, 100],
+    'toxic thread':    ['poison',   'status',      0, 100],
+    'transform':       ['normal',   'status',      0, null],
+    'triple axel':     ['ice',      'physical',   20,  90],
+    'water sport':     ['water',    'status',      0, null],
+    'withdraw':        ['water',    'status',      0, null],
+    'work up':         ['normal',   'status',      0, null],
+    'brutal swing':    ['dark',     'physical',   60, 100],
+    'bind':            ['normal',   'physical',   15,  85],
+    'baton pass':      ['normal',   'status',      0, null],
+    'aqua ring':       ['water',    'status',      0, null],
+    'block':           ['normal',   'status',      0, null],
+    'captivate':       ['normal',   'status',      0, 100],
+    'chip away':       ['normal',   'physical',   70, 100],
+    'clamp':           ['water',    'physical',   35,  85],
+    'covet':           ['normal',   'physical',   60, 100],
+    'entrainment':     ['normal',   'status',      0, 100],
+    'fire pledge':     ['fire',     'special',     80, 100],
+    'flame wheel':     ['fire',     'physical',    60, 100],
+    'foul play':       ['dark',     'physical',    95, 100],
+    'grass pledge':    ['grass',    'special',     80, 100],
+    'grass whistle':   ['grass',    'status',       0,  55],
+    'head charge':     ['normal',   'physical',   120, 100],
+    'hyper drill':     ['normal',   'physical',    80, 100],
+    'incinerate':      ['fire',     'special',     60, 100],
+    'knock off':       ['dark',     'physical',    65, 100],
+    'lunge':           ['bug',      'physical',    80, 100],
+    'megahorn':        ['bug',      'physical',   120,  85],
+    'mud bomb':        ['ground',   'special',     65,  85],
+    'ominous wind':    ['ghost',    'special',     60, 100],
+    'play rough':      ['fairy',    'physical',    90,  90],
+    'power gem':       ['rock',     'special',     80, 100],
+    'punishment':      ['dark',     'physical',     0, 100],
+    'round':           ['normal',   'special',     60, 100],
+    'shadow hit':      ['ghost',    'physical',    65, 100],
+    'smack down':      ['rock',     'physical',    50, 100],
+    'snarl':           ['dark',     'special',     55,  95],
+    'snore':           ['normal',   'special',     50, 100],
+    'solar blade':     ['grass',    'physical',   125, 100],
+    'spark':           ['electric', 'physical',    65, 100],
+    'stomping tantrum':['ground',   'physical',    75, 100],
+    'tera blast':      ['normal',   'special',     80, 100],
+    'throat chop':     ['dark',     'physical',    80, 100],
+    'thunder cage':    ['electric', 'special',     80,  90],
+    'trailblaze':      ['grass',    'physical',    50, 100],
+    'triple dive':     ['water',    'physical',    30, 100],
+    'water pledge':    ['water',    'special',     80, 100],
     'ice punch':       ['ice',      'physical',  75, 100],
     'icicle crash':    ['ice',      'physical',  85,  90],
     'freeze dry':      ['ice',      'special',   70, 100],
@@ -7378,15 +7917,20 @@ function renderResults() {
     renderNonMetaSearch(searchQuery);
   }
 
-  // "Can also use" section for move: and ability: searches
-  const mvTerm = searchQuery.match(/^move[:\s]+(.+)/i);
-  const abTerm = searchQuery.match(/^ability[:\s]+(.+)/i);
-  if (mvTerm || abTerm) {
-    const q = (mvTerm ? mvTerm[1] : abTerm[1]).toLowerCase().trim();
+  // "Can also use" section for move: and ability: searches — supports multiple terms
+  const allTerms = searchQuery ? searchQuery.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const mvTerms = allTerms.filter(t => /^move[:\s]+/i.test(t)).map(t => t.match(/^move[:\s]+(.+)/i)[1].toLowerCase().trim());
+  const abTerms = allTerms.filter(t => /^ability[:\s]+/i.test(t)).map(t => t.match(/^ability[:\s]+(.+)/i)[1].toLowerCase().trim());
+  if (mvTerms.length || abTerms.length) {
     const matchedKeys = new Set(sorted.map(r => r.attacker.speciesRaw));
-    const candidates = META_DB.filter(p => p.loaded && !matchedKeys.has(p.speciesRaw));
+    // Candidates: ALL loaded meta entries not already in results
+    // Use lastResults as a lookup by speciesRaw for full result data (damage calcs etc)
+    const lastResultsMap = new Map((lastResults||[]).map(r => [r.attacker.speciesRaw, r]));
+    const candidates = META_DB
+      .filter(p => p.loaded && !matchedKeys.has(p.speciesRaw))
+      .map(p => lastResultsMap.get(p.speciesRaw) || { attacker: p, displayPct: p.usage || 0, _metaOnly: true });
     if (candidates.length) {
-      _renderCanUseSection(q, !!abTerm, candidates, matchedKeys, container, searchQuery);
+      _renderCanUseSection(mvTerms, abTerms, candidates, container, searchQuery, sorted, maxPct);
     }
   }
 
@@ -7433,20 +7977,22 @@ async function _fetchMoveLearners(moveSlug) {
   } catch { _moveLearnerCache[moveSlug] = null; return null; }
 }
 
-async function _renderCanUseSection(q, isAbility, candidates, matchedKeys, container, searchQuery) {
-  const qSlug = q.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  const label = isAbility ? `Can have ability "${q}"` : `Can learn move "${q}"`;
+async function _renderCanUseSection(mvTerms, abTerms, candidates, container, searchQuery, sorted, maxPct) {
+  const allSlugs = [
+    ...mvTerms.map(q => ({ q, isAbility: false, slug: q.replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'') })),
+    ...abTerms.map(q => ({ q, isAbility: true,  slug: q.replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'') })),
+  ];
 
-  // Show placeholder while fetching
+  const label = allSlugs.map(({q, isAbility}) => `${isAbility ? 'ability' : 'move'}:${q}`).join(', ');
   const placeholderId = 'canUse-' + Date.now();
   container.innerHTML += `<div id="${placeholderId}" style="margin-top:10px;border-top:0.5px solid var(--border2);padding-top:6px;">
-    <div style="font-size:10px;color:var(--text3);padding:0 4px 6px;">${label} <span style="opacity:0.5;">(checking…)</span></div>
+    <div style="font-size:10px;color:var(--text3);padding:0 4px 6px;">Can learn: ${label} <span style="opacity:0.5;">(checking…)</span></div>
   </div>`;
 
-  // One API call to get all pokemon that can use this ability/move
-  const result = isAbility
-    ? await _fetchAbilityLearners(qSlug)
-    : await _fetchMoveLearners(qSlug);
+  // Fetch all learner sets in parallel
+  const sets = await Promise.all(allSlugs.map(({slug, isAbility}) =>
+    isAbility ? _fetchAbilityLearners(slug) : _fetchMoveLearners(slug)
+  ));
 
   // Bail if search changed
   const currentQ = (document.getElementById('searchBar')?.value || '').toLowerCase().trim();
@@ -7454,33 +8000,58 @@ async function _renderCanUseSection(q, isAbility, candidates, matchedKeys, conta
   const placeholder = document.getElementById(placeholderId);
   if (!placeholder) return;
 
-  if (!result) { placeholder.remove(); return; }
+  // If any fetch failed, can't intersect
+  if (sets.some(s => s === null)) { placeholder.remove(); return; }
 
-  // Match learners against meta candidates (by slug)
-  const canUse = candidates.filter(p => {
-    const slug = toSlug(p.speciesRaw.replace(/\s*★$/, ''));
-    // Also try base form slug for forms like iron-hands, flutter-mane, etc.
-    const baseSlug = slug.replace(/-[a-z]+$/, '');
-    return result.slugs.has(slug) || result.slugs.has(baseSlug);
+  // Intersect: pokemon must appear in ALL learner sets
+  const canUseResults = candidates.filter(r => {
+    const species = r.attacker?.speciesRaw || r.speciesRaw || '';
+    const slug = toSlug(species.replace(/\s*★$/,''));
+    // Try progressively shorter form suffixes for regional variants
+    const slugVariants = [slug];
+    const baseParts = slug.split('-');
+    for (let i = baseParts.length - 1; i >= 1; i--) {
+      slugVariants.push(baseParts.slice(0, i).join('-'));
+    }
+    return sets.every(s => slugVariants.some(v => s.slugs.has(v)));
   });
+  if (!canUseResults.length) { placeholder.remove(); return; }
 
-  if (!canUse.length) { placeholder.remove(); return; }
+  // Re-check search hasn't changed
+  const currentQ2 = (document.getElementById('searchBar')?.value || '').toLowerCase().trim();
+  if (currentQ2 !== searchQuery) return;
 
-  const displayLabel = isAbility ? `Can have ability "${result.displayName || q}"` : `Can learn "${result.displayName || q}"`;
-  const groupHtml = canUse.map(p => {
-    const types = (p.types||[]).map(t => `<span class="type-chip ${t}">${t}</span>`).join('');
-    return `<div class="result-row" style="opacity:0.75;">
-      <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;">
-        ${spriteImgHtml(p.speciesRaw, 28, p.spriteUrl||null)}
-        <span style="font-size:12px;color:var(--text);">${p.speciesRaw}</span>
-        <span style="font-size:10px;color:var(--text3);">${(p.usage||0).toFixed(1)}%</span>
-        <div style="display:flex;gap:3px;">${types}</div>
+  // Render using the same row renderer as main results (append to container HTML)
+  const startIndex = sorted.length;
+  let groupHtml = canUseResults.map((r, i) => {
+    const index = startIndex + i;
+    const isPinned = pinnedKeys.has(r.attacker.speciesRaw);
+    const typeBadges = (r.attacker.types||[]).map(t=>`<span class="type-badge t-${t}">${t}</span>`).join('');
+    const pct = r.displayPct || 0;
+    const safeKey = r.attacker.speciesRaw.replace(/"/g,'&quot;');
+    const safeName = r.attacker.speciesRaw.replace(/'/g,"\\'");
+    return `<div class="result-item${isPinned?' is-pinned':''}" data-rowkey="${safeKey}">
+      <div class="result-row" onclick="toggleBreakdown(${index})" id="resultRow-${index}" data-specieskey="${safeKey}">
+        <button class="add-defender-btn" title="Add ${r.attacker.speciesRaw} as defender tab" onclick="addAttackerAsDefender(event,'${safeName}','${index}')">+</button>
+        <div class="result-expand">▶</div>
+        <button class="pin-btn${isPinned?' pinned':''}" data-pinkey="${safeKey}" onclick="handlePinClick(event)">${isPinned?'📌':'📍'}</button>
+        <div class="result-rank">
+          <div style="position:relative;width:40px;height:30px;flex-shrink:0;">${psIconHtml(r.attacker.speciesRaw,r.attacker.speciesRaw)}</div>
+          <span>${index+1}</span>
+        </div>
+        <div class="result-name">
+          <div class="result-name-text">${r.attacker.speciesRaw}</div>
+          <div class="type-badges">${typeBadges}</div>
+        </div>
+        <div class="result-pct-bar-wrap"><div class="result-pct-bar" style="width:${Math.min(100,(pct/maxPct)*100).toFixed(1)}%;"></div></div>
+        <div class="result-pct">${pct.toFixed(1)}%</div>
       </div>
+      <div class="result-breakdown" id="breakdown-${index}"></div>
     </div>`;
   }).join('');
 
   placeholder.innerHTML = `
-    <div style="font-size:10px;color:var(--text3);padding:0 4px 6px;font-weight:600;">${displayLabel}</div>
+    <div style="font-size:10px;color:var(--text3);padding:0 4px 6px;font-weight:600;">Can learn: ${label}</div>
     ${groupHtml}`;
 }
 
@@ -8141,6 +8712,19 @@ const ALL_MOVES = (() => {
     'Hyperspace Hole','Hyperspace Fury','Oblivion Wing','Wring Out','Freeze-Dry',
     'Soft-Boiled','Milk Drink','Slack Off','Roost','Moonlight','Morning Sun',
     'Shore Up','Synthesis','Healing Wish','Lunar Dance','Jungle Healing',
+    'Blizzard','Aurora Veil','Light Screen','Reflect','Mist',
+    'Spore','Sleep Powder','Poison Powder','Stun Spore','Toxic',
+    'Leech Seed','Yawn','Confuse Ray','Swagger','Flatter','Glare',
+    'Haze','Clear Smog','Whirlwind','Roar',
+    'Swords Dance','Nasty Plot','Calm Mind','Quiver Dance','Dragon Dance',
+    'Geomancy','Shell Smash','Cosmic Power',
+    'Substitute','Endure','Instruct','After You','Ally Switch','Speed Swap',
+    'Gravity','Magic Room','Wonder Room',
+    'Stealth Rock','Spikes','Toxic Spikes','Sticky Web',
+    'Quick Guard','Crafty Shield','Mat Block',
+    'Trick','Switcheroo','Knock Off',
+    'Rain Dance','Sunny Day','Sandstorm','Snowscape',
+    'Strength Sap','Recover','Rest',
     'Rock Slide','Rock Tomb','Rock Blast','Rock Polish','Rock Wrecker',
     'Stone Edge','Power Gem','Ancient Power','Head Smash',
     'Psychic Noise','Expanding Force','Psyshield Bash','Twin Beam','Lumina Crash',
@@ -12439,15 +13023,16 @@ function renderMatchHistory() {
     matches = allMatches;
   }
 
-  // Filter by search bar — comma-separated Pokémon names matched against opponent team
+  // Filter by search bar — comma-separated Pokémon names; special: has:replay
   const searchRaw = (document.getElementById('searchBar')?.value || '').trim();
   if (searchRaw) {
     const terms = searchRaw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
     matches = matches.filter(m => {
-      // Collect all Pokémon names in this match (both sides)
-      // Search opponent names only
       const oppNames = m.opponent.map(p => (typeof p === 'string' ? p : p.name).toLowerCase());
-      return terms.every(term => oppNames.some(n => n.includes(term)));
+      return terms.every(term => {
+        if (term === 'has:replay') return !!extractNoteUrl(m.note || '');
+        return oppNames.some(n => n.includes(term));
+      });
     });
   }
 
@@ -14558,6 +15143,8 @@ function refreshThreatPanelIfOpen() {
 
 
 </script>
+<div id="moveLearnDd" class="move-learn-dd" onmousedown="event.preventDefault()"></div>
+
 <!-- Filter hint popup — lives at body level to escape all stacking contexts -->
 <div id="filterHint" style="display:none;position:fixed;overscroll-behavior:contain;background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius);padding:10px 12px;z-index:9998;font-size:11px;color:var(--text2);line-height:1.9;min-width:260px;max-width:320px;box-shadow:0 4px 16px rgba(0,0,0,0.4);">
   <div style="font-weight:600;color:var(--text);margin-bottom:4px;">Filter syntax — comma-separated</div>

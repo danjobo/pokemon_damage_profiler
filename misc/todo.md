@@ -3,8 +3,8 @@
 
 
 
-- [XX] move/ability search will filter with all possible not just run in meta
-- when searching for pokemon moves and abilities, right now in the "can learn" results, the listings aren't clickable and look kind of odd. I'd like to just have them reference actual listings in the meta, not ghost listings. also, right now it doesn't look like "can learn" filters work in multiples, so I can't search for "move:grassy terrain, move:trick room", and have that give me pokemon that can learn grassy terrain and trick room. it'll just say no results match your search
+
+
 
 
 
@@ -42,6 +42,10 @@
 ---
 #### Completed
 
+- [XX] move text box dropdowns with info and only show learnable moves
+- [XX] has:replay tag
+- [XX] move/ability search will filter with all possible not just run in meta
+- [XX] when searching for pokemon moves and abilities, right now in the "can learn" results, the listings aren't clickable and look kind of odd. I'd like to just have them reference actual listings in the meta, not ghost listings. also, right now it doesn't look like "can learn" filters work in multiples, so I can't search for "move:grassy terrain, move:trick room", and have that give me pokemon that can learn grassy terrain and trick room. it'll just say no results match your search
 - [XX] remove max stats / max hp buttons for now
 - [XX] the current match sprites and meta analysis sprites  got changed to grid sprites as well when I just wanted the match log ones to be affected. type synergy sprites did too, but I kind of like them as grid sprites
 - [XX] the info text in the move text boxes near the ev sliders in the team window overlaps the original text of the moves sometimes depending on the scaling of the window/if it's in landscape or portrait mode. is there a way to have it only show that info if there's enough room left in the text box?
