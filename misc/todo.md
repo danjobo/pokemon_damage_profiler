@@ -1,11 +1,11 @@
 ## Feature Request
 
 
+- Acrobatics double power if user has no item?? or if item is "Nothing"
 
 
 
-
-
+- full pathing?!?!?!?!?!?
 
 
 
@@ -42,6 +42,12 @@
 ---
 #### Completed
 
+- [XX] x button next to each text box that clears the text boxes
+- [XX] auto suggested text not starting where text starts in the text boxes
+- [XX] info text no longer showing on moves
+- [XX] lazy loading except on highest damage sort
+- [XX] have paste order be default sort order
+- [XX] show hp in defending mode on listing next to pct text
 - [XX] move text box dropdowns with info and only show learnable moves
 - [XX] has:replay tag
 - [XX] move/ability search will filter with all possible not just run in meta
