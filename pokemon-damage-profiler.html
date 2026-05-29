@@ -815,6 +815,7 @@
   }
   @media (max-width: 480px) { .bar-wrap { display: none; } }
   .bar { height: 10px; border-radius: 5px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+  .bar.no-anim { transition: none; }
   .bar-vvlow { background: #6c5ce7; }
   .bar-vlow  { background: #6ab0f5; }
   .bar-low   { background: var(--green); }
@@ -1755,13 +1756,19 @@ Impish Nature
         <div style="display:flex;gap:10px;align-items:flex-start;overflow:hidden;">
           <!-- Left 1/3: item/ability/tera/moves text inputs -->
           <div id="evInfoFields" style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;">
-            <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
-              <input id="evItemGhost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
-              <input id="evItemInput" type="text" autocomplete="off" placeholder="Item" oninput="onEvFieldChange('item',this.value);_fieldAutocomplete('evItemInput','evItemGhost',ALL_ITEMS)" onkeydown="_fieldAutocompleteKey(event,'evItemInput','evItemGhost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+            <div style="display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);align-items:center;">
+              <button onclick="clearEvField('evItemInput','item')" tabindex="-1" style="padding:0 5px;font-size:10px;color:var(--text3);border:none;background:transparent;cursor:pointer;flex-shrink:0;">×</button>
+              <div style="position:relative;flex:1;min-width:0;display:flex;align-items:center;">
+                <input id="evItemGhost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+                <input id="evItemInput" type="text" autocomplete="off" placeholder="Item" oninput="onEvFieldChange('item',this.value);_fieldAutocomplete('evItemInput','evItemGhost',ALL_ITEMS)" onkeydown="_fieldAutocompleteKey(event,'evItemInput','evItemGhost')" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;min-width:0;">
+              </div>
             </div>
-            <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
-              <input id="evAbilityGhost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
-              <input id="evAbilityInput" type="text" autocomplete="off" placeholder="Ability" oninput="onEvFieldChange('ability',this.value);_fieldAutocomplete('evAbilityInput','evAbilityGhost',ALL_ABILITIES);_showAbilDd(this)" onkeydown="_abilDdKeydown(event,'evAbilityInput','evAbilityGhost')" onfocus="_showAbilDd(this)" onblur="_hideAbilDd()" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
+            <div style="display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);align-items:center;">
+              <button onclick="clearEvField('evAbilityInput','ability')" tabindex="-1" style="padding:0 5px;font-size:10px;color:var(--text3);border:none;background:transparent;cursor:pointer;flex-shrink:0;">×</button>
+              <div style="position:relative;flex:1;min-width:0;display:flex;align-items:center;">
+                <input id="evAbilityGhost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+                <input id="evAbilityInput" type="text" autocomplete="off" placeholder="Ability" oninput="onEvFieldChange('ability',this.value);_fieldAutocomplete('evAbilityInput','evAbilityGhost',ALL_ABILITIES);_showAbilDd(this)" onkeydown="_abilDdKeydown(event,'evAbilityInput','evAbilityGhost')" onfocus="_showAbilDd(this)" onblur="_hideAbilDd()" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;min-width:0;">
+              </div>
             </div>
             <div id="evTeraRow" style="display:none;">
             <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
@@ -1770,25 +1777,37 @@ Impish Nature
             </div>
             </div><!-- end evTeraRow -->
             <div style="border-top:0.5px solid var(--border2);margin:2px 0;"></div>
-            <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
-              <input id="evMove1Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
-              <input id="evMove1Input" type="text" autocomplete="off" placeholder="Move 1" oninput="onEvMoveChange(0,this.value);_fieldAutocomplete('evMove1Input','evMove1Ghost',ALL_MOVES);_showMoveLearnDd(0,this)" onkeydown="_moveDdKeydown(event,0,'evMove1Input','evMove1Ghost')" onfocus="_showMoveLearnDd(0,this)" onblur="_hideMoveLearnDd()" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
-              <div id="evMoveInfo0" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;pointer-events:none;z-index:3;display:flex;align-items:center;gap:3px;white-space:nowrap;"></div>
+            <div style="display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);align-items:center;">
+              <button onclick="clearEvMove(0)" tabindex="-1" style="padding:0 5px;font-size:10px;color:var(--text3);border:none;background:transparent;cursor:pointer;flex-shrink:0;">×</button>
+              <div style="position:relative;flex:1;min-width:0;display:flex;align-items:center;">
+                <input id="evMove1Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+                <input id="evMove1Input" type="text" autocomplete="off" placeholder="Move 1" oninput="onEvMoveChange(0,this.value);_fieldAutocomplete('evMove1Input','evMove1Ghost',ALL_MOVES);_showMoveLearnDd(0,this)" onkeydown="_moveDdKeydown(event,0,'evMove1Input','evMove1Ghost')" onfocus="_showMoveLearnDd(0,this)" onblur="_hideMoveLearnDd()" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;min-width:0;">
+              </div>
+              <div id="evMoveInfo0" style="font-size:10px;pointer-events:none;display:flex;align-items:center;gap:3px;white-space:nowrap;padding-right:5px;flex-shrink:0;"></div>
             </div>
-            <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
-              <input id="evMove2Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
-              <input id="evMove2Input" type="text" autocomplete="off" placeholder="Move 2" oninput="onEvMoveChange(1,this.value);_fieldAutocomplete('evMove2Input','evMove2Ghost',ALL_MOVES);_showMoveLearnDd(1,this)" onkeydown="_moveDdKeydown(event,1,'evMove2Input','evMove2Ghost')" onfocus="_showMoveLearnDd(1,this)" onblur="_hideMoveLearnDd()" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
-              <div id="evMoveInfo1" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;pointer-events:none;z-index:3;display:flex;align-items:center;gap:3px;white-space:nowrap;"></div>
+            <div style="display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);align-items:center;">
+              <button onclick="clearEvMove(1)" tabindex="-1" style="padding:0 5px;font-size:10px;color:var(--text3);border:none;background:transparent;cursor:pointer;flex-shrink:0;">×</button>
+              <div style="position:relative;flex:1;min-width:0;display:flex;align-items:center;">
+                <input id="evMove2Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+                <input id="evMove2Input" type="text" autocomplete="off" placeholder="Move 2" oninput="onEvMoveChange(1,this.value);_fieldAutocomplete('evMove2Input','evMove2Ghost',ALL_MOVES);_showMoveLearnDd(1,this)" onkeydown="_moveDdKeydown(event,1,'evMove2Input','evMove2Ghost')" onfocus="_showMoveLearnDd(1,this)" onblur="_hideMoveLearnDd()" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;min-width:0;">
+              </div>
+              <div id="evMoveInfo1" style="font-size:10px;pointer-events:none;display:flex;align-items:center;gap:3px;white-space:nowrap;padding-right:5px;flex-shrink:0;"></div>
             </div>
-            <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
-              <input id="evMove3Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
-              <input id="evMove3Input" type="text" autocomplete="off" placeholder="Move 3" oninput="onEvMoveChange(2,this.value);_fieldAutocomplete('evMove3Input','evMove3Ghost',ALL_MOVES);_showMoveLearnDd(2,this)" onkeydown="_moveDdKeydown(event,2,'evMove3Input','evMove3Ghost')" onfocus="_showMoveLearnDd(2,this)" onblur="_hideMoveLearnDd()" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
-              <div id="evMoveInfo2" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;pointer-events:none;z-index:3;display:flex;align-items:center;gap:3px;white-space:nowrap;"></div>
+            <div style="display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);align-items:center;">
+              <button onclick="clearEvMove(2)" tabindex="-1" style="padding:0 5px;font-size:10px;color:var(--text3);border:none;background:transparent;cursor:pointer;flex-shrink:0;">×</button>
+              <div style="position:relative;flex:1;min-width:0;display:flex;align-items:center;">
+                <input id="evMove3Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+                <input id="evMove3Input" type="text" autocomplete="off" placeholder="Move 3" oninput="onEvMoveChange(2,this.value);_fieldAutocomplete('evMove3Input','evMove3Ghost',ALL_MOVES);_showMoveLearnDd(2,this)" onkeydown="_moveDdKeydown(event,2,'evMove3Input','evMove3Ghost')" onfocus="_showMoveLearnDd(2,this)" onblur="_hideMoveLearnDd()" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;min-width:0;">
+              </div>
+              <div id="evMoveInfo2" style="font-size:10px;pointer-events:none;display:flex;align-items:center;gap:3px;white-space:nowrap;padding-right:5px;flex-shrink:0;"></div>
             </div>
-            <div style="position:relative;display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);overflow:hidden;">
-              <input id="evMove4Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
-              <input id="evMove4Input" type="text" autocomplete="off" placeholder="Move 4" oninput="onEvMoveChange(3,this.value);_fieldAutocomplete('evMove4Input','evMove4Ghost',ALL_MOVES);_showMoveLearnDd(3,this)" onkeydown="_moveDdKeydown(event,3,'evMove4Input','evMove4Ghost')" onfocus="_showMoveLearnDd(3,this)" onblur="_hideMoveLearnDd()" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;">
-              <div id="evMoveInfo3" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;pointer-events:none;z-index:3;display:flex;align-items:center;gap:3px;white-space:nowrap;"></div>
+            <div style="display:flex;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);align-items:center;">
+              <button onclick="clearEvMove(3)" tabindex="-1" style="padding:0 5px;font-size:10px;color:var(--text3);border:none;background:transparent;cursor:pointer;flex-shrink:0;">×</button>
+              <div style="position:relative;flex:1;min-width:0;display:flex;align-items:center;">
+                <input id="evMove4Ghost" tabindex="-1" readonly style="position:absolute;inset:0;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text3);outline:none;pointer-events:none;white-space:pre;overflow:hidden;">
+                <input id="evMove4Input" type="text" autocomplete="off" placeholder="Move 4" oninput="onEvMoveChange(3,this.value);_fieldAutocomplete('evMove4Input','evMove4Ghost',ALL_MOVES);_showMoveLearnDd(3,this)" onkeydown="_moveDdKeydown(event,3,'evMove4Input','evMove4Ghost')" onfocus="_showMoveLearnDd(3,this)" onblur="_hideMoveLearnDd()" style="flex:1;padding:3px 6px;font-size:11px;border:none;background:transparent;color:var(--text);outline:none;width:100%;box-sizing:border-box;position:relative;z-index:2;min-width:0;">
+              </div>
+              <div id="evMoveInfo3" style="font-size:10px;pointer-events:none;display:flex;align-items:center;gap:3px;white-space:nowrap;padding-right:5px;flex-shrink:0;"></div>
             </div>
           </div>
             <!-- Right 2/3: nature + sliders -->
@@ -2125,7 +2144,7 @@ Impish Nature
       <label style="font-size:11px;color:var(--text3);white-space:nowrap;">Sort:</label>
       <select id="sortMode" onchange="renderResults()" style="font-size:11px;padding:2px 5px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);color:var(--text2);cursor:pointer;outline:none;">
         <option value="damage">Highest damage</option>
-        <option value="order">Paste order</option>
+        <option value="order" selected>Paste order</option>
         <option value="speed">Speed</option>
         <option value="atk">Attack</option>
         <option value="spa">Sp. Atk</option>
@@ -2142,8 +2161,20 @@ Impish Nature
         <option value="100">Top 100</option>
       </select>
       <div id="defenderTag" class="defender-tag" style="margin-left:auto;"></div>
+      <button id="debugPanelBtn" onclick="toggleDebugPanel()" title="Toggle render debug info" style="padding:2px 7px;font-size:10px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text3);cursor:pointer;opacity:0.5;">⚙ debug</button>
     </div>
-    </div><!-- end controls-sticky-wrap -->
+    <!-- Debug panel -->
+    <div id="renderDebugPanel" style="display:none;padding:8px 12px;background:rgba(0,0,0,0.4);border:0.5px solid #444;border-top:none;font-family:monospace;font-size:11px;line-height:1.8;color:#a0c4ff;margin-bottom:6px;">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <span>🔵 <b id="dbgTotal">—</b> total</span>
+        <span>🟢 <b id="dbgCalcHtml">—</b> rendered</span>
+        <span>👁 <b id="dbgVisible">—</b> in viewport</span>
+        <span>💤 <b id="dbgLazy">—</b> lazy (breakdown pending)</span>
+        <span>⚡ <b id="dbgFilled">—</b> breakdowns filled</span>
+        <span>⏱ <b id="dbgRenderTime">—</b>ms last render</span>
+        <span>📦 <b id="dbgMetaLoaded">—</b> meta loaded</span>
+      </div>
+    </div>
 
     <!-- Match history control bar -->
     <div class="match-bar" id="matchBar">
@@ -2654,6 +2685,47 @@ document.addEventListener('mousedown', e => {
   if (!e.target.closest('#abilLearnDd') && e.target.id !== 'evAbilityInput') _hideAbilDd();
 }, true);
 
+// ── Champions legal move pool ─────────────────────────────────────────────────
+// Build a lookup of species → Set of legal moves from CHAMPIONS_META_DATA
+// This is used to filter the learnset dropdown in Champions game mode
+// Lazy-initialized — built on first use after CHAMPIONS_META_DATA is declared
+let _champsMovePool = null;
+function getChampsMovePool() {
+  if (_champsMovePool) return _champsMovePool;
+  _champsMovePool = {};
+  for (const [name, entry] of Object.entries(CHAMPIONS_META_DATA || {})) {
+    const slug = name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const moves = new Set(
+      (entry.m || []).filter(m => m !== '_').map(m => m.toLowerCase())
+    );
+    _champsMovePool[slug] = moves;
+    const base = slug.replace(/-mega(-[xy])?$/,'').replace(/-(?:alola|galar|hisui|paldea)$/,'');
+    if (base !== slug) {
+      if (!_champsMovePool[base]) _champsMovePool[base] = new Set();
+      moves.forEach(m => _champsMovePool[base].add(m));
+    }
+  }
+  return _champsMovePool;
+}
+
+// Also accumulate moves from loaded JSON meta data (entry.Moves has all used moves, not just top ones)
+let _jsonMovePool = {}; // species slug → Set of move names (from JSON Moves dict)
+
+function _buildJsonMovePool(jsonData) {
+  // Called when a JSON meta file is loaded; jsonData is the full data object
+  const entries = jsonData?.data || jsonData || {};
+  for (const [name, entry] of Object.entries(entries)) {
+    if (!entry.Moves) continue;
+    const slug = toSlug(name);
+    if (!_jsonMovePool[slug]) _jsonMovePool[slug] = new Set();
+    for (const moveSlug of Object.keys(entry.Moves)) {
+      // moveSlug is like 'fakeout', 'rockslide' — convert to display name
+      const displayName = slugToName(moveSlug) || moveSlug;
+      _jsonMovePool[slug].add(displayName.toLowerCase());
+    }
+  }
+}
+
 // ── Move learnset dropdown ─────────────────────────────────────────────────────
 const _moveLearnCache = {}; // speciesSlug → ['Move Name', ...]
 let _moveLearnDdActive = null; // { idx }
@@ -2861,6 +2933,160 @@ document.addEventListener('mousedown', e => {
     _hideMoveLearnDd();
   }
 }, true);
+
+let _debugPanelOn = false;
+let _lastRenderMs = 0;
+
+function toggleDebugPanel() {
+  _debugPanelOn = !_debugPanelOn;
+  const panel = document.getElementById('renderDebugPanel');
+  const btn   = document.getElementById('debugPanelBtn');
+  if (panel) panel.style.display = _debugPanelOn ? 'block' : 'none';
+  if (btn) {
+    btn.style.opacity    = _debugPanelOn ? '1' : '0.5';
+    btn.style.color      = _debugPanelOn ? 'var(--accent2)' : 'var(--text3)';
+    btn.style.borderColor= _debugPanelOn ? 'var(--accent)' : 'var(--border2)';
+  }
+  if (_debugPanelOn) _updateDebugPanel();
+}
+
+function _updateDebugPanel() {
+  if (!_debugPanelOn) return;
+  const total       = lastResults?.length || 0;
+  const rendered    = document.querySelectorAll('.result-item').length;
+  const lazyPending = document.querySelectorAll('.move-breakdown[data-lazy="1"]').length;
+  const filled      = document.querySelectorAll('.move-breakdown:not([data-lazy])').length;
+  const metaLoaded  = META_DB.filter(p => p.loaded).length;
+
+  // Count visible result-items (in viewport)
+  let visible = 0;
+  document.querySelectorAll('.result-item').forEach(el => {
+    const r = el.getBoundingClientRect();
+    if (r.bottom > 0 && r.top < window.innerHeight) visible++;
+  });
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('dbgTotal',      total);
+  set('dbgCalcHtml',   rendered);
+  set('dbgVisible',    visible);
+  set('dbgLazy',       lazyPending);
+  set('dbgFilled',     filled);
+  set('dbgRenderTime', _lastRenderMs);
+  set('dbgMetaLoaded', metaLoaded);
+}
+
+// Auto-refresh debug panel on scroll
+document.addEventListener('scroll', () => { if (_debugPanelOn) _updateDebugPanel(); }, { capture: true, passive: true });
+
+// Run damage calc for a single deferred result row
+// Delegates to the full calc logic by running a mini renderResults pass
+function _calcSingleRow(r) {
+  if (!r._calcPending) return;
+  const ctx = window._lazyCalcCtx;
+  if (!ctx) return;
+  const { attackingMode, weather, terrainMode, maxRollMode, maxInvest, maxHp, dynamax,
+          atkStage, spaStage, defStage, spdStage,
+          teraActive, scarfOverrides, typeBoostOverrides, lifeOrbOverrides,
+          choiceOverrides, boosterOverrides, multiscaleOverrides } = ctx;
+
+  let best    = { dmg:0, pct:0, move:null, eff:1 };
+  let defBest = { dmg:0, pct:0, move:null, eff:1 };
+
+  const breakdown = attackingMode ? (r.defMoveBreakdown||[]) : r.moveBreakdown;
+  breakdown.forEach(m => {
+    if (m.isStatus) { m.adjustedPct=0; m.adjustedDmg=0; m.resolvedType=m.move?.type||'normal'; m.isEffectivelySpread=false; return; }
+    let adjustedDmg = m.dmg || 0;
+    if (!adjustedDmg) return;
+
+    // Type boost item
+    const tbState = typeBoostOverrides.get(r.attacker.speciesRaw);
+    if (tbState === 'on') {
+      if (hasTypeBoostItem(r.attacker.item)) adjustedDmg /= 1.2;
+      else adjustedDmg *= 1.2;
+    }
+    // Life Orb
+    const loState = lifeOrbOverrides.get(r.attacker.speciesRaw);
+    if (loState === 'on') {
+      if (hasLifeOrb(r.attacker.item)) adjustedDmg /= 1.3;
+      else adjustedDmg *= 1.3;
+    }
+    // Choice
+    const chState = choiceOverrides.get(r.attacker.speciesRaw);
+    if (chState === 'on') {
+      const sl = (r.attacker.item||'').toLowerCase().replace(/[\s-]/g,'');
+      const moveIsSpec = m.move?.cat === 'special';
+      if (hasChoiceItem(r.attacker.item)) {
+        if ((sl==='choicespecs'&&moveIsSpec)||(sl==='choiceband'&&!moveIsSpec)) adjustedDmg /= 1.5;
+      } else adjustedDmg *= 1.5;
+    }
+    if (maxRollMode) adjustedDmg /= 0.85;
+
+    // Weather
+    const moveType = m.resolvedType || m.move?.type || 'normal';
+    if ((weather==='sun'||weather==='desolateland') && moveType==='fire') adjustedDmg *= 1.5;
+    if ((weather==='sun'||weather==='desolateland') && moveType==='water') adjustedDmg *= 0.5;
+    if ((weather==='rain'||weather==='primordialsea') && moveType==='water') adjustedDmg *= 1.5;
+    if ((weather==='rain'||weather==='primordialsea') && moveType==='fire') adjustedDmg *= 0.5;
+
+    const effHp = r.defenderHp || 1;
+    m.adjustedPct = adjustedDmg / effHp * 100;
+    m.adjustedDmg = adjustedDmg;
+
+    if (!attackingMode) {
+      if (adjustedDmg > best.dmg && (m.pasteIndex??99) < (r.dividerIndex??4))
+        best = { dmg:adjustedDmg, pct:Math.min(m.adjustedPct,130), move:m.move, eff:m.eff||1 };
+    } else {
+      if (adjustedDmg > defBest.dmg && (m.pasteIndex??99) < (r.defDividerIndex??4))
+        defBest = { dmg:adjustedDmg, pct:Math.min(m.adjustedPct,130), move:m.move, eff:m.eff||1 };
+    }
+  });
+
+  r.displayPct  = attackingMode ? defBest.pct : (best.pct || 0);
+  r.displayMove = attackingMode ? defBest.move : best.move;
+  r.displayEff  = attackingMode ? defBest.eff  : best.eff;
+  r._calcPending = false;
+}
+
+// Fill in the pct/bar/move DOM elements for a row after lazy calc
+function _fillRowCalc(r, idx, rowEl) {
+  const pct    = r.displayPct || 0;
+  const barW   = Math.min(pct, 100).toFixed(1);
+  const barCls = pct>=100?'bar-ohko':pct>=50?'bar-high':pct>=33.3?'bar-mid':pct>=25?'bar-low':pct>=20?'bar-vlow':'bar-vvlow';
+  const pctColor = pct>=100?'var(--red)':pct>=50?'var(--orange)':pct>=33.3?'var(--yellow)':pct>=25?'var(--green)':pct>=20?'#6ab0f5':'#6c5ce7';
+  const trueMax = pct / 0.85;
+  let ohkoLine = '';
+  if (pct >= 100) ohkoLine = '<div style="font-size:9px;color:var(--red);opacity:0.8;">100% OHKO</div>';
+  else if (trueMax >= 100) {
+    const chance = Math.round([...Array(16)].filter((_,i)=>pct*(85+i)/85>=100).length/16*100);
+    ohkoLine = `<div style="font-size:9px;color:var(--red);opacity:0.8;">${chance}% OHKO</div>`;
+  }
+  const pctLabel = pct>=130 ? `<span style="color:${pctColor}">130%+ OHKO</span>${ohkoLine}`
+    : pct>=100 ? `<span style="color:${pctColor}">${pct.toFixed(0)}% OHKO</span>${ohkoLine}`
+    : `<span style="color:${pctColor}">${pct.toFixed(1)}%</span>${ohkoLine}`;
+
+  const defHp = r.defender?.computedHp || r.defender?.stats?.hp || 0;
+  const hpDmgLabel = (!window._lazyCalcCtx?.attackingMode && defHp > 1 && pct > 0)
+    ? `<div style="font-size:10px;color:var(--text2);line-height:1.2;font-weight:500;">${Math.floor(pct/100*defHp)} HP</div>` : '';
+
+  const moveName  = r.displayMove?.name || '—';
+  const dispEff   = r.displayEff || 1;
+  const effLabel  = dispEff > 1 ? `<span class="eff-super">×${dispEff}</span>`
+    : dispEff < 1 && dispEff > 0 ? `<span class="eff-resist">×${dispEff}</span>` : '';
+
+  const barEl = rowEl?.querySelector('.bar');
+  if (barEl) {
+    // Remove no-anim so the scroll-in fill animates nicely
+    barEl.classList.remove('no-anim');
+    barEl.className = `bar ${barCls}`;
+    barEl.style.width = barW + '%';
+  }
+  const pctEl = document.getElementById(`resultPct-${idx}`);
+  if (pctEl) pctEl.innerHTML = pctLabel + hpDmgLabel;
+  const moveEl = document.getElementById(`resultMove-${idx}`);
+  if (moveEl) moveEl.innerHTML = moveName + ' ' + effLabel;
+
+  if (_debugPanelOn) _updateDebugPanel();
+}
 
 function setGameMode(mode) {
   _gameMode = mode;
@@ -3957,6 +4183,27 @@ function onEvSliderChange(stat, rawVal, inputEl) {
   _applyEvChanges(slot, false); // lightweight — don't rebuild slider HTML
 }
 
+function clearEvField(inputId, field) {
+  const inp = document.getElementById(inputId);
+  const ghost = document.getElementById(inputId.replace('Input','Ghost'));
+  if (inp) { inp.value = ''; }
+  if (ghost) { ghost.value = ''; }
+  onEvFieldChange(field, '');
+  _hideAbilDd();
+}
+
+function clearEvMove(idx) {
+  const inputId = 'evMove' + (idx+1) + 'Input';
+  const ghostId  = 'evMove' + (idx+1) + 'Ghost';
+  const inp   = document.getElementById(inputId);
+  const ghost = document.getElementById(ghostId);
+  if (inp)   { inp.value = ''; }
+  if (ghost) { ghost.value = ''; }
+  onEvMoveChange(idx, '');
+  _hideMoveLearnDd();
+  _updateMoveInfoOverlay(idx, '');
+}
+
 function onEvFieldChange(field, value) {
   const slot = DEFENDER_SLOTS[activeDefenderSlot];
   if (!slot) return;
@@ -4444,9 +4691,24 @@ function _updateMoveInfoOverlay(idx, moveName) {
   const bpText = power > 0 ? `${power}` : '—';
   const accText = acc != null ? `${acc}%` : '—';
   infoEl.innerHTML = `<span style="color:${typeColor};font-weight:600;">${type}</span><span style="color:var(--text3);"> ${bpText} </span><span style="color:${catColor};">${catIcon}</span><span style="color:var(--text3);"> ${accText}</span>`;
-  // Only show in portrait mode
-  const isPortrait = window.innerHeight > window.innerWidth;
-  if (!isPortrait) { infoEl.style.display = 'none'; return; }
+
+  // Hide in landscape mode (not enough room)
+  const isLandscape = window.innerWidth > window.innerHeight;
+  if (isLandscape) { infoEl.style.display = 'none'; return; }
+
+  // In portrait: hide if the input is too narrow to fit both text and info
+  if (inputEl) {
+    const canvas = _updateMoveInfoOverlay._canvas || (_updateMoveInfoOverlay._canvas = document.createElement('canvas'));
+    const ctx = canvas.getContext('2d');
+    ctx.font = '11px ' + (getComputedStyle(inputEl).fontFamily || 'sans-serif');
+    const textWidth = ctx.measureText(inputEl.value || '').width;
+    const infoWidth = infoEl.scrollWidth || 80;
+    const available = inputEl.offsetWidth;
+    if (available > 0 && textWidth + infoWidth + 16 > available) {
+      infoEl.style.display = 'none';
+      return;
+    }
+  }
   infoEl.style.display = '';
 }
 
@@ -7184,6 +7446,7 @@ function renderResultsDebounced() {
 }
 
 function renderResults() {
+  const _renderStart = performance.now();
   updateFieldStatus();
   if (_historyViewActive && !_skipBlankCheck) { renderMatchHistory(); return; }
   refreshThreatPanelIfOpen();
@@ -7212,7 +7475,32 @@ function renderResults() {
     return;
   }
 
+  const mode = document.getElementById('sortMode').value;
+  const resultsLimit = parseInt(document.getElementById('resultsLimit')?.value || '0');
+
+  // In non-damage sort modes we can defer calc for offscreen rows
+  // Build sorted order first using only cheap sort keys (no damage needed)
+  const _lazyCalcMode = (mode !== 'damage');
+  const _mustCalcKeys = new Set([...pinnedKeys, ...expandedBreakdowns]);
+
+  // Store calc context NOW so lazy observer callbacks have it immediately
+  window._lazyCalcCtx = {
+    attackingMode, weather, terrainMode: terrainMode, maxRollMode, maxInvest, maxHp, dynamax,
+    atkStage, spaStage, defStage, spdStage,
+    teraActive, scarfOverrides, typeBoostOverrides, lifeOrbOverrides,
+    choiceOverrides, boosterOverrides, multiscaleOverrides,
+  };
+
   lastResults.forEach(r => {
+    // In lazy mode, skip calc for rows that aren't pinned/expanded — they'll calc on scroll
+    if (_lazyCalcMode && !_mustCalcKeys.has(r.attacker.speciesRaw)) {
+      r._calcPending = true;
+      r.displayPct  = r.displayPct || 0; // keep last value if re-rendering
+      r.displayMove = r.displayMove || null;
+      r.displayEff  = r.displayEff  || 1;
+      return;
+    }
+    r._calcPending = false;
     // ── Defending mode: attackers hit the defender ──
     let best = { dmg: 0, pct: 0, move: null, eff: 1 };
     r.moveBreakdown.forEach(m => {
@@ -7448,10 +7736,9 @@ function renderResults() {
     r.displayPct  = attackingMode ? defBest.pct : (best.pct || 0);
     r.displayMove = attackingMode ? defBest.move : best.move;
     r.displayEff  = attackingMode ? defBest.eff  : best.eff;
+    r._calcPending = false;
   });
 
-  const mode = document.getElementById('sortMode').value;
-  const resultsLimit = parseInt(document.getElementById('resultsLimit')?.value || '0');
   // Apply Top N limit BEFORE sorting — restricts to first N by paste/usage order
   let sorted = resultsLimit > 0
     ? [...(lastResults || [])].filter(r => r.attacker?.speciesRaw?.endsWith(' ★') || pinnedKeys.has(r.attacker?.speciesRaw) || r.originalOrder <= resultsLimit)
@@ -7612,6 +7899,12 @@ function renderResults() {
     html += `<div class="pinned-divider">meta results</div>`;
   }
 
+  let _lazyObserver = window._lazyObserver || null;
+  const _pendingBreakdowns = new Map();
+  window._pendingBreakdownsRef = _pendingBreakdowns;
+  window._lastSorted = sorted;
+  _lastRenderMs = Math.round(performance.now() - _renderStart);
+
   sorted.forEach((r, index) => {
     const isPinned = pinnedKeys.has(r.attacker.speciesRaw);
 
@@ -7642,6 +7935,13 @@ function renderResults() {
       : pct >= 100
       ? `<span style="color:${pctColor}">${pct.toFixed(0)}% OHKO</span>${ohkoLine}`
       : `<span style="color:${pctColor}">${pct.toFixed(1)}%</span>${ohkoLine}`;
+
+    // HP damage on listing head — show in defending mode when HP is known
+    let hpDmgLabel = '';
+    if (!attackingMode && r.defenderHp > 1 && pct > 0) {
+      const hpDmg = Math.floor(pct / 100 * r.defenderHp);
+      if (hpDmg > 0) hpDmgLabel = `<div style="font-size:10px;color:var(--text2);line-height:1.2;font-weight:500;">${hpDmg} HP</div>`;
+    }
     const effLabel = r.displayEff > 1
       ? `<span class="eff-super">×${r.displayEff}</span>`
       : r.displayEff < 1 && r.displayEff > 0
@@ -8004,12 +8304,17 @@ function renderResults() {
       style="font-size:9px;color:var(--text3);cursor:pointer;text-align:center;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72px;padding:2px 5px;border:0.5px solid var(--border2);border-radius:3px;background:transparent;display:block;">Edit Spread</button>`;
     const abilityItemColHtml = '<div class="breakdown-left-col">' + _abHtml + _itImg + _spreadBtn + '</div>';
 
+    // Store breakdown HTML for lazy injection
+    const _bdHtml = abilityItemColHtml +
+      `<div class="breakdown-right-col">${megaHtml}${multiscaleHtml}${itemBtnsHtml}${speedHtml}${breakdownHtml || (noDefender ? '' : '<div class="move-breakdown-row">No damaging moves found.</div>')}</div>`;
+    _pendingBreakdowns.set(index, _bdHtml);
+
     const isMatchOppHighlighted = _matchActive && isPinned &&
       _matchHighlightQueue.opp.some(n => n.replace(/\s*★$/,'').toLowerCase() === r.attacker.speciesRaw.replace(/\s*★$/,'').toLowerCase());
 
     html += `
       <div class="result-item${isPinned ? ' is-pinned' : ''}${isMatchOppHighlighted ? ' opp-highlighted' : ''}" data-rowkey="${r.attacker.speciesRaw.replace(/"/g,'&quot;')}">
-        <div class="result-row" onclick="toggleBreakdown(${index})" id="resultRow-${index}" data-specieskey="${r.attacker.speciesRaw.replace(/"/g,'&quot;')}">
+        <div class="result-row${r._calcPending ? ' calc-pending' : ''}" onclick="toggleBreakdown(${index})" id="resultRow-${index}" data-specieskey="${r.attacker.speciesRaw.replace(/"/g,'&quot;')}" data-resultidx="${index}">
           <button class="add-defender-btn" title="Add ${r.attacker.speciesRaw} as defender tab" onclick="addAttackerAsDefender(event,'${r.attacker.speciesRaw.replace(/'/g,"\\'")}','${index}')">+</button>
           <div class="result-expand">▶</div>
           <button class="pin-btn${isPinned ? ' pinned' : ''}" title="${pinTitle}" data-pinkey="${r.attacker.speciesRaw.replace(/"/g,'&quot;')}" onclick="handlePinClick(event)">${isPinned ? '📌' : '📍'}</button>
@@ -8039,28 +8344,138 @@ function renderResults() {
             })() : ''}</div>
           </div>
           <div style="font-size:13px;flex-shrink:0;width:20px;text-align:center;opacity:0.7;" title="${tie ? 'Speed tie' : atkWins ? 'You are outsped' : 'You outrun this'}">${rowSpeIcon}</div>
-          <div class="bar-wrap"><div class="bar ${barCls}" style="width:${barW}%"></div></div>
-          <div class="result-pct">${pctLabel}</div>
-          <div class="result-move">${moveName} ${effLabel}</div>
+          <div class="bar-wrap"><div class="bar no-anim ${r._calcPending ? '' : barCls}" style="width:${r._calcPending ? 0 : barW}%"></div></div>
+          <div class="result-pct" id="resultPct-${index}">${r._calcPending ? '<span style="color:var(--text3);font-size:10px;">…</span>' : pctLabel + hpDmgLabel}</div>
+          <div class="result-move" id="resultMove-${index}">${r._calcPending ? '' : moveName + ' ' + effLabel}</div>
         </div>
-        <div class="move-breakdown" id="breakdown-${index}">
-          ${abilityItemColHtml}
-          <div class="breakdown-right-col">
-          ${megaHtml}
-          ${multiscaleHtml}
-          ${itemBtnsHtml}
-          ${speedHtml}
-          ${breakdownHtml || (noDefender ? '' : '<div class="move-breakdown-row">No damaging moves found.</div>')}
-          </div>
+        <div class="move-breakdown" id="breakdown-${index}" data-lazy="1" data-idx="${index}">
         </div>
       </div>`;
   });
 
-  // Set results HTML
+  // Set results HTML — skip full rebuild if structure is unchanged (e.g. EV slider updates)
   const container = document.getElementById('resultsList');
   if (!container) return;
+
+  // Check if we can patch in-place: same species in same order, same count
+  const existingRows = container.querySelectorAll('.result-item[data-rowkey]');
+  const canPatch = existingRows.length === sorted.length &&
+    [...existingRows].every((el, i) => el.dataset.rowkey === sorted[i].attacker.speciesRaw);
+
+  if (canPatch) {
+    // Run calc for all rows first (deferred ones too — structure exists, just update values)
+    sorted.forEach(r => {
+      if (r._calcPending) _calcSingleRow(r);
+    });
+    // Just update the bar/pct/move for each row — no DOM rebuild
+    sorted.forEach((r, index) => {
+      const pct    = r.displayPct || 0;
+      const barW   = Math.min(pct, 100).toFixed(1);
+      const barCls = pct>=100?'bar-ohko':pct>=50?'bar-high':pct>=33.3?'bar-mid':pct>=25?'bar-low':pct>=20?'bar-vlow':'bar-vvlow';
+      const pctColor = pct>=100?'var(--red)':pct>=50?'var(--orange)':pct>=33.3?'var(--yellow)':pct>=25?'var(--green)':pct>=20?'#6ab0f5':'#6c5ce7';
+      const trueMin = maxRollMode ? pct * 0.85 : pct;
+      const trueMax = trueMin / 0.85;
+      let ohkoLine = '';
+      if (trueMin >= 100) ohkoLine = '<div style="font-size:9px;color:var(--red);opacity:0.8;">100% OHKO</div>';
+      else if (trueMax >= 100) {
+        const chance = Math.round([...Array(16)].filter((_,i)=>trueMin*(85+i)/85>=100).length/16*100);
+        ohkoLine = `<div style="font-size:9px;color:var(--red);opacity:0.8;">${chance}% OHKO</div>`;
+      }
+      const pctLabel = pct>=130?`<span style="color:${pctColor}">130%+ OHKO</span>${ohkoLine}`
+        :pct>=100?`<span style="color:${pctColor}">${pct.toFixed(0)}% OHKO</span>${ohkoLine}`
+        :`<span style="color:${pctColor}">${pct.toFixed(1)}%</span>${ohkoLine}`;
+      const defHp = r.defender?.computedHp||r.defender?.stats?.hp||0;
+      const hpDmgLabel = (!attackingMode&&defHp>1&&pct>0)
+        ?`<div style="font-size:10px;color:var(--text2);line-height:1.2;font-weight:500;">${Math.floor(pct/100*defHp)} HP</div>`:'';
+      const moveName = r.displayMove?.name||'—';
+      const dispEff = r.displayEff||1;
+      const effLabel = dispEff>1?`<span class="eff-super">×${dispEff}</span>`
+        :dispEff<1&&dispEff>0?`<span class="eff-resist">×${dispEff}</span>`:'';
+
+      const barEl = document.querySelector(`#resultRow-${index} .bar`);
+      if (barEl) { barEl.className=`bar no-anim ${barCls}`; barEl.style.width=barW+'%'; }
+      const pctEl = document.getElementById(`resultPct-${index}`);
+      if (pctEl) pctEl.innerHTML = pctLabel+hpDmgLabel;
+      const moveEl = document.getElementById(`resultMove-${index}`);
+      if (moveEl) moveEl.innerHTML = moveName+' '+effLabel;
+
+      // Re-render breakdown if it was already filled
+      const bdEl = document.getElementById(`breakdown-${index}`);
+      if (bdEl && !bdEl.dataset.lazy) {
+        const newContent = _pendingBreakdowns.get(index);
+        if (newContent) bdEl.innerHTML = newContent;
+      }
+    });
+    // Update lazy/breakdown observers with fresh data
+    expandedBreakdowns.forEach(key => {
+      const rowEl = document.querySelector(`.result-row[data-specieskey="${CSS.escape(key)}"]`);
+      if (rowEl) {
+        const bd = rowEl.parentElement?.querySelector('.move-breakdown[data-lazy="1"]');
+        if (bd) _fillBreakdown(bd);
+      }
+    });
+    _lastRenderMs = Math.round(performance.now() - _renderStart);
+    requestAnimationFrame(() => _updateDebugPanel());
+    return;
+  }
+
   container.innerHTML = html ||
     '<div class="error-msg" style="padding:10px 0">No results match your search.</div>';
+
+  // Phase 2: fill breakdown divs — immediately for visible/expanded, lazily for others
+  function _fillBreakdown(bdEl) {
+    if (!bdEl || bdEl.dataset.lazy !== '1') return;
+    const idx = parseInt(bdEl.dataset.idx);
+    const content = _pendingBreakdowns.get(idx);
+    if (content !== undefined) {
+      bdEl.innerHTML = content;
+      bdEl.removeAttribute('data-lazy');
+      if (window._lazyObserver) window._lazyObserver.unobserve(bdEl);
+    }
+  }
+
+  // Immediately render breakdowns for expanded rows
+  expandedBreakdowns.forEach(key => {
+    const rowEl = document.querySelector(`.result-row[data-specieskey="${CSS.escape(key)}"]`);
+    if (rowEl) {
+      const bd = rowEl.parentElement?.querySelector('.move-breakdown[data-lazy="1"]');
+      if (bd) _fillBreakdown(bd);
+    }
+  });
+
+  // Lazy observer for rows scrolled into view
+  if (window._lazyObserver) window._lazyObserver.disconnect();
+  window._lazyObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) _fillBreakdown(e.target); });
+  }, { rootMargin: '300px' });
+  document.querySelectorAll('.move-breakdown[data-lazy="1"]').forEach(bd => {
+    window._lazyObserver.observe(bd);
+  });
+
+  // Lazy calc observer: run damage calc for deferred rows when they enter viewport
+  if (window._lazyCalcObserver) window._lazyCalcObserver.disconnect();
+  if (_lazyCalcMode) {
+    window._lazyCalcObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const rowEl = e.target;
+        if (!rowEl.classList.contains('calc-pending')) return;
+        const idx = parseInt(rowEl.dataset.resultidx);
+        const r = window._lastSorted?.[idx];
+        if (!r || !r._calcPending) return;
+        window._lazyCalcObserver.unobserve(rowEl);
+        _calcSingleRow(r);
+        rowEl.classList.remove('calc-pending');
+        _fillRowCalc(r, idx, rowEl);
+        const bd = document.getElementById(`breakdown-${idx}`);
+        if (bd && bd.dataset.lazy === '1') _fillBreakdown(bd);
+      });
+    }, { rootMargin: '400px' });
+    document.querySelectorAll('.result-row.calc-pending').forEach(el => {
+      window._lazyCalcObserver.observe(el);
+    });
+  }
+  requestAnimationFrame(() => _updateDebugPanel());
 
   // If search is a plain name and no meta results matched by name, try PokéAPI as dummy
   const isPlainSearch = searchQuery && !searchQuery.includes(':') && !searchQuery.includes(',');
@@ -8163,10 +8578,9 @@ async function _renderCanUseSection(mvTerms, abTerms, candidates, container, sea
   if (sets.some(s => s === null)) { placeholder.remove(); return; }
 
   // Intersect: pokemon must appear in ALL learner sets
-  const canUseResults = candidates.filter(r => {
+  let canUseResults = candidates.filter(r => {
     const species = r.attacker?.speciesRaw || r.speciesRaw || '';
     const slug = toSlug(species.replace(/\s*★$/,''));
-    // Try progressively shorter form suffixes for regional variants
     const slugVariants = [slug];
     const baseParts = slug.split('-');
     for (let i = baseParts.length - 1; i >= 1; i--) {
@@ -8175,6 +8589,26 @@ async function _renderCanUseSection(mvTerms, abTerms, candidates, container, sea
     return sets.every(s => slugVariants.some(v => s.slugs.has(v)));
   });
   if (!canUseResults.length) { placeholder.remove(); return; }
+
+  // Also apply any non-move/ability filters from the search query (e.g. type:ghost, name terms)
+  const otherTerms = searchQuery.split(',')
+    .map(t => t.trim())
+    .filter(t => t && !/^move[:\s]/i.test(t) && !/^ability[:\s]/i.test(t));
+  if (otherTerms.length) {
+    canUseResults = canUseResults.filter(r => {
+      const p = r.attacker;
+      return otherTerms.every(term => {
+        // type:X filter
+        const typeMatch = term.match(/^type[:\s]+(.+)/i);
+        if (typeMatch) {
+          const wantType = typeMatch[1].toLowerCase().trim();
+          return (p.types || []).some(t => t.toLowerCase().startsWith(wantType));
+        }
+        // plain name filter
+        return (p.speciesRaw || '').toLowerCase().includes(term.toLowerCase());
+      });
+    });
+  }
 
   // Sort within the can-learn section using same sort as main results
   if (sortFn) canUseResults.sort(sortFn);
@@ -8301,10 +8735,34 @@ const expandedBreakdowns = new Set();
 function toggleBreakdown(index) {
   const row = document.getElementById(`resultRow-${index}`);
   const breakdown = document.getElementById(`breakdown-${index}`);
+
+  // If this row hasn't been calc'd yet, do it now before expanding
+  if (row?.classList.contains('calc-pending')) {
+    if (window._lazyCalcObserver) window._lazyCalcObserver.unobserve(row);
+    const r = window._pendingBreakdownsRef && [...(window._pendingBreakdownsRef.keys())].length
+      ? null : null; // find via lastResults
+    // Find in lastResults by index stored on the row
+    const idx = parseInt(row.dataset.resultidx ?? index);
+    // sorted is scoped — use window._lastSorted if available
+    const sorted2 = window._lastSorted;
+    const result = sorted2?.[idx];
+    if (result?._calcPending) {
+      _calcSingleRow(result);
+      row.classList.remove('calc-pending');
+      _fillRowCalc(result, idx, row);
+    }
+  }
+  // Fill lazy content before showing
+  if (breakdown?.dataset.lazy === '1') {
+    if (window._lazyObserver) window._lazyObserver.unobserve(breakdown);
+    const content = window._pendingBreakdownsRef?.get(index);
+    if (content !== undefined) {
+      breakdown.innerHTML = content;
+      breakdown.removeAttribute('data-lazy');
+    }
+  }
   row.classList.toggle('expanded');
   breakdown.classList.toggle('visible');
-
-  // Persist open/closed state by species key (stored as data attr on row)
   const key = row.dataset.specieskey;
   if (key) {
     if (breakdown.classList.contains('visible')) expandedBreakdowns.add(key);
