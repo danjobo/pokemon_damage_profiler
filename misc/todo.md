@@ -42,15 +42,14 @@ https://pokedoku-space.nyc3.cdn.digitaloceanspaces.com/resources/pokemon/10290.p
 
 ### Bug Stack
 
-- [__] Mobile Drive Sync Bug: "Loaded 0 team(s) across all formats from Google Drive" and used to say something about failed to parse data or ran out of something idk
-- [__] Print Calcs uses single target damage, not doubles spread reduction
-- [__] control bar not following scroll window
-- [__] move auto suggest text getting overlapped by move text
-
 
 ---
 #### Completed
 
+- [XX] Print Calcs uses single target damage, not doubles spread reduction
+- [XX] control bar not following scroll window
+- [XX] the move textbox auto suggest text getting overlapped by text of moves beneath it
+- [XX] Mobile Drive Sync Bug: "Loaded 0 team(s) across all formats from Google Drive" and used to say something about failed to parse data or ran out of something idk
 - [XX] x button next to each text box that clears the text boxes
 - [XX] auto suggested text not starting where text starts in the text boxes
 - [XX] info text no longer showing on moves
