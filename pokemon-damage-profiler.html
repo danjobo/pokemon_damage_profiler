@@ -11366,26 +11366,52 @@ function _driveTokenValid() {
   return !!_driveAccessToken && Date.now() < _driveTokenExpiry - 60000; // 1min safety buffer
 }
 
+// Every per-game/per-sub-format key that Drive sync carries (keys look like
+// pokemonDamageProfiler_<kind>_<game>_<SubFormat>, or _<kind>_<game> for vgcFormats)
+const _DRIVE_SYNC_KINDS = ['savedTeams','savedMetas','matchHistory','winrates','notebooks','vgcFormats'];
+const _DRIVE_SYNC_RE = new RegExp('^pokemonDamageProfiler_(' + _DRIVE_SYNC_KINDS.join('|') + ')_');
+
 function _driveGetData() {
-  const allTeams = {}, allMetas = {};
-  for (const fmtId of Object.keys(FORMATS)) {
-    const teamsKey = 'pokemonDamageProfiler_savedTeams_' + fmtId;
-    const metasKey = 'pokemonDamageProfiler_savedMetas_' + fmtId;
-    const teams = JSON.parse(localStorage.getItem(teamsKey) || '{}');
-    const metas = JSON.parse(localStorage.getItem(metasKey) || '{}');
-    if (Object.keys(teams).length) allTeams[fmtId] = teams;
-    if (Object.keys(metas).length) allMetas[fmtId] = metas;
+  const store = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key || !_DRIVE_SYNC_RE.test(key)) continue;
+    try {
+      const val = JSON.parse(localStorage.getItem(key));
+      if (val && (Array.isArray(val) ? val.length : Object.keys(val).length)) store[key] = val;
+    } catch {}
   }
   return JSON.stringify({
-    version: 2,
+    version: 3,
     exportedAt: new Date().toISOString(),
     currentFormat: _currentFormat,
-    teamsByFormat: allTeams,
-    metasByFormat: allMetas,
-    matchHistory: JSON.parse(localStorage.getItem(MATCH_HISTORY_KEY()) || '{}'),
-    winrates:     JSON.parse(localStorage.getItem(WINRATE_KEY())       || '{}'),
-    notebooks:    JSON.parse(localStorage.getItem(NOTEBOOK_KEY())      || '{}'),
-  }, null, 2);
+    store,
+  });
+}
+
+function _driveCountTeams(store) {
+  return Object.entries(store)
+    .filter(([k]) => k.startsWith('pokemonDamageProfiler_savedTeams_'))
+    .reduce((n, [, v]) => n + Object.keys(v || {}).length, 0);
+}
+
+// Convert v1/v2 saves (pre sub-format keys) into a v3-style key→value store
+function _driveLegacyToStore(data) {
+  const store = {};
+  const slug = game => (DEFAULT_FORMATS[game] || 'default').replace(/\s+/g, '_');
+  if (data.teamsByFormat) {
+    for (const [game, teams] of Object.entries(data.teamsByFormat || {}))
+      store[`pokemonDamageProfiler_savedTeams_${game}_${slug(game)}`] = teams;
+    for (const [game, metas] of Object.entries(data.metasByFormat || {}))
+      store[`pokemonDamageProfiler_savedMetas_${game}_${slug(game)}`] = metas;
+  } else {
+    store[SAVED_TEAMS_KEY()] = data.savedTeams;
+    store[SAVED_METAS_KEY()] = data.savedMetas;
+  }
+  store[MATCH_HISTORY_KEY()] = data.matchHistory;
+  store[WINRATE_KEY()]       = data.winrates;
+  store[NOTEBOOK_KEY()]      = data.notebooks;
+  return store;
 }
 
 function _driveEnsureAuth(action) {
@@ -11416,7 +11442,12 @@ async function _driveExecute(action) {
 }
 
 async function _driveLoadExec() {
-  const fileId = await _driveFindFile();
+  let fileId;
+  try { fileId = await _driveFindFile(); }
+  catch(e) {
+    if (e.message === 'unauthorized') { _driveEnsureAuth('load'); return; }
+    alert(e.message); return;
+  }
   if (!fileId) { alert('No save file found on Google Drive.'); return; }
   const resp = await fetch(
     `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
@@ -11427,53 +11458,58 @@ async function _driveLoadExec() {
     _driveEnsureAuth('load'); return;
   }
   if (!resp.ok) { alert('Drive load failed: ' + (await resp.text())); return; }
+  let data;
   try {
-    const data = await resp.json();
-    if (!data.version || (!data.savedTeams && !data.teamsByFormat)) { alert('Drive file doesn\'t look like a valid save.'); return; }
-    const merge = (key, incoming) => {
-      if (!incoming || !Object.keys(incoming).length) return;
-      const existing = JSON.parse(localStorage.getItem(key) || '{}');
-      localStorage.setItem(key, JSON.stringify({ ...existing, ...incoming }));
-    };
-    if (data.version >= 2 && data.teamsByFormat) {
-      // v2: per-format data
-      let totalTeams = 0;
-      for (const [fmtId, teams] of Object.entries(data.teamsByFormat || {})) {
-        merge('pokemonDamageProfiler_savedTeams_' + fmtId, teams);
-        totalTeams += Object.keys(teams).length;
-      }
-      for (const [fmtId, metas] of Object.entries(data.metasByFormat || {})) {
-        merge('pokemonDamageProfiler_savedMetas_' + fmtId, metas);
-      }
-      merge(MATCH_HISTORY_KEY, data.matchHistory);
-      merge(WINRATE_KEY,       data.winrates);
-      merge(NOTEBOOK_KEY,      data.notebooks);
-      refreshTeamPickerDropdown('');
-      refreshSavedMetaDropdown('');
-      alert(`Loaded ${totalTeams} team(s) across all formats from Google Drive.`);
-    } else {
-      // v1: single format
-      const count = Object.keys(data.savedTeams || {}).length;
-      if (!confirm(`Sync ${count} team(s) from Drive? This will merge with your existing data (same name = overwritten).`)) return;
-      merge(SAVED_TEAMS_KEY(), data.savedTeams);
-      merge(SAVED_METAS_KEY(), data.savedMetas);
-      merge(MATCH_HISTORY_KEY, data.matchHistory);
-      merge(WINRATE_KEY,       data.winrates);
-      merge(NOTEBOOK_KEY,      data.notebooks);
-      refreshTeamPickerDropdown('');
-      refreshSavedMetaDropdown('');
-      alert(`Loaded ${count} team(s) from Google Drive.`);
-    }
+    const text = await resp.text();
+    if (!text.trim()) { alert('Drive save file is empty — save from a device that has your teams first.'); return; }
+    data = JSON.parse(text);
   } catch(e) {
     alert('Failed to parse Drive save: ' + e.message);
+    return;
+  }
+  if (!data || !data.version || (!data.store && !data.savedTeams && !data.teamsByFormat)) {
+    alert('Drive file doesn\'t look like a valid save.'); return;
+  }
+  const store = data.version >= 3 && data.store ? data.store : _driveLegacyToStore(data);
+  const count = _driveCountTeams(store);
+  if (!confirm(`Sync ${count} team(s) from Drive? This will merge with your existing data (same name = overwritten).`)) return;
+
+  const failed = [];
+  for (const [key, incoming] of Object.entries(store)) {
+    if (!_DRIVE_SYNC_RE.test(key) || !incoming) continue;
+    try {
+      let merged;
+      if (Array.isArray(incoming)) {
+        // vgcFormats list — union, keep local order first
+        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+        merged = [...existing, ...incoming.filter(f => !existing.includes(f))];
+      } else {
+        if (!Object.keys(incoming).length) continue;
+        const existing = JSON.parse(localStorage.getItem(key) || '{}');
+        merged = { ...existing, ...incoming };
+      }
+      localStorage.setItem(key, JSON.stringify(merged));
+    } catch(e) {
+      failed.push(key.replace('pokemonDamageProfiler_', '') + ' (' + e.name + ')');
+    }
+  }
+  refreshVGCFormatPicker();
+  refreshTeamPickerDropdown('');
+  refreshSavedMetaDropdown('');
+  if (failed.length) {
+    alert(`Loaded ${count} team(s) from Google Drive, but some data couldn't be stored on this device (storage may be full):\n\n` + failed.join('\n'));
+  } else {
+    alert(`Loaded ${count} team(s) across all formats from Google Drive.`);
   }
 }
 
 async function _driveFindFile() {
   const resp = await fetch(
-    `https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FILENAME}'+and+trashed=false&spaces=drive&fields=files(id,name)`,
+    `https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FILENAME}'+and+trashed=false&spaces=drive&orderBy=modifiedTime+desc&fields=files(id,name,modifiedTime)`,
     { headers: { Authorization: 'Bearer ' + _driveAccessToken } }
   );
+  if (resp.status === 401) { _driveAccessToken = null; _driveTokenExpiry = 0; throw new Error('unauthorized'); }
+  if (!resp.ok) throw new Error('Drive file lookup failed: ' + resp.status);
   const data = await resp.json();
   return data.files && data.files.length ? data.files[0].id : null;
 }
@@ -11481,8 +11517,19 @@ async function _driveFindFile() {
 async function _driveSaveExec(silent = false) {
   if (!_driveAccessToken) return;
   const content = _driveGetData();
+  // Don't let a device with no teams (e.g. a fresh phone) wipe out the Drive copy
+  if (!_driveCountTeams(JSON.parse(content).store)) {
+    if (silent) return;
+    if (!confirm('This device has no saved teams. Overwrite the Google Drive save anyway?')) return;
+  }
   const blob = new Blob([content], { type: 'application/json' });
-  const existing = await _driveFindFile();
+  let existing;
+  try { existing = await _driveFindFile(); }
+  catch(e) {
+    if (e.message === 'unauthorized') { if (!silent) _driveEnsureAuth('save'); return; }
+    if (!silent) alert(e.message);
+    return;
+  }
   let url, method;
   if (existing) {
     url = `https://www.googleapis.com/upload/drive/v3/files/${existing}?uploadType=media`;
@@ -11571,9 +11618,9 @@ function importAllData(event) {
       };
       merge(SAVED_TEAMS_KEY(),   data.savedTeams   || {});
       merge(SAVED_METAS_KEY(),   data.savedMetas   || {});
-      merge(MATCH_HISTORY_KEY, data.matchHistory || {});
-      merge(WINRATE_KEY,       data.winrates     || {});
-      merge(NOTEBOOK_KEY,      data.notebooks    || {});
+      merge(MATCH_HISTORY_KEY(), data.matchHistory || {});
+      merge(WINRATE_KEY(),       data.winrates     || {});
+      merge(NOTEBOOK_KEY(),      data.notebooks    || {});
 
       // Refresh UI
       refreshTeamPickerDropdown('');

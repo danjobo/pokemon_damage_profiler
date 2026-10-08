@@ -1,0 +1,556 @@
+Garchomp @ Life Orb, Sitrus Berry, Choice Scarf, Roseli Berry  
+Ability: Rough Skin  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+#SpreadUsage: 35%
+- Dragon Claw  
+- Rock Slide  
+- Earthquake  
+- Protect  
+_
+- Stomping Tantrum
+- Poison Jab
+
+Sinistcha @ Sitrus Berry, Kasib Berry, Colbur Berry 
+Ability: Hospitality  
+Level: 50  
+EVs: 32 HP / 14 Def / 20 SpD  
+Bold Nature  
+#SpreadUsage: 35%
+- Rage Powder
+- Matcha Gotcha
+- Life Dew
+- Trick Room
+- Protect
+_
+- Strength Sap
+- Shadow Ball
+
+Basculegion (M) @ Choice Scarf, Mystic Water, Focus Sash, Life Orb  
+Ability: Adaptability
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Adamant Nature  
+#SpreadUsage: 35%
+- Last Respects
+- Aqua Jet
+- Wave Crash
+- Protect
+- Flip Turn
+_
+- Liquidation
+
+Whimsicott @ Focus Sash, Fairy Feather 
+Ability: Prankster  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Timid Nature  
+#SpreadUsage: 35%
+- Tailwind
+- Moonblast
+- Encore
+- Protect
+_
+- Charm
+- Sunny Day
+
+Kingambit @ Chople Berry, Black Glasses, Focus Sash 
+Ability: Defiant  
+Level: 50  
+EVs: 32 HP / 32 Atk / 2 SpD  
+Adamant Nature  
+#SpreadUsage: 35%
+- Sucker Punch
+- Kowtow Cleave
+- Iron Head
+- Protect
+- Low Kick
+_
+- Swords Dance
+
+Staraptor-Mega @ Staraptite  
+Ability: Contrary, Intimidate  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Adamant Nature  
+#SpreadUsage: 35%
+- Close Combat
+- Protect
+- Brave Bird
+- Roost
+_
+- Dual Wingbeat
+- Tailwind
+
+Incineroar @ Sitrus Berry, Chople Berry, Passho Berry 
+Ability: Intimidate  
+Level: 50 
+EVs: 32 HP / 14 Def / 20 SpD  
+Careful Nature  
+#SpreadUsage: 35%
+- Fake Out
+- Parting Shot
+- Flare Blitz
+- Throat Chop
+- Darkest Lariat 
+_
+- Protect
+- Will-O-Wisp
+- Taunt
+
+Charizard-Mega-Y @ Charizardite Y  
+Ability: Drought, Blaze  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Modest Nature  
+#SpreadUsage: 35%
+- Protect
+- Heat Wave
+- Solar Beam
+- Weather Ball
+_
+- Air Slash
+
+Pelipper @ Focus Sash, Sitrus Berry, Damp Rock 
+Ability: Drizzle  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe  
+Modest Nature  
+#SpreadUsage: 35%
+- Hurricane
+- Weather Ball
+- Tailwind
+- Wide Guard
+- Protect
+
+Sneasler @ Mental Herb, Focus Sash 
+Ability: Unburden  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe  
+Jolly Nature  
+#SpreadUsage: 35%
+- Close Combat
+- Fake Out
+- Dire Claw
+- Protect
+_
+- Coaching
+
+Archaludon @ Leftovers 
+Ability: Stamina  
+Level: 50  
+EVs: 32 HP / 1 Def / 5 SpA / 25 SpD / 3 Spe  
+Modest Nature  
+#SpreadUsage: 35%
+- Electro Shot
+- Flash Cannon
+- Protect
+- Dragon Pulse
+_
+- Draco Meteor
+- Aura Sphere
+
+Raichu-Mega-Y @ Raichunite Y  
+Ability: No Guard, Lightning Rod  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe
+Timid Nature  
+#SpreadUsage: 35%
+- Fake Out
+- Protect
+- Zap Cannon
+- Focus Blast
+_
+- Volt Switch
+- Charm
+- Encore
+- Grass Knot
+
+Grimmsnarl (M) @ Light Clay 
+Ability: Prankster  
+Level: 50  
+EVs: 32 HP / 19 Def / 15 SpD
+Careful Nature  
+#SpreadUsage: 35%
+- Light Screen
+- Parting Shot
+- Reflect
+- Spirit Break
+_
+- Fake Out
+- Scary Face
+- Foul Play
+
+Sylveon @ Fairy Feather 
+Ability: Pixilate 
+Level: 50 
+EVs: 9 HP / 22 Def / 30 SpA / 5 Spe
+Modest Nature  
+#SpreadUsage: 35%
+- Hyper Voice
+- Quick Attack
+- Hyper Beam
+- Detect
+_
+- Protect
+- Moonblast
+- Calm Mind 
+
+Swampert-Mega @ Swampertite  
+Ability: Swift Swim, Torrent  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe
+Adamant Nature  
+#SpreadUsage: 35%
+- Protect
+- Wave Crash
+- Earthquake
+- Ice Punch
+_
+- High Horsepower
+
+Metagross-Mega @ Metagrossite  
+Ability: Tough Claws, Clear Body  
+Level: 50 
+EVs: 2 HP / 32 Atk / 32 Spe
+Adamant Nature  
+#SpreadUsage: 35%
+- Protect
+- Psychic Fangs
+- Iron Head
+- Bullet Punch
+- Stomping Tantrum
+- Meteor Mash
+_
+- Ice Punch 
+
+Farigiraf @ Sitrus Berry, Colbur Berry 
+Ability: Armor Tail 
+Level: 50  
+EVs: 17 HP / 19 Def / 10 SpA / 20 SpD
+Bold Nature  
+#SpreadUsage: 35%
+- Trick Room
+- Psychic
+- Helping Hand
+- Protect
+_
+- Hyper Voice
+- Thunderbolt
+- Twin Beam
+- Imprison
+- Roar
+
+Floette-Mega (F) @ Floettite  
+Ability: Fairy Aura, Flower Veil  
+Level: 50  
+EVs: 2 HP / 32 SpA / 32 Spe
+Modest Nature  
+#SpreadUsage: 35%
+- Protect
+- Dazzling Gleam
+- Moonblast
+- Light of Ruin
+- Calm Mind
+- Draining Kiss
+
+Gholdengo @ Life Orb, Choice Scarf, Metal Coat 
+Ability: Good as Gold  
+Level: 50 
+EVs: 2 HP / 32 SpA / 32 Spe
+Modest Nature  
+#SpreadUsage: 35%
+- Make It Rain
+- Shadow Ball
+- Protect
+- Nasty Plot
+_
+- Power Gem
+- Trick
+- Thunderbolt 
+
+Aerodactyl-Mega @ Aerodactylite  
+Ability: Tough Claws  
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe
+Jolly Nature  
+#SpreadUsage: 35%
+- Rock Slide
+- Tailwind
+- Dual Wingbeat
+- Protect
+- Wide Guard
+_
+- Ice Fang
+
+Aerodactyl @ Focus Sash 
+Ability: Unnerve
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe
+Jolly Nature  
+#SpreadUsage: 35%
+- Rock Slide
+- Tailwind
+- Dual Wingbeat
+- Protect
+- Wide Guard
+_
+- Ice Fang
+
+Maushold @ Chople Berry, Wide Lens, Focus Sash 
+Ability: Technician 
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe
+Jolly Nature  
+#SpreadUsage: 35%
+- Follow Me
+- Protect
+- Super Fang
+- Population Bomb
+- Beat Up
+- Encore
+- Taunt
+
+Sableye @ Roseli Berry, Light Clay 
+Ability: Prankster  
+Level: 50  
+EVs: 32 HP / 9 Def / 25 SpD
+Careful Nature  
+#SpreadUsage: 35%
+- Rain Dance
+- Light Screen
+- Encore
+- Reflect
+- Will-O-Wisp
+- Disable
+- Fake Out
+- Foul Play
+- Quash
+
+Annihilape @ Leftovers, Sitrus Berry, Choice Scarf  
+Ability: Defiant
+Level: 50  
+EVs: 2 HP / 32 Atk / 32 Spe
+Adamant Nature  
+#SpreadUsage: 35%
+- Rage Fist
+- Protect
+- Drain Punch
+- Bulk Up
+_
+- Close Combat
+- Coaching
+
+Mawile-Mega @ Mawilite  
+Ability: Huge Power, Intimidate  
+Level: 50  
+EVs: 32 HP / 32 Atk / 2 SpD
+Brave Nature  
+#SpreadUsage: 35%
+- Play Rough
+- Sucker Punch
+- Protect
+- Iron Head
+_
+- Swords Dance
+- Rock Slide
+
+Torkoal @ Charcoal 
+Ability: Drought  
+Level: 50  
+EVs: 32 HP / 32 SpA / 2 SpD
+Quiet Nature  
+#SpreadUsage: 35%
+- Eruption
+- Protect
+- Weather Ball
+- Heat Wave
+_
+- Earth Power
+- Solar Beam
+
+Ninetales-Alola  
+Ability: Snow Cloak  
+Level: 50  
+
+Froslass-Mega (F) @ Froslassite  
+Ability: Snow Warning  
+Level: 50  
+
+Rotom-Wash  
+Ability: Levitate  
+Level: 50  
+
+Talonflame  
+Ability: Flame Body  
+Level: 50  
+
+Dragonite-Mega @ Dragoninite  
+Ability: Multiscale  
+Level: 50  
+
+Tyranitar-Mega @ Tyranitarite  
+Ability: Sand Stream  
+Level: 50  
+
+Tyranitar  
+Ability: Sand Stream  
+Level: 50  
+
+Glimmora  
+Ability: Toxic Debris  
+Level: 50  
+
+Delphox-Mega @ Delphoxite  
+Ability: Levitate  
+Level: 50  
+
+Venusaur-Mega @ Venusaurite  
+Ability: Thick Fat  
+Level: 50  
+
+Venusaur  
+Ability: Overgrow  
+Level: 50  
+
+Blastoise-Mega @ Blastoisinite  
+Ability: Mega Launcher  
+Level: 50  
+
+Hydreigon  
+Ability: Levitate  
+Level: 50  
+
+Politoed  
+Ability: Water Absorb  
+Level: 50  
+
+Gengar-Mega @ Gengarite  
+Ability: Shadow Tag  
+Level: 50  
+
+Tsareena (F)  
+Ability: Leaf Guard  
+Level: 50  
+
+Pyroar-Mega @ Pyroarite  
+Ability: Fire Mane  
+Level: 50  
+
+Kangaskhan-Mega (F) @ Kangaskhanite  
+Ability: Parental Bond  
+Level: 50  
+
+Kangaskhan (F)  
+Ability: Early Bird  
+Level: 50  
+
+Vivillon  
+Ability: Shield Dust  
+Level: 50  
+
+Scrafty-Mega @ Scraftinite  
+Ability: Intimidate  
+Level: 50  
+
+Corviknight  
+Ability: Pressure  
+Level: 50  
+
+Eelektross-Mega @ Eelektrossite  
+Ability: Eelevate  
+Level: 50  
+
+Primarina  
+Ability: Torrent  
+Level: 50  
+
+Scovillain-Mega @ Scovillainite  
+Ability: Spicy Spray  
+Level: 50  
+
+Excadrill  
+Ability: Sand Rush  
+Level: 50  
+
+Ceruledge  
+Ability: Flash Fire  
+Level: 50  
+
+Kommo-o  
+Ability: Bulletproof  
+Level: 50  
+
+Blaziken-Mega @ Blazikenite  
+Ability: Speed Boost  
+Level: 50  
+
+Scizor-Mega @ Scizorite  
+Ability: Technician  
+Level: 50  
+
+Meowscarada  
+Ability: Overgrow  
+Level: 50  
+
+Meganium-Mega @ Meganiumite  
+Ability: Mega Sol  
+Level: 50  
+
+Arcanine-Hisui  
+Ability: Intimidate  
+Level: 50  
+
+Sceptile-Mega @ Sceptilite  
+Ability: Lightning Rod  
+Level: 50  
+
+Dragalge-Mega @ Dragalgite  
+Ability: Regenerator  
+Level: 50  
+
+Rotom-Heat  
+Ability: Levitate  
+Level: 50  
+
+Aegislash  
+Ability: Stance Change  
+Level: 50  
+
+Gallade (M)  
+Ability: Steadfast  
+Level: 50  
+
+Camerupt-Mega @ Cameruptite  
+Ability: Sheer Force  
+Level: 50  
+
+Gyarados-Mega @ Gyaradosite  
+Ability: Mold Breaker  
+Level: 50  
+
+Typhlosion-Hisui  
+Ability: Blaze  
+Level: 50  
+
+Clefable  
+Ability: Cute Charm  
+Level: 50  
+
+Malamar-Mega @ Malamarite  
+Ability: Contrary  
+Level: 50  
+
+Mamoswine  
+Ability: Oblivious  
+Level: 50  
+
+Basculegion-F (F)  
+Ability: Swift Swim  
+Level: 50  
+
+Zoroark-Hisui  
+Ability: Illusion  
+Level: 50  
+

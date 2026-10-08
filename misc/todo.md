@@ -1,5 +1,9 @@
 ## Feature Request
 
+- [__] tournament standing json import compatibility https://pokedata.ovh/standingsVGC/
+
+
+https://pokedoku-space.nyc3.cdn.digitaloceanspaces.com/resources/pokemon/10290.png
 
 - Acrobatics double power if user has no item?? or if item is "Nothing"
 
@@ -37,6 +41,11 @@
 - 
 
 ### Bug Stack
+
+- [__] Mobile Drive Sync Bug: "Loaded 0 team(s) across all formats from Google Drive" and used to say something about failed to parse data or ran out of something idk
+- [__] Print Calcs uses single target damage, not doubles spread reduction
+- [__] control bar not following scroll window
+- [__] move auto suggest text getting overlapped by move text
 
 
 ---
